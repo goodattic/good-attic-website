@@ -1,0 +1,63 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="1000" fill="#F6F8F6"/>
+  <ellipse cx="880" cy="825" rx="475" ry="54" fill="#17211C" opacity="0.13"/>
+
+  <g transform="translate(225 150)">
+    <path d="M190 360L578 178L968 360V725H190V360Z" fill="url(#wall)" stroke="#D8E2DD" stroke-width="5"/>
+    <path d="M190 360L578 178L968 360V407L578 232L190 407V360Z" fill="#EAF1EE"/>
+    <path d="M578 178L968 360V725H578V178Z" fill="#DDE8E3" opacity="0.42"/>
+
+    <path d="M112 356L578 90L1044 356" stroke="#17211C" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M112 356L578 90L1044 356" stroke="url(#roof)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <path d="M322 362L578 236L834 362V514H322V362Z" fill="#FFFFFF" stroke="#D8E2DD" stroke-width="5"/>
+    <path d="M346 378L578 264L810 378V490H346V378Z" fill="#EEF5F1"/>
+
+    <path d="M402 492H754" stroke="#B8A889" stroke-width="18" stroke-linecap="round"/>
+    <path d="M432 482C446 451 488 434 536 442C578 449 614 450 658 440C710 428 750 445 764 482H432Z" fill="url(#insulation)" opacity="0.95"/>
+    <path d="M432 482C446 451 488 434 536 442C578 449 614 450 658 440C710 428 750 445 764 482" stroke="#24715A" stroke-width="4" opacity="0.28"/>
+
+    <path d="M578 236V492" stroke="#8B744F" stroke-width="7" stroke-linecap="round" opacity="0.4"/>
+    <path d="M578 248L432 492" stroke="#8B744F" stroke-width="7" stroke-linecap="round" opacity="0.32"/>
+    <path d="M578 248L754 492" stroke="#8B744F" stroke-width="7" stroke-linecap="round" opacity="0.32"/>
+
+    <rect x="388" y="384" width="62" height="34" rx="8" fill="#17211C" opacity="0.8"/>
+    <path d="M400 394H438M400 405H438" stroke="#8FD4C0" stroke-width="5" stroke-linecap="round"/>
+    <rect x="706" y="384" width="62" height="34" rx="8" fill="#17211C" opacity="0.8"/>
+    <path d="M718 394H756M718 405H756" stroke="#8FD4C0" stroke-width="5" stroke-linecap="round"/>
+
+    <rect x="288" y="552" width="180" height="118" rx="16" fill="#EEF5F1" stroke="#D8E2DD" stroke-width="4"/>
+    <rect x="688" y="552" width="180" height="118" rx="16" fill="#EEF5F1" stroke="#D8E2DD" stroke-width="4"/>
+    <path d="M250 708H904" stroke="#B8A889" stroke-width="18" stroke-linecap="round"/>
+
+    <g opacity="0.95">
+      <circle cx="494" cy="464" r="18" fill="#fff"/>
+      <circle cx="494" cy="464" r="10" fill="#24715A"/>
+      <circle cx="640" cy="420" r="18" fill="#fff"/>
+      <circle cx="640" cy="420" r="10" fill="#24715A"/>
+      <circle cx="590" cy="472" r="18" fill="#fff"/>
+      <circle cx="590" cy="472" r="10" fill="#24715A"/>
+      <circle cx="740" cy="394" r="18" fill="#fff"/>
+      <circle cx="740" cy="394" r="10" fill="#24715A"/>
+    </g>
+  </g>
+
+  <text x="130" y="130" fill="#24715A" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800">STYLE REFERENCE</text>
+  <text x="130" y="178" fill="#17211C" font-family="Inter, Arial, sans-serif" font-size="52" font-weight="850">Stylized open-attic cutaway</text>
+  <text x="130" y="232" fill="#66736D" font-family="Inter, Arial, sans-serif" font-size="27">Clean 3D website illustration, simplified shapes, open space for interactive dots.</text>
+
+  <defs>
+    <linearGradient id="wall" x1="190" y1="178" x2="968" y2="725" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#DFE8E4"/>
+    </linearGradient>
+    <linearGradient id="roof" x1="112" y1="90" x2="1044" y2="356" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#17211C"/>
+      <stop offset="1" stop-color="#24715A"/>
+    </linearGradient>
+    <linearGradient id="insulation" x1="432" y1="440" x2="764" y2="482" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8FD4C0"/>
+      <stop offset="1" stop-color="#24715A"/>
+    </linearGradient>
+  </defs>
+</svg>
