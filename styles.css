@@ -1575,6 +1575,10 @@ textarea {
 }
 
 @media (max-width: 980px) {
+  .site-header {
+    gap: 10px;
+  }
+
   .menu-toggle {
     display: grid;
     width: 44px;
@@ -1590,6 +1594,15 @@ textarea {
     width: 20px;
     height: 2px;
     background: var(--ink);
+  }
+
+  .mobile-header-phone {
+    display: block;
+    margin-left: auto;
+  }
+
+  .nav > .phone-dropdown {
+    display: none;
   }
 
   .nav {
