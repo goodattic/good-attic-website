@@ -114,6 +114,10 @@ a {
   display: none;
 }
 
+.mobile-header-actions {
+  display: contents;
+}
+
 .nav-dropdown__button {
   display: inline-flex;
   gap: 7px;
@@ -220,10 +224,13 @@ a {
 }
 
 .mobile-phone-button {
-  width: 44px;
-  min-width: 44px;
-  padding: 0;
-  font-size: 19px;
+  min-width: 104px;
+  min-height: 40px;
+  padding: 0 8px;
+  font-size: 11px;
+  color: var(--white);
+  background: linear-gradient(135deg, #8fd4c0, #24715a);
+  box-shadow: 0 10px 24px rgba(143, 212, 192, 0.28);
 }
 
 .mobile-phone-button::after {
@@ -1576,13 +1583,32 @@ textarea {
 
 @media (max-width: 980px) {
   .site-header {
-    gap: 10px;
+    gap: 6px;
+    justify-content: space-between;
+    padding-inline: 9px;
+  }
+
+  .brand {
+    flex: 0 0 auto;
+    gap: 6px;
+    font-size: 14px;
+    min-width: 0;
+  }
+
+  .brand-mark {
+    width: 52px;
+    height: 30px;
+  }
+
+  .brand span:last-child {
+    display: inline;
+    white-space: nowrap;
   }
 
   .menu-toggle {
     display: grid;
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     place-items: center;
     background: transparent;
     border: 1px solid var(--line);
@@ -1596,9 +1622,17 @@ textarea {
     background: var(--ink);
   }
 
-  .mobile-header-phone {
-    display: block;
+  .mobile-header-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
     margin-left: auto;
+  }
+
+  .mobile-header-phone {
+    z-index: 2;
+    display: block;
+    margin-left: 0;
   }
 
   .nav > .phone-dropdown {
@@ -1629,7 +1663,7 @@ textarea {
     text-align: left;
   }
 
-  .phone-dropdown {
+  .nav .phone-dropdown {
     width: 100%;
   }
 
@@ -1654,7 +1688,7 @@ textarea {
     display: grid;
   }
 
-  .phone-dropdown__menu {
+  .nav .phone-dropdown__menu {
     position: static;
     display: none;
     width: 100%;
@@ -1665,8 +1699,19 @@ textarea {
     transform: none;
   }
 
-  .phone-dropdown.is-open .phone-dropdown__menu {
+  .nav .phone-dropdown.is-open .phone-dropdown__menu {
     display: grid;
+  }
+
+  .mobile-header-phone .phone-dropdown__menu {
+    right: 0;
+    left: auto;
+    min-width: 118px;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  .mobile-header-phone.is-open .phone-dropdown__menu {
+    transform: translateY(0) scale(1);
   }
 
   .nav-dropdown:hover .nav-dropdown__menu,
@@ -1691,6 +1736,15 @@ textarea {
 
   .hero {
     padding-top: 130px;
+  }
+
+  .hero-actions {
+    margin-inline: auto;
+  }
+
+  .trust-row {
+    justify-content: center;
+    text-align: center;
   }
 
   .story.reverse img {
