@@ -9,9 +9,23 @@ const serviceSelect = document.querySelector("[data-service-select]");
 const conditionalField = document.querySelector("[data-conditional-field]");
 const conditionalLabel = document.querySelector("[data-conditional-label]");
 const hotspots = document.querySelectorAll("[data-hotspot]");
+const atticMap = document.querySelector(".attic-map");
 const processCarousel = document.querySelector("[data-process-carousel]");
+const serviceCarousel = document.querySelector("[data-service-carousel]");
 
 document.querySelector("[data-year]").textContent = new Date().getFullYear();
+
+if (window.history && "scrollRestoration" in window.history) {
+  window.history.scrollRestoration = "manual";
+}
+
+window.addEventListener("load", () => {
+  if (window.location.hash) {
+    const cleanUrl = `${window.location.pathname}${window.location.search}`;
+    window.history.replaceState(null, "", cleanUrl);
+  }
+  window.scrollTo(0, 0);
+});
 
 function closePhoneDropdowns(exceptDropdown) {
   phoneDropdowns.forEach((phoneDropdown) => {
@@ -20,6 +34,12 @@ function closePhoneDropdowns(exceptDropdown) {
     const toggle = phoneDropdown.querySelector("[data-phone-dropdown-toggle]");
     if (toggle) toggle.setAttribute("aria-expanded", "false");
   });
+}
+
+function updateHotspotHint() {
+  if (!atticMap) return;
+  const hasActiveHotspot = Array.from(hotspots).some((hotspot) => hotspot.classList.contains("is-active"));
+  atticMap.classList.toggle("has-active-hotspot", hasActiveHotspot);
 }
 
 function openModal() {
@@ -161,12 +181,14 @@ hotspots.forEach((hotspot) => {
       if (item !== hotspot) item.classList.remove("is-active");
     });
     hotspot.classList.toggle("is-active");
+    updateHotspotHint();
   });
 });
 
 document.addEventListener("click", (event) => {
   if (!event.target.closest("[data-hotspot]")) {
     hotspots.forEach((hotspot) => hotspot.classList.remove("is-active"));
+    updateHotspotHint();
   }
 });
 
@@ -199,6 +221,56 @@ if (processCarousel) {
   windowElement.addEventListener("scroll", updateCarouselButtons);
   window.addEventListener("resize", updateCarouselButtons);
   updateCarouselButtons();
+}
+
+if (serviceCarousel) {
+  const slides = Array.from(serviceCarousel.querySelectorAll("[data-service-slide]"));
+  const thumbs = Array.from(serviceCarousel.querySelectorAll("[data-service-thumb]"));
+  const prevButton = serviceCarousel.querySelector("[data-service-prev]");
+  const nextButton = serviceCarousel.querySelector("[data-service-next]");
+  const rail = serviceCarousel.querySelector(".service-showcase__rail");
+  let activeIndex = slides.findIndex((slide) => slide.classList.contains("is-active"));
+
+  if (activeIndex < 0) activeIndex = 0;
+
+  function setActiveService(index) {
+    activeIndex = (index + slides.length) % slides.length;
+
+    slides.forEach((slide, slideIndex) => {
+      slide.classList.toggle("is-active", slideIndex === activeIndex);
+    });
+
+    thumbs.forEach((thumb, thumbIndex) => {
+      const isActive = thumbIndex === activeIndex;
+      thumb.classList.toggle("is-active", isActive);
+      thumb.setAttribute("aria-current", isActive ? "true" : "false");
+    });
+
+    const activeThumb = thumbs[activeIndex];
+    if (activeThumb && rail) {
+      const targetLeft = activeThumb.offsetLeft - rail.clientWidth / 2 + activeThumb.clientWidth / 2;
+      rail.scrollTo({
+        left: Math.max(0, targetLeft),
+        behavior: "smooth"
+      });
+    }
+  }
+
+  prevButton.addEventListener("click", () => {
+    setActiveService(activeIndex - 1);
+  });
+
+  nextButton.addEventListener("click", () => {
+    setActiveService(activeIndex + 1);
+  });
+
+  thumbs.forEach((thumb, index) => {
+    thumb.addEventListener("click", () => {
+      setActiveService(index);
+    });
+  });
+
+  setActiveService(activeIndex);
 }
 
 const servicePrompts = {
