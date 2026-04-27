@@ -19,6 +19,16 @@ python3 -m http.server 8080
 
 Then visit `http://localhost:8080`.
 
+## Wave 1 SEO Build
+
+The wave-one SEO architecture is generated from the reusable route/data layer in `build-seo-wave1.mjs`.
+
+To regenerate the non-home routes, sitemap, robots file, and page model JSON:
+
+```bash
+node build-seo-wave1.mjs
+```
+
 ## Cloudflare Pages
 
 Recommended production setup:
@@ -28,5 +38,4 @@ Recommended production setup:
 - Build command: leave blank
 - Build output directory: `/`
 
-Before launch, replace placeholder phone/SMS values and connect the lead form to the chosen CRM, email service, or Cloudflare Worker.
-
+Before launch, confirm the live canonical domain in `build-seo-wave1.mjs` and connect the lead form to the chosen CRM, email service, or Cloudflare Worker.

@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Good Attic is a premium attic restoration and insulation company helping homeowners solve comfort, air quality, energy loss, and pest-related attic issues.">
-  <title>Good Attic | Premium Attic Restoration &amp; Insulation</title>
+  <meta name="description" content="Good Attic helps homeowners solve hot and cold rooms, old insulation, attic pest issues, and energy waste with premium attic services.">
+  <link rel="canonical" href="https://www.goodattic.com/">
+  <title>Good Attic | Premium Attic Insulation &amp; Attic Services</title>
   <link rel="preconnect" href="https://images.unsplash.com">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -33,22 +34,21 @@
     </div>
 
     <nav class="nav" data-nav>
-      <a href="#services">Services</a>
-      <a href="#process">Process</a>
-      <a href="#trust">Trust</a>
-      <a href="#problems">Our Work</a>
+      <a href="services/">Services</a>
+      <a href="reviews/">Reviews</a>
+      <a href="financing/">Financing</a>
       <div class="nav-dropdown" data-dropdown>
         <button class="nav-dropdown__button" type="button" aria-expanded="false" data-dropdown-toggle>
           Service Areas
         </button>
         <div class="nav-dropdown__menu">
-          <a href="#service-areas-utah">Utah</a>
-          <a href="#service-areas-kansas">Kansas</a>
-          <a href="#service-areas-missouri">Missouri</a>
-          <a href="#service-areas-illinois">Illinois</a>
+          <a href="locations/">All Locations</a>
+          <a href="salt-lake-city-ut/">Salt Lake City</a>
+          <a href="st-louis-mo/">St. Louis</a>
+          <a href="kansas-city-mo/">Kansas City</a>
         </div>
       </div>
-      <a href="#about">About</a>
+      <a href="about/">About</a>
       <div class="phone-dropdown" data-phone-dropdown>
         <button class="nav-cta nav-cta--phone" type="button" aria-expanded="false" data-phone-dropdown-toggle>
           385-336-0062
@@ -65,26 +65,54 @@
   <main id="top">
     <section class="hero section-pin">
       <div class="hero-copy reveal">
-        <p class="eyebrow">Premium Attic Insulation and Restoration</p>
-        <h1>A better attic starts here.</h1>
+        <h1 class="visually-hidden">Premium Attic Insulation &amp; Attic Services</h1>
+        <div class="hero-review-banner" aria-label="Google review rating">
+          <span class="hero-review-banner__google">G</span>
+          <strong>5.0</strong>
+          <span class="hero-review-banner__stars" aria-label="Five star rating">★★★★★</span>
+          <span>Google Reviews</span>
+        </div>
+        <h2 class="hero-display">A better attic starts here.</h2>
+        <p class="eyebrow">Premium Attic Insulation &amp; Removal</p>
         <p class="hero-text">
-          Good Attic helps homeowners solve attic problems tied to insulation, air quality,
-          pest damage, and energy loss with expert solutions and an unmatched customer
+          Good Attic helps homeowners fix attic problems tied to insulation, air quality,
+          pest damage, and energy loss &mdash; with expert solutions and a customer
           experience built on trust.
         </p>
         <div class="hero-actions">
           <button class="button primary" type="button" data-open-modal>Get A Free Attic Assessment</button>
           <div class="hero-actions__secondary">
-            <a class="button secondary" href="tel:+10000000000">Call Us</a>
-            <a class="button secondary" href="sms:+10000000000">Text Us</a>
+            <a class="button secondary" href="tel:+13853360062">Call Us</a>
+            <a class="button secondary" href="sms:+13853360062">Text Us</a>
           </div>
         </div>
-        <div class="trust-row" aria-label="Good Attic services">
-          <a href="#service-attic-insulation">Attic Insulation</a>
-          <a href="#service-insulation-removal">Insulation Removal</a>
-          <a href="#service-attic-pest-remediation">Attic Pest Remediation</a>
-          <a href="#service-attic-air-sealing">Attic Air Sealing</a>
-          <a href="#service-attic-fans">Attic Fans</a>
+        <div class="hero-service-carousel" aria-label="Good Attic services">
+          <button class="hero-service-arrow hero-service-arrow--prev" type="button" aria-label="Scroll services left">&larr;</button>
+          <div class="hero-service-window">
+            <div class="hero-service-track">
+              <a class="hero-service-card" href="#services">
+                <img src="assets/attic-insulation.png" alt="">
+                <span>Attic Insulation</span>
+              </a>
+              <a class="hero-service-card" href="#services">
+                <img src="assets/attic-insulation-removal.png" alt="">
+                <span>Insulation Removal</span>
+              </a>
+              <a class="hero-service-card" href="#services">
+                <img src="assets/animals-in-the-attic.png" alt="">
+                <span>Attic Pest Issues</span>
+              </a>
+              <a class="hero-service-card" href="#services">
+                <img src="assets/attic-air-sealing.png" alt="">
+                <span>Attic Air Sealing</span>
+              </a>
+              <a class="hero-service-card" href="#services">
+                <img src="assets/attic-fans.png" alt="">
+                <span>Attic Fans</span>
+              </a>
+            </div>
+          </div>
+          <button class="hero-service-arrow hero-service-arrow--next" type="button" aria-label="Scroll services right">&rarr;</button>
         </div>
       </div>
 
@@ -149,11 +177,90 @@
       </aside>
     </section>
 
+    <section id="services" class="service-showcase section reveal" data-service-carousel>
+      <p class="eyebrow service-showcase__label">Our Services</p>
+      <div class="service-showcase__stage">
+        <article class="service-showcase__slide is-active" data-service-slide>
+          <img src="assets/attic-insulation.png" alt="Fresh attic insulation installed across an attic floor">
+          <div class="service-showcase__overlay">
+            <p class="panel-kicker">Attic Insulation</p>
+            <h3>Modern attic insulation levels make the whole home work better.</h3>
+            <p>We upgrade attic insulation to improve comfort, reduce energy waste, and help your HVAC system stop fighting the ceiling.</p>
+          </div>
+        </article>
+
+        <article class="service-showcase__slide" data-service-slide>
+          <img src="assets/attic-insulation-removal.png" alt="Old attic insulation before removal">
+          <div class="service-showcase__overlay">
+            <p class="panel-kicker">Insulation Removal</p>
+            <h3>Old, contaminated attics need a clean reset.</h3>
+            <p>We remove damaged or contaminated attic insulation safely so the space can be cleaned, sealed, and rebuilt the right way.</p>
+          </div>
+        </article>
+
+        <article class="service-showcase__slide" data-service-slide>
+          <img src="assets/animals-in-the-attic.png" alt="Pest activity inside an attic">
+          <div class="service-showcase__overlay">
+            <p class="panel-kicker">Attic Pest Issues</p>
+            <h3>After pests leave, the attic still needs restoration.</h3>
+            <p>We handle the dirty part after pest activity: debris, damaged insulation, contamination, and the attic repairs that make the home feel clean again.</p>
+          </div>
+        </article>
+
+        <article class="service-showcase__slide" data-service-slide>
+          <img src="assets/attic-air-sealing.png" alt="Attic air sealing work around a pipe penetration">
+          <div class="service-showcase__overlay">
+            <p class="panel-kicker">Attic Air Sealing</p>
+            <h3>Small attic leaks add up to major comfort and air quality loss.</h3>
+            <p>We seal bypasses and attic floor gaps so conditioned air stays in the home and dusty attic air stays out.</p>
+          </div>
+        </article>
+
+        <article class="service-showcase__slide" data-service-slide>
+          <img src="assets/attic-fans.png" alt="Solar-powered attic fan installed on a roof">
+          <div class="service-showcase__overlay">
+            <p class="panel-kicker">Attic Fans</p>
+            <h3>Ventilation improvements help the attic stop cooking itself.</h3>
+            <p>We install attic fan solutions that move trapped heat and moisture out, helping insulation and roofing systems perform better.</p>
+          </div>
+        </article>
+
+        <button class="service-showcase__control service-showcase__control--prev" type="button" aria-label="Previous service" data-service-prev>&larr;</button>
+        <button class="service-showcase__control service-showcase__control--next" type="button" aria-label="Next service" data-service-next>&rarr;</button>
+        <button class="button primary service-showcase__cta" type="button" data-open-modal>Get Started</button>
+
+        <div class="service-showcase__rail" aria-label="Service carousel thumbnails">
+          <button class="service-thumb is-active" type="button" data-service-thumb aria-label="Show Attic Insulation slide">
+            <img src="assets/attic-insulation.png" alt="">
+            <span>Attic Insulation</span>
+          </button>
+          <button class="service-thumb" type="button" data-service-thumb aria-label="Show Insulation Removal slide">
+            <img src="assets/attic-insulation-removal.png" alt="">
+            <span>Insulation Removal</span>
+          </button>
+          <button class="service-thumb" type="button" data-service-thumb aria-label="Show Attic Pest Issues slide">
+            <img src="assets/animals-in-the-attic.png" alt="">
+            <span>Attic Pest Issues</span>
+          </button>
+          <button class="service-thumb" type="button" data-service-thumb aria-label="Show Attic Air Sealing slide">
+            <img src="assets/attic-air-sealing.png" alt="">
+            <span>Attic Air Sealing</span>
+          </button>
+          <button class="service-thumb" type="button" data-service-thumb aria-label="Show Attic Fans slide">
+            <img src="assets/attic-fans.png" alt="">
+            <span>Attic Fans</span>
+          </button>
+        </div>
+      </div>
+      <button class="button primary service-showcase__mobile-cta" type="button" data-open-modal>Get Started</button>
+    </section>
+
     <section class="attic-map section reveal" aria-labelledby="attic-map-title">
       <div class="attic-map__copy">
         <p class="eyebrow">Explore the attic system</p>
         <h2 id="attic-map-title">Every attic has a few spots where issues arise.</h2>
         <p>Hover over the dots to see how Good Attic turns common problem areas into a cleaner, healthier, more efficient space.</p>
+        <button class="button primary attic-map__cta" type="button" data-open-modal>Book an Attic Inspection</button>
       </div>
 
       <div class="house-3d" aria-label="Interactive attic service diagram">
@@ -209,86 +316,10 @@
         </button>
       </div>
       <p class="hotspot-exit-hint" aria-hidden="true">tap to exit</p>
+      <button class="button primary attic-map__cta attic-map__cta--mobile" type="button" data-open-modal>Book an Attic Inspection</button>
     </section>
 
-    <section class="service-showcase section reveal" data-service-carousel>
-      <p class="eyebrow service-showcase__label">Our Services</p>
-      <div class="service-showcase__stage">
-        <article class="service-showcase__slide is-active" data-service-slide>
-          <img src="assets/attic-insulation.png" alt="Fresh attic insulation installed across an attic floor">
-          <div class="service-showcase__overlay">
-            <p class="panel-kicker">Attic Insulation</p>
-            <h3>Modern attic insulation levels make the whole home work better.</h3>
-            <p>We upgrade attic insulation to improve comfort, reduce energy waste, and help your HVAC system stop fighting the ceiling.</p>
-          </div>
-        </article>
-
-        <article class="service-showcase__slide" data-service-slide>
-          <img src="assets/attic-insulation-removal.png" alt="Old attic insulation before removal">
-          <div class="service-showcase__overlay">
-            <p class="panel-kicker">Insulation Removal</p>
-            <h3>Old, contaminated attics need a clean reset.</h3>
-            <p>We remove damaged or contaminated attic insulation safely so the space can be cleaned, sealed, and rebuilt the right way.</p>
-          </div>
-        </article>
-
-        <article class="service-showcase__slide" data-service-slide>
-          <img src="assets/animals-in-the-attic.png" alt="Pest activity inside an attic">
-          <div class="service-showcase__overlay">
-            <p class="panel-kicker">Attic Pest Remediation</p>
-            <h3>After pests leave, the attic still needs restoration.</h3>
-            <p>We handle the dirty part after pest activity: debris, damaged insulation, contamination, and the attic repairs that make the home feel clean again.</p>
-          </div>
-        </article>
-
-        <article class="service-showcase__slide" data-service-slide>
-          <img src="assets/attic-air-sealing.png" alt="Attic air sealing work around a pipe penetration">
-          <div class="service-showcase__overlay">
-            <p class="panel-kicker">Attic Air Sealing</p>
-            <h3>Small attic leaks add up to major comfort and air quality loss.</h3>
-            <p>We seal bypasses and attic floor gaps so conditioned air stays in the home and dusty attic air stays out.</p>
-          </div>
-        </article>
-
-        <article class="service-showcase__slide" data-service-slide>
-          <img src="assets/attic-fans.png" alt="Solar-powered attic fan installed on a roof">
-          <div class="service-showcase__overlay">
-            <p class="panel-kicker">Attic Fans</p>
-            <h3>Ventilation improvements help the attic stop cooking itself.</h3>
-            <p>We install attic fan solutions that move trapped heat and moisture out, helping insulation and roofing systems perform better.</p>
-          </div>
-        </article>
-
-        <button class="service-showcase__control service-showcase__control--prev" type="button" aria-label="Previous service" data-service-prev>&larr;</button>
-        <button class="service-showcase__control service-showcase__control--next" type="button" aria-label="Next service" data-service-next>&rarr;</button>
-        <button class="button primary service-showcase__cta" type="button" data-open-modal>Get Started</button>
-
-        <div class="service-showcase__rail" aria-label="Service carousel thumbnails">
-          <button class="service-thumb is-active" type="button" data-service-thumb aria-label="Show Attic Insulation slide">
-            <img src="assets/attic-insulation.png" alt="">
-            <span>Attic Insulation</span>
-          </button>
-          <button class="service-thumb" type="button" data-service-thumb aria-label="Show Insulation Removal slide">
-            <img src="assets/attic-insulation-removal.png" alt="">
-            <span>Insulation Removal</span>
-          </button>
-          <button class="service-thumb" type="button" data-service-thumb aria-label="Show Attic Pest Remediation slide">
-            <img src="assets/animals-in-the-attic.png" alt="">
-            <span>Attic Pest Remediation</span>
-          </button>
-          <button class="service-thumb" type="button" data-service-thumb aria-label="Show Attic Air Sealing slide">
-            <img src="assets/attic-air-sealing.png" alt="">
-            <span>Attic Air Sealing</span>
-          </button>
-          <button class="service-thumb" type="button" data-service-thumb aria-label="Show Attic Fans slide">
-            <img src="assets/attic-fans.png" alt="">
-            <span>Attic Fans</span>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <section id="services" class="section feature-section">
+    <section class="section feature-section">
       <div class="section-heading reveal">
         <p class="eyebrow">Our Process</p>
         <h2>Everything your attic needs, handled with one coordinated plan.</h2>
@@ -373,7 +404,7 @@
           <h2>After pests make the attic their home, the attic needs a full restoration.</h2>
           <p>Droppings, nesting debris, damaged insulation, and odors can remain behind. Good Attic focuses on the cleanup, sanitation, and restoration that makes the space better than before.</p>
         </div>
-        <img class="image-transparent" src="assets/pest-issues-in-attic-transparent-v2.png" alt="Pest activity and contamination inside a damaged attic">
+        <img class="image-transparent image-pest-damage" src="assets/pest-issues-in-attic-transparent-v2.png" alt="Pest activity and contamination inside a damaged attic">
       </article>
     </section>
 
@@ -424,8 +455,8 @@
           <h3>High-trust experience</h3>
           <p>No scare tactics. No vague quotes. Just a clear assessment, a clean scope, and a project plan you can understand.</p>
           <div class="trust-button-row">
-            <a class="button primary" href="tel:+10000000000">Call Us</a>
-            <a class="button primary" href="sms:+10000000000">Text Us</a>
+            <a class="button primary" href="tel:+13853360062">Call Us</a>
+            <a class="button primary" href="sms:+13853360062">Text Us</a>
           </div>
         </article>
         <article class="audience-panel reveal">
@@ -464,64 +495,125 @@
       <div class="contact-info reveal">
         <p class="eyebrow">Get a quote</p>
         <h2>Tell us what is happening in your attic.</h2>
-        <p>Use this dynamic form to qualify the project by service need, home details, urgency, and symptoms.</p>
-        <p class="contact-note">Replace the placeholder email and phone once you are ready to connect the form to your CRM or email service.</p>
+        <p>Share the project type, contact details, preferred quote timing, and any helpful notes. This form is built to connect cleanly to GoHighLevel when the CRM endpoint is ready.</p>
+        <p class="contact-note">Lead source, page URL, and project type are captured so every request can route into the right follow-up path.</p>
       </div>
 
-      <form class="contact-form reveal lead-form" data-lead-form>
-        <label>
-          <span>Name</span>
-          <input type="text" name="name" placeholder="Your name" required>
-        </label>
-        <label>
-          <span>Email</span>
-          <input type="email" name="email" placeholder="you@example.com" required>
-        </label>
-        <label>
-          <span>Phone</span>
-          <input type="tel" name="phone" placeholder="(555) 000-0000">
-        </label>
-        <label>
-          <span>What do you need help with?</span>
-          <select name="service" data-service-select required>
-            <option value="">Select one</option>
-            <option value="insulation">Insulation upgrade</option>
-            <option value="restoration">Attic restoration or cleanup</option>
-            <option value="pests">Pest-related attic damage</option>
-            <option value="comfort">Comfort or energy concerns</option>
-            <option value="unsure">Not sure yet</option>
-          </select>
-        </label>
-        <label class="conditional-field" data-conditional-field hidden>
-          <span data-conditional-label>Tell us a little more</span>
-          <textarea name="serviceDetails" rows="3" placeholder="Share any details that may help"></textarea>
-        </label>
+      <form class="contact-form reveal lead-form" data-lead-form data-form-name="Homepage contact form" data-ghl-webhook="">
+        <input type="hidden" name="lead_source" value="Good Attic website">
+        <input type="hidden" name="form_name" value="Homepage contact form">
+        <input type="hidden" name="source_page" data-source-page>
+
+        <fieldset class="project-picker">
+          <legend class="screen-reader-text">Type of project</legend>
+          <p class="project-picker__title">Type of project</p>
+          <p class="project-picker__hint">Select all that apply</p>
+          <label class="project-option">
+            <input type="checkbox" name="project_type" value="Attic Insulation">
+            <span class="project-option__image"><img src="assets/attic-insulation.png" alt=""></span>
+            <span class="project-option__label">Attic Insulation</span>
+          </label>
+          <label class="project-option">
+            <input type="checkbox" name="project_type" value="Insulation Removal">
+            <span class="project-option__image"><img src="assets/attic-insulation-removal.png" alt=""></span>
+            <span class="project-option__label">Insulation Removal</span>
+          </label>
+          <label class="project-option">
+            <input type="checkbox" name="project_type" value="Attic Pest Issues">
+            <span class="project-option__image"><img src="assets/animals-in-the-attic.png" alt=""></span>
+            <span class="project-option__label">Attic Pest Issues</span>
+          </label>
+          <label class="project-option">
+            <input type="checkbox" name="project_type" value="Attic Air Sealing">
+            <span class="project-option__image"><img src="assets/attic-air-sealing.png" alt=""></span>
+            <span class="project-option__label">Attic Air Sealing</span>
+          </label>
+          <label class="project-option">
+            <input type="checkbox" name="project_type" value="Attic Fans">
+            <span class="project-option__image"><img src="assets/attic-fans.png" alt=""></span>
+            <span class="project-option__label">Attic Fans</span>
+          </label>
+          <label class="project-option project-option--other">
+            <input type="checkbox" name="project_type" value="Other">
+            <span class="project-option__image"><img src="assets/good-attic-logo-cropped.png" alt=""></span>
+            <span class="project-option__label">Other</span>
+          </label>
+        </fieldset>
+
+        <h3 class="form-section-title">Contact</h3>
         <div class="form-two">
           <label>
-            <span>Home size</span>
-            <select name="homeSize">
-              <option value="">Select</option>
-              <option>Under 1,500 sq ft</option>
-              <option>1,500-2,500 sq ft</option>
-              <option>2,500-4,000 sq ft</option>
-              <option>4,000+ sq ft</option>
-            </select>
+            <span>First name</span>
+            <input type="text" name="first_name" autocomplete="given-name" placeholder="First name" required>
           </label>
           <label>
-            <span>Timeline</span>
-            <select name="timeline">
-              <option value="">Select</option>
-              <option>ASAP</option>
-              <option>This month</option>
-              <option>Planning ahead</option>
+            <span>Last name</span>
+            <input type="text" name="last_name" autocomplete="family-name" placeholder="Last name" required>
+          </label>
+        </div>
+
+        <div class="form-two">
+          <label>
+            <span>Phone number</span>
+            <input type="tel" name="phone" autocomplete="tel" placeholder="385-336-0062" required>
+          </label>
+          <label>
+            <span>Email</span>
+            <input type="email" name="email" autocomplete="email" placeholder="you@example.com" required>
+          </label>
+        </div>
+
+        <h3 class="form-section-title">Property Address</h3>
+        <label>
+          <span>Street address</span>
+          <input type="text" name="street_address" autocomplete="address-line1" placeholder="Street address" required>
+        </label>
+
+        <div class="form-three">
+          <label>
+            <span>City</span>
+            <input type="text" name="city" autocomplete="address-level2" placeholder="City" required>
+          </label>
+          <label>
+            <span>State</span>
+            <input type="text" name="state" autocomplete="address-level1" placeholder="State" required>
+          </label>
+          <label>
+            <span>ZIP code</span>
+            <input type="text" name="zip" autocomplete="postal-code" inputmode="numeric" placeholder="ZIP" required>
+          </label>
+        </div>
+
+        <h3 class="form-section-title">Appointment Preference</h3>
+        <div class="form-two">
+          <label>
+            <span>Preferred day for free quote</span>
+            <input type="date" name="preferred_day">
+          </label>
+          <label>
+            <span>Preferred time of day</span>
+            <select name="preferred_time">
+              <option value="">Select one</option>
+              <option>Morning</option>
+              <option>Midday</option>
+              <option>Afternoon</option>
+              <option>Evening</option>
+              <option>Anytime</option>
             </select>
           </label>
         </div>
+
         <label>
-          <span>ZIP code</span>
-          <input type="text" name="zip" placeholder="ZIP code">
+          <span>Additional notes for the team</span>
+          <textarea name="additional_notes" rows="4" placeholder="Tell us what you are seeing, what rooms feel uncomfortable, or anything else we should know."></textarea>
         </label>
-        <button class="button primary" type="submit">Request My Assessment</button>
+
+        <label class="form-consent">
+          <input type="checkbox" name="contact_consent" value="yes" required>
+          <span>I agree that Good Attic may contact me about my request by phone, text, or email.</span>
+        </label>
+
+        <button class="button primary" type="submit">Request My Free Quote</button>
         <p class="form-status" data-form-status aria-live="polite"></p>
       </form>
     </section>
@@ -544,12 +636,118 @@
         </div>
       </div>
       <div class="modal-content">
-        <p class="eyebrow">Book an inspection</p>
-        <h2 id="modal-title">Start with a quick attic assessment request.</h2>
-        <p>Share your contact details and the main issue. Good Attic can follow up with the right next step.</p>
-        <form class="modal-form" data-lead-form>
-          <input type="email" placeholder="Email address" aria-label="Email address" required>
-          <button class="button primary" type="submit">Request Follow-Up</button>
+        <div class="modal-progress" data-modal-progress aria-hidden="true"><span></span></div>
+        <h2 id="modal-title">Request your free attic quote.</h2>
+        <p>Pick the project type, share your details, and choose a preferred quote window.</p>
+        <form class="contact-form modal-form" data-lead-form data-form-name="Quote modal form" data-ghl-webhook="">
+          <input type="hidden" name="lead_source" value="Good Attic website">
+          <input type="hidden" name="form_name" value="Quote modal form">
+          <input type="hidden" name="source_page" data-source-page>
+
+          <fieldset class="project-picker project-picker--compact">
+            <legend class="screen-reader-text">Type of project</legend>
+          <p class="project-picker__title">Type of project</p>
+          <p class="project-picker__hint">Select all that apply</p>
+            <label class="project-option">
+              <input type="checkbox" name="project_type" value="Attic Insulation">
+              <span class="project-option__image"><img src="assets/attic-insulation.png" alt=""></span>
+              <span class="project-option__label">Attic Insulation</span>
+            </label>
+            <label class="project-option">
+              <input type="checkbox" name="project_type" value="Insulation Removal">
+              <span class="project-option__image"><img src="assets/attic-insulation-removal.png" alt=""></span>
+              <span class="project-option__label">Insulation Removal</span>
+            </label>
+            <label class="project-option">
+              <input type="checkbox" name="project_type" value="Attic Pest Issues">
+              <span class="project-option__image"><img src="assets/animals-in-the-attic.png" alt=""></span>
+              <span class="project-option__label">Attic Pest Issues</span>
+            </label>
+            <label class="project-option">
+              <input type="checkbox" name="project_type" value="Attic Air Sealing">
+              <span class="project-option__image"><img src="assets/attic-air-sealing.png" alt=""></span>
+              <span class="project-option__label">Attic Air Sealing</span>
+            </label>
+            <label class="project-option">
+              <input type="checkbox" name="project_type" value="Attic Fans">
+              <span class="project-option__image"><img src="assets/attic-fans.png" alt=""></span>
+              <span class="project-option__label">Attic Fans</span>
+            </label>
+            <label class="project-option project-option--other">
+              <input type="checkbox" name="project_type" value="Other">
+              <span class="project-option__image"><img src="assets/good-attic-logo-cropped.png" alt=""></span>
+              <span class="project-option__label">Other</span>
+            </label>
+          </fieldset>
+
+          <h3 class="form-section-title">Contact</h3>
+          <div class="form-two">
+            <label>
+              <span>First name</span>
+              <input type="text" name="first_name" autocomplete="given-name" required>
+            </label>
+            <label>
+              <span>Last name</span>
+              <input type="text" name="last_name" autocomplete="family-name" required>
+            </label>
+          </div>
+          <div class="form-two">
+            <label>
+              <span>Phone number</span>
+              <input type="tel" name="phone" autocomplete="tel" required>
+            </label>
+            <label>
+              <span>Email</span>
+              <input type="email" name="email" autocomplete="email" required>
+            </label>
+          </div>
+          <h3 class="form-section-title">Property Address</h3>
+          <label>
+            <span>Street address</span>
+            <input type="text" name="street_address" autocomplete="address-line1" required>
+          </label>
+          <div class="form-three">
+            <label>
+              <span>City</span>
+              <input type="text" name="city" autocomplete="address-level2" required>
+            </label>
+            <label>
+              <span>State</span>
+              <input type="text" name="state" autocomplete="address-level1" required>
+            </label>
+            <label>
+              <span>ZIP code</span>
+              <input type="text" name="zip" autocomplete="postal-code" inputmode="numeric" required>
+            </label>
+          </div>
+          <h3 class="form-section-title">Appointment Preference</h3>
+          <div class="form-two">
+            <label>
+              <span>Preferred day</span>
+              <input type="date" name="preferred_day">
+            </label>
+            <label>
+              <span>Preferred time</span>
+              <select name="preferred_time">
+                <option value="">Select</option>
+                <option>Morning</option>
+                <option>Midday</option>
+                <option>Afternoon</option>
+                <option>Evening</option>
+                <option>Anytime</option>
+              </select>
+            </label>
+          </div>
+          <label>
+            <span>Additional notes</span>
+            <textarea name="additional_notes" rows="3"></textarea>
+          </label>
+          <label class="form-consent">
+            <input type="checkbox" name="contact_consent" value="yes" required>
+            <span>I agree that Good Attic may contact me about my request by phone, text, or email.</span>
+          </label>
+          <button class="button primary" type="submit">Request My Free Quote</button>
+          <p class="form-status" data-form-status aria-live="polite"></p>
         </form>
       </div>
     </div>

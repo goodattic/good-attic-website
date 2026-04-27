@@ -1,0 +1,3648 @@
+[
+  {
+    "slug": "",
+    "url": "/",
+    "page_type": "core",
+    "market": null,
+    "city": null,
+    "primary_keyword": "good attic",
+    "secondary_keywords": [
+      "attic insulation company",
+      "attic specialist",
+      "attic services"
+    ],
+    "seo_title": "Good Attic | Premium Attic Insulation & Attic Services",
+    "meta_description": "Good Attic helps homeowners solve hot and cold rooms, old insulation, attic pest issues, and energy waste with premium attic services.",
+    "h1": "Premium Attic Insulation & Attic Services",
+    "intro": "The homepage remains the brand authority page and central conversion hub. It should route homeowners toward services, locations, and real market hubs without losing the premium homepage design direction already approved.",
+    "page_purpose": "Brand authority + conversion",
+    "cta_primary": "Get a free attic assessment",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/",
+    "related_links": [
+      {
+        "label": "Attic Services",
+        "url": "/services/"
+      },
+      {
+        "label": "Good Attic Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      }
+    ],
+    "faq_items": [],
+    "trust_elements": [
+      "Homepage preserved",
+      "Market routing added",
+      "Design language remains the anchor"
+    ]
+  },
+  {
+    "slug": "about",
+    "url": "/about/",
+    "page_type": "core",
+    "market": null,
+    "city": null,
+    "primary_keyword": "about good attic",
+    "secondary_keywords": [
+      "good attic company",
+      "attic specialists",
+      "why choose good attic"
+    ],
+    "seo_title": "About Good Attic | Premium Attic Specialists",
+    "meta_description": "Learn about Good Attic, a premium attic specialist focused on insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+    "h1": "About Good Attic",
+    "intro": "Good Attic is built for homeowners who want attic work handled clearly, cleanly, and without guesswork. We focus on the attic as a system because comfort, air quality, cleanup, and efficiency rarely improve when the space is treated as a collection of unrelated problems.",
+    "page_purpose": "Trust / company story",
+    "cta_primary": "Talk to the team",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "About",
+        "url": "/about/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/about/",
+    "related_links": [
+      {
+        "label": "Attic Services",
+        "url": "/services/"
+      },
+      {
+        "label": "Good Attic Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Why choose an attic specialist instead of a generic contractor?",
+        "answer": "A specialist can look at the attic as one connected system, which usually leads to cleaner decisions around removal, sealing, insulation, ventilation, and cleanup."
+      },
+      {
+        "question": "What matters most in the Good Attic experience?",
+        "answer": "Clear communication, documented findings, clean work, and a scope that makes sense for the actual house."
+      },
+      {
+        "question": "Does Good Attic only handle one type of attic problem?",
+        "answer": "No. The work often spans insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing because many attic issues overlap."
+      }
+    ],
+    "trust_elements": [
+      "Photo-based attic findings",
+      "Premium cleanup and installation standards",
+      "A calm, homeowner-friendly process"
+    ]
+  },
+  {
+    "slug": "services",
+    "url": "/services/",
+    "page_type": "core",
+    "market": null,
+    "city": null,
+    "primary_keyword": "attic services",
+    "secondary_keywords": [
+      "attic insulation services",
+      "insulation removal",
+      "attic fans",
+      "attic air sealing",
+      "attic pest remediation"
+    ],
+    "seo_title": "Attic Services | Insulation, Removal, Pest Remediation & More",
+    "meta_description": "Explore Good Attic attic services, including attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+    "h1": "Attic Services",
+    "intro": "Good Attic focuses on the parts of the attic that most directly affect comfort, air quality, cleanup, and energy performance. The point is not to overwhelm the project with extras. It is to solve the attic problems that matter most and do it in a coordinated way.",
+    "page_purpose": "Master services hub",
+    "cta_primary": "Book an Attic Inspection",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Services",
+        "url": "/services/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/services/",
+    "related_links": [
+      {
+        "label": "Good Attic Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Which attic service do most homeowners need first?",
+        "answer": "It depends on the attic condition. Some homes need better insulation. Others need removal, cleanup, sealing, or a combination before insulation can really work."
+      },
+      {
+        "question": "Do attic services usually overlap?",
+        "answer": "Yes. Comfort issues, contamination, leakage, and heat-management problems often show up together in the same attic."
+      },
+      {
+        "question": "How do I move from a service overview to local help?",
+        "answer": "Start with the service that matches the attic problem. From there, the page can route you into the matching local service pages or straight into an inspection request."
+      }
+    ],
+    "trust_elements": [
+      "Five core attic services",
+      "Whole-attic thinking instead of isolated patches",
+      "Clear route into local service pages"
+    ]
+  },
+  {
+    "slug": "locations",
+    "url": "/locations/",
+    "page_type": "core",
+    "market": null,
+    "city": null,
+    "primary_keyword": "good attic locations",
+    "secondary_keywords": [
+      "service areas",
+      "attic services near me",
+      "markets served"
+    ],
+    "seo_title": "Good Attic Locations | Salt Lake City, St. Louis & Kansas City",
+    "meta_description": "Explore Good Attic markets in Salt Lake City, St. Louis, and Kansas City and find the right local attic service page for your area.",
+    "h1": "Good Attic Locations",
+    "intro": "Good Attic is launching wave one around three real markets: Salt Lake City, St. Louis, and Kansas City. Each market hub leads to the local service pages and city support pages built for that area.",
+    "page_purpose": "Location hub",
+    "cta_primary": "Choose your market",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/locations/",
+    "related_links": [
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Which markets does Good Attic serve in wave one?",
+        "answer": "Wave one is focused on Salt Lake City, St. Louis, and Kansas City."
+      },
+      {
+        "question": "How do I find the right local service page?",
+        "answer": "Start with the market hub for your area. From there, you can move into the service pages and city support pages tied to that market."
+      }
+    ],
+    "trust_elements": [
+      "One domain",
+      "Three real markets",
+      "Clear local routing"
+    ]
+  },
+  {
+    "slug": "reviews",
+    "url": "/reviews/",
+    "page_type": "core",
+    "market": null,
+    "city": null,
+    "primary_keyword": "good attic reviews",
+    "secondary_keywords": [
+      "customer reviews",
+      "testimonials",
+      "attic company reviews"
+    ],
+    "seo_title": "Good Attic Reviews | What Homeowners Say",
+    "meta_description": "Read Good Attic reviews and see why homeowners trust our team for attic insulation, insulation removal, attic cleanup, and attic upgrades.",
+    "h1": "Good Attic Reviews",
+    "intro": "The Good Attic experience is built around the things homeowners usually mention when a project actually goes well: clear communication, a clean scope, respectful crews, and visible results at the end. This page is structured to hold real review proof without inventing anything the company has not earned.",
+    "page_purpose": "Proof / trust",
+    "cta_primary": "Request an attic estimate",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Reviews",
+        "url": "/reviews/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/reviews/",
+    "related_links": [
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Attic Services",
+        "url": "/services/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "What kinds of feedback does Good Attic want the site to showcase?",
+        "answer": "The strongest proof will always be approved homeowner reviews that speak to cleanliness, clarity, communication, and visible attic results."
+      },
+      {
+        "question": "Can this page support a live review embed later?",
+        "answer": "Yes. The page is intentionally structured so a live review feed or approved excerpt set can be added during launch QA."
+      },
+      {
+        "question": "Why keep this page if review content is still being finalized?",
+        "answer": "Because the route, metadata, and trust scaffolding still matter, and the page is ready for approved proof to drop in cleanly."
+      }
+    ],
+    "trust_elements": [
+      "Google review styling already established on the homepage",
+      "Trust themes without fabricated quotes",
+      "Launch-ready space for approved review content"
+    ]
+  },
+  {
+    "slug": "financing",
+    "url": "/financing/",
+    "page_type": "core",
+    "market": null,
+    "city": null,
+    "primary_keyword": "attic financing",
+    "secondary_keywords": [
+      "insulation financing",
+      "home improvement financing"
+    ],
+    "seo_title": "Financing Options | Good Attic",
+    "meta_description": "Learn about Good Attic financing options and take the next step on attic insulation, insulation removal, or attic upgrade work.",
+    "h1": "Financing Options",
+    "intro": "Some attic projects are simple, and some are more involved. The financing page exists to support homeowners who want to understand payment flexibility before moving forward on removal, cleanup, insulation, air sealing, or other attic upgrades.",
+    "page_purpose": "Conversion support",
+    "cta_primary": "Ask about financing",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Financing",
+        "url": "/financing/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/financing/",
+    "related_links": [
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Attic Services",
+        "url": "/services/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Does Good Attic offer financing on every project?",
+        "answer": "Financing availability can vary by project and approved program, so the right next step is to ask about current options once the attic scope is clear."
+      },
+      {
+        "question": "When should I bring up financing?",
+        "answer": "The best time is once the attic has been assessed and the right scope is in front of you. That keeps the conversation tied to real project needs."
+      },
+      {
+        "question": "Can financing still work for a multi-step attic plan?",
+        "answer": "That is exactly the kind of situation where financing support may be useful, especially when removal, sanitation, sealing, and insulation all belong in the same project."
+      }
+    ],
+    "trust_elements": [
+      "No fabricated financing claims",
+      "Supportive conversion path for larger attic scopes",
+      "Clear handoff into contact and quoting"
+    ]
+  },
+  {
+    "slug": "contact",
+    "url": "/contact/",
+    "page_type": "core",
+    "market": null,
+    "city": null,
+    "primary_keyword": "contact good attic",
+    "secondary_keywords": [
+      "schedule estimate",
+      "request attic inspection"
+    ],
+    "seo_title": "Contact Good Attic | Request an Attic Estimate",
+    "meta_description": "Contact Good Attic to request an estimate, ask a question, or get help with attic insulation, attic cleanup, or attic comfort issues.",
+    "h1": "Contact Good Attic",
+    "intro": "Use the form below to tell Good Attic what is happening in the attic and what kind of help you need. The goal is to make the next step feel clear from the first request, whether the project starts with insulation, removal, cleanup, air sealing, or a full attic reset.",
+    "page_purpose": "Lead capture",
+    "cta_primary": "Request an attic estimate",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Contact",
+        "url": "/contact/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/contact/",
+    "related_links": [
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      },
+      {
+        "label": "Attic Services",
+        "url": "/services/"
+      },
+      {
+        "label": "Good Attic Locations",
+        "url": "/locations/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Can I call or text instead of using the form?",
+        "answer": "Yes. Good Attic supports call, text, and form-based contact so homeowners can start whichever way feels easiest."
+      },
+      {
+        "question": "What should I include in the request?",
+        "answer": "The symptoms you notice, the size or type of home if you know it, your location, and anything else that helps explain what the attic seems to be doing."
+      },
+      {
+        "question": "Do I need to know which service I need before reaching out?",
+        "answer": "No. A big part of the process is helping homeowners sort out whether the attic needs insulation, removal, sanitation, sealing, or a combination."
+      }
+    ],
+    "trust_elements": [
+      "Call, text, or form contact options",
+      "Dynamic lead form already used on the homepage",
+      "Routing prepared for all three launch markets"
+    ]
+  },
+  {
+    "slug": "attic-insulation",
+    "url": "/services/attic-insulation/",
+    "page_type": "core-service",
+    "market": null,
+    "city": null,
+    "primary_keyword": "attic insulation services",
+    "secondary_keywords": [
+      "attic insulation company",
+      "attic insulation contractor",
+      "attic services"
+    ],
+    "seo_title": "Attic Insulation Services | Good Attic",
+    "meta_description": "Learn how Good Attic approaches attic insulation services for comfort, efficiency, and whole-attic performance, then find the right local page.",
+    "h1": "Attic Insulation Services",
+    "intro": "Good Attic approaches attic insulation as part of a complete attic system. Upgrade underperforming attic insulation so the whole home feels steadier, cleaner, and more efficient.",
+    "page_purpose": "Central service detail page",
+    "cta_primary": "Book an Attic Inspection",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Services",
+        "url": "/services/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/services/attic-insulation/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/services/attic-insulation/",
+    "related_links": [
+      {
+        "label": "Attic Services",
+        "url": "/services/"
+      },
+      {
+        "label": "Attic Insulation in Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/attic-insulation/"
+      },
+      {
+        "label": "Attic Insulation in St. Louis, MO",
+        "url": "/st-louis-mo/attic-insulation/"
+      },
+      {
+        "label": "Attic Insulation in Kansas City, MO",
+        "url": "/kansas-city-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/services/insulation-removal/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/services/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/services/attic-fans/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Can you add insulation over what is already there?",
+        "answer": "Sometimes, yes. If the existing material is clean and still worth keeping, a top-off can make sense. If it is dirty, compressed, or contaminated, removal may be the better first step."
+      },
+      {
+        "question": "Will attic insulation help all year or just in one season?",
+        "answer": "A better insulation layer helps with both summer heat gain and winter heat loss, especially when air leakage is part of the scope too."
+      },
+      {
+        "question": "How do you know how much insulation the house needs?",
+        "answer": "We start with the attic as it exists today and build the recommendation around current depth, visible performance issues, and the rest of the attic plan."
+      }
+    ],
+    "trust_elements": [
+      "Central service overview",
+      "Routes into local service pages",
+      "Built around the full attic system"
+    ]
+  },
+  {
+    "slug": "insulation-removal",
+    "url": "/services/insulation-removal/",
+    "page_type": "core-service",
+    "market": null,
+    "city": null,
+    "primary_keyword": "insulation removal services",
+    "secondary_keywords": [
+      "insulation removal company",
+      "insulation removal contractor",
+      "attic services"
+    ],
+    "seo_title": "Insulation Removal Services | Good Attic",
+    "meta_description": "Learn how Good Attic handles insulation removal for dirty, damaged, or contaminated attics, then find the right local service page.",
+    "h1": "Insulation Removal Services",
+    "intro": "Good Attic approaches insulation removal as part of a complete attic system. Remove compromised attic material so the space can be cleaned up, sealed, and rebuilt the right way.",
+    "page_purpose": "Central service detail page",
+    "cta_primary": "Book an Attic Inspection",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Services",
+        "url": "/services/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/services/insulation-removal/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/services/insulation-removal/",
+    "related_links": [
+      {
+        "label": "Attic Services",
+        "url": "/services/"
+      },
+      {
+        "label": "Insulation Removal in Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/insulation-removal/"
+      },
+      {
+        "label": "Insulation Removal in St. Louis, MO",
+        "url": "/st-louis-mo/insulation-removal/"
+      },
+      {
+        "label": "Insulation Removal in Kansas City, MO",
+        "url": "/kansas-city-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/services/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/services/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/services/attic-insulation/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "When is insulation removal better than leaving old material in place?",
+        "answer": "Removal is often the better path when insulation is contaminated, damaged by pests, heavily settled, damp, or simply not worth building on."
+      },
+      {
+        "question": "Does removal make a mess inside the home?",
+        "answer": "The project is built around containment and collection so attic debris stays managed during the work."
+      },
+      {
+        "question": "Can removal and re-insulation happen as one plan?",
+        "answer": "Yes. Many homeowners call because they want the attic reset fully, not pieced together in separate disconnected jobs."
+      }
+    ],
+    "trust_elements": [
+      "Central service overview",
+      "Routes into local service pages",
+      "Built around the full attic system"
+    ]
+  },
+  {
+    "slug": "attic-pest-remediation",
+    "url": "/services/attic-pest-remediation/",
+    "page_type": "core-service",
+    "market": null,
+    "city": null,
+    "primary_keyword": "attic pest remediation services",
+    "secondary_keywords": [
+      "attic pest remediation company",
+      "attic pest remediation contractor",
+      "attic services"
+    ],
+    "seo_title": "Attic Pest Remediation Services | Good Attic",
+    "meta_description": "Learn how Good Attic approaches attic pest remediation, cleanup, and restoration, then find the matching local service page.",
+    "h1": "Attic Pest Remediation Services",
+    "intro": "Good Attic approaches attic pest remediation as part of a complete attic system. Clean up the attic after rodents or other attic pests so the space can be sanitary, usable, and ready for restoration.",
+    "page_purpose": "Central service detail page",
+    "cta_primary": "Book an Attic Inspection",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Services",
+        "url": "/services/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/services/attic-pest-remediation/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/services/attic-pest-remediation/",
+    "related_links": [
+      {
+        "label": "Attic Services",
+        "url": "/services/"
+      },
+      {
+        "label": "Attic Pest Remediation in Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Pest Remediation in St. Louis, MO",
+        "url": "/st-louis-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Pest Remediation in Kansas City, MO",
+        "url": "/kansas-city-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/services/insulation-removal/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/services/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/services/attic-insulation/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Do I still need cleanup after pest control or exclusion is done?",
+        "answer": "Yes. Exclusion solves the animal problem. Attic remediation handles the insulation damage, droppings, nesting debris, and contamination left behind."
+      },
+      {
+        "question": "Is pest remediation just insulation removal?",
+        "answer": "Usually not. Insulation removal may be part of the job, but remediation also involves sanitation and the work needed to restore the attic environment."
+      },
+      {
+        "question": "Can the attic be made better than it was before?",
+        "answer": "That is the goal. A well-run remediation project cleans up the damage and sets the attic up for stronger performance moving forward."
+      }
+    ],
+    "trust_elements": [
+      "Central service overview",
+      "Routes into local service pages",
+      "Built around the full attic system"
+    ]
+  },
+  {
+    "slug": "attic-fans",
+    "url": "/services/attic-fans/",
+    "page_type": "core-service",
+    "market": null,
+    "city": null,
+    "primary_keyword": "attic fan services",
+    "secondary_keywords": [
+      "attic fans company",
+      "attic fans contractor",
+      "attic services"
+    ],
+    "seo_title": "Attic Fan Services | Good Attic",
+    "meta_description": "Learn how Good Attic uses attic fan solutions to support ventilation and heat control, then find the right local service page.",
+    "h1": "Attic Fan Services",
+    "intro": "Good Attic approaches attic fans as part of a complete attic system. Support attic airflow with fan solutions that help reduce trapped heat and back up the rest of the attic strategy.",
+    "page_purpose": "Central service detail page",
+    "cta_primary": "Book an Attic Inspection",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Services",
+        "url": "/services/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/services/attic-fans/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/services/attic-fans/",
+    "related_links": [
+      {
+        "label": "Attic Services",
+        "url": "/services/"
+      },
+      {
+        "label": "Attic Fans in Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/attic-fans/"
+      },
+      {
+        "label": "Attic Fans in St. Louis, MO",
+        "url": "/st-louis-mo/attic-fans/"
+      },
+      {
+        "label": "Attic Fans in Kansas City, MO",
+        "url": "/kansas-city-mo/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/services/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/services/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/services/insulation-removal/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Will an attic fan fix every hot-upstairs problem by itself?",
+        "answer": "Not always. A fan can help when it is the right fit, but insulation depth, air sealing, and the attic condition still matter."
+      },
+      {
+        "question": "How do you know whether an attic fan is worth it?",
+        "answer": "We look at the attic as a system first so the recommendation fits the home instead of being forced into every project."
+      },
+      {
+        "question": "Can attic fans work alongside other attic upgrades?",
+        "answer": "Yes. They are often most valuable when they support a broader comfort and performance plan."
+      }
+    ],
+    "trust_elements": [
+      "Central service overview",
+      "Routes into local service pages",
+      "Built around the full attic system"
+    ]
+  },
+  {
+    "slug": "attic-air-sealing",
+    "url": "/services/attic-air-sealing/",
+    "page_type": "core-service",
+    "market": null,
+    "city": null,
+    "primary_keyword": "attic air sealing services",
+    "secondary_keywords": [
+      "attic air sealing company",
+      "attic air sealing contractor",
+      "attic services"
+    ],
+    "seo_title": "Attic Air Sealing Services | Good Attic",
+    "meta_description": "Learn how Good Attic approaches attic air sealing to reduce leaks, dust transfer, and energy waste, then find the right local service page.",
+    "h1": "Attic Air Sealing Services",
+    "intro": "Good Attic approaches attic air sealing as part of a complete attic system. Stop conditioned air from leaking into the attic and dusty attic air from drifting back into the home.",
+    "page_purpose": "Central service detail page",
+    "cta_primary": "Book an Attic Inspection",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Services",
+        "url": "/services/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/services/attic-air-sealing/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/services/attic-air-sealing/",
+    "related_links": [
+      {
+        "label": "Attic Services",
+        "url": "/services/"
+      },
+      {
+        "label": "Attic Air Sealing in Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Air Sealing in St. Louis, MO",
+        "url": "/st-louis-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Air Sealing in Kansas City, MO",
+        "url": "/kansas-city-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/services/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/services/insulation-removal/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/services/attic-fans/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Does attic air sealing still matter if I already have insulation?",
+        "answer": "Yes. Insulation and sealing do different jobs, and many comfort complaints involve both."
+      },
+      {
+        "question": "What kinds of openings get sealed?",
+        "answer": "Common targets include pipe penetrations, wiring openings, top-plate gaps, fixture penetrations, and other bypasses between the house and attic."
+      },
+      {
+        "question": "Can air sealing help with dust or odors too?",
+        "answer": "It can. Closing attic leakage paths can reduce how easily dusty or stale attic air moves into the living space."
+      }
+    ],
+    "trust_elements": [
+      "Central service overview",
+      "Routes into local service pages",
+      "Built around the full attic system"
+    ]
+  },
+  {
+    "slug": "salt-lake-city-ut",
+    "url": "/salt-lake-city-ut/",
+    "page_type": "market",
+    "market": "salt-lake-city-ut",
+    "city": null,
+    "primary_keyword": "attic services salt lake city",
+    "secondary_keywords": [
+      "attic company salt lake city",
+      "attic insulation company salt lake city",
+      "attic cleanup salt lake city"
+    ],
+    "seo_title": "Attic Services in Salt Lake City, UT | Good Attic",
+    "meta_description": "Good Attic provides attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing in Salt Lake City.",
+    "h1": "Attic Services in Salt Lake City, UT",
+    "intro": "In Salt Lake City, attic problems usually show up as hot upstairs rooms in summer, expensive heating bills in winter, or old insulation that is dusty, dirty, or no longer doing its job. Good Attic helps homeowners solve those problems with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+    "page_purpose": "Local authority page for that market",
+    "cta_primary": "Schedule attic estimate",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/salt-lake-city-ut/",
+    "related_links": [
+      {
+        "label": "Attic Insulation",
+        "url": "/salt-lake-city-ut/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/salt-lake-city-ut/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/salt-lake-city-ut/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/salt-lake-city-ut/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/salt-lake-city-ut/attic-air-sealing/"
+      },
+      {
+        "label": "West Jordan, UT",
+        "url": "/salt-lake-city-ut/service-areas/west-jordan-ut/"
+      },
+      {
+        "label": "Sandy, UT",
+        "url": "/salt-lake-city-ut/service-areas/sandy-ut/"
+      },
+      {
+        "label": "Draper, UT",
+        "url": "/salt-lake-city-ut/service-areas/draper-ut/"
+      },
+      {
+        "label": "American Fork, UT",
+        "url": "/salt-lake-city-ut/service-areas/american-fork-ut/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Why is my upstairs hotter than the rest of the house in Salt Lake City?",
+        "answer": "That usually points back to the attic. Low insulation performance, air leakage, and trapped attic heat can all show up first in the upper rooms."
+      },
+      {
+        "question": "Should old attic insulation be removed or topped off?",
+        "answer": "It depends on condition. If the existing material is clean and still worth building on, a top-off may work. If it is contaminated or broken down, removal is usually the smarter move."
+      },
+      {
+        "question": "Can you help if rodents have been in the attic?",
+        "answer": "Yes. Many attic projects start with cleanup, sanitation, and removal work after pest activity has damaged the space."
+      }
+    ],
+    "trust_elements": [
+      "Photo-forward attic assessments",
+      "Whole-attic scopes instead of one-line guesses",
+      "Premium cleanup and installation standards"
+    ]
+  },
+  {
+    "slug": "st-louis-mo",
+    "url": "/st-louis-mo/",
+    "page_type": "market",
+    "market": "st-louis-mo",
+    "city": null,
+    "primary_keyword": "attic services st louis",
+    "secondary_keywords": [
+      "attic company st louis",
+      "attic specialists st louis",
+      "attic cleanup st louis"
+    ],
+    "seo_title": "Attic Services in St. Louis, MO | Good Attic",
+    "meta_description": "Good Attic helps St. Louis homeowners with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+    "h1": "Attic Services in St. Louis, MO",
+    "intro": "In St. Louis, attic problems usually show up as hot second floors in summer, drafty rooms in winter, or old attic insulation that is dirty, musty, damaged, or no longer performing well. Good Attic helps homeowners solve those problems with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+    "page_purpose": "Local authority page for that market",
+    "cta_primary": "Schedule attic estimate",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/st-louis-mo/",
+    "related_links": [
+      {
+        "label": "Attic Insulation",
+        "url": "/st-louis-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/st-louis-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/st-louis-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/st-louis-mo/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/st-louis-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Chesterfield, MO",
+        "url": "/st-louis-mo/service-areas/chesterfield-mo/"
+      },
+      {
+        "label": "St. Charles, MO",
+        "url": "/st-louis-mo/service-areas/st-charles-mo/"
+      },
+      {
+        "label": "Ballwin, MO",
+        "url": "/st-louis-mo/service-areas/ballwin-mo/"
+      },
+      {
+        "label": "O'Fallon, MO",
+        "url": "/st-louis-mo/service-areas/o-fallon-mo/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Why is my second floor so hot in summer?",
+        "answer": "That is one of the most common attic-related complaints in St. Louis. Heat buildup, weak insulation, and air leakage often all play a role."
+      },
+      {
+        "question": "Does attic work help in winter too?",
+        "answer": "Yes. The same attic that drives summer discomfort can also be responsible for winter drafts and heat loss."
+      },
+      {
+        "question": "Can you help after rodents or squirrels have been in the attic?",
+        "answer": "Yes. Attic pest remediation, removal, sanitation, and rebuild work are all part of the Good Attic system."
+      }
+    ],
+    "trust_elements": [
+      "Attic-first diagnostics for older homes",
+      "Cleanup, sealing, and insulation handled as one plan",
+      "Clear homeowner communication from scope to finish"
+    ]
+  },
+  {
+    "slug": "kansas-city-mo",
+    "url": "/kansas-city-mo/",
+    "page_type": "market",
+    "market": "kansas-city-mo",
+    "city": null,
+    "primary_keyword": "attic services kansas city",
+    "secondary_keywords": [
+      "attic company kansas city",
+      "attic specialists kansas city",
+      "attic cleanup kansas city"
+    ],
+    "seo_title": "Attic Services in Kansas City, MO | Good Attic",
+    "meta_description": "Good Attic provides premium attic services in Kansas City, including attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+    "h1": "Attic Services in Kansas City, MO",
+    "intro": "In Kansas City, attic problems often show up as hot upstairs rooms in summer, winter heat loss, and insulation that simply is not keeping up with the house. Good Attic helps homeowners solve those attic problems with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+    "page_purpose": "Local authority page for that market",
+    "cta_primary": "Schedule attic estimate",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/kansas-city-mo/",
+    "related_links": [
+      {
+        "label": "Attic Insulation",
+        "url": "/kansas-city-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/kansas-city-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/kansas-city-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/kansas-city-mo/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/kansas-city-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Overland Park, KS",
+        "url": "/kansas-city-mo/service-areas/overland-park-ks/"
+      },
+      {
+        "label": "Olathe, KS",
+        "url": "/kansas-city-mo/service-areas/olathe-ks/"
+      },
+      {
+        "label": "Lee's Summit, MO",
+        "url": "/kansas-city-mo/service-areas/lee-s-summit-mo/"
+      },
+      {
+        "label": "Lenexa, KS",
+        "url": "/kansas-city-mo/service-areas/lenexa-ks/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "What attic upgrade helps most in Kansas City?",
+        "answer": "That depends on what the attic is doing today. Many projects involve a combination of cleanup, sealing, and insulation rather than one isolated upgrade."
+      },
+      {
+        "question": "Can attic work help with both summer and winter comfort?",
+        "answer": "Yes. Kansas City attics often affect the house in both seasons, especially when insulation and air leakage are both part of the picture."
+      },
+      {
+        "question": "Do you help with dirty or pest-damaged attics too?",
+        "answer": "Yes. Restoration, removal, and attic pest remediation are all part of the Good Attic system."
+      }
+    ],
+    "trust_elements": [
+      "Whole-attic planning instead of single-symptom fixes",
+      "Clear scope options with homeowner-friendly language",
+      "Premium cleanup, installation, and documentation standards"
+    ]
+  },
+  {
+    "slug": "attic-insulation",
+    "url": "/salt-lake-city-ut/attic-insulation/",
+    "page_type": "service",
+    "market": "salt-lake-city-ut",
+    "city": null,
+    "primary_keyword": "attic insulation salt lake city",
+    "secondary_keywords": [
+      "blown-in attic insulation salt lake city",
+      "attic insulation contractor salt lake city"
+    ],
+    "seo_title": "Attic Insulation in Salt Lake City, UT | Good Attic",
+    "meta_description": "Need attic insulation in Salt Lake City? Good Attic helps solve hot and cold rooms, energy waste, and underperforming attic insulation.",
+    "h1": "Attic Insulation in Salt Lake City, UT",
+    "intro": "Need attic insulation in Salt Lake City? Good Attic helps solve hot and cold rooms, energy waste, and underperforming attic insulation with a cleaner, more complete attic plan.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get attic insulation help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/salt-lake-city-ut/attic-insulation/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/salt-lake-city-ut/attic-insulation/",
+    "related_links": [
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "West Jordan, UT",
+        "url": "/salt-lake-city-ut/service-areas/west-jordan-ut/"
+      },
+      {
+        "label": "Sandy, UT",
+        "url": "/salt-lake-city-ut/service-areas/sandy-ut/"
+      },
+      {
+        "label": "Draper, UT",
+        "url": "/salt-lake-city-ut/service-areas/draper-ut/"
+      },
+      {
+        "label": "American Fork, UT",
+        "url": "/salt-lake-city-ut/service-areas/american-fork-ut/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/salt-lake-city-ut/insulation-removal/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/salt-lake-city-ut/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/salt-lake-city-ut/attic-fans/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Can you add insulation over what is already there?",
+        "answer": "Sometimes, yes. If the existing material is clean and still worth keeping, a top-off can make sense. If it is dirty, compressed, or contaminated, removal may be the better first step."
+      },
+      {
+        "question": "Will attic insulation help all year or just in one season?",
+        "answer": "A better insulation layer helps with both summer heat gain and winter heat loss, especially when air leakage is part of the scope too."
+      },
+      {
+        "question": "How do you know how much insulation the house needs?",
+        "answer": "We start with the attic as it exists today and build the recommendation around current depth, visible performance issues, and the rest of the attic plan."
+      }
+    ],
+    "trust_elements": [
+      "Focused attic insulation scope",
+      "Connected back to the Salt Lake City hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "insulation-removal",
+    "url": "/salt-lake-city-ut/insulation-removal/",
+    "page_type": "service",
+    "market": "salt-lake-city-ut",
+    "city": null,
+    "primary_keyword": "insulation removal salt lake city",
+    "secondary_keywords": [
+      "attic insulation removal salt lake city",
+      "remove old insulation salt lake city"
+    ],
+    "seo_title": "Insulation Removal in Salt Lake City, UT | Good Attic",
+    "meta_description": "Good Attic removes old, dirty, damaged, or contaminated attic insulation in Salt Lake City and helps homeowners start fresh.",
+    "h1": "Insulation Removal in Salt Lake City, UT",
+    "intro": "Good Attic removes old, dirty, damaged, or contaminated attic insulation in Salt Lake City so homeowners can start fresh with a cleaner, healthier attic system.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get insulation removal help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/salt-lake-city-ut/insulation-removal/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/salt-lake-city-ut/insulation-removal/",
+    "related_links": [
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "West Jordan, UT",
+        "url": "/salt-lake-city-ut/service-areas/west-jordan-ut/"
+      },
+      {
+        "label": "Sandy, UT",
+        "url": "/salt-lake-city-ut/service-areas/sandy-ut/"
+      },
+      {
+        "label": "Draper, UT",
+        "url": "/salt-lake-city-ut/service-areas/draper-ut/"
+      },
+      {
+        "label": "American Fork, UT",
+        "url": "/salt-lake-city-ut/service-areas/american-fork-ut/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/salt-lake-city-ut/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/salt-lake-city-ut/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/salt-lake-city-ut/attic-insulation/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "When is insulation removal better than leaving old material in place?",
+        "answer": "Removal is often the better path when insulation is contaminated, damaged by pests, heavily settled, damp, or simply not worth building on."
+      },
+      {
+        "question": "Does removal make a mess inside the home?",
+        "answer": "The project is built around containment and collection so attic debris stays managed during the work."
+      },
+      {
+        "question": "Can removal and re-insulation happen as one plan?",
+        "answer": "Yes. Many homeowners call because they want the attic reset fully, not pieced together in separate disconnected jobs."
+      }
+    ],
+    "trust_elements": [
+      "Focused insulation removal scope",
+      "Connected back to the Salt Lake City hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "attic-pest-remediation",
+    "url": "/salt-lake-city-ut/attic-pest-remediation/",
+    "page_type": "service",
+    "market": "salt-lake-city-ut",
+    "city": null,
+    "primary_keyword": "attic pest remediation salt lake city",
+    "secondary_keywords": [
+      "rodent attic cleanup salt lake city",
+      "contaminated attic insulation salt lake city"
+    ],
+    "seo_title": "Attic Pest Remediation in Salt Lake City, UT | Good Attic",
+    "meta_description": "Get help with rodent-contaminated insulation, nesting debris, attic odors, and attic pest cleanup in Salt Lake City.",
+    "h1": "Attic Pest Remediation in Salt Lake City, UT",
+    "intro": "Get help with rodent-contaminated insulation, nesting debris, attic odors, and attic pest cleanup in Salt Lake City with a restoration plan that finishes the attic properly.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get attic pest remediation help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/salt-lake-city-ut/attic-pest-remediation/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/salt-lake-city-ut/attic-pest-remediation/",
+    "related_links": [
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "West Jordan, UT",
+        "url": "/salt-lake-city-ut/service-areas/west-jordan-ut/"
+      },
+      {
+        "label": "Sandy, UT",
+        "url": "/salt-lake-city-ut/service-areas/sandy-ut/"
+      },
+      {
+        "label": "Draper, UT",
+        "url": "/salt-lake-city-ut/service-areas/draper-ut/"
+      },
+      {
+        "label": "American Fork, UT",
+        "url": "/salt-lake-city-ut/service-areas/american-fork-ut/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/salt-lake-city-ut/insulation-removal/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/salt-lake-city-ut/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/salt-lake-city-ut/attic-insulation/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Do I still need cleanup after pest control or exclusion is done?",
+        "answer": "Yes. Exclusion solves the animal problem. Attic remediation handles the insulation damage, droppings, nesting debris, and contamination left behind."
+      },
+      {
+        "question": "Is pest remediation just insulation removal?",
+        "answer": "Usually not. Insulation removal may be part of the job, but remediation also involves sanitation and the work needed to restore the attic environment."
+      },
+      {
+        "question": "Can the attic be made better than it was before?",
+        "answer": "That is the goal. A well-run remediation project cleans up the damage and sets the attic up for stronger performance moving forward."
+      }
+    ],
+    "trust_elements": [
+      "Focused attic pest remediation scope",
+      "Connected back to the Salt Lake City hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "attic-fans",
+    "url": "/salt-lake-city-ut/attic-fans/",
+    "page_type": "service",
+    "market": "salt-lake-city-ut",
+    "city": null,
+    "primary_keyword": "attic fans salt lake city",
+    "secondary_keywords": [
+      "solar attic fans salt lake city",
+      "attic fan installation salt lake city"
+    ],
+    "seo_title": "Attic Fans in Salt Lake City, UT | Good Attic",
+    "meta_description": "Good Attic installs attic fan solutions in Salt Lake City to help reduce attic heat buildup and support better attic performance.",
+    "h1": "Attic Fans in Salt Lake City, UT",
+    "intro": "Good Attic installs attic fan solutions in Salt Lake City to help reduce attic heat buildup and support better attic performance when the house is a good fit.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get attic fans help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/salt-lake-city-ut/attic-fans/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/salt-lake-city-ut/attic-fans/",
+    "related_links": [
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "West Jordan, UT",
+        "url": "/salt-lake-city-ut/service-areas/west-jordan-ut/"
+      },
+      {
+        "label": "Sandy, UT",
+        "url": "/salt-lake-city-ut/service-areas/sandy-ut/"
+      },
+      {
+        "label": "Draper, UT",
+        "url": "/salt-lake-city-ut/service-areas/draper-ut/"
+      },
+      {
+        "label": "American Fork, UT",
+        "url": "/salt-lake-city-ut/service-areas/american-fork-ut/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/salt-lake-city-ut/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/salt-lake-city-ut/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/salt-lake-city-ut/insulation-removal/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Will an attic fan fix every hot-upstairs problem by itself?",
+        "answer": "Not always. A fan can help when it is the right fit, but insulation depth, air sealing, and the attic condition still matter."
+      },
+      {
+        "question": "How do you know whether an attic fan is worth it?",
+        "answer": "We look at the attic as a system first so the recommendation fits the home instead of being forced into every project."
+      },
+      {
+        "question": "Can attic fans work alongside other attic upgrades?",
+        "answer": "Yes. They are often most valuable when they support a broader comfort and performance plan."
+      }
+    ],
+    "trust_elements": [
+      "Focused attic fans scope",
+      "Connected back to the Salt Lake City hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "attic-air-sealing",
+    "url": "/salt-lake-city-ut/attic-air-sealing/",
+    "page_type": "service",
+    "market": "salt-lake-city-ut",
+    "city": null,
+    "primary_keyword": "attic air sealing salt lake city",
+    "secondary_keywords": [
+      "attic sealing salt lake city",
+      "air leak sealing attic salt lake city"
+    ],
+    "seo_title": "Attic Air Sealing in Salt Lake City, UT | Good Attic",
+    "meta_description": "Stop attic air leaks in Salt Lake City with attic air sealing designed to improve comfort, efficiency, and year-round performance.",
+    "h1": "Attic Air Sealing in Salt Lake City, UT",
+    "intro": "Stop attic air leaks in Salt Lake City with attic air sealing designed to improve comfort, efficiency, and year-round attic performance.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get attic air sealing help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/salt-lake-city-ut/attic-air-sealing/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/salt-lake-city-ut/attic-air-sealing/",
+    "related_links": [
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "West Jordan, UT",
+        "url": "/salt-lake-city-ut/service-areas/west-jordan-ut/"
+      },
+      {
+        "label": "Sandy, UT",
+        "url": "/salt-lake-city-ut/service-areas/sandy-ut/"
+      },
+      {
+        "label": "Draper, UT",
+        "url": "/salt-lake-city-ut/service-areas/draper-ut/"
+      },
+      {
+        "label": "American Fork, UT",
+        "url": "/salt-lake-city-ut/service-areas/american-fork-ut/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/salt-lake-city-ut/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/salt-lake-city-ut/insulation-removal/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/salt-lake-city-ut/attic-fans/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Does attic air sealing still matter if I already have insulation?",
+        "answer": "Yes. Insulation and sealing do different jobs, and many comfort complaints involve both."
+      },
+      {
+        "question": "What kinds of openings get sealed?",
+        "answer": "Common targets include pipe penetrations, wiring openings, top-plate gaps, fixture penetrations, and other bypasses between the house and attic."
+      },
+      {
+        "question": "Can air sealing help with dust or odors too?",
+        "answer": "It can. Closing attic leakage paths can reduce how easily dusty or stale attic air moves into the living space."
+      }
+    ],
+    "trust_elements": [
+      "Focused attic air sealing scope",
+      "Connected back to the Salt Lake City hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "attic-insulation",
+    "url": "/st-louis-mo/attic-insulation/",
+    "page_type": "service",
+    "market": "st-louis-mo",
+    "city": null,
+    "primary_keyword": "attic insulation st. louis",
+    "secondary_keywords": [
+      "blown-in attic insulation st. louis",
+      "attic insulation contractor st. louis"
+    ],
+    "seo_title": "Attic Insulation in St. Louis, MO | Good Attic",
+    "meta_description": "Need attic insulation in St. Louis? Good Attic helps solve hot upstairs rooms, winter heat loss, and energy waste.",
+    "h1": "Attic Insulation in St. Louis, MO",
+    "intro": "Need attic insulation in St. Louis? Good Attic helps solve hot upstairs rooms, winter heat loss, and energy waste with attic insulation that fits the house and the attic condition.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get attic insulation help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/st-louis-mo/attic-insulation/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/st-louis-mo/attic-insulation/",
+    "related_links": [
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Chesterfield, MO",
+        "url": "/st-louis-mo/service-areas/chesterfield-mo/"
+      },
+      {
+        "label": "St. Charles, MO",
+        "url": "/st-louis-mo/service-areas/st-charles-mo/"
+      },
+      {
+        "label": "Ballwin, MO",
+        "url": "/st-louis-mo/service-areas/ballwin-mo/"
+      },
+      {
+        "label": "O'Fallon, MO",
+        "url": "/st-louis-mo/service-areas/o-fallon-mo/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/st-louis-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/st-louis-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/st-louis-mo/attic-fans/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Can you add insulation over what is already there?",
+        "answer": "Sometimes, yes. If the existing material is clean and still worth keeping, a top-off can make sense. If it is dirty, compressed, or contaminated, removal may be the better first step."
+      },
+      {
+        "question": "Will attic insulation help all year or just in one season?",
+        "answer": "A better insulation layer helps with both summer heat gain and winter heat loss, especially when air leakage is part of the scope too."
+      },
+      {
+        "question": "How do you know how much insulation the house needs?",
+        "answer": "We start with the attic as it exists today and build the recommendation around current depth, visible performance issues, and the rest of the attic plan."
+      }
+    ],
+    "trust_elements": [
+      "Focused attic insulation scope",
+      "Connected back to the St. Louis hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "insulation-removal",
+    "url": "/st-louis-mo/insulation-removal/",
+    "page_type": "service",
+    "market": "st-louis-mo",
+    "city": null,
+    "primary_keyword": "insulation removal st. louis",
+    "secondary_keywords": [
+      "attic insulation removal st. louis",
+      "remove old insulation st. louis"
+    ],
+    "seo_title": "Insulation Removal in St. Louis, MO | Good Attic",
+    "meta_description": "Good Attic removes old, dirty, damaged, or contaminated attic insulation in St. Louis and prepares attics for the right next step.",
+    "h1": "Insulation Removal in St. Louis, MO",
+    "intro": "Good Attic removes old, dirty, damaged, or contaminated attic insulation in St. Louis and prepares the attic for the right next step instead of covering problems up.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get insulation removal help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/st-louis-mo/insulation-removal/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/st-louis-mo/insulation-removal/",
+    "related_links": [
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Chesterfield, MO",
+        "url": "/st-louis-mo/service-areas/chesterfield-mo/"
+      },
+      {
+        "label": "St. Charles, MO",
+        "url": "/st-louis-mo/service-areas/st-charles-mo/"
+      },
+      {
+        "label": "Ballwin, MO",
+        "url": "/st-louis-mo/service-areas/ballwin-mo/"
+      },
+      {
+        "label": "O'Fallon, MO",
+        "url": "/st-louis-mo/service-areas/o-fallon-mo/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/st-louis-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/st-louis-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/st-louis-mo/attic-insulation/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "When is insulation removal better than leaving old material in place?",
+        "answer": "Removal is often the better path when insulation is contaminated, damaged by pests, heavily settled, damp, or simply not worth building on."
+      },
+      {
+        "question": "Does removal make a mess inside the home?",
+        "answer": "The project is built around containment and collection so attic debris stays managed during the work."
+      },
+      {
+        "question": "Can removal and re-insulation happen as one plan?",
+        "answer": "Yes. Many homeowners call because they want the attic reset fully, not pieced together in separate disconnected jobs."
+      }
+    ],
+    "trust_elements": [
+      "Focused insulation removal scope",
+      "Connected back to the St. Louis hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "attic-pest-remediation",
+    "url": "/st-louis-mo/attic-pest-remediation/",
+    "page_type": "service",
+    "market": "st-louis-mo",
+    "city": null,
+    "primary_keyword": "attic pest remediation st. louis",
+    "secondary_keywords": [
+      "rodent attic cleanup st. louis",
+      "contaminated attic insulation st. louis"
+    ],
+    "seo_title": "Attic Pest Remediation in St. Louis, MO | Good Attic",
+    "meta_description": "Get help with attic pest contamination, nesting debris, rodent damage, and attic cleanup in St. Louis.",
+    "h1": "Attic Pest Remediation in St. Louis, MO",
+    "intro": "Get help with attic pest contamination, nesting debris, rodent damage, and attic cleanup in St. Louis with a scope built around restoration, not shortcuts.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get attic pest remediation help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/st-louis-mo/attic-pest-remediation/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/st-louis-mo/attic-pest-remediation/",
+    "related_links": [
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Chesterfield, MO",
+        "url": "/st-louis-mo/service-areas/chesterfield-mo/"
+      },
+      {
+        "label": "St. Charles, MO",
+        "url": "/st-louis-mo/service-areas/st-charles-mo/"
+      },
+      {
+        "label": "Ballwin, MO",
+        "url": "/st-louis-mo/service-areas/ballwin-mo/"
+      },
+      {
+        "label": "O'Fallon, MO",
+        "url": "/st-louis-mo/service-areas/o-fallon-mo/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/st-louis-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/st-louis-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/st-louis-mo/attic-insulation/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Do I still need cleanup after pest control or exclusion is done?",
+        "answer": "Yes. Exclusion solves the animal problem. Attic remediation handles the insulation damage, droppings, nesting debris, and contamination left behind."
+      },
+      {
+        "question": "Is pest remediation just insulation removal?",
+        "answer": "Usually not. Insulation removal may be part of the job, but remediation also involves sanitation and the work needed to restore the attic environment."
+      },
+      {
+        "question": "Can the attic be made better than it was before?",
+        "answer": "That is the goal. A well-run remediation project cleans up the damage and sets the attic up for stronger performance moving forward."
+      }
+    ],
+    "trust_elements": [
+      "Focused attic pest remediation scope",
+      "Connected back to the St. Louis hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "attic-fans",
+    "url": "/st-louis-mo/attic-fans/",
+    "page_type": "service",
+    "market": "st-louis-mo",
+    "city": null,
+    "primary_keyword": "attic fans st. louis",
+    "secondary_keywords": [
+      "solar attic fans st. louis",
+      "attic fan installation st. louis"
+    ],
+    "seo_title": "Attic Fans in St. Louis, MO | Good Attic",
+    "meta_description": "Good Attic provides attic fan solutions in St. Louis to help manage attic heat buildup and improve attic ventilation support.",
+    "h1": "Attic Fans in St. Louis, MO",
+    "intro": "Good Attic provides attic fan solutions in St. Louis to help manage attic heat buildup and support better attic airflow through the hottest part of the year.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get attic fans help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/st-louis-mo/attic-fans/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/st-louis-mo/attic-fans/",
+    "related_links": [
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Chesterfield, MO",
+        "url": "/st-louis-mo/service-areas/chesterfield-mo/"
+      },
+      {
+        "label": "St. Charles, MO",
+        "url": "/st-louis-mo/service-areas/st-charles-mo/"
+      },
+      {
+        "label": "Ballwin, MO",
+        "url": "/st-louis-mo/service-areas/ballwin-mo/"
+      },
+      {
+        "label": "O'Fallon, MO",
+        "url": "/st-louis-mo/service-areas/o-fallon-mo/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/st-louis-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/st-louis-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/st-louis-mo/insulation-removal/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Will an attic fan fix every hot-upstairs problem by itself?",
+        "answer": "Not always. A fan can help when it is the right fit, but insulation depth, air sealing, and the attic condition still matter."
+      },
+      {
+        "question": "How do you know whether an attic fan is worth it?",
+        "answer": "We look at the attic as a system first so the recommendation fits the home instead of being forced into every project."
+      },
+      {
+        "question": "Can attic fans work alongside other attic upgrades?",
+        "answer": "Yes. They are often most valuable when they support a broader comfort and performance plan."
+      }
+    ],
+    "trust_elements": [
+      "Focused attic fans scope",
+      "Connected back to the St. Louis hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "attic-air-sealing",
+    "url": "/st-louis-mo/attic-air-sealing/",
+    "page_type": "service",
+    "market": "st-louis-mo",
+    "city": null,
+    "primary_keyword": "attic air sealing st. louis",
+    "secondary_keywords": [
+      "attic sealing st. louis",
+      "air leak sealing attic st. louis"
+    ],
+    "seo_title": "Attic Air Sealing in St. Louis, MO | Good Attic",
+    "meta_description": "Good Attic helps St. Louis homeowners reduce attic air leaks that contribute to comfort problems and energy loss.",
+    "h1": "Attic Air Sealing in St. Louis, MO",
+    "intro": "Good Attic helps St. Louis homeowners reduce attic air leaks that contribute to comfort problems, wasted energy, and stale attic air drift.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get attic air sealing help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/st-louis-mo/attic-air-sealing/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/st-louis-mo/attic-air-sealing/",
+    "related_links": [
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Chesterfield, MO",
+        "url": "/st-louis-mo/service-areas/chesterfield-mo/"
+      },
+      {
+        "label": "St. Charles, MO",
+        "url": "/st-louis-mo/service-areas/st-charles-mo/"
+      },
+      {
+        "label": "Ballwin, MO",
+        "url": "/st-louis-mo/service-areas/ballwin-mo/"
+      },
+      {
+        "label": "O'Fallon, MO",
+        "url": "/st-louis-mo/service-areas/o-fallon-mo/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/st-louis-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/st-louis-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/st-louis-mo/attic-fans/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Does attic air sealing still matter if I already have insulation?",
+        "answer": "Yes. Insulation and sealing do different jobs, and many comfort complaints involve both."
+      },
+      {
+        "question": "What kinds of openings get sealed?",
+        "answer": "Common targets include pipe penetrations, wiring openings, top-plate gaps, fixture penetrations, and other bypasses between the house and attic."
+      },
+      {
+        "question": "Can air sealing help with dust or odors too?",
+        "answer": "It can. Closing attic leakage paths can reduce how easily dusty or stale attic air moves into the living space."
+      }
+    ],
+    "trust_elements": [
+      "Focused attic air sealing scope",
+      "Connected back to the St. Louis hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "attic-insulation",
+    "url": "/kansas-city-mo/attic-insulation/",
+    "page_type": "service",
+    "market": "kansas-city-mo",
+    "city": null,
+    "primary_keyword": "attic insulation kansas city",
+    "secondary_keywords": [
+      "blown-in attic insulation kansas city",
+      "attic insulation contractor kansas city"
+    ],
+    "seo_title": "Attic Insulation in Kansas City, MO | Good Attic",
+    "meta_description": "Need attic insulation in Kansas City? Good Attic helps reduce attic heat gain, winter heat loss, and underperforming insulation problems.",
+    "h1": "Attic Insulation in Kansas City, MO",
+    "intro": "Need attic insulation in Kansas City? Good Attic helps reduce attic heat gain, winter heat loss, and underperforming insulation problems with a measured, attic-first approach.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get attic insulation help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/kansas-city-mo/attic-insulation/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/kansas-city-mo/attic-insulation/",
+    "related_links": [
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Overland Park, KS",
+        "url": "/kansas-city-mo/service-areas/overland-park-ks/"
+      },
+      {
+        "label": "Olathe, KS",
+        "url": "/kansas-city-mo/service-areas/olathe-ks/"
+      },
+      {
+        "label": "Lee's Summit, MO",
+        "url": "/kansas-city-mo/service-areas/lee-s-summit-mo/"
+      },
+      {
+        "label": "Lenexa, KS",
+        "url": "/kansas-city-mo/service-areas/lenexa-ks/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/kansas-city-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/kansas-city-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/kansas-city-mo/attic-fans/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Can you add insulation over what is already there?",
+        "answer": "Sometimes, yes. If the existing material is clean and still worth keeping, a top-off can make sense. If it is dirty, compressed, or contaminated, removal may be the better first step."
+      },
+      {
+        "question": "Will attic insulation help all year or just in one season?",
+        "answer": "A better insulation layer helps with both summer heat gain and winter heat loss, especially when air leakage is part of the scope too."
+      },
+      {
+        "question": "How do you know how much insulation the house needs?",
+        "answer": "We start with the attic as it exists today and build the recommendation around current depth, visible performance issues, and the rest of the attic plan."
+      }
+    ],
+    "trust_elements": [
+      "Focused attic insulation scope",
+      "Connected back to the Kansas City hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "insulation-removal",
+    "url": "/kansas-city-mo/insulation-removal/",
+    "page_type": "service",
+    "market": "kansas-city-mo",
+    "city": null,
+    "primary_keyword": "insulation removal kansas city",
+    "secondary_keywords": [
+      "attic insulation removal kansas city",
+      "remove old insulation kansas city"
+    ],
+    "seo_title": "Insulation Removal in Kansas City, MO | Good Attic",
+    "meta_description": "Good Attic removes old, dirty, damaged, or contaminated attic insulation in Kansas City and helps homeowners reset the attic the right way.",
+    "h1": "Insulation Removal in Kansas City, MO",
+    "intro": "Good Attic removes old, dirty, damaged, or contaminated attic insulation in Kansas City and helps homeowners reset the attic the right way.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get insulation removal help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/kansas-city-mo/insulation-removal/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/kansas-city-mo/insulation-removal/",
+    "related_links": [
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Overland Park, KS",
+        "url": "/kansas-city-mo/service-areas/overland-park-ks/"
+      },
+      {
+        "label": "Olathe, KS",
+        "url": "/kansas-city-mo/service-areas/olathe-ks/"
+      },
+      {
+        "label": "Lee's Summit, MO",
+        "url": "/kansas-city-mo/service-areas/lee-s-summit-mo/"
+      },
+      {
+        "label": "Lenexa, KS",
+        "url": "/kansas-city-mo/service-areas/lenexa-ks/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/kansas-city-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/kansas-city-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/kansas-city-mo/attic-insulation/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "When is insulation removal better than leaving old material in place?",
+        "answer": "Removal is often the better path when insulation is contaminated, damaged by pests, heavily settled, damp, or simply not worth building on."
+      },
+      {
+        "question": "Does removal make a mess inside the home?",
+        "answer": "The project is built around containment and collection so attic debris stays managed during the work."
+      },
+      {
+        "question": "Can removal and re-insulation happen as one plan?",
+        "answer": "Yes. Many homeowners call because they want the attic reset fully, not pieced together in separate disconnected jobs."
+      }
+    ],
+    "trust_elements": [
+      "Focused insulation removal scope",
+      "Connected back to the Kansas City hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "attic-pest-remediation",
+    "url": "/kansas-city-mo/attic-pest-remediation/",
+    "page_type": "service",
+    "market": "kansas-city-mo",
+    "city": null,
+    "primary_keyword": "attic pest remediation kansas city",
+    "secondary_keywords": [
+      "rodent attic cleanup kansas city",
+      "contaminated attic insulation kansas city"
+    ],
+    "seo_title": "Attic Pest Remediation in Kansas City, MO | Good Attic",
+    "meta_description": "Get help with attic pest cleanup, rodent-damaged insulation, nesting debris, and attic contamination in Kansas City.",
+    "h1": "Attic Pest Remediation in Kansas City, MO",
+    "intro": "Get help with attic pest cleanup, rodent-damaged insulation, nesting debris, and attic contamination in Kansas City with a plan that puts the attic back together cleanly.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get attic pest remediation help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/kansas-city-mo/attic-pest-remediation/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/kansas-city-mo/attic-pest-remediation/",
+    "related_links": [
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Overland Park, KS",
+        "url": "/kansas-city-mo/service-areas/overland-park-ks/"
+      },
+      {
+        "label": "Olathe, KS",
+        "url": "/kansas-city-mo/service-areas/olathe-ks/"
+      },
+      {
+        "label": "Lee's Summit, MO",
+        "url": "/kansas-city-mo/service-areas/lee-s-summit-mo/"
+      },
+      {
+        "label": "Lenexa, KS",
+        "url": "/kansas-city-mo/service-areas/lenexa-ks/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/kansas-city-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/kansas-city-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/kansas-city-mo/attic-insulation/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Do I still need cleanup after pest control or exclusion is done?",
+        "answer": "Yes. Exclusion solves the animal problem. Attic remediation handles the insulation damage, droppings, nesting debris, and contamination left behind."
+      },
+      {
+        "question": "Is pest remediation just insulation removal?",
+        "answer": "Usually not. Insulation removal may be part of the job, but remediation also involves sanitation and the work needed to restore the attic environment."
+      },
+      {
+        "question": "Can the attic be made better than it was before?",
+        "answer": "That is the goal. A well-run remediation project cleans up the damage and sets the attic up for stronger performance moving forward."
+      }
+    ],
+    "trust_elements": [
+      "Focused attic pest remediation scope",
+      "Connected back to the Kansas City hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "attic-fans",
+    "url": "/kansas-city-mo/attic-fans/",
+    "page_type": "service",
+    "market": "kansas-city-mo",
+    "city": null,
+    "primary_keyword": "attic fans kansas city",
+    "secondary_keywords": [
+      "solar attic fans kansas city",
+      "attic fan installation kansas city"
+    ],
+    "seo_title": "Attic Fans in Kansas City, MO | Good Attic",
+    "meta_description": "Good Attic installs attic fan solutions in Kansas City to help reduce attic heat buildup and support better attic airflow.",
+    "h1": "Attic Fans in Kansas City, MO",
+    "intro": "Good Attic installs attic fan solutions in Kansas City to help reduce attic heat buildup and support better attic airflow when the attic needs more support.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get attic fans help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/kansas-city-mo/attic-fans/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/kansas-city-mo/attic-fans/",
+    "related_links": [
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Overland Park, KS",
+        "url": "/kansas-city-mo/service-areas/overland-park-ks/"
+      },
+      {
+        "label": "Olathe, KS",
+        "url": "/kansas-city-mo/service-areas/olathe-ks/"
+      },
+      {
+        "label": "Lee's Summit, MO",
+        "url": "/kansas-city-mo/service-areas/lee-s-summit-mo/"
+      },
+      {
+        "label": "Lenexa, KS",
+        "url": "/kansas-city-mo/service-areas/lenexa-ks/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/kansas-city-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/kansas-city-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/kansas-city-mo/insulation-removal/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Will an attic fan fix every hot-upstairs problem by itself?",
+        "answer": "Not always. A fan can help when it is the right fit, but insulation depth, air sealing, and the attic condition still matter."
+      },
+      {
+        "question": "How do you know whether an attic fan is worth it?",
+        "answer": "We look at the attic as a system first so the recommendation fits the home instead of being forced into every project."
+      },
+      {
+        "question": "Can attic fans work alongside other attic upgrades?",
+        "answer": "Yes. They are often most valuable when they support a broader comfort and performance plan."
+      }
+    ],
+    "trust_elements": [
+      "Focused attic fans scope",
+      "Connected back to the Kansas City hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "attic-air-sealing",
+    "url": "/kansas-city-mo/attic-air-sealing/",
+    "page_type": "service",
+    "market": "kansas-city-mo",
+    "city": null,
+    "primary_keyword": "attic air sealing kansas city",
+    "secondary_keywords": [
+      "attic sealing kansas city",
+      "air leak sealing attic kansas city"
+    ],
+    "seo_title": "Attic Air Sealing in Kansas City, MO | Good Attic",
+    "meta_description": "Good Attic helps Kansas City homeowners stop attic air leaks that contribute to comfort issues and energy waste.",
+    "h1": "Attic Air Sealing in Kansas City, MO",
+    "intro": "Good Attic helps Kansas City homeowners stop attic air leaks that contribute to comfort issues, energy waste, and underperforming attic upgrades.",
+    "page_purpose": "Money page for service + market intent",
+    "cta_primary": "Get attic air sealing help",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/kansas-city-mo/attic-air-sealing/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/kansas-city-mo/attic-air-sealing/",
+    "related_links": [
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Overland Park, KS",
+        "url": "/kansas-city-mo/service-areas/overland-park-ks/"
+      },
+      {
+        "label": "Olathe, KS",
+        "url": "/kansas-city-mo/service-areas/olathe-ks/"
+      },
+      {
+        "label": "Lee's Summit, MO",
+        "url": "/kansas-city-mo/service-areas/lee-s-summit-mo/"
+      },
+      {
+        "label": "Lenexa, KS",
+        "url": "/kansas-city-mo/service-areas/lenexa-ks/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/kansas-city-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/kansas-city-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/kansas-city-mo/attic-fans/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      },
+      {
+        "label": "Financing Options",
+        "url": "/financing/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Does attic air sealing still matter if I already have insulation?",
+        "answer": "Yes. Insulation and sealing do different jobs, and many comfort complaints involve both."
+      },
+      {
+        "question": "What kinds of openings get sealed?",
+        "answer": "Common targets include pipe penetrations, wiring openings, top-plate gaps, fixture penetrations, and other bypasses between the house and attic."
+      },
+      {
+        "question": "Can air sealing help with dust or odors too?",
+        "answer": "It can. Closing attic leakage paths can reduce how easily dusty or stale attic air moves into the living space."
+      }
+    ],
+    "trust_elements": [
+      "Focused attic air sealing scope",
+      "Connected back to the Kansas City hub",
+      "Built to work with the rest of the attic system"
+    ]
+  },
+  {
+    "slug": "west-jordan-ut",
+    "url": "/salt-lake-city-ut/service-areas/west-jordan-ut/",
+    "page_type": "support",
+    "market": "salt-lake-city-ut",
+    "city": "west-jordan-ut",
+    "primary_keyword": "attic services west jordan ut",
+    "secondary_keywords": [
+      "attic insulation west jordan",
+      "insulation removal west jordan",
+      "attic company west jordan"
+    ],
+    "seo_title": "Attic Services in West Jordan, UT | Good Attic",
+    "meta_description": "Good Attic serves West Jordan homeowners with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+    "h1": "Attic Services in West Jordan, UT",
+    "intro": "In West Jordan, attic problems often show up as hot second-floor bedrooms, uncomfortable rooms above the garage, and AC systems that seem to run all day in summer. Good Attic helps West Jordan homeowners solve those issues with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+    "page_purpose": "City support page for suburb/city search demand",
+    "cta_primary": "Tell us what your attic is doing",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "West Jordan, UT",
+        "url": "/salt-lake-city-ut/service-areas/west-jordan-ut/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/salt-lake-city-ut/service-areas/west-jordan-ut/",
+    "related_links": [
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/salt-lake-city-ut/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/salt-lake-city-ut/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/salt-lake-city-ut/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/salt-lake-city-ut/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/salt-lake-city-ut/attic-air-sealing/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Do newer West Jordan homes still need attic upgrades?",
+        "answer": "Yes. Plenty of newer homes still have builder-grade insulation, uneven comfort, or airflow issues that are worth correcting."
+      },
+      {
+        "question": "Can you help with a room above the garage that never feels right?",
+        "answer": "Yes. That is one of the most common attic-related comfort complaints in suburban two-story homes."
+      },
+      {
+        "question": "Will an attic fan help with a hot upstairs?",
+        "answer": "Sometimes. It depends on the attic condition as a whole, which is why we look at the entire attic plan before forcing a product."
+      }
+    ],
+    "trust_elements": [
+      "Supported through the Salt Lake City market",
+      "Real service coverage reassurance",
+      "No separate-office language or fake local claims"
+    ]
+  },
+  {
+    "slug": "sandy-ut",
+    "url": "/salt-lake-city-ut/service-areas/sandy-ut/",
+    "page_type": "support",
+    "market": "salt-lake-city-ut",
+    "city": "sandy-ut",
+    "primary_keyword": "attic services sandy ut",
+    "secondary_keywords": [
+      "attic insulation sandy",
+      "insulation removal sandy",
+      "attic company sandy"
+    ],
+    "seo_title": "Attic Services in Sandy, UT | Good Attic",
+    "meta_description": "Good Attic helps Sandy homeowners solve attic comfort, insulation, and attic cleanup issues with premium attic services.",
+    "h1": "Attic Services in Sandy, UT",
+    "intro": "In Sandy, attic issues often show up as upstairs rooms that never feel quite right, winter heat loss that creeps into utility bills, or older attic material that no longer performs the way it should. Good Attic helps Sandy homeowners solve those problems with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+    "page_purpose": "City support page for suburb/city search demand",
+    "cta_primary": "Tell us what your attic is doing",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "Sandy, UT",
+        "url": "/salt-lake-city-ut/service-areas/sandy-ut/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/salt-lake-city-ut/service-areas/sandy-ut/",
+    "related_links": [
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/salt-lake-city-ut/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/salt-lake-city-ut/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/salt-lake-city-ut/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/salt-lake-city-ut/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/salt-lake-city-ut/attic-air-sealing/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Can attic work help with uneven temperatures in Sandy homes?",
+        "answer": "Yes. Uneven comfort is one of the most common reasons people call, especially when the upper floor behaves differently than the rest of the house."
+      },
+      {
+        "question": "Do you handle dirty insulation too?",
+        "answer": "Yes. If the attic needs removal or cleanup before it is upgraded, that can be part of the plan."
+      },
+      {
+        "question": "What if I am not sure whether the issue is insulation or air leaks?",
+        "answer": "That is exactly why the attic needs a real assessment first. The right plan usually comes from seeing the whole space together."
+      }
+    ],
+    "trust_elements": [
+      "Supported through the Salt Lake City market",
+      "Real service coverage reassurance",
+      "No separate-office language or fake local claims"
+    ]
+  },
+  {
+    "slug": "draper-ut",
+    "url": "/salt-lake-city-ut/service-areas/draper-ut/",
+    "page_type": "support",
+    "market": "salt-lake-city-ut",
+    "city": "draper-ut",
+    "primary_keyword": "attic services draper ut",
+    "secondary_keywords": [
+      "attic insulation draper",
+      "insulation removal draper",
+      "attic company draper"
+    ],
+    "seo_title": "Attic Services in Draper, UT | Good Attic",
+    "meta_description": "Good Attic provides attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing in Draper.",
+    "h1": "Attic Services in Draper, UT",
+    "intro": "In Draper, homeowners often call when larger homes, broad rooflines, or exposed upper levels make comfort harder to keep consistent from room to room. Good Attic helps Draper homeowners solve those attic-driven issues with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+    "page_purpose": "City support page for suburb/city search demand",
+    "cta_primary": "Tell us what your attic is doing",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "Draper, UT",
+        "url": "/salt-lake-city-ut/service-areas/draper-ut/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/salt-lake-city-ut/service-areas/draper-ut/",
+    "related_links": [
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/salt-lake-city-ut/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/salt-lake-city-ut/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/salt-lake-city-ut/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/salt-lake-city-ut/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/salt-lake-city-ut/attic-air-sealing/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Do larger Draper homes still have attic comfort issues?",
+        "answer": "Yes. Large homes can still struggle with upper-level heat, uneven temperatures, and attic leakage if the attic plan is not working well."
+      },
+      {
+        "question": "Can you handle a full attic reset if needed?",
+        "answer": "Yes. Many projects involve removal, sanitation, sealing, and re-installation work as one coordinated scope."
+      },
+      {
+        "question": "Are attic fans only for older homes?",
+        "answer": "No. Fan solutions can help any home when the attic is a real fit for that kind of ventilation support."
+      }
+    ],
+    "trust_elements": [
+      "Supported through the Salt Lake City market",
+      "Real service coverage reassurance",
+      "No separate-office language or fake local claims"
+    ]
+  },
+  {
+    "slug": "american-fork-ut",
+    "url": "/salt-lake-city-ut/service-areas/american-fork-ut/",
+    "page_type": "support",
+    "market": "salt-lake-city-ut",
+    "city": "american-fork-ut",
+    "primary_keyword": "attic services american fork ut",
+    "secondary_keywords": [
+      "attic insulation american fork",
+      "insulation removal american fork",
+      "attic company american fork"
+    ],
+    "seo_title": "Attic Services in American Fork, UT | Good Attic",
+    "meta_description": "Good Attic serves American Fork homeowners with attic insulation, attic cleanup, attic fans, and attic air sealing.",
+    "h1": "Attic Services in American Fork, UT",
+    "intro": "In American Fork, attic problems often show up as year-round comfort issues, dusty or aging insulation, and utility costs that feel out of step with the home. Good Attic helps American Fork homeowners solve those attic problems with insulation, removal, pest remediation, attic fans, and air sealing.",
+    "page_purpose": "City support page for suburb/city search demand",
+    "cta_primary": "Tell us what your attic is doing",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "American Fork, UT",
+        "url": "/salt-lake-city-ut/service-areas/american-fork-ut/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/salt-lake-city-ut/service-areas/american-fork-ut/",
+    "related_links": [
+      {
+        "label": "Salt Lake City, UT",
+        "url": "/salt-lake-city-ut/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/salt-lake-city-ut/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/salt-lake-city-ut/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/salt-lake-city-ut/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/salt-lake-city-ut/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/salt-lake-city-ut/attic-air-sealing/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Can you help if the attic feels more dirty than under-insulated?",
+        "answer": "Yes. Dirty, contaminated, or damaged attic material can be the first issue to solve before insulation upgrades even start."
+      },
+      {
+        "question": "Do you serve American Fork directly from the Salt Lake market?",
+        "answer": "Yes. American Fork is supported through the Salt Lake City market hub and the same Good Attic system."
+      },
+      {
+        "question": "What is the best next step if I am not sure what the attic needs?",
+        "answer": "A documented attic assessment is the cleanest place to start. It tells us whether the attic needs cleanup, sealing, insulation, or a combination."
+      }
+    ],
+    "trust_elements": [
+      "Supported through the Salt Lake City market",
+      "Real service coverage reassurance",
+      "No separate-office language or fake local claims"
+    ]
+  },
+  {
+    "slug": "chesterfield-mo",
+    "url": "/st-louis-mo/service-areas/chesterfield-mo/",
+    "page_type": "support",
+    "market": "st-louis-mo",
+    "city": "chesterfield-mo",
+    "primary_keyword": "attic services chesterfield mo",
+    "secondary_keywords": [
+      "attic insulation chesterfield",
+      "insulation removal chesterfield",
+      "attic company chesterfield"
+    ],
+    "seo_title": "Attic Services in Chesterfield, MO | Good Attic",
+    "meta_description": "Good Attic serves Chesterfield homeowners with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+    "h1": "Attic Services in Chesterfield, MO",
+    "intro": "In Chesterfield, homeowners often call when larger suburban homes have upstairs comfort issues, high seasonal energy bills, or attics that clearly need more than a quick insulation guess. Good Attic helps Chesterfield homeowners solve those attic issues with attic insulation, removal, pest remediation, fans, and air sealing.",
+    "page_purpose": "City support page for suburb/city search demand",
+    "cta_primary": "Tell us what your attic is doing",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Chesterfield, MO",
+        "url": "/st-louis-mo/service-areas/chesterfield-mo/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/st-louis-mo/service-areas/chesterfield-mo/",
+    "related_links": [
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/st-louis-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/st-louis-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/st-louis-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/st-louis-mo/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/st-louis-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Do you work on larger Chesterfield homes?",
+        "answer": "Yes. Larger homes still benefit from the same attic fundamentals, but the scope often needs more coordination."
+      },
+      {
+        "question": "Can attic work help lower seasonal energy waste?",
+        "answer": "Yes. When the attic is underperforming, improving insulation, sealing, and cleanup can help the whole house run more steadily."
+      },
+      {
+        "question": "Do you serve Chesterfield from the St. Louis market hub?",
+        "answer": "Yes. Chesterfield is supported through the St. Louis market and the same Good Attic process."
+      }
+    ],
+    "trust_elements": [
+      "Supported through the St. Louis market",
+      "Real service coverage reassurance",
+      "No separate-office language or fake local claims"
+    ]
+  },
+  {
+    "slug": "st-charles-mo",
+    "url": "/st-louis-mo/service-areas/st-charles-mo/",
+    "page_type": "support",
+    "market": "st-louis-mo",
+    "city": "st-charles-mo",
+    "primary_keyword": "attic services st. charles mo",
+    "secondary_keywords": [
+      "attic insulation st. charles",
+      "insulation removal st. charles",
+      "attic company st. charles"
+    ],
+    "seo_title": "Attic Services in St. Charles, MO | Good Attic",
+    "meta_description": "Good Attic helps St. Charles homeowners with premium attic services built around comfort, cleanup, and energy performance.",
+    "h1": "Attic Services in St. Charles, MO",
+    "intro": "In St. Charles, attic problems often show up across both older homes and newer suburban properties as hot upstairs rooms, dusty insulation, or attics that need a cleaner reset after years of wear. Good Attic helps St. Charles homeowners solve those problems with attic insulation, removal, pest remediation, attic fans, and air sealing.",
+    "page_purpose": "City support page for suburb/city search demand",
+    "cta_primary": "Tell us what your attic is doing",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "St. Charles, MO",
+        "url": "/st-louis-mo/service-areas/st-charles-mo/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/st-louis-mo/service-areas/st-charles-mo/",
+    "related_links": [
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/st-louis-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/st-louis-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/st-louis-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/st-louis-mo/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/st-louis-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Can you help with old insulation in an older St. Charles home?",
+        "answer": "Yes. Older attics are one of the most common reasons homeowners call, especially when the material is dirty, settled, or no longer helping enough."
+      },
+      {
+        "question": "What if the attic also has pest contamination?",
+        "answer": "That can be part of the same scope. Removal, sanitation, and restoration are often handled together."
+      },
+      {
+        "question": "Do newer homes still benefit from attic upgrades?",
+        "answer": "Yes. Newer homes can still have builder-grade performance or comfort issues that point back to the attic."
+      }
+    ],
+    "trust_elements": [
+      "Supported through the St. Louis market",
+      "Real service coverage reassurance",
+      "No separate-office language or fake local claims"
+    ]
+  },
+  {
+    "slug": "ballwin-mo",
+    "url": "/st-louis-mo/service-areas/ballwin-mo/",
+    "page_type": "support",
+    "market": "st-louis-mo",
+    "city": "ballwin-mo",
+    "primary_keyword": "attic services ballwin mo",
+    "secondary_keywords": [
+      "attic insulation ballwin",
+      "insulation removal ballwin",
+      "attic company ballwin"
+    ],
+    "seo_title": "Attic Services in Ballwin, MO | Good Attic",
+    "meta_description": "Good Attic provides attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing in Ballwin.",
+    "h1": "Attic Services in Ballwin, MO",
+    "intro": "In Ballwin, families often notice attic issues through rooms that feel too hot, too cold, or just harder to keep stable than the rest of the house. Good Attic helps Ballwin homeowners solve those attic problems with insulation, removal, pest remediation, attic fans, and air sealing.",
+    "page_purpose": "City support page for suburb/city search demand",
+    "cta_primary": "Tell us what your attic is doing",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Ballwin, MO",
+        "url": "/st-louis-mo/service-areas/ballwin-mo/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/st-louis-mo/service-areas/ballwin-mo/",
+    "related_links": [
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/st-louis-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/st-louis-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/st-louis-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/st-louis-mo/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/st-louis-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Does attic insulation help hot upstairs rooms in Ballwin?",
+        "answer": "Often, yes, especially when insulation is paired with air sealing and other attic corrections that support the full system."
+      },
+      {
+        "question": "Can you remove old insulation before starting over?",
+        "answer": "Yes. If the attic needs a clean reset, removal can be part of the coordinated plan."
+      },
+      {
+        "question": "Do you help with attic odor or dust issues too?",
+        "answer": "Yes. Dirty, contaminated, or aging insulation often affects both comfort and how the attic environment feels."
+      }
+    ],
+    "trust_elements": [
+      "Supported through the St. Louis market",
+      "Real service coverage reassurance",
+      "No separate-office language or fake local claims"
+    ]
+  },
+  {
+    "slug": "o-fallon-mo",
+    "url": "/st-louis-mo/service-areas/o-fallon-mo/",
+    "page_type": "support",
+    "market": "st-louis-mo",
+    "city": "o-fallon-mo",
+    "primary_keyword": "attic services o'fallon mo",
+    "secondary_keywords": [
+      "attic insulation o'fallon",
+      "insulation removal o'fallon",
+      "attic company o'fallon"
+    ],
+    "seo_title": "Attic Services in O'Fallon, MO | Good Attic",
+    "meta_description": "Good Attic serves O'Fallon homeowners with attic services designed to improve comfort, reduce waste, and clean up damaged insulation.",
+    "h1": "Attic Services in O'Fallon, MO",
+    "intro": "In O'Fallon, homeowners often deal with builder-grade attic performance, summer attic heat, and upstairs rooms that never quite settle into the same comfort as the rest of the house. Good Attic helps O'Fallon homeowners solve those issues with insulation, removal, pest remediation, fans, and air sealing.",
+    "page_purpose": "City support page for suburb/city search demand",
+    "cta_primary": "Tell us what your attic is doing",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "O'Fallon, MO",
+        "url": "/st-louis-mo/service-areas/o-fallon-mo/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/st-louis-mo/service-areas/o-fallon-mo/",
+    "related_links": [
+      {
+        "label": "St. Louis, MO",
+        "url": "/st-louis-mo/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/st-louis-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/st-louis-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/st-louis-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/st-louis-mo/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/st-louis-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Do newer O'Fallon homes still need attic upgrades?",
+        "answer": "Yes. Newer homes can still have insulation depth, leakage, or heat-management issues that show up quickly on the upper floor."
+      },
+      {
+        "question": "Can attic fans help in O'Fallon?",
+        "answer": "They can when the attic is a good fit. The right answer depends on how the whole attic system is behaving."
+      },
+      {
+        "question": "What if I just know the upstairs is uncomfortable?",
+        "answer": "That is enough to start. The attic assessment is there to separate the real causes from the symptoms."
+      }
+    ],
+    "trust_elements": [
+      "Supported through the St. Louis market",
+      "Real service coverage reassurance",
+      "No separate-office language or fake local claims"
+    ]
+  },
+  {
+    "slug": "overland-park-ks",
+    "url": "/kansas-city-mo/service-areas/overland-park-ks/",
+    "page_type": "support",
+    "market": "kansas-city-mo",
+    "city": "overland-park-ks",
+    "primary_keyword": "attic services overland park mo",
+    "secondary_keywords": [
+      "attic insulation overland park",
+      "insulation removal overland park",
+      "attic company overland park"
+    ],
+    "seo_title": "Attic Services in Overland Park, KS | Good Attic",
+    "meta_description": "Good Attic serves Overland Park homeowners with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+    "h1": "Attic Services in Overland Park, KS",
+    "intro": "In Overland Park, attic issues often show up in larger suburban homes as upstairs comfort problems, attic heat buildup, and energy waste that never seems to match the rest of the house. Good Attic helps Overland Park homeowners solve those problems with insulation, removal, pest remediation, fans, and air sealing.",
+    "page_purpose": "City support page for suburb/city search demand",
+    "cta_primary": "Tell us what your attic is doing",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Overland Park, KS",
+        "url": "/kansas-city-mo/service-areas/overland-park-ks/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/kansas-city-mo/service-areas/overland-park-ks/",
+    "related_links": [
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/kansas-city-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/kansas-city-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/kansas-city-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/kansas-city-mo/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/kansas-city-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Do you serve Overland Park through the Kansas City market?",
+        "answer": "Yes. Overland Park is supported through the Kansas City market hub and the same Good Attic process."
+      },
+      {
+        "question": "Can attic work help if the upper floor is always warmer?",
+        "answer": "Yes. That is one of the clearest attic-related complaints we see in larger suburban homes."
+      },
+      {
+        "question": "What if I am not sure which attic service I need?",
+        "answer": "That is normal. The assessment helps determine whether the attic needs insulation, sealing, removal, cleanup, or a mix."
+      }
+    ],
+    "trust_elements": [
+      "Supported through the Kansas City market",
+      "Real service coverage reassurance",
+      "No separate-office language or fake local claims"
+    ]
+  },
+  {
+    "slug": "olathe-ks",
+    "url": "/kansas-city-mo/service-areas/olathe-ks/",
+    "page_type": "support",
+    "market": "kansas-city-mo",
+    "city": "olathe-ks",
+    "primary_keyword": "attic services olathe mo",
+    "secondary_keywords": [
+      "attic insulation olathe",
+      "insulation removal olathe",
+      "attic company olathe"
+    ],
+    "seo_title": "Attic Services in Olathe, KS | Good Attic",
+    "meta_description": "Good Attic helps Olathe homeowners solve attic comfort, cleanup, and energy-loss issues with premium attic services.",
+    "h1": "Attic Services in Olathe, KS",
+    "intro": "In Olathe, many attic problems show up as family-home comfort issues, underperforming insulation, and energy bills that climb whenever the seasons change. Good Attic helps Olathe homeowners solve those attic-driven issues with insulation, removal, pest remediation, attic fans, and air sealing.",
+    "page_purpose": "City support page for suburb/city search demand",
+    "cta_primary": "Tell us what your attic is doing",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Olathe, KS",
+        "url": "/kansas-city-mo/service-areas/olathe-ks/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/kansas-city-mo/service-areas/olathe-ks/",
+    "related_links": [
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/kansas-city-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/kansas-city-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/kansas-city-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/kansas-city-mo/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/kansas-city-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Can attic work help with comfort problems in newer Olathe homes?",
+        "answer": "Yes. Newer homes can still struggle with attic depth, leakage, or heat-load issues that deserve attention."
+      },
+      {
+        "question": "Do you handle removal and re-installation together?",
+        "answer": "Yes. If the attic needs a reset first, removal and restoration can be part of one coordinated scope."
+      },
+      {
+        "question": "Will attic air sealing matter if the house already has insulation?",
+        "answer": "Often, yes. Sealing and insulation do different jobs, and many comfort issues need both."
+      }
+    ],
+    "trust_elements": [
+      "Supported through the Kansas City market",
+      "Real service coverage reassurance",
+      "No separate-office language or fake local claims"
+    ]
+  },
+  {
+    "slug": "lee-s-summit-mo",
+    "url": "/kansas-city-mo/service-areas/lee-s-summit-mo/",
+    "page_type": "support",
+    "market": "kansas-city-mo",
+    "city": "lee-s-summit-mo",
+    "primary_keyword": "attic services lee's summit mo",
+    "secondary_keywords": [
+      "attic insulation lee's summit",
+      "insulation removal lee's summit",
+      "attic company lee's summit"
+    ],
+    "seo_title": "Attic Services in Lee's Summit, MO | Good Attic",
+    "meta_description": "Good Attic provides attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing in Lee's Summit.",
+    "h1": "Attic Services in Lee's Summit, MO",
+    "intro": "In Lee's Summit, attic issues usually show up as seasonal comfort swings, dirty or underperforming insulation, and attics that need more than a simple top-off. Good Attic helps Lee's Summit homeowners solve those problems with insulation, removal, pest remediation, fans, and air sealing.",
+    "page_purpose": "City support page for suburb/city search demand",
+    "cta_primary": "Tell us what your attic is doing",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Lee's Summit, MO",
+        "url": "/kansas-city-mo/service-areas/lee-s-summit-mo/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/kansas-city-mo/service-areas/lee-s-summit-mo/",
+    "related_links": [
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/kansas-city-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/kansas-city-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/kansas-city-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/kansas-city-mo/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/kansas-city-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Can you remove old insulation in Lee's Summit before installing new material?",
+        "answer": "Yes. That is often the right move when the attic is dirty, contaminated, or underperforming beyond a simple top-off."
+      },
+      {
+        "question": "Do you help with pest contamination too?",
+        "answer": "Yes. Attic pest remediation, sanitation, and restoration are part of the overall system."
+      },
+      {
+        "question": "What if the attic looks fine but the upstairs still is not comfortable?",
+        "answer": "That usually means the attic needs to be assessed as a system, not judged from surface appearance alone."
+      }
+    ],
+    "trust_elements": [
+      "Supported through the Kansas City market",
+      "Real service coverage reassurance",
+      "No separate-office language or fake local claims"
+    ]
+  },
+  {
+    "slug": "lenexa-ks",
+    "url": "/kansas-city-mo/service-areas/lenexa-ks/",
+    "page_type": "support",
+    "market": "kansas-city-mo",
+    "city": "lenexa-ks",
+    "primary_keyword": "attic services lenexa mo",
+    "secondary_keywords": [
+      "attic insulation lenexa",
+      "insulation removal lenexa",
+      "attic company lenexa"
+    ],
+    "seo_title": "Attic Services in Lenexa, KS | Good Attic",
+    "meta_description": "Good Attic serves Lenexa homeowners with premium attic services designed to improve comfort and clean up attic problems.",
+    "h1": "Attic Services in Lenexa, KS",
+    "intro": "In Lenexa, homeowners often notice attic problems through upstairs comfort issues, drifting temperatures, and attic insulation that is no longer keeping pace with the house. Good Attic helps Lenexa homeowners solve those attic problems with insulation, removal, pest remediation, attic fans, and air sealing.",
+    "page_purpose": "City support page for suburb/city search demand",
+    "cta_primary": "Tell us what your attic is doing",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Locations",
+        "url": "/locations/"
+      },
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Lenexa, KS",
+        "url": "/kansas-city-mo/service-areas/lenexa-ks/"
+      }
+    ],
+    "canonical_url": "https://www.goodattic.com/kansas-city-mo/service-areas/lenexa-ks/",
+    "related_links": [
+      {
+        "label": "Kansas City, MO",
+        "url": "/kansas-city-mo/"
+      },
+      {
+        "label": "Attic Insulation",
+        "url": "/kansas-city-mo/attic-insulation/"
+      },
+      {
+        "label": "Insulation Removal",
+        "url": "/kansas-city-mo/insulation-removal/"
+      },
+      {
+        "label": "Attic Pest Remediation",
+        "url": "/kansas-city-mo/attic-pest-remediation/"
+      },
+      {
+        "label": "Attic Fans",
+        "url": "/kansas-city-mo/attic-fans/"
+      },
+      {
+        "label": "Attic Air Sealing",
+        "url": "/kansas-city-mo/attic-air-sealing/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Do you serve Lenexa through the Kansas City market hub?",
+        "answer": "Yes. Lenexa is supported through the Kansas City market and the same Good Attic service system."
+      },
+      {
+        "question": "Can attic upgrades help with both comfort and energy performance?",
+        "answer": "Yes. That combination is one of the most common reasons homeowners reach out."
+      },
+      {
+        "question": "Do attic fans and air sealing ever get recommended together?",
+        "answer": "They can. The right answer depends on how the full attic system is behaving today."
+      }
+    ],
+    "trust_elements": [
+      "Supported through the Kansas City market",
+      "Real service coverage reassurance",
+      "No separate-office language or fake local claims"
+    ]
+  }
+]

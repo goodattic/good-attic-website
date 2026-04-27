@@ -5,15 +5,21 @@ const nav = document.querySelector("[data-nav]");
 const dropdown = document.querySelector("[data-dropdown]");
 const dropdownToggle = document.querySelector("[data-dropdown-toggle]");
 const phoneDropdowns = document.querySelectorAll("[data-phone-dropdown]");
-const serviceSelect = document.querySelector("[data-service-select]");
-const conditionalField = document.querySelector("[data-conditional-field]");
-const conditionalLabel = document.querySelector("[data-conditional-label]");
 const hotspots = document.querySelectorAll("[data-hotspot]");
 const atticMap = document.querySelector(".attic-map");
 const processCarousel = document.querySelector("[data-process-carousel]");
 const serviceCarousel = document.querySelector("[data-service-carousel]");
+const heroServiceCarousel = document.querySelector(".hero-service-carousel");
 
 document.querySelector("[data-year]").textContent = new Date().getFullYear();
+
+function updateSourcePageFields() {
+  document.querySelectorAll("[data-source-page]").forEach((input) => {
+    input.value = window.location.href;
+  });
+}
+
+updateSourcePageFields();
 
 if (window.history && "scrollRestoration" in window.history) {
   window.history.scrollRestoration = "manual";
@@ -24,6 +30,7 @@ window.addEventListener("load", () => {
     const cleanUrl = `${window.location.pathname}${window.location.search}`;
     window.history.replaceState(null, "", cleanUrl);
   }
+  updateSourcePageFields();
   window.scrollTo(0, 0);
 });
 
@@ -42,12 +49,61 @@ function updateHotspotHint() {
   atticMap.classList.toggle("has-active-hotspot", hasActiveHotspot);
 }
 
+function getModalScrollContainer() {
+  if (!modal) return null;
+  const content = modal.querySelector(".modal-content");
+  const form = modal.querySelector(".modal-form.contact-form");
+
+  if (window.matchMedia("(max-width: 760px)").matches) return content;
+  return form || content;
+}
+
+function updateModalProgress() {
+  if (!modal || !modal.classList.contains("is-open")) return;
+
+  const bar = modal.querySelector("[data-modal-progress]");
+  const fill = bar ? bar.querySelector("span") : null;
+  const form = modal.querySelector(".modal-form.contact-form");
+  const scrollContainer = getModalScrollContainer();
+
+  if (!fill || !form || !scrollContainer) return;
+
+  const sections = [
+    form.querySelector(".project-picker"),
+    ...Array.from(form.querySelectorAll(".form-section-title")).slice(0, 3)
+  ].filter(Boolean);
+
+  if (!sections.length) return;
+
+  const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+  const isAtBottom = maxScroll <= 0 || scrollContainer.scrollTop >= maxScroll - 10;
+
+  let progress = 0.25;
+  const containerTop = scrollContainer.getBoundingClientRect().top;
+  const readingLine = scrollContainer.scrollTop + scrollContainer.clientHeight * 0.24;
+
+  sections.forEach((section, index) => {
+    const sectionTop = section.getBoundingClientRect().top - containerTop + scrollContainer.scrollTop;
+    if (readingLine >= sectionTop) {
+      progress = (index + 1) / sections.length;
+    }
+  });
+
+  if (isAtBottom) progress = 1;
+
+  fill.style.setProperty("--modal-progress", String(Math.min(1, Math.max(0.25, progress))));
+}
+
 function openModal() {
   body.classList.remove("nav-open");
   navToggle.setAttribute("aria-expanded", "false");
   modal.classList.add("is-open");
   modal.setAttribute("aria-hidden", "false");
   body.classList.add("modal-open");
+
+  const scrollContainer = getModalScrollContainer();
+  if (scrollContainer) scrollContainer.scrollTop = 0;
+  requestAnimationFrame(updateModalProgress);
 }
 
 function closeModal() {
@@ -63,6 +119,14 @@ document.querySelectorAll("[data-open-modal]").forEach((button) => {
 document.querySelectorAll("[data-close-modal]").forEach((button) => {
   button.addEventListener("click", closeModal);
 });
+
+if (modal) {
+  modal.querySelectorAll(".modal-content, .modal-form.contact-form").forEach((scrollContainer) => {
+    scrollContainer.addEventListener("scroll", updateModalProgress, { passive: true });
+  });
+
+  window.addEventListener("resize", updateModalProgress);
+}
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeModal();
@@ -223,6 +287,103 @@ if (processCarousel) {
   updateCarouselButtons();
 }
 
+if (heroServiceCarousel) {
+  const windowElement = heroServiceCarousel.querySelector(".hero-service-window");
+  const track = heroServiceCarousel.querySelector(".hero-service-track");
+  const prevButton = heroServiceCarousel.querySelector(".hero-service-arrow--prev");
+  const nextButton = heroServiceCarousel.querySelector(".hero-service-arrow--next");
+  const originalCards = Array.from(track.querySelectorAll(".hero-service-card"));
+  let normalizeFrame = 0;
+  let isNormalizing = false;
+
+  function makeHeroServiceClone(card) {
+    const clone = card.cloneNode(true);
+    clone.dataset.clone = "true";
+    clone.setAttribute("aria-hidden", "true");
+    clone.setAttribute("tabindex", "-1");
+    return clone;
+  }
+
+  originalCards.forEach((card) => {
+    track.appendChild(makeHeroServiceClone(card));
+  });
+
+  const beforeFragment = document.createDocumentFragment();
+  originalCards.forEach((card) => {
+    beforeFragment.appendChild(makeHeroServiceClone(card));
+  });
+  track.insertBefore(beforeFragment, track.firstChild);
+
+  function getHeroServiceStep() {
+    const card = track.querySelector(".hero-service-card");
+    const gap = parseFloat(getComputedStyle(track).gap) || 0;
+    return card.getBoundingClientRect().width + gap;
+  }
+
+  function getHeroServicePatternWidth() {
+    const cards = track.querySelectorAll(".hero-service-card");
+    const firstCard = cards[0];
+    const firstOriginalCard = cards[originalCards.length];
+    if (!firstCard || !firstOriginalCard) return 0;
+    return firstOriginalCard.offsetLeft - firstCard.offsetLeft;
+  }
+
+  function setHeroServiceInitialPosition() {
+    const patternWidth = getHeroServicePatternWidth();
+    if (!patternWidth) return;
+
+    windowElement.scrollLeft = patternWidth;
+  }
+
+  function normalizeHeroServicePosition() {
+    if (isNormalizing) return;
+
+    const patternWidth = getHeroServicePatternWidth();
+    if (!patternWidth) return;
+
+    const lowerBoundary = patternWidth * 0.42;
+    const upperBoundary = patternWidth * 1.58;
+
+    if (windowElement.scrollLeft < lowerBoundary) {
+      isNormalizing = true;
+      windowElement.scrollLeft += patternWidth;
+    } else if (windowElement.scrollLeft > upperBoundary) {
+      isNormalizing = true;
+      windowElement.scrollLeft -= patternWidth;
+    } else {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      isNormalizing = false;
+    });
+  }
+
+  function scheduleHeroServiceNormalize() {
+    if (normalizeFrame) return;
+
+    normalizeFrame = requestAnimationFrame(() => {
+      normalizeFrame = 0;
+      normalizeHeroServicePosition();
+    });
+  }
+
+  prevButton.addEventListener("click", () => {
+    windowElement.scrollBy({ left: -getHeroServiceStep(), behavior: "smooth" });
+  });
+
+  nextButton.addEventListener("click", () => {
+    windowElement.scrollBy({ left: getHeroServiceStep(), behavior: "smooth" });
+  });
+
+  windowElement.addEventListener("scroll", scheduleHeroServiceNormalize, { passive: true });
+  window.addEventListener("resize", () => {
+    requestAnimationFrame(setHeroServiceInitialPosition);
+  });
+
+  requestAnimationFrame(setHeroServiceInitialPosition);
+}
+
 if (serviceCarousel) {
   const slides = Array.from(serviceCarousel.querySelectorAll("[data-service-slide]"));
   const thumbs = Array.from(serviceCarousel.querySelectorAll("[data-service-thumb]"));
@@ -273,31 +434,52 @@ if (serviceCarousel) {
   setActiveService(activeIndex);
 }
 
-const servicePrompts = {
-  insulation: "What rooms feel uncomfortable, and do you know the current insulation age?",
-  restoration: "What happened in the attic, and has anything already been removed or cleaned?",
-  pests: "What pest activity did you notice, and has exclusion or pest control already been completed?",
-  comfort: "Tell us where you notice heat, cold, drafts, odors, or high energy use.",
-  unsure: "Share the symptoms you are noticing, even if you are not sure what is causing them."
-};
-
-if (serviceSelect && conditionalField && conditionalLabel) {
-  serviceSelect.addEventListener("change", () => {
-    const prompt = servicePrompts[serviceSelect.value];
-    conditionalField.hidden = !prompt;
-    if (prompt) conditionalLabel.textContent = prompt;
-  });
-}
-
 document.querySelectorAll("[data-lead-form]").forEach((form) => {
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const status = form.querySelector("[data-form-status]");
-    if (status) {
-      status.textContent = "Thanks. Your request is ready to connect to email, CRM, or a form backend.";
+    const endpoint = form.dataset.ghlWebhook;
+    const projectOptions = [...form.querySelectorAll('input[name="project_type"]')];
+    const selectedProjects = projectOptions.filter((input) => input.checked);
+
+    if (projectOptions.length && selectedProjects.length === 0) {
+      projectOptions[0].setCustomValidity("Select at least one project type.");
+      projectOptions[0].reportValidity();
+      return;
     }
+
+    projectOptions.forEach((input) => input.setCustomValidity(""));
+
+    if (status) status.textContent = "Preparing your request...";
+
+    if (endpoint) {
+      try {
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+        payload.project_type = formData.getAll("project_type");
+        payload.project_type_label = payload.project_type.join(", ");
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error("Form endpoint failed.");
+        if (status) status.textContent = "Thanks. Your quote request has been sent.";
+      } catch (error) {
+        if (status) status.textContent = "Something went wrong. Please call or text us and we will help right away.";
+        return;
+      }
+    } else if (status) {
+      status.textContent = "Thanks. Your request is ready for GoHighLevel wiring.";
+    }
+
     form.reset();
-    if (conditionalField) conditionalField.hidden = true;
-    if (modal.classList.contains("is-open")) closeModal();
+    updateSourcePageFields();
+    if (modal && modal.classList.contains("is-open")) {
+      window.setTimeout(closeModal, 900);
+    }
   });
 });
