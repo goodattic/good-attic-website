@@ -38,4 +38,16 @@ Recommended production setup:
 - Build command: leave blank
 - Build output directory: `/`
 
-Before launch, confirm the live canonical domain in `build-seo-wave1.mjs` and connect the lead form to the chosen CRM, email service, or Cloudflare Worker.
+### GoHighLevel Lead Form
+
+Lead forms submit to the Cloudflare Pages Function at `/api/leads`. The function forwards the normalized lead payload to GoHighLevel without exposing the CRM webhook in browser code.
+
+In Cloudflare Pages, add this production environment variable:
+
+```text
+GHL_WEBHOOK_URL=<your GoHighLevel inbound webhook URL>
+```
+
+The simple local preview command serves static files only, so it does not run Cloudflare Pages Functions. Test the CRM submission on a Cloudflare preview/production deployment or with Cloudflare Pages local tooling.
+
+Before launch, confirm the live canonical domain in `build-seo-wave1.mjs` and confirm the GoHighLevel workflow receives and maps the submitted fields correctly.

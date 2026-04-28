@@ -200,7 +200,7 @@
     "seo_title": "Good Attic Locations | Salt Lake City, St. Louis & Kansas City",
     "meta_description": "Explore Good Attic markets in Salt Lake City, St. Louis, and Kansas City and find the right local attic service page for your area.",
     "h1": "Good Attic Locations",
-    "intro": "Good Attic is launching wave one around three real markets: Salt Lake City, St. Louis, and Kansas City. Each market hub leads to the local service pages and city support pages built for that area.",
+    "intro": "Good Attic currently organizes service around three primary markets: Salt Lake City, St. Louis, and Kansas City. Each market page leads to local service pages and nearby city pages built for that area.",
     "page_purpose": "Location hub",
     "cta_primary": "Choose your market",
     "breadcrumb_items": [
@@ -230,12 +230,12 @@
     ],
     "faq_items": [
       {
-        "question": "Which markets does Good Attic serve in wave one?",
-        "answer": "Wave one is focused on Salt Lake City, St. Louis, and Kansas City."
+        "question": "Which markets does Good Attic serve?",
+        "answer": "Good Attic currently focuses on Salt Lake City, St. Louis, and Kansas City."
       },
       {
         "question": "How do I find the right local service page?",
-        "answer": "Start with the market hub for your area. From there, you can move into the service pages and city support pages tied to that market."
+        "answer": "Start with the market page for your area. From there, you can move into the service pages and nearby city pages tied to that market."
       }
     ],
     "trust_elements": [
@@ -259,7 +259,7 @@
     "seo_title": "Good Attic Reviews | What Homeowners Say",
     "meta_description": "Read Good Attic reviews and see why homeowners trust our team for attic insulation, insulation removal, attic cleanup, and attic upgrades.",
     "h1": "Good Attic Reviews",
-    "intro": "The Good Attic experience is built around the things homeowners usually mention when a project actually goes well: clear communication, a clean scope, respectful crews, and visible results at the end. This page is structured to hold real review proof without inventing anything the company has not earned.",
+    "intro": "The Good Attic experience is built around the things homeowners usually mention when a project actually goes well: clear communication, a clean scope, respectful crews, and visible results at the end. This page is where approved homeowner feedback and review proof can live as the brand grows.",
     "page_purpose": "Proof / trust",
     "cta_primary": "Request an attic estimate",
     "breadcrumb_items": [
@@ -289,17 +289,17 @@
         "answer": "The strongest proof will always be approved homeowner reviews that speak to cleanliness, clarity, communication, and visible attic results."
       },
       {
-        "question": "Can this page support a live review embed later?",
-        "answer": "Yes. The page is intentionally structured so a live review feed or approved excerpt set can be added during launch QA."
+        "question": "Will this page include Google reviews?",
+        "answer": "Yes. Approved excerpts or a synced review feed can be added here as Good Attic connects its review sources."
       },
       {
-        "question": "Why keep this page if review content is still being finalized?",
-        "answer": "Because the route, metadata, and trust scaffolding still matter, and the page is ready for approved proof to drop in cleanly."
+        "question": "Can I ask about past homeowner experiences before booking?",
+        "answer": "Yes. The team can talk through the process, what homeowners usually care about, and what a clear attic scope should include."
       }
     ],
     "trust_elements": [
       "Google review styling already established on the homepage",
-      "Trust themes without fabricated quotes",
+      "Real homeowner feedback only",
       "Launch-ready space for approved review content"
     ]
   },
@@ -356,7 +356,7 @@
       }
     ],
     "trust_elements": [
-      "No fabricated financing claims",
+      "Financing details confirmed during quoting",
       "Supportive conversion path for larger attic scopes",
       "Clear handoff into contact and quoting"
     ]
@@ -2685,7 +2685,7 @@
     "trust_elements": [
       "Supported through the Salt Lake City market",
       "Real service coverage reassurance",
-      "No separate-office language or fake local claims"
+      "Clear local guidance without unsupported office claims"
     ]
   },
   {
@@ -2772,7 +2772,7 @@
     "trust_elements": [
       "Supported through the Salt Lake City market",
       "Real service coverage reassurance",
-      "No separate-office language or fake local claims"
+      "Clear local guidance without unsupported office claims"
     ]
   },
   {
@@ -2859,7 +2859,7 @@
     "trust_elements": [
       "Supported through the Salt Lake City market",
       "Real service coverage reassurance",
-      "No separate-office language or fake local claims"
+      "Clear local guidance without unsupported office claims"
     ]
   },
   {
@@ -2946,7 +2946,7 @@
     "trust_elements": [
       "Supported through the Salt Lake City market",
       "Real service coverage reassurance",
-      "No separate-office language or fake local claims"
+      "Clear local guidance without unsupported office claims"
     ]
   },
   {
@@ -3033,7 +3033,7 @@
     "trust_elements": [
       "Supported through the St. Louis market",
       "Real service coverage reassurance",
-      "No separate-office language or fake local claims"
+      "Clear local guidance without unsupported office claims"
     ]
   },
   {
@@ -3120,7 +3120,7 @@
     "trust_elements": [
       "Supported through the St. Louis market",
       "Real service coverage reassurance",
-      "No separate-office language or fake local claims"
+      "Clear local guidance without unsupported office claims"
     ]
   },
   {
@@ -3207,7 +3207,7 @@
     "trust_elements": [
       "Supported through the St. Louis market",
       "Real service coverage reassurance",
-      "No separate-office language or fake local claims"
+      "Clear local guidance without unsupported office claims"
     ]
   },
   {
@@ -3294,7 +3294,7 @@
     "trust_elements": [
       "Supported through the St. Louis market",
       "Real service coverage reassurance",
-      "No separate-office language or fake local claims"
+      "Clear local guidance without unsupported office claims"
     ]
   },
   {
@@ -3303,7 +3303,7 @@
     "page_type": "support",
     "market": "kansas-city-mo",
     "city": "overland-park-ks",
-    "primary_keyword": "attic services overland park mo",
+    "primary_keyword": "attic services overland park ks",
     "secondary_keywords": [
       "attic insulation overland park",
       "insulation removal overland park",
@@ -3381,7 +3381,7 @@
     "trust_elements": [
       "Supported through the Kansas City market",
       "Real service coverage reassurance",
-      "No separate-office language or fake local claims"
+      "Clear local guidance without unsupported office claims"
     ]
   },
   {
@@ -3390,7 +3390,7 @@
     "page_type": "support",
     "market": "kansas-city-mo",
     "city": "olathe-ks",
-    "primary_keyword": "attic services olathe mo",
+    "primary_keyword": "attic services olathe ks",
     "secondary_keywords": [
       "attic insulation olathe",
       "insulation removal olathe",
@@ -3468,7 +3468,7 @@
     "trust_elements": [
       "Supported through the Kansas City market",
       "Real service coverage reassurance",
-      "No separate-office language or fake local claims"
+      "Clear local guidance without unsupported office claims"
     ]
   },
   {
@@ -3555,7 +3555,7 @@
     "trust_elements": [
       "Supported through the Kansas City market",
       "Real service coverage reassurance",
-      "No separate-office language or fake local claims"
+      "Clear local guidance without unsupported office claims"
     ]
   },
   {
@@ -3564,7 +3564,7 @@
     "page_type": "support",
     "market": "kansas-city-mo",
     "city": "lenexa-ks",
-    "primary_keyword": "attic services lenexa mo",
+    "primary_keyword": "attic services lenexa ks",
     "secondary_keywords": [
       "attic insulation lenexa",
       "insulation removal lenexa",
@@ -3642,7 +3642,7 @@
     "trust_elements": [
       "Supported through the Kansas City market",
       "Real service coverage reassurance",
-      "No separate-office language or fake local claims"
+      "Clear local guidance without unsupported office claims"
     ]
   }
 ]

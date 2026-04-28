@@ -1220,7 +1220,7 @@ const corePages = [
       "Explore Good Attic markets in Salt Lake City, St. Louis, and Kansas City and find the right local attic service page for your area.",
     h1: "Good Attic Locations",
     intro:
-      "Good Attic is launching wave one around three real markets: Salt Lake City, St. Louis, and Kansas City. Each market hub leads to the local service pages and city support pages built for that area.",
+      "Good Attic currently organizes service around three primary markets: Salt Lake City, St. Louis, and Kansas City. Each market page leads to local service pages and nearby city pages built for that area.",
     page_purpose: "Location hub",
     cta_primary: "Choose your market",
     breadcrumb_items: [
@@ -1231,13 +1231,13 @@ const corePages = [
     related_links: marketCatalog.map((market) => ({ label: market.name, url: `/${market.slug}/` })),
     faq_items: [
       {
-        question: "Which markets does Good Attic serve in wave one?",
-        answer: "Wave one is focused on Salt Lake City, St. Louis, and Kansas City."
+        question: "Which markets does Good Attic serve?",
+        answer: "Good Attic currently focuses on Salt Lake City, St. Louis, and Kansas City."
       },
       {
         question: "How do I find the right local service page?",
         answer:
-          "Start with the market hub for your area. From there, you can move into the service pages and city support pages tied to that market."
+          "Start with the market page for your area. From there, you can move into the service pages and nearby city pages tied to that market."
       }
     ],
     trust_elements: ["One domain", "Three real markets", "Clear local routing"]
@@ -1255,7 +1255,7 @@ const corePages = [
       "Read Good Attic reviews and see why homeowners trust our team for attic insulation, insulation removal, attic cleanup, and attic upgrades.",
     h1: "Good Attic Reviews",
     intro:
-      "The Good Attic experience is built around the things homeowners usually mention when a project actually goes well: clear communication, a clean scope, respectful crews, and visible results at the end. This page is structured to hold real review proof without inventing anything the company has not earned.",
+      "The Good Attic experience is built around the things homeowners usually mention when a project actually goes well: clear communication, a clean scope, respectful crews, and visible results at the end. This page is where approved homeowner feedback and review proof can live as the brand grows.",
     page_purpose: "Proof / trust",
     cta_primary: "Request an attic estimate",
     breadcrumb_items: [
@@ -1274,19 +1274,19 @@ const corePages = [
           "The strongest proof will always be approved homeowner reviews that speak to cleanliness, clarity, communication, and visible attic results."
       },
       {
-        question: "Can this page support a live review embed later?",
+        question: "Will this page include Google reviews?",
         answer:
-          "Yes. The page is intentionally structured so a live review feed or approved excerpt set can be added during launch QA."
+          "Yes. Approved excerpts or a synced review feed can be added here as Good Attic connects its review sources."
       },
       {
-        question: "Why keep this page if review content is still being finalized?",
+        question: "Can I ask about past homeowner experiences before booking?",
         answer:
-          "Because the route, metadata, and trust scaffolding still matter, and the page is ready for approved proof to drop in cleanly."
+          "Yes. The team can talk through the process, what homeowners usually care about, and what a clear attic scope should include."
       }
     ],
     trust_elements: [
       "Google review styling already established on the homepage",
-      "Trust themes without fabricated quotes",
+      "Real homeowner feedback only",
       "Launch-ready space for approved review content"
     ]
   },
@@ -1333,7 +1333,7 @@ const corePages = [
       }
     ],
     trust_elements: [
-      "No fabricated financing claims",
+      "Financing details confirmed during quoting",
       "Supportive conversion path for larger attic scopes",
       "Clear handoff into contact and quoting"
     ]
@@ -1426,6 +1426,11 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+function cityState(city) {
+  const match = city.name.match(/,\s*([A-Z]{2})$/);
+  return match ? match[1] : "";
+}
+
 function pageFilePath(urlPath) {
   return urlPath === "/" ? "/index.html" : `${urlPath.replace(/\/$/, "")}/index.html`;
 }
@@ -1499,6 +1504,29 @@ function renderBreadcrumbJsonLd(page) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement
+  })}</script>`;
+}
+
+function renderSiteJsonLd() {
+  return `<script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${site.baseUrl}/#organization`,
+        name: site.name,
+        url: `${site.baseUrl}/`,
+        logo: `${site.baseUrl}/assets/good-attic-logo.png`,
+        telephone: site.phoneDisplay
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${site.baseUrl}/#website`,
+        name: site.name,
+        url: `${site.baseUrl}/`,
+        publisher: { "@id": `${site.baseUrl}/#organization` }
+      }
+    ]
   })}</script>`;
 }
 
@@ -1647,8 +1675,8 @@ function renderModal(currentUrl) {
         <div class="modal-content">
           <div class="modal-progress" data-modal-progress aria-hidden="true"><span></span></div>
           <h2 id="modal-title">Request your free attic quote.</h2>
-          <p>Pick the project type, share your details, and choose a preferred quote window.</p>
-          <form class="contact-form modal-form" data-lead-form data-form-name="Quote modal form" data-ghl-webhook="">
+          <p>Takes about 45 seconds to complete.</p>
+          <form class="contact-form modal-form" data-lead-form data-form-name="Quote modal form" data-ghl-webhook="/api/leads">
             <input type="hidden" name="lead_source" value="Good Attic website">
             <input type="hidden" name="form_name" value="Quote modal form">
             <input type="hidden" name="source_page" data-source-page>
@@ -1730,7 +1758,7 @@ function renderModal(currentUrl) {
 
 function renderLeadForm(currentUrl) {
   return `
-    <form class="contact-form reveal lead-form" data-lead-form data-form-name="Contact page form" data-ghl-webhook="">
+    <form class="contact-form reveal lead-form" data-lead-form data-form-name="Contact page form" data-ghl-webhook="/api/leads">
       <input type="hidden" name="lead_source" value="Good Attic website">
       <input type="hidden" name="form_name" value="Contact page form">
       <input type="hidden" name="source_page" data-source-page>
@@ -2068,7 +2096,7 @@ function buildCoreServicePage(service) {
       cardKicker: "Service overview",
       cardTitle: service.heroHeading,
       cardText:
-        "This page explains the broad service need without competing with the market-specific service pages. Use the local links below when you are ready to narrow by metro.",
+        "This page explains the service, the problems it solves, and how it fits into a complete attic plan. Use the local links below when you want service details for a specific metro.",
       cardPoints: service.process,
       actions: [{ label: "Book an Attic Inspection", modal: true }]
     })}
@@ -2094,7 +2122,7 @@ function buildCoreServicePage(service) {
         <p class="eyebrow">Local service pages</p>
         <h2>Find ${escapeHtml(service.name.toLowerCase())} in your market.</h2>
         <p class="section-subcopy">${escapeHtml(
-          "These links keep the broad service page separate from the local money pages, which helps the SEO structure stay clean."
+          "Choose the closest metro to see how this service applies in that local market."
         )}</p>
       </div>
       ${renderFeatureGrid(
@@ -2184,10 +2212,10 @@ function buildMarketPage(market) {
     render: (currentUrl) => `
       ${renderHero(currentUrl, buildMarketPage(market), {
         eyebrow: `${market.shortName} Market`,
-        cardKicker: "What this hub does",
-        cardTitle: `${market.shortName} routes into every local attic page in this market.`,
+        cardKicker: "Local attic help",
+        cardTitle: `Start with the full Good Attic service path in ${market.shortName}.`,
         cardText:
-          "Start here when you need the broad attic-services page for this metro. From here, the structure narrows into the local service pages and city support pages tied to this market only.",
+          "Use this hub to understand the common attic problems in this metro, then move into the service or city page that matches the home.",
         cardPoints: market.trustElements
       })}
 
@@ -2207,7 +2235,7 @@ function buildMarketPage(market) {
           <p class="eyebrow">Local services</p>
           <h2>The five core attic services available in ${escapeHtml(market.shortName)}.</h2>
           <p class="section-subcopy">${escapeHtml(
-            "Each service page below targets one primary keyword theme and routes back into this market cleanly."
+            "Each service page explains one specific attic solution for homeowners in this market."
           )}</p>
         </div>
         ${renderFeatureGrid(buildMarketLinks(currentUrl, market), currentUrl, true)}
@@ -2216,9 +2244,9 @@ function buildMarketPage(market) {
       <section class="section">
         <div class="section-heading reveal">
           <p class="eyebrow">Service areas</p>
-          <h2>City support pages connected to the ${escapeHtml(market.shortName)} market.</h2>
+          <h2>Nearby cities served through the ${escapeHtml(market.shortName)} market.</h2>
           <p class="section-subcopy">${escapeHtml(
-            "These pages confirm service in real nearby cities and route users back into the correct market-service hierarchy."
+            "These nearby city pages help homeowners confirm coverage and find the right Good Attic service path."
           )}</p>
         </div>
         ${renderFeatureGrid(buildSupportCityLinks(currentUrl, market), currentUrl, false)}
@@ -2237,11 +2265,11 @@ function buildMarketPage(market) {
           },
           {
             title: "Documented homeowner clarity",
-            text: "This site structure is built so homeowners can move from market to service to city page without losing context."
+            text: "Homeowners should be able to move from a broad attic problem into the right service page without losing context."
           },
           {
             title: "Premium execution",
-            text: "Good Attic keeps the design language and the homeowner experience consistent from the homepage through every market page."
+            text: "Good Attic keeps the homeowner experience clear, polished, and consistent from the first click through the finished project."
           }
         ])}
       </section>
@@ -2396,9 +2424,9 @@ function buildServicePage(market, service) {
       <section class="section">
         <div class="section-heading reveal">
           <p class="eyebrow">Nearby cities</p>
-          <h2>City support pages connected to this ${escapeHtml(market.shortName)} service page.</h2>
+          <h2>Nearby cities connected to this ${escapeHtml(market.shortName)} service.</h2>
           <p class="section-subcopy">${escapeHtml(
-            "These city pages stay inside the same market and support service discovery without pretending to be separate offices."
+            "These city pages confirm nearby service coverage while keeping the project connected to the right metro team."
           )}</p>
         </div>
         ${renderFeatureGrid(
@@ -2421,7 +2449,7 @@ function buildServicePage(market, service) {
           <p class="eyebrow">Related services</p>
           <h2>${escapeHtml(service.name)} usually works best as part of a broader attic plan.</h2>
           <p class="section-subcopy">${escapeHtml(
-            "These related pages stay inside the same market and connect the homeowner to the rest of the attic system."
+            "These related services often come up in the same attic assessment because comfort, cleanup, airflow, and insulation usually overlap."
           )}</p>
         </div>
         ${renderFeatureGrid(
@@ -2467,7 +2495,7 @@ function buildCityPage(market, city) {
     page_type: "support",
     market: market.slug,
     city: city.slug,
-    primary_keyword: `attic services ${city.shortName.toLowerCase()} ${market.state.toLowerCase()}`.replace("'s", "'s"),
+    primary_keyword: `attic services ${city.shortName.toLowerCase()} ${cityState(city).toLowerCase()}`.replace("'s", "'s"),
     secondary_keywords: [
       `attic insulation ${city.shortName.toLowerCase()}`,
       `insulation removal ${city.shortName.toLowerCase()}`,
@@ -2527,15 +2555,15 @@ function buildCityPage(market, city) {
     trust_elements: [
       `Supported through the ${market.shortName} market`,
       "Real service coverage reassurance",
-      "No separate-office language or fake local claims"
+      "Clear local guidance without unsupported office claims"
     ],
     render: (currentUrl) => `
       ${renderHero(currentUrl, buildCityPage(market, city), {
         eyebrow: `Service Area • ${city.name}`,
-        cardKicker: "This page is for",
-        cardTitle: `${city.shortName} homeowners who want local reassurance without fake office claims.`,
+        cardKicker: "Local service coverage",
+        cardTitle: `${city.shortName} homeowners can start with the ${market.shortName} Good Attic team.`,
         cardText:
-          "This city support page confirms coverage, explains likely attic issues in the city, and routes the homeowner back into the correct market and service pages.",
+          "Good Attic uses this local page to confirm coverage, explain common attic issues nearby, and point homeowners toward the right service pages.",
         cardPoints: city.whyCall
       })}
 
@@ -2552,7 +2580,7 @@ function buildCityPage(market, city) {
           <p class="eyebrow">Available services</p>
           <h2>Five Good Attic service pages connected to ${escapeHtml(city.shortName)}.</h2>
           <p class="section-subcopy">${escapeHtml(
-            "These links stay inside the same market so users move deeper by hierarchy instead of bouncing across unrelated markets."
+            "Use these service links to match the attic problem to the right solution in this market."
           )}</p>
         </div>
         ${renderFeatureGrid(
@@ -2772,10 +2800,10 @@ function renderCorePage(page, currentUrl) {
     return `
       ${renderHero(currentUrl, page, {
         eyebrow: "Locations Hub",
-        cardKicker: "Wave one structure",
-        cardTitle: "Three real markets. One central brand hub.",
+        cardKicker: "Service areas",
+        cardTitle: "Three real markets. One Good Attic standard.",
         cardText:
-          "Each market hub routes into its own service pages and support pages so the structure stays clear, scalable, and market-specific.",
+          "Choose the market closest to the home to see the matching service pages and nearby city coverage.",
         cardPoints: page.trust_elements,
         actions: []
       })}
@@ -2807,9 +2835,9 @@ function renderCorePage(page, currentUrl) {
       ${renderHero(currentUrl, page, {
         eyebrow: "Reviews & Proof",
         cardKicker: "Trust signal",
-        cardTitle: "The review framework is live without inventing homeowner quotes.",
+        cardTitle: "Real homeowner proof belongs here as the review library grows.",
         cardText:
-          "This route is ready for approved review excerpts or a synced review feed. Until then, the page keeps trust messaging grounded in real experience themes rather than fabricated testimonials.",
+          "Good Attic only wants review content that comes from real homeowner feedback. Until more approved excerpts are added, this page keeps the trust message focused on the standards the brand is building around.",
         cardPoints: page.trust_elements
       })}
 
@@ -2826,7 +2854,7 @@ function renderCorePage(page, currentUrl) {
             <strong>5.0</strong>
             <div>
               <div class="stars" aria-label="Five star rating">★★★★★</div>
-              <p>Use this section for approved review excerpts or a synced review embed during launch QA.</p>
+              <p>Approved review excerpts or a synced review feed can live here as review sources are connected.</p>
             </div>
           </div>
         </div>
@@ -2876,7 +2904,7 @@ function renderCorePage(page, currentUrl) {
         cardKicker: "How this page helps",
         cardTitle: "Financing conversations are easier when the attic scope is already clear.",
         cardText:
-          "This page supports conversion without inventing programs or terms. It keeps the financing route clean until final launch details are confirmed.",
+          "Because financing options can depend on the project and current program availability, this page keeps the conversation tied to a real attic scope first.",
         cardPoints: page.trust_elements
       })}
 
@@ -2937,7 +2965,7 @@ function renderCorePage(page, currentUrl) {
           <p class="eyebrow">Request an attic estimate</p>
           <h2>Tell us what is happening in the attic.</h2>
           <p>Choose the project type, share your contact details and project address, then tell us your preferred quote window and any notes for the team.</p>
-          <p class="contact-note">This form is structured for GoHighLevel routing once the final CRM endpoint is ready.</p>
+          <p class="contact-note">Your request goes straight to the team so we can follow up with the right next step.</p>
         </div>
 
         ${renderLeadForm(currentUrl)}
@@ -2984,6 +3012,7 @@ function renderPage(page) {
   <link rel="canonical" href="${escapeHtml(page.canonical_url)}">
   <title>${escapeHtml(page.seo_title)}</title>
   <link rel="stylesheet" href="${escapeHtml(stylesHref)}">
+  ${renderSiteJsonLd()}
   ${page.url === "/" ? "" : renderBreadcrumbJsonLd(page)}
 </head>
 <body>

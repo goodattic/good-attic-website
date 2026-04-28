@@ -32,7 +32,14 @@ body {
 body.modal-open,
 body.nav-open {
   overflow: hidden;
-  touch-action: none;
+}
+
+body.modal-open {
+  position: fixed;
+  top: var(--modal-scroll-lock-top, 0);
+  right: 0;
+  left: 0;
+  width: 100%;
 }
 
 img {
@@ -209,6 +216,11 @@ a {
 .button.primary {
   background: linear-gradient(135deg, var(--ink), var(--green));
   box-shadow: 0 10px 24px rgba(36, 113, 90, 0.22);
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.72;
 }
 
 .inspection-panel .button.primary,
@@ -2139,6 +2151,7 @@ h3 {
 .modal-form {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .contact-form span {
@@ -2151,6 +2164,8 @@ input,
 select,
 textarea {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 52px;
   padding: 14px 16px;
   color: var(--ink);
@@ -2158,6 +2173,17 @@ textarea {
   background: #f4f7fa;
   border: 1px solid var(--line);
   border-radius: var(--radius);
+}
+
+input[type="date"] {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 select {
@@ -2174,14 +2200,16 @@ textarea {
 
 .form-two {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+  min-width: 0;
 }
 
 .form-three {
   display: grid;
   grid-template-columns: 1.45fr 0.75fr 0.8fr;
   gap: 16px;
+  min-width: 0;
 }
 
 .form-section-title {
@@ -2401,6 +2429,7 @@ textarea {
   pointer-events: none;
   place-items: center;
   transition: opacity 220ms ease, visibility 220ms ease;
+  overscroll-behavior: none;
 }
 
 .modal.is-open {
@@ -2434,6 +2463,7 @@ textarea {
   opacity: 0;
   transform: translateY(18px) scale(0.985);
   transition: opacity 280ms ease, transform 280ms ease;
+  overscroll-behavior: contain;
 }
 
 .modal.is-open .modal-panel {
@@ -2511,6 +2541,7 @@ textarea {
 .modal-content {
   min-width: 0;
   padding: 44px 54px 44px;
+  overscroll-behavior: contain;
 }
 
 .modal-progress {
@@ -2553,6 +2584,7 @@ textarea {
   padding-right: 6px;
   overflow: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
 }
 
 .modal-form.contact-form .button {
@@ -3074,6 +3106,13 @@ textarea {
     grid-template-columns: 1fr;
   }
 
+  .form-two > *,
+  .form-three > * {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
   .project-picker,
   .project-picker--compact {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3153,6 +3192,7 @@ textarea {
     padding: 44px 20px 28px;
     overflow-y: auto;
     overflow-x: hidden;
+    overscroll-behavior: contain;
   }
 
   .modal-progress {
@@ -3183,6 +3223,7 @@ textarea {
   .modal-form.contact-form {
     width: 100%;
     max-width: 100%;
+    min-width: 0;
     max-height: none;
     overflow-x: hidden;
     overflow-y: visible;

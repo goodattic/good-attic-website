@@ -10,6 +10,7 @@ const atticMap = document.querySelector(".attic-map");
 const processCarousel = document.querySelector("[data-process-carousel]");
 const serviceCarousel = document.querySelector("[data-service-carousel]");
 const heroServiceCarousel = document.querySelector(".hero-service-carousel");
+let modalScrollY = 0;
 
 document.querySelector("[data-year]").textContent = new Date().getFullYear();
 
@@ -97,6 +98,8 @@ function updateModalProgress() {
 function openModal() {
   body.classList.remove("nav-open");
   navToggle.setAttribute("aria-expanded", "false");
+  modalScrollY = window.scrollY || window.pageYOffset || 0;
+  body.style.setProperty("--modal-scroll-lock-top", `-${modalScrollY}px`);
   modal.classList.add("is-open");
   modal.setAttribute("aria-hidden", "false");
   body.classList.add("modal-open");
@@ -110,6 +113,8 @@ function closeModal() {
   modal.classList.remove("is-open");
   modal.setAttribute("aria-hidden", "true");
   body.classList.remove("modal-open");
+  body.style.removeProperty("--modal-scroll-lock-top");
+  window.scrollTo(0, modalScrollY);
 }
 
 document.querySelectorAll("[data-open-modal]").forEach((button) => {
@@ -438,7 +443,8 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const status = form.querySelector("[data-form-status]");
-    const endpoint = form.dataset.ghlWebhook;
+    const endpoint = form.dataset.ghlWebhook || "/api/leads";
+    const submitButton = form.querySelector('button[type="submit"]');
     const projectOptions = [...form.querySelectorAll('input[name="project_type"]')];
     const selectedProjects = projectOptions.filter((input) => input.checked);
 
@@ -451,6 +457,10 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
     projectOptions.forEach((input) => input.setCustomValidity(""));
 
     if (status) status.textContent = "Preparing your request...";
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.setAttribute("aria-busy", "true");
+    }
 
     if (endpoint) {
       try {
@@ -460,16 +470,31 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
         payload.project_type_label = payload.project_type.join(", ");
         const response = await fetch(endpoint, {
           method: "POST",
+          credentials: "same-origin",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify(payload)
         });
 
-        if (!response.ok) throw new Error("Form endpoint failed.");
+        let result = null;
+        try {
+          result = await response.json();
+        } catch (parseError) {
+          result = null;
+        }
+
+        if (!response.ok || result?.ok === false) {
+          throw new Error(result?.message || "Form endpoint failed.");
+        }
+
         if (status) status.textContent = "Thanks. Your quote request has been sent.";
       } catch (error) {
         if (status) status.textContent = "Something went wrong. Please call or text us and we will help right away.";
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.removeAttribute("aria-busy");
+        }
         return;
       }
     } else if (status) {
@@ -477,6 +502,10 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
     }
 
     form.reset();
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.removeAttribute("aria-busy");
+    }
     updateSourcePageFields();
     if (modal && modal.classList.contains("is-open")) {
       window.setTimeout(closeModal, 900);
