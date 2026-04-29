@@ -6,7 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const site = {
   name: "Good Attic",
-  baseUrl: "https://www.goodattic.com",
+  baseUrl: "https://goodattic.energy",
   phoneDisplay: "385-336-0062",
   phoneHref: "tel:+13853360062",
   smsHref: "sms:+13853360062",

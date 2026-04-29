@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.goodattic.com/sitemap.xml
+Sitemap: https://goodattic.energy/sitemap.xml
