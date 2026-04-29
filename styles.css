@@ -2542,6 +2542,7 @@ textarea {
   min-width: 0;
   padding: 44px 54px 44px;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-progress {
@@ -2585,6 +2586,7 @@ textarea {
   overflow: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-form.contact-form .button {
@@ -3237,6 +3239,56 @@ textarea {
   .form-section-title {
     margin-top: 16px;
     margin-bottom: 6px;
+  }
+}
+
+@media (max-width: 430px) {
+  .modal {
+    padding: 12px;
+  }
+
+  .modal-panel {
+    max-width: calc(100vw - 24px);
+  }
+
+  .modal-content {
+    padding: 40px 16px 22px;
+  }
+
+  .modal-progress {
+    margin: -18px 0 22px;
+  }
+
+  .modal-close {
+    top: 10px;
+    right: 10px;
+    width: 38px;
+    height: 38px;
+    font-size: 28px;
+  }
+
+  .project-picker,
+  .project-picker--compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 18px 12px 12px;
+  }
+
+  .project-option,
+  .project-picker--compact .project-option {
+    min-height: 102px;
+  }
+
+  .project-option__label,
+  .project-picker--compact .project-option__label {
+    font-size: 14px;
+    line-height: 0.98;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
   }
 }
 
