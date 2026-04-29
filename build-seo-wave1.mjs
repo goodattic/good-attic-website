@@ -14,6 +14,24 @@ const site = {
   footerDisclaimer: "Service availability, recommendations, and pricing depend on inspection findings and local conditions."
 };
 
+const marketPhones = {
+  "salt-lake-city-ut": {
+    phoneDisplay: "385-336-0062",
+    phoneHref: "tel:+13853360062",
+    smsHref: "sms:+13853360062"
+  },
+  "st-louis-mo": {
+    phoneDisplay: "314-916-1220",
+    phoneHref: "tel:+13149161220",
+    smsHref: "sms:+13149161220"
+  },
+  "kansas-city-mo": {
+    phoneDisplay: "816-434-0308",
+    phoneHref: "tel:+18164340308",
+    smsHref: "sms:+18164340308"
+  }
+};
+
 const serviceCatalog = [
   {
     slug: "attic-insulation",
@@ -1507,7 +1525,21 @@ function renderBreadcrumbJsonLd(page) {
   })}</script>`;
 }
 
-function renderSiteJsonLd() {
+function phoneForPage(page) {
+  if (page?.market && marketPhones[page.market]) {
+    return marketPhones[page.market];
+  }
+
+  return {
+    phoneDisplay: site.phoneDisplay,
+    phoneHref: site.phoneHref,
+    smsHref: site.smsHref
+  };
+}
+
+function renderSiteJsonLd(page) {
+  const pagePhone = phoneForPage(page);
+
   return `<script type="application/ld+json">${JSON.stringify({
     "@context": "https://schema.org",
     "@graph": [
@@ -1517,7 +1549,7 @@ function renderSiteJsonLd() {
         name: site.name,
         url: `${site.baseUrl}/`,
         logo: `${site.baseUrl}/assets/good-attic-logo.png`,
-        telephone: site.phoneDisplay
+        telephone: pagePhone.phoneDisplay
       },
       {
         "@type": "WebSite",
@@ -1539,7 +1571,9 @@ function navLink(currentUrl, target, label) {
   return `<a href="${hrefFrom(currentUrl, target)}"${isActive ? ' class="is-active"' : ""}>${escapeHtml(label)}</a>`;
 }
 
-function renderHeader(currentUrl) {
+function renderHeader(currentUrl, page) {
+  const pagePhone = phoneForPage(page);
+
   return `
     <header class="site-header" data-header>
       <a class="brand" href="${hrefFrom(currentUrl, "/")}" aria-label="Good Attic home">
@@ -1550,11 +1584,11 @@ function renderHeader(currentUrl) {
       <div class="mobile-header-actions">
         <div class="phone-dropdown mobile-header-phone" data-phone-dropdown>
           <button class="nav-cta nav-cta--phone mobile-phone-button" type="button" aria-expanded="false" data-phone-dropdown-toggle>
-            ${escapeHtml(site.phoneDisplay)}
+            ${escapeHtml(pagePhone.phoneDisplay)}
           </button>
           <div class="phone-dropdown__menu">
-            <a href="${site.phoneHref}">Call</a>
-            <a href="${site.smsHref}">Text</a>
+            <a href="${pagePhone.phoneHref}">Call</a>
+            <a href="${pagePhone.smsHref}">Text</a>
           </div>
         </div>
 
@@ -1582,11 +1616,11 @@ function renderHeader(currentUrl) {
         ${navLink(currentUrl, "/about/", "About")}
         <div class="phone-dropdown" data-phone-dropdown>
           <button class="nav-cta nav-cta--phone" type="button" aria-expanded="false" data-phone-dropdown-toggle>
-            ${escapeHtml(site.phoneDisplay)}
+            ${escapeHtml(pagePhone.phoneDisplay)}
           </button>
           <div class="phone-dropdown__menu">
-            <a href="${site.phoneHref}">Call</a>
-            <a href="${site.smsHref}">Text</a>
+            <a href="${pagePhone.phoneHref}">Call</a>
+            <a href="${pagePhone.smsHref}">Text</a>
           </div>
         </div>
         <button class="nav-cta" type="button" data-open-modal>Get A Quote</button>
@@ -2294,6 +2328,7 @@ function buildCoreServicePage(service) {
 }
 
 function buildMarketPage(market) {
+  const marketPhone = marketPhones[market.slug] || phoneForPage(null);
   const page = {
     slug: market.slug,
     url: `/${market.slug}/`,
@@ -2338,8 +2373,8 @@ function buildMarketPage(market) {
         <div class="hero-actions">
           <button class="button primary" type="button" data-open-modal>Get A Free Attic Assessment</button>
           <div class="hero-actions__secondary">
-            <a class="button secondary" href="${site.phoneHref}">Call Us</a>
-            <a class="button secondary" href="${site.smsHref}">Text Us</a>
+            <a class="button secondary" href="${marketPhone.phoneHref}">Call Us</a>
+            <a class="button secondary" href="${marketPhone.smsHref}">Text Us</a>
           </div>
         </div>
         <div class="hero-service-carousel" aria-label="Good Attic services in ${escapeHtml(market.shortName)}">
@@ -2676,8 +2711,8 @@ function buildMarketPage(market) {
           <h3>High-trust experience</h3>
           <p>No scare tactics. No vague quotes. Just a clear assessment, a clean scope, and a project plan you can understand.</p>
           <div class="trust-button-row">
-            <a class="button primary" href="${site.phoneHref}">Call Us</a>
-            <a class="button primary" href="${site.smsHref}">Text Us</a>
+            <a class="button primary" href="${marketPhone.phoneHref}">Call Us</a>
+            <a class="button primary" href="${marketPhone.smsHref}">Text Us</a>
           </div>
         </article>
         <article class="audience-panel reveal">
@@ -3449,11 +3484,11 @@ function renderPage(page) {
   <link rel="canonical" href="${escapeHtml(page.canonical_url)}">
   <title>${escapeHtml(page.seo_title)}</title>
   <link rel="stylesheet" href="${escapeHtml(stylesHref)}">
-  ${renderSiteJsonLd()}
+  ${renderSiteJsonLd(page)}
   ${page.url === "/" ? "" : renderBreadcrumbJsonLd(page)}
 </head>
 <body>
-  ${renderHeader(currentUrl)}
+  ${renderHeader(currentUrl, page)}
   ${mainOpenTag}
     ${bodyContent}
   </main>
