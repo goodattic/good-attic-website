@@ -1777,10 +1777,6 @@ function renderModal(currentUrl) {
               <span>Additional notes</span>
               <textarea name="additional_notes" rows="3"></textarea>
             </label>
-            <label class="form-consent">
-              <input type="checkbox" name="contact_consent" value="yes" required>
-              <span>I agree that Good Attic may contact me about my request by phone, text, or email.</span>
-            </label>
             <button class="button primary" type="submit">Request My Free Quote</button>
             <p class="form-status" data-form-status aria-live="polite"></p>
           </form>
@@ -1867,11 +1863,6 @@ function renderLeadForm(currentUrl) {
         <textarea name="additional_notes" rows="4" placeholder="Tell us what you are seeing, what rooms feel uncomfortable, or anything else we should know."></textarea>
       </label>
 
-      <label class="form-consent">
-        <input type="checkbox" name="contact_consent" value="yes" required>
-        <span>I agree that Good Attic may contact me about my request by phone, text, or email.</span>
-      </label>
-
       <button class="button primary" type="submit">Request My Free Quote</button>
       <p class="form-status" data-form-status aria-live="polite"></p>
     </form>
@@ -1953,11 +1944,6 @@ function renderHomepageLeadForm(currentUrl, formName) {
       <label>
         <span>Additional notes for the team</span>
         <textarea name="additional_notes" rows="4" placeholder="Tell us what you are seeing, what rooms feel uncomfortable, or anything else we should know."></textarea>
-      </label>
-
-      <label class="form-consent">
-        <input type="checkbox" name="contact_consent" value="yes" required>
-        <span>I agree that Good Attic may contact me about my request by phone, text, or email.</span>
       </label>
 
       <button class="button primary" type="submit">Request My Free Quote</button>

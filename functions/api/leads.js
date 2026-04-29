@@ -15,8 +15,7 @@ const REQUIRED_FIELDS = [
   "street_address",
   "city",
   "state",
-  "zip",
-  "contact_consent"
+  "zip"
 ];
 
 function jsonResponse(body, status = 200) {
@@ -112,7 +111,6 @@ async function handleLeadRequest({ request, env }) {
     preferred_time: clean(payload.preferred_time, 80),
     additional_notes: cleanLongText(payload.additional_notes),
     notes: cleanLongText(payload.additional_notes),
-    contact_consent: clean(payload.contact_consent, 20),
     lead_source: clean(payload.lead_source, 120) || "Good Attic website",
     form_name: clean(payload.form_name, 120),
     source_page: clean(payload.source_page, 500),
