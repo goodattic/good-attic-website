@@ -20,7 +20,28 @@ function updateSourcePageFields() {
   });
 }
 
+function enableFullDatePickerTrigger() {
+  document.querySelectorAll('input[type="date"]').forEach((input) => {
+    const openPicker = (event) => {
+      if (input.disabled || input.readOnly || typeof input.showPicker !== "function") return;
+
+      event.preventDefault();
+      input.focus({ preventScroll: true });
+
+      try {
+        input.showPicker();
+      } catch (error) {
+        // Some browsers restrict picker access in edge cases; native focus still helps.
+      }
+    };
+
+    input.addEventListener("pointerdown", openPicker);
+    input.addEventListener("click", openPicker);
+  });
+}
+
 updateSourcePageFields();
+enableFullDatePickerTrigger();
 
 if (window.history && "scrollRestoration" in window.history) {
   window.history.scrollRestoration = "manual";
@@ -439,22 +460,41 @@ if (serviceCarousel) {
   setActiveService(activeIndex);
 }
 
+function syncProjectTypeValidity(projectOptions) {
+  if (!projectOptions.length) return true;
+
+  const hasSelection = projectOptions.some((input) => input.checked);
+
+  projectOptions.forEach((input) => input.setCustomValidity(""));
+
+  if (!hasSelection) {
+    projectOptions[0].setCustomValidity("Select at least one project type.");
+  }
+
+  return hasSelection;
+}
+
 document.querySelectorAll("[data-lead-form]").forEach((form) => {
+  const projectOptions = [...form.querySelectorAll('input[name="project_type"]')];
+
+  projectOptions.forEach((input) => {
+    ["change", "input"].forEach((eventName) => {
+      input.addEventListener(eventName, () => {
+        syncProjectTypeValidity(projectOptions);
+      });
+    });
+  });
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const status = form.querySelector("[data-form-status]");
     const endpoint = form.dataset.ghlWebhook || "/api/leads";
     const submitButton = form.querySelector('button[type="submit"]');
-    const projectOptions = [...form.querySelectorAll('input[name="project_type"]')];
-    const selectedProjects = projectOptions.filter((input) => input.checked);
 
-    if (projectOptions.length && selectedProjects.length === 0) {
-      projectOptions[0].setCustomValidity("Select at least one project type.");
+    if (!syncProjectTypeValidity(projectOptions)) {
       projectOptions[0].reportValidity();
       return;
     }
-
-    projectOptions.forEach((input) => input.setCustomValidity(""));
 
     if (status) status.textContent = "Preparing your request...";
     if (submitButton) {
