@@ -3609,6 +3609,7 @@ function renderProofQueueGrid(items, currentUrl) {
               <span class="page-card-link__media">${renderImg(currentUrl, item.image, item.alt || item.title)}</span>
               ${item.kicker ? `<p class="eyebrow page-card-link__kicker">${escapeHtml(item.kicker)}</p>` : ""}
               <h3>${escapeHtml(item.title)}</h3>
+              ${item.stars ? renderReviewStars() : ""}
               <p>${escapeHtml(item.text)}</p>
               ${item.status ? `<span class="proof-status">${escapeHtml(item.status)}</span>` : ""}
               ${
@@ -3802,6 +3803,137 @@ function buildSupportCityLinks(currentUrl, market) {
     alt: `${city.name} service area support page`,
     cta: "Explore city page"
   }));
+}
+
+function renderReviewStars(className = "review-stars") {
+  return `
+    <div class="${className}" aria-label="5 out of 5 stars">
+      <span aria-hidden="true">★</span>
+      <span aria-hidden="true">★</span>
+      <span aria-hidden="true">★</span>
+      <span aria-hidden="true">★</span>
+      <span aria-hidden="true">★</span>
+    </div>
+  `;
+}
+
+function renderMiniReviewCard(entry, currentUrl) {
+  return `
+    <article class="review-excerpt-mini">
+      ${renderReviewStars()}
+      <p class="review-excerpt-mini__quote">${escapeHtml(entry.quote)}</p>
+      <div class="review-excerpt-mini__meta">
+        <strong>${escapeHtml(entry.reviewerLabel || "Local homeowner")}</strong>
+        <span>${escapeHtml(entry.source || "Approved review excerpt")}</span>
+      </div>
+      ${
+        entry.targetUrl && entry.targetLabel
+          ? `<a class="page-card-link__cta" href="${hrefFrom(currentUrl, entry.targetUrl)}">${escapeHtml(entry.targetLabel)}</a>`
+          : ""
+      }
+    </article>
+  `;
+}
+
+function marketHubReviewEntries(marketSlug) {
+  return approvedReviewEntries({ marketSlug }).filter((entry) => !entry.city);
+}
+
+function renderMarketReviewWidget(currentUrl, market) {
+  const reviewEntries = marketHubReviewEntries(market.slug);
+
+  return `
+    <aside class="review-widget review-widget--market" aria-label="${escapeHtml(market.shortName)} Google review widget">
+      <div class="review-widget__header">
+        <div class="google-mark" aria-hidden="true">
+          <span>G</span>
+        </div>
+        <div>
+          <p class="panel-kicker">Google Reviews</p>
+          <h2>${escapeHtml(market.shortName)} homeowner feedback</h2>
+        </div>
+      </div>
+      <div class="review-widget__stack">
+        <div class="review-widget__shell">
+          <strong>${escapeHtml(market.shortName)} review widget zone</strong>
+          <p>Use this area for the actual Google Business Profile review widget tied to the ${escapeHtml(
+            market.shortName
+          )} market so the location hub carries the fuller live review feed.</p>
+          <a class="page-card-link__cta" href="${hrefFrom(currentUrl, "/reviews/")}">Open review library</a>
+        </div>
+        ${
+          reviewEntries.length
+            ? `
+              <div class="review-carousel" aria-label="${escapeHtml(market.shortName)} approved homeowner excerpts">
+                <div class="review-carousel__track">
+                  ${reviewEntries
+                    .map(
+                      (entry) => `
+                        <article class="review-carousel__card">
+                          ${renderReviewStars()}
+                          <p class="review-carousel__quote">${escapeHtml(entry.quote)}</p>
+                          <div class="review-carousel__meta">
+                            <strong>${escapeHtml(entry.reviewerLabel || "Local homeowner")}</strong>
+                            <span>${escapeHtml(entry.source || "Approved review excerpt")}</span>
+                          </div>
+                        </article>
+                      `
+                    )
+                    .join("")}
+                </div>
+              </div>
+            `
+            : ""
+        }
+      </div>
+    </aside>
+  `;
+}
+
+function renderCityReviewWidget(currentUrl, market, city) {
+  const reviewEntries = approvedReviewEntries({ marketSlug: market.slug })
+    .filter((entry) => entry.city === city.slug)
+    .slice(0, 3);
+
+  if (reviewEntries.length) {
+    return `
+      <aside class="review-widget review-widget--city" aria-label="${escapeHtml(city.shortName)} homeowner reviews">
+        <div class="review-widget__header">
+          <div class="google-mark" aria-hidden="true">
+            <span>G</span>
+          </div>
+          <div>
+            <p class="panel-kicker">Local homeowner reviews</p>
+            <h2>${escapeHtml(city.shortName)} trust signals</h2>
+          </div>
+        </div>
+        <div class="review-excerpt-list">
+          ${reviewEntries.map((entry) => renderMiniReviewCard(entry, currentUrl)).join("")}
+        </div>
+      </aside>
+    `;
+  }
+
+  return `
+    <aside class="review-widget review-widget--city" aria-label="${escapeHtml(city.shortName)} homeowner reviews">
+      <div class="review-widget__header">
+        <div class="google-mark" aria-hidden="true">
+          <span>G</span>
+        </div>
+        <div>
+          <p class="panel-kicker">Local homeowner reviews</p>
+          <h2>${escapeHtml(city.shortName)} proof path</h2>
+        </div>
+      </div>
+      <div class="review-widget__shell">
+        <strong>${escapeHtml(city.shortName)} excerpt zone</strong>
+        <p>Use this section for individual approved homeowner excerpts that match the attic issues, service mix, and local trust questions most relevant near ${escapeHtml(
+          city.shortName
+        )}.</p>
+        <a class="page-card-link__cta" href="${hrefFrom(currentUrl, "/reviews/")}">Open review library</a>
+      </div>
+    </aside>
+  `;
 }
 
 function buildMarketEvidenceGallery(market) {
@@ -4418,24 +4550,7 @@ function buildMarketPage(market) {
       <div class="media-caption">
         <p>A <span class="gradient-text">Good Attic</span> quietly changes how your ${escapeHtml(market.shortName)} home feels.</p>
       </div>
-      <aside class="review-widget" aria-label="Google review preview">
-        <div class="review-widget__header">
-          <div class="google-mark" aria-hidden="true">
-            <span>G</span>
-          </div>
-          <div>
-            <p class="panel-kicker">Google Reviews</p>
-            <h2>Trusted by homeowners</h2>
-          </div>
-        </div>
-        <div class="review-score">
-          <strong>5.0</strong>
-          <div>
-            <div class="stars" aria-label="Five star rating">★★★★★</div>
-            <p>Homeowners in ${escapeHtml(market.shortName)} value clean work, clear communication, and attic results they can see.</p>
-          </div>
-        </div>
-      </aside>
+      ${renderMarketReviewWidget(currentUrl, market)}
     </section>
 
     <section id="services" class="service-showcase section reveal" data-service-carousel>
@@ -5027,7 +5142,7 @@ function buildServicePage(market, service) {
               : `The homeowner feedback themes that should reinforce ${service.name.toLowerCase()} in ${market.shortName}.`
           )}</h2>
         </div>
-        ${renderProofQueueGrid(buildReviewExcerptCards({ marketSlug: market.slug, serviceSlug: service.slug }), currentUrl)}
+        ${renderProofQueueGrid(buildReviewExcerptCards({ marketSlug: market.slug, serviceSlug: service.slug, limit: 3 }), currentUrl)}
       </section>
 
       <section class="section">
@@ -5125,14 +5240,93 @@ function buildCityPage(market, city) {
       "Clear local guidance without unsupported office claims"
     ],
     render: (currentUrl) => `
-      ${renderHero(currentUrl, page, {
-        eyebrow: `Service Area • ${city.name}`,
-        cardKicker: "Local service coverage",
-        cardTitle: `${city.shortName} homeowners can start with the ${market.shortName} Good Attic team.`,
-        cardText:
-          `Good Attic uses this local page to confirm coverage, explain common attic issues nearby, and point homeowners toward the right service pages and ${marketPhone.phoneDisplay} local contact path.`,
-        cardPoints: city.whyCall
-      })}
+      ${renderHiddenBreadcrumbs(page, currentUrl)}
+      <section class="hero section-pin hero--city">
+        <div class="hero-copy reveal">
+          <div class="hero-review-banner" aria-label="Google review rating">
+            <span class="hero-review-banner__google">G</span>
+            <strong>5.0</strong>
+            <span class="hero-review-banner__stars" aria-label="Five star rating">★★★★★</span>
+            <span>Google Reviews</span>
+          </div>
+          <p class="eyebrow">Service Area • ${escapeHtml(city.name)}</p>
+          <h1 class="hero-display">${escapeHtml(page.h1)}</h1>
+          <p class="hero-text">${escapeHtml(page.intro)}</p>
+          <div class="hero-actions">
+            <button class="button primary" type="button" data-open-modal>Get A Free Attic Assessment</button>
+            <div class="hero-actions__secondary">
+              <a class="button secondary" href="${marketPhone.phoneHref}">Call Us</a>
+              <a class="button secondary" href="${marketPhone.smsHref}">Text Us</a>
+            </div>
+          </div>
+          <div class="hero-service-carousel" aria-label="Good Attic services near ${escapeHtml(city.shortName)}">
+            <button class="hero-service-arrow hero-service-arrow--prev" type="button" aria-label="Scroll services left">&larr;</button>
+            <div class="hero-service-window">
+              <div class="hero-service-track">
+                ${serviceCatalog
+                  .map(
+                    (service) => `
+                      <a class="hero-service-card" href="${hrefFrom(currentUrl, `/${market.slug}/${service.slug}/`)}">
+                        <img src="${escapeHtml(assetHref(currentUrl, service.image))}" alt="">
+                        <span>${escapeHtml(serviceUiName(service))}</span>
+                      </a>
+                    `
+                  )
+                  .join("")}
+              </div>
+            </div>
+            <button class="hero-service-arrow hero-service-arrow--next" type="button" aria-label="Scroll services right">&rarr;</button>
+          </div>
+        </div>
+
+        <div class="inspection-lead inspection-lead--module reveal">A <span class="gradient-text">Good Attic</span> gives ${escapeHtml(
+          city.shortName
+        )} homeowners a clearer attic path.</div>
+
+        <div class="hero-device attic-card reveal" aria-label="${escapeHtml(city.shortName)} attic inspection summary">
+          <div class="inspection-panel">
+            <p class="panel-kicker">${escapeHtml(city.shortName)} Attic Health Score</p>
+            <div class="score-row">
+              <div class="score-column">
+                <div class="score-ring score-ring--before" data-score-ring data-score="38">
+                  <strong data-score-value>0</strong>
+                  <span>before Good Attic</span>
+                </div>
+                <div class="inspection-list inspection-list--before">
+                  ${city.commonProblems
+                    .map(
+                      (problem) => `
+                        <p><span></span> ${escapeHtml(problem.title)}</p>
+                      `
+                    )
+                    .join("")}
+                </div>
+              </div>
+              <div class="score-column">
+                <div class="score-ring score-ring--after" data-score-ring data-score="96">
+                  <strong data-score-value>0</strong>
+                  <span>after Good Attic</span>
+                </div>
+                <div class="inspection-list">
+                  <p><span></span> Scope matched to the attic evidence</p>
+                  <p><span></span> Insulation, sealing, and cleanup sequenced clearly</p>
+                  <p><span></span> Local service path routed through ${escapeHtml(market.shortName)}</p>
+                  <p><span></span> Photo-based findings documented for the homeowner</p>
+                  <p><span></span> Next step tied to comfort and attic condition</p>
+                </div>
+              </div>
+            </div>
+            <button class="button primary" type="button" data-open-modal>Schedule a Visit</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="media-band reveal">
+        <div class="media-caption">
+          <p>${escapeHtml(city.shortName)} attic projects should feel local, documented, and easier to trust.</p>
+        </div>
+        ${renderCityReviewWidget(currentUrl, market, city)}
+      </section>
 
       <section class="section">
         <div class="section-heading reveal">
@@ -5596,16 +5790,29 @@ function documentedProofEntries(scope = {}) {
 function buildReviewExcerptCards(scope = {}) {
   const market = scope.marketSlug ? marketBySlug(scope.marketSlug) : null;
   const service = scope.serviceSlug ? serviceBySlug(scope.serviceSlug) : null;
-  const actualEntries = approvedReviewEntries(scope);
+  let actualEntries = approvedReviewEntries(scope);
+
+  if (scope.citySlug) {
+    actualEntries = actualEntries.filter((entry) => entry.city === scope.citySlug);
+  }
+
+  if (scope.serviceSlug) {
+    actualEntries = actualEntries.filter((entry) => entry.serviceSlug === scope.serviceSlug);
+  }
+
+  if (typeof scope.limit === "number") {
+    actualEntries = actualEntries.slice(0, scope.limit);
+  }
 
   if (actualEntries.length) {
     return actualEntries.map((entry) => ({
       kicker: entry.source || "Approved review excerpt",
       title: entry.title || entry.reviewerLabel || "Homeowner excerpt",
       text: entry.quote,
+      stars: true,
       image: entry.image || proofAssets.sales,
       alt: entry.alt || entry.title || entry.reviewerLabel || "Approved homeowner review excerpt",
-      status: "Approved excerpt",
+      status: "Approved 5-star excerpt",
       meta: [entry.market ? `Market: ${marketBySlug(entry.market)?.name || entry.market}` : null, entry.focus || null].filter(Boolean),
       url: entry.targetUrl || "/reviews/",
       cta: entry.targetLabel || "Open target page"
@@ -7714,7 +7921,7 @@ function renderCorePage(page, currentUrl) {
               : "These are shells for real homeowner feedback, not fabricated quotes. Once approved excerpts exist, they can be dropped into the shared data layer and flow to the correct proof and market pages."
           )}</p>
         </div>
-        ${renderProofQueueGrid(buildReviewExcerptCards({}), currentUrl)}
+        ${renderProofQueueGrid(buildReviewExcerptCards({ limit: 12 }), currentUrl)}
       </section>
 
       <section class="section">

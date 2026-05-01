@@ -973,6 +973,134 @@ h3 {
   border-radius: 50%;
 }
 
+.review-widget__shell {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius);
+}
+
+.review-widget__stack {
+  display: grid;
+  gap: 14px;
+}
+
+.review-widget__shell strong {
+  color: var(--white);
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.review-widget__shell p {
+  margin: 0;
+  color: #dcebe5;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.review-widget__shell .page-card-link__cta,
+.review-excerpt-mini .page-card-link__cta {
+  justify-self: start;
+  color: var(--cyan);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.review-excerpt-list {
+  display: grid;
+  gap: 12px;
+}
+
+.review-excerpt-mini {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius);
+}
+
+.review-stars {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  color: #f5cc64;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+.review-stars span {
+  line-height: 1;
+}
+
+.review-excerpt-mini__quote {
+  margin: 0;
+  color: var(--white);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.review-excerpt-mini__meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  color: #dcebe5;
+  font-size: 12px;
+}
+
+.review-excerpt-mini__meta strong {
+  color: var(--white);
+  font-size: 13px;
+}
+
+.review-carousel {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.review-carousel__track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(260px, 320px);
+  gap: 12px;
+}
+
+.review-carousel__card {
+  display: grid;
+  gap: 10px;
+  min-height: 100%;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius);
+  scroll-snap-align: start;
+}
+
+.review-carousel__quote {
+  margin: 0;
+  color: var(--white);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.review-carousel__meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  color: #dcebe5;
+  font-size: 12px;
+}
+
+.review-carousel__meta strong {
+  color: var(--white);
+  font-size: 13px;
+}
+
 .attic-map.section {
   display: grid;
   grid-template-columns: minmax(360px, 0.72fr) minmax(460px, 1fr);

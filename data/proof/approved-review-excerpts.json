@@ -2,173 +2,1082 @@
   "_notes": [
     "Use only real homeowner review excerpts that have been approved for website use.",
     "Valid market values: salt-lake-city-ut, st-louis-mo, kansas-city-mo.",
-    "Valid serviceSlug values: attic-insulation, insulation-removal, attic-pest-remediation, attic-fans, attic-air-sealing.",
-    "City is optional and should match a support city slug like chesterfield-mo or leawood-ks.",
-    "targetUrl should be the page where the excerpt should link or reinforce."
+    "The city field in this file controls which city page an excerpt reinforces. Nearby reviews may be intentionally routed to a city page when exact-city review volume is thin.",
+    "Reviews without a city assignment stay on the market hub carousel for that metro.",
+    "Service slugs are applied only when the review text clearly supports a specific service page."
   ],
   "items": [
     {
       "reviewerLabel": "Anne Pingree",
-      "source": "Google review",
-      "focus": "communication and respectful crews",
+      "source": "Google 5-star review",
+      "focus": "communication and homeowner updates",
       "market": "salt-lake-city-ut",
       "serviceSlug": "attic-insulation",
       "city": "sandy-ut",
       "quote": "A few days ago, Good Attic installed insulation over our 3-car garage. It is a project we have wanted to do for a long time and should have done it earlier. From start to finish, it was a pleasure to work with them. They were quick to give us a bid, schedule an appointment and get the work done. Great communication. I also really liked the two men that did the job. They were respectful and hard working. I highly recommend this company!",
       "image": "assets/attic-insulation.png",
-      "alt": "Google review excerpt for attic insulation in Sandy, Utah",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
       "targetUrl": "/salt-lake-city-ut/service-areas/sandy-ut/",
-      "targetLabel": "Open Sandy city page"
+      "targetLabel": "Open Sandy city page",
+      "tags": [
+        "Sandy"
+      ]
+    },
+    {
+      "reviewerLabel": "Tracy Diaz",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "herriman-ut",
+      "quote": "Great pricing, professional and quick! I highly recommend them. Thank you Austin, Dylan and Mateo for your professionalism and the quick instillation.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/herriman-ut/",
+      "targetLabel": "Open Herriman city page",
+      "tags": [
+        "West Valley City"
+      ]
     },
     {
       "reviewerLabel": "DooHyun Kwon",
-      "source": "Google review",
-      "focus": "air sealing, flexibility, and rebates",
+      "source": "Google 5-star review",
+      "focus": "rebate help and project follow-through",
       "market": "salt-lake-city-ut",
       "serviceSlug": "attic-air-sealing",
       "city": "sandy-ut",
       "quote": "Good Attic Insulation crew was great! They removed my old insulation, air sealed, and added brand new fiberglass insulation. There were electrical issues in the attic, but Good Attic was flexible with my situation and worked with me to get an electrician to fix the problems and came back right after that was done. Crew was nice and friendly and Patrick even helped with all the Rockymountainpower and Dominion Energy rebates. Now ready for winter, highly recommend!",
       "image": "assets/attic-air-sealing.png",
-      "alt": "Google review excerpt for attic air sealing in Sandy, Utah",
+      "alt": "Google 5-star review for attic air sealing in the Salt Lake market",
       "targetUrl": "/salt-lake-city-ut/service-areas/sandy-ut/",
-      "targetLabel": "Open Sandy city page"
+      "targetLabel": "Open Sandy city page",
+      "tags": [
+        "Sandy"
+      ]
     },
     {
-      "reviewerLabel": "Devon Wilhite",
-      "source": "Google review",
-      "focus": "clear options and before-and-after documentation",
+      "reviewerLabel": "Taylor Checketts",
+      "source": "Google 5-star review",
+      "focus": "clean work and homeowner respect",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "herriman-ut",
+      "quote": "Great experience! Fast turnaround—clean and fast and best price we were quoted. Helped us get the rebates and the paperwork for the tax credit. Would recommend.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/herriman-ut/",
+      "targetLabel": "Open Herriman city page",
+      "tags": [
+        "West Valley City"
+      ]
+    },
+    {
+      "reviewerLabel": "Natasha Seegert",
+      "source": "Google 5-star review",
+      "focus": "communication and homeowner updates",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "insulation-removal",
+      "city": "millcreek-ut",
+      "quote": "Austin and his crews were amazing! We had a tricky project due to a combination of a very narrow attic hatch (old house), and the installation of Rock Wool which requires a special order from Texas. Despite numerous setbacks of getting the Rock Wool to SLC due to the Christmas holidays, Austin's crew ultimately made it happen. They were extremely communicative during the whole process. They made it happen by the end if the year, and they went above and beyond replacing some venting that was done poorly by a former contractor and was a fire hazard. Hard working, communicative, and honest describe Good Attic. A special shout out to Mateo and Dillon for the removal of old insulation and getting it cleaned out, and to Randy and Angel for the installation of our fantastic new insulation.",
+      "image": "assets/attic-insulation-removal.png",
+      "alt": "Google 5-star review for insulation removal in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/millcreek-ut/",
+      "targetLabel": "Open Millcreek city page",
+      "tags": [
+        "Salt Lake City"
+      ]
+    },
+    {
+      "reviewerLabel": "David Vickers",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
       "market": "salt-lake-city-ut",
       "serviceSlug": "attic-insulation",
-      "city": "sandy-ut",
-      "quote": "James evaluated our attic insulation needs and presented multiple options for moving forward. The professionals who performed the service were courteous and efficient, completing the job as promised and providing before-and-after photos for reference.",
+      "city": "sugar-house-ut",
+      "quote": "Good Attic installed insulation in our roof area. They did an excellent job. That afternoon we had turn down our heater it made such a difference. Our gas usage is down a third from what it was.",
       "image": "assets/attic-insulation.png",
-      "alt": "Google review excerpt for attic insulation in Sandy, Utah",
-      "targetUrl": "/salt-lake-city-ut/service-areas/sandy-ut/",
-      "targetLabel": "Open Sandy city page"
-    },
-    {
-      "reviewerLabel": "Randy Harrison",
-      "source": "Google review",
-      "focus": "attic fan guidance and honest recommendations",
-      "market": "salt-lake-city-ut",
-      "serviceSlug": "attic-fans",
-      "city": "south-jordan-ut",
-      "quote": "Mason came and inspected our insulation levels, baffles by the soffit, recommended Solar fans if I wanted additional air flow. No high pressure, honest approach and recommendations. We had a Solar Fan installed on our garage, they sent out two remarkable young men, Angel and Dylan, very respectful, knowledgeable and efficient. I highly recommend them and Good Attic, honesty, integrity and amazing customer service.",
-      "image": "assets/attic-fans.png",
-      "alt": "Google review excerpt for attic fans in South Jordan, Utah",
-      "targetUrl": "/salt-lake-city-ut/service-areas/south-jordan-ut/",
-      "targetLabel": "Open South Jordan city page"
-    },
-    {
-      "reviewerLabel": "Annie Clark",
-      "source": "Google review",
-      "focus": "thoroughness and attention to detail",
-      "market": "salt-lake-city-ut",
-      "serviceSlug": "attic-insulation",
-      "city": "south-jordan-ut",
-      "quote": "Good attic cost a little more than some competitors quotes. But no other competitor could match their thoroughness and attention to detail! I was very impressed.",
-      "image": "assets/attic-insulation.png",
-      "alt": "Google review excerpt for attic insulation in South Jordan, Utah",
-      "targetUrl": "/salt-lake-city-ut/service-areas/south-jordan-ut/",
-      "targetLabel": "Open South Jordan city page"
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/sugar-house-ut/",
+      "targetLabel": "Open Sugar House city page",
+      "tags": [
+        "Salt Lake City"
+      ]
     },
     {
       "reviewerLabel": "Steve Allen",
-      "source": "Google review",
-      "focus": "insulation results and solar attic fan value",
+      "source": "Google 5-star review",
+      "focus": "clear pricing and scope",
       "market": "salt-lake-city-ut",
       "serviceSlug": "attic-fans",
       "city": "west-jordan-ut",
       "quote": "Found out during pre-purchase home inspection when we bought our house from its second owner that the builder had neglected to insulate the attic that’s over the front room when they built a home in 2008. Got a reasonable and fair bid from Good Attic. Excellent price. Crew was professional and quick.Superb result. Already using less heat the day after they insulated that and increased the insulation above the bedrooms from 13 to 24 inches. Looking forward to seeing the summer results of the solar-powered attic fan they install installed at a nice discount. Definitely recommend.",
       "image": "assets/attic-fans.png",
-      "alt": "Google review excerpt for attic fans in West Jordan, Utah",
+      "alt": "Google 5-star review for attic fans in the Salt Lake market",
       "targetUrl": "/salt-lake-city-ut/service-areas/west-jordan-ut/",
-      "targetLabel": "Open West Jordan city page"
+      "targetLabel": "Open West Jordan city page",
+      "tags": [
+        "West Jordan"
+      ]
+    },
+    {
+      "reviewerLabel": "Randy Harrison",
+      "source": "Google 5-star review",
+      "focus": "attic fan guidance and airflow support",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-fans",
+      "city": "south-jordan-ut",
+      "quote": "Mason came and inspected our insulation levels, baffles by the soffit, recommended Solar fans if I wanted additional air flow. No high pressure, honest approach and recommendations. We had a Solar Fan installed on our garage, they sent out two remarkable young men, Angel and Dylan, very respectful, knowledgeable and efficient. I highly recommend them and Good Attic, honesty, integrity and amazing customer service.",
+      "image": "assets/attic-fans.png",
+      "alt": "Google 5-star review for attic fans in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/south-jordan-ut/",
+      "targetLabel": "Open South Jordan city page",
+      "tags": [
+        "South Jordan"
+      ]
+    },
+    {
+      "reviewerLabel": "Casey Hill",
+      "source": "Google 5-star review",
+      "focus": "clear pricing and scope",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "cottonwood-heights-ut",
+      "quote": "They were the best price, were prompt and and did great work.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/cottonwood-heights-ut/",
+      "targetLabel": "Open Cottonwood Heights city page",
+      "tags": [
+        "Salt Lake City"
+      ]
+    },
+    {
+      "reviewerLabel": "Larry Litchfield",
+      "source": "Google 5-star review",
+      "focus": "clean work and homeowner respect",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": "american-fork-ut",
+      "quote": "The team was very quick and professional. They cleaned everything up after they were finished. They did a great job. I would definitely recommend the Good Attic team for any insulation job.",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/american-fork-ut/",
+      "targetLabel": "Open American Fork city page",
+      "tags": [
+        "Pleasant Grove"
+      ]
+    },
+    {
+      "reviewerLabel": "Annie Clark",
+      "source": "Google 5-star review",
+      "focus": "clear pricing and scope",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "south-jordan-ut",
+      "quote": "Good attic cost a little more than some competitors quotes. But no other competitor could match their thoroughness and attention to detail! I was very impressed.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/south-jordan-ut/",
+      "targetLabel": "Open South Jordan city page",
+      "tags": [
+        "South Jordan"
+      ]
+    },
+    {
+      "reviewerLabel": "Devon Wilhite",
+      "source": "Google 5-star review",
+      "focus": "before-and-after documentation",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": "sandy-ut",
+      "quote": "James evaluated our attic insulation needs and presented multiple options for moving forward. The professionals who performed the service were courteous and efficient, completing the job as promised and providing before-and-after photos for reference.",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/sandy-ut/",
+      "targetLabel": "Open Sandy city page",
+      "tags": [
+        "Sandy"
+      ]
+    },
+    {
+      "reviewerLabel": "Douglas Black",
+      "source": "Google 5-star review",
+      "focus": "clean work and homeowner respect",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": "holladay-ut",
+      "quote": "Good Attic responded very quickly and arranged to come and provided an estimate. Their proposal was very detailed as to what would be provided and the cost of each component. The three gentlemen who installed the insulation could not have been nicer or worked any harder. When the work was completed they made sure the entire area was spotless. It was a pleasure working with this company",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/holladay-ut/",
+      "targetLabel": "Open Holladay city page",
+      "tags": [
+        "Salt Lake City"
+      ]
     },
     {
       "reviewerLabel": "Norma Newell",
-      "source": "Google review",
-      "focus": "value, speed, and comfort improvement",
+      "source": "Google 5-star review",
+      "focus": "clear pricing and scope",
       "market": "salt-lake-city-ut",
       "serviceSlug": "attic-insulation",
       "city": "american-fork-ut",
       "quote": "After having my water pipes freeze a couple of times, a friend recommended Good Attic. I had already received a couple of estimates for new insulation in my attic, but Good Attic's quote included more & was much less than the others. They completed the work very quickly and showed me before & after pictures. No more frozen pipes!!!",
       "image": "assets/attic-insulation.png",
-      "alt": "Google review excerpt for attic insulation in American Fork, Utah",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
       "targetUrl": "/salt-lake-city-ut/service-areas/american-fork-ut/",
-      "targetLabel": "Open American Fork city page"
+      "targetLabel": "Open American Fork city page",
+      "tags": [
+        "American Fork"
+      ]
+    },
+    {
+      "reviewerLabel": "Kyle Norris",
+      "source": "Google 5-star review",
+      "focus": "clean work and homeowner respect",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "insulation-removal",
+      "city": "sugar-house-ut",
+      "quote": "We needed to replace our attic’s insulation and the folks at Good Attic did an amazing job. They detailed the complete job as to how it would be done and were very transparent with their pricing. Very clean and careful. I’d recommend them heartily.",
+      "image": "assets/attic-insulation-removal.png",
+      "alt": "Google 5-star review for insulation removal in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/sugar-house-ut/",
+      "targetLabel": "Open Sugar House city page",
+      "tags": [
+        "Salt Lake City"
+      ]
+    },
+    {
+      "reviewerLabel": "Katie Morris",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": "west-jordan-ut",
+      "quote": "From start to finish they are awesome! They are professional and take such great care of their customers. So happy we went with them for our insulation project!!",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/west-jordan-ut/",
+      "targetLabel": "Open West Jordan city page",
+      "tags": [
+        "Queen Creek | South Jordan | West Jordan"
+      ]
+    },
+    {
+      "reviewerLabel": "William Allen",
+      "source": "Google 5-star review",
+      "focus": "communication and homeowner updates",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": "holladay-ut",
+      "quote": "The crew that came to our home went above and beyond. Our 1947 vintage home had more old insulation than planned. They got it all and the new in, all in one day. To say the least it was a big job. Review of the pictures they took showed a couple areas where more was needed. The called me and the crew came out and added a bit more. Top notch service and communication, if you are looking for this service look no further. Five stars and they deserve it.",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/holladay-ut/",
+      "targetLabel": "Open Holladay city page",
+      "tags": [
+        "Salt Lake City"
+      ]
+    },
+    {
+      "reviewerLabel": "Tyson Yates",
+      "source": "Google 5-star review",
+      "focus": "attic fan guidance and airflow support",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "south-jordan-ut",
+      "quote": "They did a fantastic job, were professional and helpful. Mason was a great sales guy and made the whole process easy!",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/south-jordan-ut/",
+      "targetLabel": "Open South Jordan city page",
+      "tags": [
+        "South Jordan"
+      ]
+    },
+    {
+      "reviewerLabel": "Danielle Bradshaw",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "holladay-ut",
+      "quote": "Highly recommend Patrick and his Good Attic business. Lincoln, Kevin and Josue were efficient, detail oriented and very professional. I was impressed with how polite, and respectful this team was while working in my home. Services Drywall installation",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/holladay-ut/",
+      "targetLabel": "Open Holladay city page",
+      "tags": [
+        "Cottonwood Heights | Holladay Cottonwood"
+      ]
+    },
+    {
+      "reviewerLabel": "Paul Shaw",
+      "source": "Google 5-star review",
+      "focus": "clean work and homeowner respect",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "west-jordan-ut",
+      "quote": "Patrick and his team were terrific! They are very personable and have your best interest in mind as a consumer. The team worked quickly and cleanly. I would highly recommend working with them! Services Service not listed",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/west-jordan-ut/",
+      "targetLabel": "Open West Jordan city page",
+      "tags": [
+        "West Jordan"
+      ]
+    },
+    {
+      "reviewerLabel": "Sean Cox",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": "millcreek-ut",
+      "quote": "Hired this company to blow in insulation in the basement ceiling that was already finished. This is a tricky project, but they did a great job of getting it done. When there was an issue of the patch work for the holes they had to put in the Sheetrock Patrick the owner stepped in and made sure it was fixed properly and went above and beyond what was agreed on. Not everything goes as planned, but this is a company that has standards and makes sure to hit them. Thank you Good Attic team and Patrick for everything. This is a company you can feel safe working with.",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/millcreek-ut/",
+      "targetLabel": "Open Millcreek city page",
+      "tags": [
+        "Salt Lake City"
+      ]
+    },
+    {
+      "reviewerLabel": "Annika Smith",
+      "source": "Google 5-star review",
+      "focus": "attic fan guidance and airflow support",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-fans",
+      "city": "herriman-ut",
+      "quote": "They were efficient and had great customer sevice when our HOA was a problem and we couldn't install the attic fan. They did a great job on the insultaion. I would recommend them.",
+      "image": "assets/attic-fans.png",
+      "alt": "Google 5-star review for attic fans in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/herriman-ut/",
+      "targetLabel": "Open Herriman city page",
+      "tags": [
+        "Murray | Lehi | Lewistown | Eagle Mountain | Herriman | Bountiful | Alpine | Salt Lake City"
+      ]
+    },
+    {
+      "reviewerLabel": "Melanie Marier",
+      "source": "Google 5-star review",
+      "focus": "clean work and homeowner respect",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": "millcreek-ut",
+      "quote": "They did a great job of cleaning, installing vents and re-insulating two attic spaces of our house just before the winter and we can easily feel a difference. Can’t wait to see the difference in the summer too. Everyone was very professional and attentive to details.",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/millcreek-ut/",
+      "targetLabel": "Open Millcreek city page",
+      "tags": [
+        "Salt Lake City"
+      ]
+    },
+    {
+      "reviewerLabel": "Jordan Morrell",
+      "source": "Google 5-star review",
+      "focus": "clean work and homeowner respect",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "draper-ut",
+      "quote": "The crew at Good Attic was amazing. They were up front and honest about my needs and they completed the work on time. They worked efficiently and cleaned up when they were through. I highly recommend them.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/draper-ut/",
+      "targetLabel": "Open Draper city page",
+      "tags": [
+        "Sandy"
+      ]
+    },
+    {
+      "reviewerLabel": "Sophia Peck",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "cottonwood-heights-ut",
+      "quote": "These guys are absolutely fabulous, worth ever star! They were so respectful and did it in a timely manner. Definitely will be recommending this company to other people!",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/cottonwood-heights-ut/",
+      "targetLabel": "Open Cottonwood Heights city page",
+      "tags": [
+        "Salt Lake City | Cottonwood Heights"
+      ]
+    },
+    {
+      "reviewerLabel": "Barbara Edelberg",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "draper-ut",
+      "quote": "Very professional and customer oriented. Added some extra tasks and they got on it right away. Couldn't be happier. Highly recommend!",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/draper-ut/",
+      "targetLabel": "Open Draper city page",
+      "tags": [
+        "Sandy"
+      ]
+    },
+    {
+      "reviewerLabel": "Andrew Ford",
+      "source": "Google 5-star review",
+      "focus": "communication and homeowner updates",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "american-fork-ut",
+      "quote": "James was promptly, a good communicator and conducted himself professionally I’d recommend him to family and friends.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/american-fork-ut/",
+      "targetLabel": "Open American Fork city page",
+      "tags": [
+        "Highland"
+      ]
+    },
+    {
+      "reviewerLabel": "Cory Sturzenegger",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "draper-ut",
+      "quote": "Great working with this team.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/draper-ut/",
+      "targetLabel": "Open Draper city page",
+      "tags": [
+        "Draper"
+      ]
+    },
+    {
+      "reviewerLabel": "Grace Peck",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "cottonwood-heights-ut",
+      "quote": "This company deserves every star! They were timely and efficient, and every interaction was a positive one. Exceeded my expectations!",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/cottonwood-heights-ut/",
+      "targetLabel": "Open Cottonwood Heights city page",
+      "tags": [
+        "Salt Lake City | Cottonwood Heights"
+      ]
+    },
+    {
+      "reviewerLabel": "Steven Teerlink",
+      "source": "Google 5-star review",
+      "focus": "clean work and homeowner respect",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": "sugar-house-ut",
+      "quote": "They called me within minutes of asking for a bid on Angi. Mason arrived at the appointed time. He was very knowledgeable and professional. He explained the options and closed the sale. The crew arrived at the appointed time went right to work. Young men that I was comfortable having in my home. In a few hours they were cleaned up and gone. Katy is helping with the paperwork to get refunded. An all around great experience. A very impressive company.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/service-areas/sugar-house-ut/",
+      "targetLabel": "Open Sugar House city page",
+      "tags": [
+        "Salt Lake City"
+      ]
+    },
+    {
+      "reviewerLabel": "Mr Rogers",
+      "source": "Google 5-star review",
+      "focus": "communication and homeowner updates",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-air-sealing",
+      "city": null,
+      "quote": "Our house has always had two extreme temperatures. The basement is a freezer during the summer, and the upstairs is an oven. During the winter, the upstairs is a freezer, and the basement is an oven. Never a consistent and comfortable temperature. My kids always complain about being too hot or too cold. Worse yet, my electricity bill has been insane—over $140 more than our previous houses. I did a ton of research on attics, insulation, roofs, ventilation, soffit, facia, fans, etc. And I got bids from four different companies. Good Attic was by far the most holistic, professional, and transparent. They put together an estimate that addressed all my concerns and provided documentation and information that made it clear why I was having these problems and how to solve them. Then they delivered as promised!! They worked around my schedule, which was all over the plays due to some other work I was having done by electricians (installing new lights and outlets). The result is impressive! They cleaned, sealed, and insulated, and I can immediately feel the difference (and so can my wife and kids!) Of all the companies I talked to about doing this, I am glad I went with Good Attic. Excellent communication, holistic (doing the job well to ensure all problems are done, not just to get paid), professional, and clean. I am looking forward to my electricity bill going down and a consistent temperature throughout the year throughout my house!!",
+      "image": "assets/attic-air-sealing.png",
+      "alt": "Google 5-star review for attic air sealing in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "South Jordan | Lehi | Sandy | Highland | Salt Lake City"
+      ]
     },
     {
       "reviewerLabel": "Kinzi Pierce",
-      "source": "Google review",
-      "focus": "honesty, attic inspection transparency, and visible results",
+      "source": "Google 5-star review",
+      "focus": "clean work and homeowner respect",
       "market": "salt-lake-city-ut",
-      "serviceSlug": "attic-insulation",
+      "serviceSlug": null,
+      "city": null,
       "quote": "Highly recommend! Good Attic is super efficient and friendly. They work to earn your business. They are 100% honest and transparent. Other competitive companies I had come out to quote weren't even able to get up through the access panel and still tried to give me an estimate. When the gentleman from Good Attic came out to quote, he was actually able to get up in the attic. He walked around, took a video of the whole thing, and showed me everything they were going to do. They moved quickly during install, got the job done in one day. They did a clean professional job and made sure to sweep up any remaining debris after as well. They sent me before and after pictures, I can already feel the difference in efficiency. My neighbors came over during install to get theirs quoted too! Thank you Good Attic!",
-      "image": "assets/attic-insulation.png",
-      "alt": "Google review excerpt for attic insulation in the Salt Lake market",
-      "targetUrl": "/salt-lake-city-ut/attic-insulation/",
-      "targetLabel": "Open Salt Lake insulation page"
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Clearfield"
+      ]
     },
     {
-      "reviewerLabel": "Natasha Seegert",
-      "source": "Google review",
-      "focus": "removal, reinstall, and communication through a difficult scope",
+      "reviewerLabel": "MerAnda Borrowman",
+      "source": "Google 5-star review",
+      "focus": "communication and homeowner updates",
       "market": "salt-lake-city-ut",
-      "serviceSlug": "insulation-removal",
-      "quote": "Austin and his crews were amazing! We had a tricky project due to a combination of a very narrow attic hatch (old house), and the installation of Rock Wool which requires a special order from Texas. Despite numerous setbacks of getting the Rock Wool to SLC due to the Christmas holidays, Austin's crew ultimately made it happen. They were extremely communicative during the whole process. They made it happen by the end if the year, and they went above and beyond replacing some venting that was done poorly by a former contractor and was a fire hazard. Hard working, communicative, and honest describe Good Attic. A special shout out to Mateo and Dillon for the removal of old insulation and getting it cleaned out, and to Randy and Angel for the installation of our fantastic new insulation.",
-      "image": "assets/attic-insulation-removal.png",
-      "alt": "Google review excerpt for insulation removal in the Salt Lake market",
-      "targetUrl": "/salt-lake-city-ut/insulation-removal/",
-      "targetLabel": "Open Salt Lake removal page"
+      "serviceSlug": null,
+      "city": null,
+      "quote": "Update to my update. Patrick reached out and got it all corrected. He did all the communicating with Rocky Mountain and I got the confirmation from them. Thank you!!! Update. After service was completed the communication slowed down/stopped regarding rebates. Patrick said he submitted Rocky Mountain power rebate for me and I should expect a check. Never received I have reached out to him he would say he will get back to me or no responses. I hate to lower the rating the rebate was something we spoke about heavily during the quote. They were amazing! Patrick was awesome to communicate with and super friendly. They cleaned up everything after and we’re faster then the time they quoted. 10/10 recommend. Thank you!!!",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Salt Lake City"
+      ]
     },
     {
-      "reviewerLabel": "David Vickers",
-      "source": "Google review",
-      "focus": "measurable comfort and energy improvement",
+      "reviewerLabel": "Jacob Johnson",
+      "source": "Google 5-star review",
+      "focus": "clean work and homeowner respect",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-pest-remediation",
+      "city": null,
+      "quote": "I live up Provo Canyon in a home that’s almost 100 years old that had an attic with old, dirty insulation that mice had gotten into over the years of vacancy that all needed to be cleaned out and new insulation blown back in. Lincoln and his crew Kevin & Josue came come out to tackle the difficult task and did an amazing job and kept a great attitude. These guys also inspected, Sealed unwanted holes, and ran a fogger to sanitize the attic. I can’t thank you enough for the job you guys did, I will most definitely be making referrals and calling you back for other services.",
+      "image": "assets/animals-in-the-attic.png",
+      "alt": "Google 5-star review for attic pest remediation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Provo"
+      ]
+    },
+    {
+      "reviewerLabel": "Diane Malmborg",
+      "source": "Google 5-star review",
+      "focus": "clean work and homeowner respect",
       "market": "salt-lake-city-ut",
       "serviceSlug": "attic-insulation",
-      "quote": "Good Attic installed insulation in our roof area. They did an excellent job. That afternoon we had turn down our heater it made such a difference. Our gas usage is down a third from what it was.",
+      "city": null,
+      "quote": "From the appoinment scheduling to the final clean up the Good Attic employees were kind, honest, and quick. I scheduled a two part job but with further inspection they found that the second job was unnecessary. The gentlemen provided photos of before and after the installed insulation in the basement crawl space and others of inside the attic to show their services were not needed there. They made it so easy and answers all my questions. I would recommend them to family and friends because they did such a great job at a reasonable price.",
       "image": "assets/attic-insulation.png",
-      "alt": "Google review excerpt for attic insulation in the Salt Lake market",
-      "targetUrl": "/salt-lake-city-ut/attic-insulation/",
-      "targetLabel": "Open Salt Lake insulation page"
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Taylorsville"
+      ]
     },
     {
-      "reviewerLabel": "Taylor Checketts",
-      "source": "Google review",
-      "focus": "speed, cleanliness, and rebate support",
+      "reviewerLabel": "Grace Evans",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
       "market": "salt-lake-city-ut",
       "serviceSlug": "attic-insulation",
-      "quote": "Great experience! Fast turnaround—clean and fast and best price we were quoted. Helped us get the rebates and the paperwork for the tax credit. Would recommend.",
+      "city": null,
+      "quote": "Mason was on time and really well prepared to get into our attic. He did a great job assessing our attic and gave us some great suggestions and a really professional brochure and bid. My husband decided to do the insulation himself, and even knowing that, they still gave us some pointers and suggestions. So I can’t speak to the actual job they do, but the bid and follow through was really professional and good follow through.",
       "image": "assets/attic-insulation.png",
-      "alt": "Google review excerpt for attic insulation in the Salt Lake market",
-      "targetUrl": "/salt-lake-city-ut/attic-insulation/",
-      "targetLabel": "Open Salt Lake insulation page"
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Salt Lake City"
+      ]
     },
     {
-      "reviewerLabel": "Douglas Black",
-      "source": "Google review",
-      "focus": "detailed scope, hard-working crew, and clean finish",
+      "reviewerLabel": "Jacob Butterworth",
+      "source": "Google 5-star review",
+      "focus": "clean work and homeowner respect",
       "market": "salt-lake-city-ut",
       "serviceSlug": "attic-insulation",
-      "quote": "Good Attic responded very quickly and arranged to come and provided an estimate. Their proposal was very detailed as to what would be provided and the cost of each component. The three gentlemen who installed the insulation could not have been nicer or worked any harder. When the work was completed they made sure the entire area was spotless. It was a pleasure working with this company",
+      "city": null,
+      "quote": "Good Attic installed insulation in our basement, both on the walls and between the floor joists. Patrick did an excellent job of showing me options and was accommodating to a specific request for sound proofing insulation. He also didn't try to give me a sales pitch on an easier, more common product. The crew was fast and clean. Our experience was great! Services Service not listed",
       "image": "assets/attic-insulation.png",
-      "alt": "Google review excerpt for attic insulation in the Salt Lake market",
-      "targetUrl": "/salt-lake-city-ut/attic-insulation/",
-      "targetLabel": "Open Salt Lake insulation page"
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Lehi"
+      ]
+    },
+    {
+      "reviewerLabel": "DonaMae Workman",
+      "source": "Google 5-star review",
+      "focus": "communication and homeowner updates",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "Had a great experience with the guys from Good Attic. James was easy to work with through the bid process. When the crew arrived to do the work, William was an excellent project manager and communicated well with us. David, Seth and Kaden got right to work and worked hard to meet a deadline. We appreciate their efforts on our behalf.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Sandy"
+      ]
+    },
+    {
+      "reviewerLabel": "Hari Miyagi",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": null,
+      "quote": "I recently had extra insulation installed in my home, and William and his co-workers did an outstanding job. He was professional, efficient, and paid great attention to detail. The quality of his work exceeded my expectations, and I would highly recommend him to anyone in need of insulation services.",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "SALT LAKE CITY"
+      ]
+    },
+    {
+      "reviewerLabel": "Kathy Walter",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": null,
+      "quote": "I highly recommend Good Attic Energy for your home insulation needs. They are very attentive and professional with their customer dealings. I was impressed with the crew letting me know how things were progressing throughout the project and will definitely call them for any future projects.",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "West Valley City"
+      ]
+    },
+    {
+      "reviewerLabel": "Alice Sumsion",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "This was a great experience. We needed a storage area insulated and drywall. They were excellent. On time and finished when they said it would be done. Patrick is a great guy to work with. It was a pleasure and I would recommend them highly. Thanks, Good Attic! Services Drywall installation",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Spanish Fork"
+      ]
+    },
+    {
+      "reviewerLabel": "Jensen Astle Reynolds",
+      "source": "Google 5-star review",
+      "focus": "rebate help and project follow-through",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": null,
+      "quote": "Fast and quick service! Patrick was great and walked us through the process + he helped us with our rebates. Got our insulation in faster than they expected too! Very happy with Good Attic and would recommend! Services Service not listed",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Pleasant Grove | Riverton | Salt Lake City | GRANTSVILLE | Provo"
+      ]
+    },
+    {
+      "reviewerLabel": "Sara Johnson",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": null,
+      "quote": "I had Patrick and his team blow insulation back into my attic after remodeling my kitchen. They worked me in between jobs and I couldn’t be happier with the end result and fast turn around. Great guys! Services Service not listed",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Ogden | Orem | Cedar Hills | Payson | Salt Lake City | Lehi | Spanish Fork | Provo | Draper | Springville | Midvale"
+      ]
+    },
+    {
+      "reviewerLabel": "Teresa Adams",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "You cannot go wrong working with James! He is honest and trustworthy. He will make the process easy and professional while listening to all your needs and concerns. I would give 10 stars if I could! Services Service not listed",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Vineyard | West Jordan"
+      ]
+    },
+    {
+      "reviewerLabel": "anna weber",
+      "source": "Google 5-star review",
+      "focus": "attic fan guidance and airflow support",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-fans",
+      "city": null,
+      "quote": "Patrick and his crew did a great job adding insulation to our attic and above our garage and installing a solar fan out of the roof. It made an immediate difference. We highly recommend Good Attic. Services Fan installation",
+      "image": "assets/attic-fans.png",
+      "alt": "Google 5-star review for attic fans in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Saratoga Springs | Salt Lake City | Sunset"
+      ]
     },
     {
       "reviewerLabel": "Tom Caswell",
-      "source": "Google review",
-      "focus": "attic fans and broader attic upgrades",
+      "source": "Google 5-star review",
+      "focus": "attic fan guidance and airflow support",
       "market": "salt-lake-city-ut",
       "serviceSlug": "attic-fans",
+      "city": null,
       "quote": "Use these guys!! David and William did an awesome job! Added insulation over the garage, and a solar attic fan. They also improved several parts of the house that weren’t properly insulated. Can’t recommend them enough!",
       "image": "assets/attic-fans.png",
-      "alt": "Google review excerpt for attic fans in the Salt Lake market",
-      "targetUrl": "/salt-lake-city-ut/attic-fans/",
-      "targetLabel": "Open Salt Lake attic fans page"
+      "alt": "Google 5-star review for attic fans in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Mapleton"
+      ]
+    },
+    {
+      "reviewerLabel": "Robert Anderson",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "Katie Morriss of The Attic was so helpful. She went far beyond the call of duty to resoind to my needs. I can’t imagine anyone being so responsive and willing to help. She’s a veritable jewel.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Ogden | Sandy | Eagle Mountain | Cedar Hills | Salt Lake City | Provo | West Point | Hooper | HOOPER | Draper | PROVO | Grand Junction | Pleasant Grove"
+      ]
+    },
+    {
+      "reviewerLabel": "xavier ruiz",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": null,
+      "quote": "Kayden is the man! If you are looking for a professional, efficient, and affordable insulation company then these are your guys. Definitely recommend. Would give more than 5 stars if I could.",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Taylorsville | Salt Lake City"
+      ]
+    },
+    {
+      "reviewerLabel": "Anna Atkinson",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": null,
+      "quote": "I had a great experience with Ethan the service advisor. He was easy to work with and provided a lot of good information regarding our insulation. Overall I’m very impressed with good attic.",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Salt Lake City | Spanish Fork"
+      ]
+    },
+    {
+      "reviewerLabel": "Clive Bush",
+      "source": "Google 5-star review",
+      "focus": "clear pricing and scope",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": null,
+      "quote": "Great service from start to finiisih - very quick to estimate the job and then remove and install new insulation. Highly recommend if you want to get the job done right and on-time!",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Park City"
+      ]
+    },
+    {
+      "reviewerLabel": "Lorenzo Barlow",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "Lincoln was very helpful and knowledgeable, very good people skills and pleasant to be around. They all did a really good job, very fast and efficient workers.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Payson"
+      ]
+    },
+    {
+      "reviewerLabel": "ryan silvester",
+      "source": "Google 5-star review",
+      "focus": "rebate help and project follow-through",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "Great company did a great job. Was easy to work with. If you are going to upgrade your attic have them do everything. That keeps it simple and maximum rebate.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Layton"
+      ]
+    },
+    {
+      "reviewerLabel": "Cassandra Parr",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "The team at Good Attic is stellar. From the initial inspection to the finished product, the process was quick and easy. I highly recommend this company!",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Sandy"
+      ]
+    },
+    {
+      "reviewerLabel": "Brayden Anderson",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "Patrick is a high integrity, highly reliable individual. Our project didn’t go as planned but he saw it through and made everything work out in the end!",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Provo"
+      ]
+    },
+    {
+      "reviewerLabel": "Devin Boyd",
+      "source": "Google 5-star review",
+      "focus": "clear pricing and scope",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "They were quick to come out. And the install went smooth and flawless. They were also the best price I could find, I'd recommend using them.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "sandy"
+      ]
+    },
+    {
+      "reviewerLabel": "Jesse Hafen",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "Great quality service! Very fast efficient work. Friendly and easy to work with great customer service. Will definitely refer to others!",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Payson"
+      ]
+    },
+    {
+      "reviewerLabel": "Daniel Mitchell",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "I had no issues trusting James! He really made the whole process extremely easy and stress free! I’d use them again in a heartbeat!",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "lewes | Vineyard"
+      ]
+    },
+    {
+      "reviewerLabel": "Erin Hatch",
+      "source": "Google 5-star review",
+      "focus": "communication and homeowner updates",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "Great company to work with! They are reliable and are great at communicating. Impressed with the work they do!",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Mapleton | Spanish Fork | Lehi | Bountiful | Pleasant Grove"
+      ]
+    },
+    {
+      "reviewerLabel": "Joseph Featherstone",
+      "source": "Google 5-star review",
+      "focus": "clear pricing and scope",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": "attic-insulation",
+      "city": null,
+      "quote": "Came and did a great job on my garage attic. They were good priced and very efficient and did a great job.",
+      "image": "assets/attic-insulation.png",
+      "alt": "Google 5-star review for attic insulation in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Spanish Fork"
+      ]
+    },
+    {
+      "reviewerLabel": "Jacob Wall",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "James did an awesome job helping me out with everything I was looking for, great service from these guys",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Sandy | Saratoga Springs"
+      ]
+    },
+    {
+      "reviewerLabel": "Nicole Hunt",
+      "source": "Google 5-star review",
+      "focus": "communication and homeowner updates",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "Great communication with Katie! Super helpful, knowledgeable, and incredibly kind! Highly recommended!",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Mapleton"
+      ]
+    },
+    {
+      "reviewerLabel": "Andrew Carr",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "They did an incredible job. Easily the best in the business.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Springville"
+      ]
+    },
+    {
+      "reviewerLabel": "Chipper Parkinson",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "Amazing work, nothing but the best customer service!",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Salem"
+      ]
+    },
+    {
+      "reviewerLabel": "Denise Furlow",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "Everyone was very nice and cordial. Worked quietly.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Layton"
+      ]
+    },
+    {
+      "reviewerLabel": "Michael Hepworth",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "They did a great job. Thx Lincoln.",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Layton"
+      ]
+    },
+    {
+      "reviewerLabel": "Beau Yengich",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "Great business and great people",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "Tooele"
+      ]
+    },
+    {
+      "reviewerLabel": "Carlos Zelaya",
+      "source": "Google 5-star review",
+      "focus": "attic comfort and trustworthy execution",
+      "market": "salt-lake-city-ut",
+      "serviceSlug": null,
+      "city": null,
+      "quote": "Excellent!!",
+      "image": "assets/good-attic-insulation-sales-appointment.png",
+      "alt": "Google 5-star review for attic services in the Salt Lake market",
+      "targetUrl": "/salt-lake-city-ut/",
+      "targetLabel": "Open Salt Lake market page",
+      "tags": [
+        "South Jordan"
+      ]
     }
   ]
 }
