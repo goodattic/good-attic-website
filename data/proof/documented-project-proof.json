@@ -1,0 +1,10 @@
+{
+  "_notes": [
+    "Use only real attic photos, findings summaries, or documented scope notes.",
+    "Valid market values: salt-lake-city-ut, st-louis-mo, kansas-city-mo.",
+    "Valid serviceSlug values: attic-insulation, insulation-removal, attic-pest-remediation, attic-fans, attic-air-sealing.",
+    "City is optional and should match a support city slug when the proof belongs on a city support page.",
+    "assetType examples: before photo, after photo, inspection notes, contamination photo, air sealing detail."
+  ],
+  "items": []
+}

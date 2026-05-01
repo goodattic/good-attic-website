@@ -29,6 +29,22 @@ To regenerate the non-home routes, sitemap, robots file, and page model JSON:
 node build-seo-wave1.mjs
 ```
 
+## Launch Readiness
+
+Run the launch audit:
+
+```bash
+node scripts/check-launch-readiness.mjs
+```
+
+After the live domain is active, submit the current sitemap URLs to IndexNow:
+
+```bash
+node scripts/submit-indexnow.mjs https://goodattic.energy
+```
+
+Launch and owner handoff steps are documented in `LAUNCH-CHECKLIST.md`.
+
 ## Cloudflare Pages
 
 Recommended production setup:
