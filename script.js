@@ -206,6 +206,21 @@ document.addEventListener("click", (event) => {
   if (!event.target.closest("[data-phone-dropdown]")) closePhoneDropdowns();
 });
 
+function collapseReviewCard(reviewCard) {
+  if (!reviewCard) return;
+  reviewCard.classList.remove("is-expanded");
+  const toggle = reviewCard.querySelector("[data-review-toggle]");
+  if (!toggle) return;
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.textContent = "Read more";
+}
+
+function collapseExpandedReviewCards() {
+  document.querySelectorAll("[data-review-card].is-expanded").forEach((reviewCard) => {
+    collapseReviewCard(reviewCard);
+  });
+}
+
 document.addEventListener("click", (event) => {
   const toggle = event.target.closest("[data-review-toggle]");
   if (!toggle) return;
@@ -213,10 +228,30 @@ document.addEventListener("click", (event) => {
   const reviewCard = toggle.closest("[data-review-card]");
   if (!reviewCard) return;
 
-  const expanded = reviewCard.classList.toggle("is-expanded");
-  toggle.setAttribute("aria-expanded", String(expanded));
-  toggle.textContent = expanded ? "Show less" : "Read more";
+  const expanded = !reviewCard.classList.contains("is-expanded");
+  collapseExpandedReviewCards();
+  if (!expanded) return;
+
+  reviewCard.classList.add("is-expanded");
+  toggle.setAttribute("aria-expanded", "true");
+  toggle.textContent = "Show less";
 });
+
+let lastScrollY = window.scrollY;
+
+window.addEventListener(
+  "scroll",
+  () => {
+    const currentScrollY = window.scrollY;
+
+    if (currentScrollY > lastScrollY + 12) {
+      collapseExpandedReviewCards();
+    }
+
+    lastScrollY = currentScrollY;
+  },
+  { passive: true }
+);
 
 const revealObserver = new IntersectionObserver(
   (entries) => {

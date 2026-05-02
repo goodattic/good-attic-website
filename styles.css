@@ -1120,7 +1120,7 @@ h3 {
   gap: 8px;
 }
 
-.review-copy.is-collapsible [data-review-copy] {
+.review-copy.is-collapsible:not(.is-expanded) [data-review-copy] {
   display: -webkit-box;
   overflow: hidden;
   -webkit-line-clamp: 6;
