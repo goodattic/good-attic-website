@@ -652,6 +652,12 @@ h3 {
     margin-top: 70px;
   }
 
+  .hero:not(.hero--city) .attic-card--desktop {
+    align-self: stretch;
+    min-height: 0;
+    margin-bottom: 56px;
+  }
+
   .attic-card--desktop {
     display: grid;
   }
@@ -3148,11 +3154,22 @@ textarea {
     grid-template-areas:
       "widget"
       "caption";
+    padding-right: 16px;
+    padding-left: 16px;
+    overflow-x: hidden;
   }
 
   .media-band .review-widget {
     justify-self: stretch;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .media-band > * {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .review-widget__stack--desktop,
@@ -3166,11 +3183,21 @@ textarea {
   }
 
   .media-caption p {
+    max-width: none;
     font-size: clamp(28px, 8vw, 44px);
   }
 
   .attic-health-section {
-    padding: 0 24px 22px;
+    padding: 0 16px 22px;
+    overflow-x: hidden;
+  }
+
+  .attic-health-section .attic-card,
+  .attic-health-section .hero-device,
+  .attic-health-section .inspection-panel {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .hero-actions {
