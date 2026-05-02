@@ -652,6 +652,14 @@ h3 {
     margin-top: 70px;
   }
 
+  .attic-card--desktop {
+    display: grid;
+  }
+
+  .attic-health-section--mobile {
+    display: none;
+  }
+
   .hero--market .review-widget,
   .hero--city .review-widget {
     grid-column: 2;
@@ -1062,6 +1070,10 @@ h3 {
 .attic-health-section .attic-card {
   max-width: 1180px;
   margin: 0 auto;
+}
+
+.attic-card--desktop {
+  display: none;
 }
 
 .review-widget__shell .page-card-link__cta,

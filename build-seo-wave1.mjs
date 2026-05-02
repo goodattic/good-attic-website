@@ -3836,15 +3836,15 @@ function renderSharedReviewBand(widgetMarkup) {
 
 function renderSharedAtticHealthSection(ariaLabel, scoreLabel = "Attic Health Score") {
   return `
-    <section class="attic-health-section">
+    <section class="attic-health-section attic-health-section--mobile">
       ${renderSharedAtticHealthCard(ariaLabel, scoreLabel)}
     </section>
   `;
 }
 
-function renderSharedAtticHealthCard(ariaLabel, scoreLabel = "Attic Health Score") {
+function renderSharedAtticHealthCard(ariaLabel, scoreLabel = "Attic Health Score", extraClass = "") {
   return `
-    <div class="hero-device attic-card reveal" aria-label="${escapeHtml(ariaLabel)}">
+    <div class="hero-device attic-card reveal${extraClass ? ` ${extraClass}` : ""}" aria-label="${escapeHtml(ariaLabel)}">
       <div class="inspection-panel">
         <p class="panel-kicker">${escapeHtml(scoreLabel)}</p>
         <div class="score-row">
@@ -3878,6 +3878,10 @@ function renderSharedAtticHealthCard(ariaLabel, scoreLabel = "Attic Health Score
       </div>
     </div>
   `;
+}
+
+function renderDesktopAtticHealthCard(ariaLabel, scoreLabel = "Attic Health Score") {
+  return renderSharedAtticHealthCard(ariaLabel, scoreLabel, "attic-card--desktop");
 }
 
 function renderExpandableReviewText(text, className) {
@@ -4602,6 +4606,7 @@ function buildMarketPage(market) {
           <button class="hero-service-arrow hero-service-arrow--next" type="button" aria-label="Scroll services right">&rarr;</button>
         </div>
       </div>
+      ${renderDesktopAtticHealthCard(`${market.shortName} attic inspection summary`, `${market.shortName} Attic Health Score`)}
     </section>
 
     ${renderSharedReviewBand(renderMarketReviewWidget(currentUrl, market))}
@@ -5327,6 +5332,7 @@ function buildCityPage(market, city) {
             <button class="hero-service-arrow hero-service-arrow--next" type="button" aria-label="Scroll services right">&rarr;</button>
           </div>
         </div>
+        ${renderDesktopAtticHealthCard(`${city.shortName} attic inspection summary`, `${city.shortName} Attic Health Score`)}
       </section>
 
       ${renderSharedReviewBand(renderCityReviewWidget(currentUrl, market, city))}
