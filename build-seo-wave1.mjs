@@ -3944,48 +3944,52 @@ function renderMiniReviewCard(entry, currentUrl) {
   `;
 }
 
+function renderCarouselReviewCard(entry) {
+  return `
+    <article class="review-carousel__card">
+      ${renderReviewStars()}
+      ${renderExpandableReviewText(entry.quote, "review-carousel__quote")}
+      <div class="review-carousel__meta">
+        <strong>${escapeHtml(entry.reviewerLabel || "Local homeowner")}</strong>
+        <span>${escapeHtml(entry.source || "Approved review excerpt")}</span>
+      </div>
+    </article>
+  `;
+}
+
+function renderReviewHubCarouselCard(currentUrl, heading, text) {
+  return `
+    <article class="review-carousel__card review-carousel__card--cta">
+      <p class="panel-kicker">Review hub</p>
+      <h3>${escapeHtml(heading)}</h3>
+      <p>${escapeHtml(text)}</p>
+      <a class="page-card-link__cta" href="${hrefFrom(currentUrl, "/reviews/")}">Open review hub</a>
+    </article>
+  `;
+}
+
 function marketHubReviewEntries(marketSlug) {
   return approvedReviewEntries({ marketSlug }).filter((entry) => !entry.city);
 }
 
 function renderMarketReviewWidget(currentUrl, market) {
   const reviewEntries = marketHubReviewEntries(market.slug);
+  const carouselCards = [
+    ...reviewEntries.map((entry) => renderCarouselReviewCard(entry)),
+    renderReviewHubCarouselCard(
+      currentUrl,
+      `${market.shortName} review library`,
+      `Browse the broader Good Attic review hub for more homeowner feedback connected to ${market.shortName}.`
+    )
+  ].join("");
 
   return `
     <aside class="review-widget review-widget--market" aria-label="${escapeHtml(market.shortName)} Google review widget">
       ${renderReviewWidgetHeader(`${market.shortName} homeowner feedback`)}
-      <div class="review-widget__stack">
-        <div class="review-widget__shell">
-          <strong>${escapeHtml(market.shortName)} review widget zone</strong>
-          <p>Use this area for the actual Google Business Profile review widget tied to the ${escapeHtml(
-            market.shortName
-          )} market so the location hub carries the fuller live review feed.</p>
-          <a class="page-card-link__cta" href="${hrefFrom(currentUrl, "/reviews/")}">Open review library</a>
+      <div class="review-carousel" aria-label="${escapeHtml(market.shortName)} approved homeowner excerpts">
+        <div class="review-carousel__track">
+          ${carouselCards}
         </div>
-        ${
-          reviewEntries.length
-            ? `
-              <div class="review-carousel" aria-label="${escapeHtml(market.shortName)} approved homeowner excerpts">
-                <div class="review-carousel__track">
-                  ${reviewEntries
-                    .map(
-                      (entry) => `
-                        <article class="review-carousel__card">
-                          ${renderReviewStars()}
-                          ${renderExpandableReviewText(entry.quote, "review-carousel__quote")}
-                          <div class="review-carousel__meta">
-                            <strong>${escapeHtml(entry.reviewerLabel || "Local homeowner")}</strong>
-                            <span>${escapeHtml(entry.source || "Approved review excerpt")}</span>
-                          </div>
-                        </article>
-                      `
-                    )
-                    .join("")}
-                </div>
-              </div>
-            `
-            : ""
-        }
       </div>
     </aside>
   `;
@@ -3995,27 +3999,27 @@ function renderCityReviewWidget(currentUrl, market, city) {
   const reviewEntries = approvedReviewEntries({ marketSlug: market.slug })
     .filter((entry) => entry.city === city.slug)
     .slice(0, 3);
-
-  if (reviewEntries.length) {
-    return `
-      <aside class="review-widget review-widget--city" aria-label="${escapeHtml(city.shortName)} homeowner reviews">
-        ${renderReviewWidgetHeader(`${city.shortName} trust signals`, "Local homeowner reviews")}
-        <div class="review-excerpt-list">
-          ${reviewEntries.map((entry) => renderMiniReviewCard(entry, currentUrl)).join("")}
-        </div>
-      </aside>
-    `;
-  }
+  const carouselCards = [
+    ...reviewEntries.map((entry) => renderCarouselReviewCard(entry)),
+    renderReviewHubCarouselCard(
+      currentUrl,
+      `${city.shortName} review hub`,
+      reviewEntries.length
+        ? `See the broader Good Attic review hub for more homeowner feedback connected to ${city.shortName} and the surrounding market.`
+        : `No city-assigned excerpts are loaded for ${city.shortName} yet, so the full Good Attic review hub is the best next place to browse approved homeowner feedback.`
+    )
+  ].join("");
 
   return `
     <aside class="review-widget review-widget--city" aria-label="${escapeHtml(city.shortName)} homeowner reviews">
-      ${renderReviewWidgetHeader(`${city.shortName} proof path`, "Local homeowner reviews")}
-      <div class="review-widget__shell">
-        <strong>${escapeHtml(city.shortName)} excerpt zone</strong>
-        <p>Use this section for individual approved homeowner excerpts that match the attic issues, service mix, and local trust questions most relevant near ${escapeHtml(
-          city.shortName
-        )}.</p>
-        <a class="page-card-link__cta" href="${hrefFrom(currentUrl, "/reviews/")}">Open review library</a>
+      ${renderReviewWidgetHeader(
+        reviewEntries.length ? `${city.shortName} homeowner reviews` : `${city.shortName} review path`,
+        "Local homeowner reviews"
+      )}
+      <div class="review-carousel" aria-label="${escapeHtml(city.shortName)} homeowner review carousel">
+        <div class="review-carousel__track">
+          ${carouselCards}
+        </div>
       </div>
     </aside>
   `;

@@ -1172,6 +1172,35 @@ h3 {
   scroll-snap-align: start;
 }
 
+.review-carousel__card--cta {
+  align-content: start;
+  background:
+    linear-gradient(180deg, rgba(143, 212, 192, 0.12), rgba(23, 33, 28, 0.08)),
+    rgba(255, 255, 255, 0.08);
+}
+
+.review-carousel__card--cta h3 {
+  margin: 0;
+  color: var(--white);
+  font-size: 22px;
+  line-height: 1.05;
+}
+
+.review-carousel__card--cta p:not(.panel-kicker) {
+  margin: 0;
+  color: #dcebe5;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.review-carousel__card--cta .page-card-link__cta {
+  justify-self: start;
+  color: var(--cyan);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
 .review-carousel__quote {
   margin: 0;
   color: var(--white);
@@ -3072,6 +3101,12 @@ textarea {
 
   .hero {
     padding-top: 98px;
+  }
+
+  .hero--market,
+  .hero--city {
+    min-height: 0;
+    align-items: start;
   }
 
   .hero-copy {
