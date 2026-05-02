@@ -383,6 +383,13 @@ a {
   font-weight: inherit;
 }
 
+.hero-review-banner__volume {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  white-space: nowrap;
+}
+
 .eyebrow {
   margin: 0 0 18px;
   color: var(--blue);
@@ -859,6 +866,7 @@ h3 {
 .media-band {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(340px, 0.58fr);
+  grid-template-areas: "caption widget";
   gap: 48px;
   align-items: center;
   min-height: 320px;
@@ -869,6 +877,7 @@ h3 {
 }
 
 .media-caption {
+  grid-area: caption;
   position: static;
   display: block;
   text-align: left;
@@ -890,6 +899,7 @@ h3 {
 }
 
 .review-widget {
+  grid-area: widget;
   justify-self: end;
   width: min(380px, 100%);
   padding: 22px;
@@ -1042,6 +1052,16 @@ h3 {
   color: #dcebe5;
   font-size: 14px;
   line-height: 1.5;
+}
+
+.attic-health-section {
+  padding: 0 max(24px, calc((100vw - 1180px) / 2)) 40px;
+  background: var(--paper);
+}
+
+.attic-health-section .attic-card {
+  max-width: 1180px;
+  margin: 0 auto;
 }
 
 .review-widget__shell .page-card-link__cta,
@@ -3063,8 +3083,23 @@ textarea {
     display: block;
   }
 
+  .media-band {
+    grid-template-areas:
+      "widget"
+      "caption";
+  }
+
+  .media-band .review-widget {
+    justify-self: stretch;
+    width: 100%;
+  }
+
   .media-caption p {
     font-size: clamp(28px, 8vw, 44px);
+  }
+
+  .attic-health-section {
+    padding: 0 24px 22px;
   }
 
   .hero-actions {

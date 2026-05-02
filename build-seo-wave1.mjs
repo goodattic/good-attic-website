@@ -3810,8 +3810,11 @@ function renderHeroReviewBanner(includeReviewCount = false) {
       <span class="hero-review-banner__google">G</span>
       <strong>5.0</strong>
       <span class="hero-review-banner__stars" aria-label="Five star rating">★★★★★</span>
-      ${includeReviewCount ? '<span class="hero-review-banner__count">100+</span>' : ""}
-      <span>Google Reviews</span>
+      ${
+        includeReviewCount
+          ? '<span class="hero-review-banner__volume"><span class="hero-review-banner__count">100+</span><span>Google Reviews</span></span>'
+          : "<span>Google Reviews</span>"
+      }
     </div>
   `;
 }
@@ -3823,10 +3826,18 @@ function renderSharedAtticHealthLead() {
 function renderSharedReviewBand(widgetMarkup) {
   return `
     <section class="media-band reveal">
+      ${widgetMarkup}
       <div class="media-caption">
         <p>A <span class="gradient-text">Good Attic</span> quietly changes how your whole home feels.</p>
       </div>
-      ${widgetMarkup}
+    </section>
+  `;
+}
+
+function renderSharedAtticHealthSection(ariaLabel, scoreLabel = "Attic Health Score") {
+  return `
+    <section class="attic-health-section">
+      ${renderSharedAtticHealthCard(ariaLabel, scoreLabel)}
     </section>
   `;
 }
@@ -4553,10 +4564,10 @@ function buildMarketPage(market) {
           <button class="hero-service-arrow hero-service-arrow--next" type="button" aria-label="Scroll services right">&rarr;</button>
         </div>
       </div>
-      ${renderSharedAtticHealthCard(`${market.shortName} attic inspection summary`, `${market.shortName} Attic Health Score`)}
     </section>
 
     ${renderSharedReviewBand(renderMarketReviewWidget(currentUrl, market))}
+    ${renderSharedAtticHealthSection(`${market.shortName} attic inspection summary`, `${market.shortName} Attic Health Score`)}
 
     <section id="services" class="service-showcase section reveal" data-service-carousel>
       <p class="eyebrow service-showcase__label">Our Services</p>
@@ -5278,10 +5289,10 @@ function buildCityPage(market, city) {
             <button class="hero-service-arrow hero-service-arrow--next" type="button" aria-label="Scroll services right">&rarr;</button>
           </div>
         </div>
-        ${renderSharedAtticHealthCard(`${city.shortName} attic inspection summary`, `${city.shortName} Attic Health Score`)}
       </section>
 
       ${renderSharedReviewBand(renderCityReviewWidget(currentUrl, market, city))}
+      ${renderSharedAtticHealthSection(`${city.shortName} attic inspection summary`, `${city.shortName} Attic Health Score`)}
 
       <section class="section">
         <div class="section-heading reveal">
