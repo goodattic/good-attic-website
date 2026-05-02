@@ -1201,6 +1201,10 @@ h3 {
   text-decoration: none;
 }
 
+.review-carousel--mobile {
+  display: none;
+}
+
 .review-carousel__quote {
   margin: 0;
   color: var(--white);
@@ -3127,6 +3131,16 @@ textarea {
   .media-band .review-widget {
     justify-self: stretch;
     width: 100%;
+  }
+
+  .review-widget__stack--desktop,
+  .review-excerpt-list--desktop,
+  .review-widget__shell--desktop-city {
+    display: none;
+  }
+
+  .review-carousel--mobile {
+    display: block;
   }
 
   .media-caption p {

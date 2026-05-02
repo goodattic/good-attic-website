@@ -3974,7 +3974,8 @@ function marketHubReviewEntries(marketSlug) {
 
 function renderMarketReviewWidget(currentUrl, market) {
   const reviewEntries = marketHubReviewEntries(market.slug);
-  const carouselCards = [
+  const desktopReviewCards = reviewEntries.map((entry) => renderCarouselReviewCard(entry)).join("");
+  const mobileCarouselCards = [
     ...reviewEntries.map((entry) => renderCarouselReviewCard(entry)),
     renderReviewHubCarouselCard(
       currentUrl,
@@ -3986,9 +3987,29 @@ function renderMarketReviewWidget(currentUrl, market) {
   return `
     <aside class="review-widget review-widget--market" aria-label="${escapeHtml(market.shortName)} Google review widget">
       ${renderReviewWidgetHeader(`${market.shortName} homeowner feedback`)}
-      <div class="review-carousel" aria-label="${escapeHtml(market.shortName)} approved homeowner excerpts">
+      <div class="review-widget__stack review-widget__stack--desktop">
+        <div class="review-widget__shell">
+          <strong>${escapeHtml(market.shortName)} review widget zone</strong>
+          <p>Use this area for the actual Google Business Profile review widget tied to the ${escapeHtml(
+            market.shortName
+          )} market so the location hub carries the fuller live review feed.</p>
+          <a class="page-card-link__cta" href="${hrefFrom(currentUrl, "/reviews/")}">Open review library</a>
+        </div>
+        ${
+          reviewEntries.length
+            ? `
+              <div class="review-carousel" aria-label="${escapeHtml(market.shortName)} approved homeowner excerpts">
+                <div class="review-carousel__track">
+                  ${desktopReviewCards}
+                </div>
+              </div>
+            `
+            : ""
+        }
+      </div>
+      <div class="review-carousel review-carousel--mobile" aria-label="${escapeHtml(market.shortName)} approved homeowner excerpts">
         <div class="review-carousel__track">
-          ${carouselCards}
+          ${mobileCarouselCards}
         </div>
       </div>
     </aside>
@@ -3999,7 +4020,7 @@ function renderCityReviewWidget(currentUrl, market, city) {
   const reviewEntries = approvedReviewEntries({ marketSlug: market.slug })
     .filter((entry) => entry.city === city.slug)
     .slice(0, 3);
-  const carouselCards = [
+  const mobileCarouselCards = [
     ...reviewEntries.map((entry) => renderCarouselReviewCard(entry)),
     renderReviewHubCarouselCard(
       currentUrl,
@@ -4013,12 +4034,25 @@ function renderCityReviewWidget(currentUrl, market, city) {
   return `
     <aside class="review-widget review-widget--city" aria-label="${escapeHtml(city.shortName)} homeowner reviews">
       ${renderReviewWidgetHeader(
-        reviewEntries.length ? `${city.shortName} homeowner reviews` : `${city.shortName} review path`,
+        reviewEntries.length ? `${city.shortName} trust signals` : `${city.shortName} proof path`,
         "Local homeowner reviews"
       )}
-      <div class="review-carousel" aria-label="${escapeHtml(city.shortName)} homeowner review carousel">
+      ${
+        reviewEntries.length
+          ? `<div class="review-excerpt-list review-excerpt-list--desktop">
+               ${reviewEntries.map((entry) => renderMiniReviewCard(entry, currentUrl)).join("")}
+             </div>`
+          : `<div class="review-widget__shell review-widget__shell--desktop-city">
+               <strong>${escapeHtml(city.shortName)} excerpt zone</strong>
+               <p>Use this section for individual approved homeowner excerpts that match the attic issues, service mix, and local trust questions most relevant near ${escapeHtml(
+                 city.shortName
+               )}.</p>
+               <a class="page-card-link__cta" href="${hrefFrom(currentUrl, "/reviews/")}">Open review library</a>
+             </div>`
+      }
+      <div class="review-carousel review-carousel--mobile" aria-label="${escapeHtml(city.shortName)} homeowner review carousel">
         <div class="review-carousel__track">
-          ${carouselCards}
+          ${mobileCarouselCards}
         </div>
       </div>
     </aside>
