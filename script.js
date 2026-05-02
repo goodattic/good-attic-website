@@ -206,6 +206,18 @@ document.addEventListener("click", (event) => {
   if (!event.target.closest("[data-phone-dropdown]")) closePhoneDropdowns();
 });
 
+document.addEventListener("click", (event) => {
+  const toggle = event.target.closest("[data-review-toggle]");
+  if (!toggle) return;
+
+  const reviewCard = toggle.closest("[data-review-card]");
+  if (!reviewCard) return;
+
+  const expanded = reviewCard.classList.toggle("is-expanded");
+  toggle.setAttribute("aria-expanded", String(expanded));
+  toggle.textContent = expanded ? "Show less" : "Read more";
+});
+
 const revealObserver = new IntersectionObserver(
   (entries) => {
     entries.forEach((entry) => {

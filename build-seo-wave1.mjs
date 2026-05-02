@@ -3587,7 +3587,6 @@ function renderEvidenceGrid(items, currentUrl) {
           (item) => `
             <article class="feature-card evidence-card reveal">
               <span class="page-card-link__media">${renderImg(currentUrl, item.image, item.alt || item.title)}</span>
-              ${item.kicker ? `<p class="eyebrow page-card-link__kicker">${escapeHtml(item.kicker)}</p>` : ""}
               <h3>${escapeHtml(item.title)}</h3>
               <p>${escapeHtml(item.text)}</p>
               ${item.caption ? `<span class="page-card-link__cta">${escapeHtml(item.caption)}</span>` : ""}
@@ -3605,12 +3604,12 @@ function renderProofQueueGrid(items, currentUrl) {
       ${items
         .map(
           (item) => `
-            <article class="feature-card proof-queue-card reveal">
+            <article class="feature-card proof-queue-card reveal${item.stars ? " proof-queue-card--review" : ""}">
               <span class="page-card-link__media">${renderImg(currentUrl, item.image, item.alt || item.title)}</span>
               ${item.kicker ? `<p class="eyebrow page-card-link__kicker">${escapeHtml(item.kicker)}</p>` : ""}
               <h3>${escapeHtml(item.title)}</h3>
               ${item.stars ? renderReviewStars() : ""}
-              <p>${escapeHtml(item.text)}</p>
+              ${item.stars ? renderExpandableReviewText(item.text, "proof-review__quote") : `<p>${escapeHtml(item.text)}</p>`}
               ${item.status ? `<span class="proof-status">${escapeHtml(item.status)}</span>` : ""}
               ${
                 item.meta?.length
@@ -3805,6 +3804,105 @@ function buildSupportCityLinks(currentUrl, market) {
   }));
 }
 
+function renderHeroReviewBanner(includeReviewCount = false) {
+  return `
+    <div class="hero-review-banner" aria-label="Google review rating">
+      <span class="hero-review-banner__google">G</span>
+      <strong>5.0</strong>
+      <span class="hero-review-banner__stars" aria-label="Five star rating">★★★★★</span>
+      ${includeReviewCount ? '<span class="hero-review-banner__count">100+</span>' : ""}
+      <span>Google Reviews</span>
+    </div>
+  `;
+}
+
+function renderSharedAtticHealthLead() {
+  return `<div class="inspection-lead inspection-lead--module reveal">A <span class="gradient-text">Good Attic</span> quietly changes how your whole home feels.</div>`;
+}
+
+function renderSharedReviewBand(widgetMarkup) {
+  return `
+    <section class="media-band reveal">
+      <div class="media-caption">
+        <p>A <span class="gradient-text">Good Attic</span> quietly changes how your whole home feels.</p>
+      </div>
+      ${widgetMarkup}
+    </section>
+  `;
+}
+
+function renderSharedAtticHealthCard(ariaLabel, scoreLabel = "Attic Health Score") {
+  return `
+    <div class="hero-device attic-card reveal" aria-label="${escapeHtml(ariaLabel)}">
+      <div class="inspection-panel">
+        <p class="panel-kicker">${escapeHtml(scoreLabel)}</p>
+        <div class="score-row">
+          <div class="score-column">
+            <div class="score-ring score-ring--before" data-score-ring data-score="42">
+              <strong data-score-value>0</strong>
+              <span>before Good Attic</span>
+            </div>
+            <div class="inspection-list inspection-list--before">
+              <p><span></span> Compressed or missing insulation</p>
+              <p><span></span> Air leaks around attic penetrations</p>
+              <p><span></span> Dust, odors, or contaminated material</p>
+              <p><span></span> Pest activity or nesting debris</p>
+            </div>
+          </div>
+          <div class="score-column">
+            <div class="score-ring score-ring--after" data-score-ring data-score="100">
+              <strong data-score-value>0</strong>
+              <span>after Good Attic</span>
+            </div>
+            <div class="inspection-list">
+              <p><span></span> Contaminated insulation removed</p>
+              <p><span></span> Air leaks sealed for efficiency</p>
+              <p><span></span> Attic fully sanitized</p>
+              <p><span></span> Ventilation optimized</p>
+              <p><span></span> Fresh insulation installed</p>
+            </div>
+          </div>
+        </div>
+        <button class="button primary" type="button" data-open-modal>Schedule a Visit</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderExpandableReviewText(text, className) {
+  const isLong = text.length > 230;
+
+  return `
+    <div class="review-copy${isLong ? " is-collapsible" : ""}" data-review-card>
+      <p class="${className}" data-review-copy>${escapeHtml(text)}</p>
+      ${
+        isLong
+          ? '<button class="review-toggle" type="button" data-review-toggle aria-expanded="false">Read more</button>'
+          : ""
+      }
+    </div>
+  `;
+}
+
+function renderReviewWidgetHeader(title, kicker = "Google Reviews") {
+  return `
+    <div class="review-widget__header">
+      <div class="google-mark" aria-hidden="true">
+        <span>G</span>
+      </div>
+      <div>
+        <p class="panel-kicker">${escapeHtml(kicker)}</p>
+        <h2>${escapeHtml(title)}</h2>
+        <div class="review-widget__rating" aria-label="5 out of 5 stars on Google Reviews">
+          <strong>5.0</strong>
+          <span class="stars" aria-hidden="true">★★★★★</span>
+          <span>100+ Google Reviews</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderReviewStars(className = "review-stars") {
   return `
     <div class="${className}" aria-label="5 out of 5 stars">
@@ -3821,7 +3919,7 @@ function renderMiniReviewCard(entry, currentUrl) {
   return `
     <article class="review-excerpt-mini">
       ${renderReviewStars()}
-      <p class="review-excerpt-mini__quote">${escapeHtml(entry.quote)}</p>
+      ${renderExpandableReviewText(entry.quote, "review-excerpt-mini__quote")}
       <div class="review-excerpt-mini__meta">
         <strong>${escapeHtml(entry.reviewerLabel || "Local homeowner")}</strong>
         <span>${escapeHtml(entry.source || "Approved review excerpt")}</span>
@@ -3844,15 +3942,7 @@ function renderMarketReviewWidget(currentUrl, market) {
 
   return `
     <aside class="review-widget review-widget--market" aria-label="${escapeHtml(market.shortName)} Google review widget">
-      <div class="review-widget__header">
-        <div class="google-mark" aria-hidden="true">
-          <span>G</span>
-        </div>
-        <div>
-          <p class="panel-kicker">Google Reviews</p>
-          <h2>${escapeHtml(market.shortName)} homeowner feedback</h2>
-        </div>
-      </div>
+      ${renderReviewWidgetHeader(`${market.shortName} homeowner feedback`)}
       <div class="review-widget__stack">
         <div class="review-widget__shell">
           <strong>${escapeHtml(market.shortName)} review widget zone</strong>
@@ -3871,7 +3961,7 @@ function renderMarketReviewWidget(currentUrl, market) {
                       (entry) => `
                         <article class="review-carousel__card">
                           ${renderReviewStars()}
-                          <p class="review-carousel__quote">${escapeHtml(entry.quote)}</p>
+                          ${renderExpandableReviewText(entry.quote, "review-carousel__quote")}
                           <div class="review-carousel__meta">
                             <strong>${escapeHtml(entry.reviewerLabel || "Local homeowner")}</strong>
                             <span>${escapeHtml(entry.source || "Approved review excerpt")}</span>
@@ -3898,15 +3988,7 @@ function renderCityReviewWidget(currentUrl, market, city) {
   if (reviewEntries.length) {
     return `
       <aside class="review-widget review-widget--city" aria-label="${escapeHtml(city.shortName)} homeowner reviews">
-        <div class="review-widget__header">
-          <div class="google-mark" aria-hidden="true">
-            <span>G</span>
-          </div>
-          <div>
-            <p class="panel-kicker">Local homeowner reviews</p>
-            <h2>${escapeHtml(city.shortName)} trust signals</h2>
-          </div>
-        </div>
+        ${renderReviewWidgetHeader(`${city.shortName} trust signals`, "Local homeowner reviews")}
         <div class="review-excerpt-list">
           ${reviewEntries.map((entry) => renderMiniReviewCard(entry, currentUrl)).join("")}
         </div>
@@ -3916,15 +3998,7 @@ function renderCityReviewWidget(currentUrl, market, city) {
 
   return `
     <aside class="review-widget review-widget--city" aria-label="${escapeHtml(city.shortName)} homeowner reviews">
-      <div class="review-widget__header">
-        <div class="google-mark" aria-hidden="true">
-          <span>G</span>
-        </div>
-        <div>
-          <p class="panel-kicker">Local homeowner reviews</p>
-          <h2>${escapeHtml(city.shortName)} proof path</h2>
-        </div>
-      </div>
+      ${renderReviewWidgetHeader(`${city.shortName} proof path`, "Local homeowner reviews")}
       <div class="review-widget__shell">
         <strong>${escapeHtml(city.shortName)} excerpt zone</strong>
         <p>Use this section for individual approved homeowner excerpts that match the attic issues, service mix, and local trust questions most relevant near ${escapeHtml(
@@ -3939,7 +4013,6 @@ function renderCityReviewWidget(currentUrl, market, city) {
 function buildMarketEvidenceGallery(market) {
   return [
     {
-      kicker: "What we document",
       title: "Compromised insulation conditions",
       text: `In ${market.shortName}, Good Attic documents when the existing insulation is dusty, uneven, contaminated, or simply no longer a strong base for the next step.`,
       image: proofAssets.dirtyReset,
@@ -3947,7 +4020,6 @@ function buildMarketEvidenceGallery(market) {
       caption: "Document the actual attic condition before deciding on the scope."
     },
     {
-      kicker: "What we document",
       title: "Coverage and install readiness",
       text: `Assessment photos help show whether the attic floor is ready for added insulation, needs edge/pathway prep, or should be reset first.`,
       image: proofAssets.hotColdInsulation,
@@ -3955,7 +4027,6 @@ function buildMarketEvidenceGallery(market) {
       caption: "A stronger attic scope starts with visible evidence, not guesswork."
     },
     {
-      kicker: "What we document",
       title: "Air sealing and bypass targets",
       text: `Good Attic documents where the attic boundary is open so insulation, sealing, and cleanup can be sequenced into one clearer plan.`,
       image: proofAssets.airSealing,
@@ -3969,7 +4040,6 @@ function buildServiceEvidenceGallery(market, service) {
   const galleries = {
     "attic-insulation": [
       {
-        kicker: "What we document",
         title: "Thin or uneven attic coverage",
         text: `Photos help show where the attic insulation is falling short in ${market.shortName}, especially when upper-floor comfort complaints are stronger than the attic looks at first glance.`,
         image: proofAssets.hotColdInsulation,
@@ -3977,7 +4047,6 @@ function buildServiceEvidenceGallery(market, service) {
         caption: "Document whether the attic needs a top-off or a more complete reset."
       },
       {
-        kicker: "What we document",
         title: "Conditions that block a simple top-off",
         text: "Dirty material, rodent activity, and buried leakage points all change whether more insulation alone is the honest answer.",
         image: proofAssets.grossDusty,
@@ -3985,7 +4054,6 @@ function buildServiceEvidenceGallery(market, service) {
         caption: "Show what is underneath before adding new material on top."
       },
       {
-        kicker: "What changes after the work",
         title: "A cleaner, more intentional finished attic floor",
         text: "The finished result should show cleaner coverage, a better target depth, and an attic that looks like it was rebuilt on purpose.",
         image: proofAssets.insulation,
@@ -3995,7 +4063,6 @@ function buildServiceEvidenceGallery(market, service) {
     ],
     "insulation-removal": [
       {
-        kicker: "What we document",
         title: "Material that is no longer worth building on",
         text: `Removal scopes in ${market.shortName} start with documenting contamination, settling, odor, or material breakdown that changes the whole attic plan.`,
         image: proofAssets.dirtyReset,
@@ -4003,7 +4070,6 @@ function buildServiceEvidenceGallery(market, service) {
         caption: "Removal begins when the base layer is no longer the right foundation."
       },
       {
-        kicker: "What we document",
         title: "Access to the attic floor after the reset",
         text: "Once the old material is out, the attic floor becomes easier to inspect, seal, sanitize, and prepare for what comes next.",
         image: proofAssets.removal,
@@ -4011,7 +4077,6 @@ function buildServiceEvidenceGallery(market, service) {
         caption: "A clean reset reveals what the attic actually needs next."
       },
       {
-        kicker: "What changes after the work",
         title: "A cleaner handoff into restoration",
         text: "The better finish line is not just emptier. It is an attic that is ready for sealing, sanitation, and the right reinstall strategy.",
         image: proofAssets.grossAttic,
@@ -4021,7 +4086,6 @@ function buildServiceEvidenceGallery(market, service) {
     ],
     "attic-pest-remediation": [
       {
-        kicker: "What we document",
         title: "The real spread of contamination",
         text: `Good Attic documents how much insulation, debris, and attic surface area in ${market.shortName} have actually been affected after pest activity.`,
         image: proofAssets.pests,
@@ -4029,7 +4093,6 @@ function buildServiceEvidenceGallery(market, service) {
         caption: "The visible mess is not always the full extent of the problem."
       },
       {
-        kicker: "What we document",
         title: "Insulation damage that changes the scope",
         text: "Rodent or squirrel activity often leaves behind more than a cleanup problem. It can leave the attic with insulation that is no longer worth saving.",
         image: proofAssets.pestDamage,
@@ -4037,7 +4100,6 @@ function buildServiceEvidenceGallery(market, service) {
         caption: "Documentation helps separate exclusion work from real attic restoration."
       },
       {
-        kicker: "What changes after the work",
         title: "A healthier attic environment",
         text: "The attic should feel cleaner, more trustworthy, and better prepared for reinstallation than it did while the contamination was still being tolerated.",
         image: proofAssets.removal,
@@ -4047,7 +4109,6 @@ function buildServiceEvidenceGallery(market, service) {
     ],
     "attic-fans": [
       {
-        kicker: "What we document",
         title: "The attic heat-management context",
         text: `In ${market.shortName}, Good Attic documents whether the fan conversation is actually about trapped heat, weak insulation, open bypasses, or a combination.`,
         image: proofAssets.fans,
@@ -4055,7 +4116,6 @@ function buildServiceEvidenceGallery(market, service) {
         caption: "The fan should support the attic system, not hide what is wrong with it."
       },
       {
-        kicker: "What we document",
         title: "Ventilation pathways and fit",
         text: "The attic has to be a real candidate for fan support, which means documenting how the current airflow path is working before a product gets recommended.",
         image: proofAssets.unevenTemps,
@@ -4063,7 +4123,6 @@ function buildServiceEvidenceGallery(market, service) {
         caption: "Good fan recommendations come after the airflow story is clear."
       },
       {
-        kicker: "What changes after the work",
         title: "A better-supported attic heat plan",
         text: "When the attic is a strong fit, the end result should show a fan that belongs in a broader comfort strategy rather than acting like a stand-alone fix.",
         image: proofAssets.fans,
@@ -4073,7 +4132,6 @@ function buildServiceEvidenceGallery(market, service) {
     ],
     "attic-air-sealing": [
       {
-        kicker: "What we document",
         title: "Open attic bypasses and leakage targets",
         text: `Good Attic documents where the attic floor is actually open in ${market.shortName} so the sealing plan is based on real leakage, not assumptions.`,
         image: proofAssets.airSealing,
@@ -4081,7 +4139,6 @@ function buildServiceEvidenceGallery(market, service) {
         caption: "Find the leaks first so the scope matches the real attic boundary."
       },
       {
-        kicker: "What we document",
         title: "Conditions that affect sealing access",
         text: "If the attic floor is buried under compromised material, the documentation should make it clear when cleanup or removal belongs before thorough sealing.",
         image: proofAssets.grossDusty,
@@ -4089,7 +4146,6 @@ function buildServiceEvidenceGallery(market, service) {
         caption: "A buried attic floor can change how the sealing work needs to happen."
       },
       {
-        kicker: "What changes after the work",
         title: "A tighter attic boundary under the final insulation layer",
         text: "The end result should support a cleaner, more complete attic floor instead of leaving the underlying leakage problem untreated.",
         image: proofAssets.airSealing,
@@ -4122,7 +4178,6 @@ function buildMarketOutcomePanels(market) {
 function buildCityEvidenceGallery(market, city) {
   return [
     {
-      kicker: "What we document nearby",
       title: `${city.shortName} attic conditions that change the scope`,
       text: `Good Attic uses the ${market.shortName} team to document whether homes near ${city.shortName} need a clean top-off, a boundary correction, or a more complete attic reset.`,
       image: proofAssets.grossDusty,
@@ -4130,7 +4185,6 @@ function buildCityEvidenceGallery(market, city) {
       caption: "Assessment evidence helps route the home into the right market service path."
     },
     {
-      kicker: "What we document nearby",
       title: "Visible insulation and access readiness",
       text: "The team documents whether the attic is ready for direct improvement or whether removal, cleanup, and prep work belong first.",
       image: proofAssets.hotColdHouse,
@@ -4138,7 +4192,6 @@ function buildCityEvidenceGallery(market, city) {
       caption: "The right next step depends on what the attic is ready to support."
     },
     {
-      kicker: "What changes after the work",
       title: "A cleaner handoff into the right local service page",
       text: `Once the attic is documented clearly, homeowners in ${city.shortName} can move into the correct ${market.shortName} service page with more confidence and less guesswork.`,
       image: proofAssets.sales,
@@ -4468,14 +4521,9 @@ function buildMarketPage(market) {
 
   page.render = (currentUrl) => `
     ${renderHiddenBreadcrumbs(page, currentUrl)}
-    <section class="hero section-pin">
+    <section class="hero section-pin hero--market">
       <div class="hero-copy reveal">
-        <div class="hero-review-banner" aria-label="Google review rating">
-          <span class="hero-review-banner__google">G</span>
-          <strong>5.0</strong>
-          <span class="hero-review-banner__stars" aria-label="Five star rating">★★★★★</span>
-          <span>Google Reviews</span>
-        </div>
+        ${renderHeroReviewBanner(true)}
         <p class="eyebrow">Premium Attic Services in ${escapeHtml(market.shortName)}</p>
         <h1 class="hero-display">${escapeHtml(page.h1)}</h1>
         <p class="hero-text">${escapeHtml(page.intro)}</p>
@@ -4505,53 +4553,10 @@ function buildMarketPage(market) {
           <button class="hero-service-arrow hero-service-arrow--next" type="button" aria-label="Scroll services right">&rarr;</button>
         </div>
       </div>
-
-      <div class="inspection-lead inspection-lead--module reveal">A <span class="gradient-text">Good Attic</span> quietly changes how your ${escapeHtml(market.shortName)} home feels.</div>
-
-      <div class="hero-device attic-card reveal" aria-label="${escapeHtml(market.shortName)} attic inspection summary">
-        <div class="inspection-panel">
-          <p class="panel-kicker">${escapeHtml(market.shortName)} Attic Health Score</p>
-          <div class="score-row">
-            <div class="score-column">
-              <div class="score-ring score-ring--before" data-score-ring data-score="42">
-                <strong data-score-value>0</strong>
-                <span>before Good Attic</span>
-              </div>
-              <div class="inspection-list inspection-list--before">
-                ${market.commonProblems
-                  .map(
-                    (problem) => `
-                      <p><span></span> ${escapeHtml(problem.title)}</p>
-                    `
-                  )
-                  .join("")}
-              </div>
-            </div>
-            <div class="score-column">
-              <div class="score-ring score-ring--after" data-score-ring data-score="100">
-                <strong data-score-value>0</strong>
-                <span>after Good Attic</span>
-              </div>
-              <div class="inspection-list">
-                <p><span></span> Local attic plan fully documented</p>
-                <p><span></span> Air leaks sealed for efficiency</p>
-                <p><span></span> Contaminated material removed if needed</p>
-                <p><span></span> Ventilation and insulation aligned</p>
-                <p><span></span> Comfort path matched to ${escapeHtml(market.shortName)}</p>
-              </div>
-            </div>
-          </div>
-          <button class="button primary" type="button" data-open-modal>Schedule a Visit</button>
-        </div>
-      </div>
+      ${renderSharedAtticHealthCard(`${market.shortName} attic inspection summary`, `${market.shortName} Attic Health Score`)}
     </section>
 
-    <section class="media-band reveal">
-      <div class="media-caption">
-        <p>A <span class="gradient-text">Good Attic</span> quietly changes how your ${escapeHtml(market.shortName)} home feels.</p>
-      </div>
-      ${renderMarketReviewWidget(currentUrl, market)}
-    </section>
+    ${renderSharedReviewBand(renderMarketReviewWidget(currentUrl, market))}
 
     <section id="services" class="service-showcase section reveal" data-service-carousel>
       <p class="eyebrow service-showcase__label">Our Services</p>
@@ -5243,14 +5248,9 @@ function buildCityPage(market, city) {
       ${renderHiddenBreadcrumbs(page, currentUrl)}
       <section class="hero section-pin hero--city">
         <div class="hero-copy reveal">
-          <div class="hero-review-banner" aria-label="Google review rating">
-            <span class="hero-review-banner__google">G</span>
-            <strong>5.0</strong>
-            <span class="hero-review-banner__stars" aria-label="Five star rating">★★★★★</span>
-            <span>Google Reviews</span>
-          </div>
-          <p class="eyebrow">Service Area • ${escapeHtml(city.name)}</p>
-          <h1 class="hero-display">${escapeHtml(page.h1)}</h1>
+          ${renderHeroReviewBanner(true)}
+          <p class="eyebrow">Service Area</p>
+          <h1 class="hero-display">Attic Services in ${escapeHtml(city.shortName)}</h1>
           <p class="hero-text">${escapeHtml(page.intro)}</p>
           <div class="hero-actions">
             <button class="button primary" type="button" data-open-modal>Get A Free Attic Assessment</button>
@@ -5278,55 +5278,10 @@ function buildCityPage(market, city) {
             <button class="hero-service-arrow hero-service-arrow--next" type="button" aria-label="Scroll services right">&rarr;</button>
           </div>
         </div>
-
-        <div class="inspection-lead inspection-lead--module reveal">A <span class="gradient-text">Good Attic</span> gives ${escapeHtml(
-          city.shortName
-        )} homeowners a clearer attic path.</div>
-
-        <div class="hero-device attic-card reveal" aria-label="${escapeHtml(city.shortName)} attic inspection summary">
-          <div class="inspection-panel">
-            <p class="panel-kicker">${escapeHtml(city.shortName)} Attic Health Score</p>
-            <div class="score-row">
-              <div class="score-column">
-                <div class="score-ring score-ring--before" data-score-ring data-score="38">
-                  <strong data-score-value>0</strong>
-                  <span>before Good Attic</span>
-                </div>
-                <div class="inspection-list inspection-list--before">
-                  ${city.commonProblems
-                    .map(
-                      (problem) => `
-                        <p><span></span> ${escapeHtml(problem.title)}</p>
-                      `
-                    )
-                    .join("")}
-                </div>
-              </div>
-              <div class="score-column">
-                <div class="score-ring score-ring--after" data-score-ring data-score="96">
-                  <strong data-score-value>0</strong>
-                  <span>after Good Attic</span>
-                </div>
-                <div class="inspection-list">
-                  <p><span></span> Scope matched to the attic evidence</p>
-                  <p><span></span> Insulation, sealing, and cleanup sequenced clearly</p>
-                  <p><span></span> Local service path routed through ${escapeHtml(market.shortName)}</p>
-                  <p><span></span> Photo-based findings documented for the homeowner</p>
-                  <p><span></span> Next step tied to comfort and attic condition</p>
-                </div>
-              </div>
-            </div>
-            <button class="button primary" type="button" data-open-modal>Schedule a Visit</button>
-          </div>
-        </div>
+        ${renderSharedAtticHealthCard(`${city.shortName} attic inspection summary`, `${city.shortName} Attic Health Score`)}
       </section>
 
-      <section class="media-band reveal">
-        <div class="media-caption">
-          <p>${escapeHtml(city.shortName)} attic projects should feel local, documented, and easier to trust.</p>
-        </div>
-        ${renderCityReviewWidget(currentUrl, market, city)}
-      </section>
+      ${renderSharedReviewBand(renderCityReviewWidget(currentUrl, market, city))}
 
       <section class="section">
         <div class="section-heading reveal">
@@ -5867,7 +5822,7 @@ function buildDocumentedProofCards(scope = {}) {
 
   if (actualEntries.length) {
     return actualEntries.map((entry) => ({
-      kicker: entry.kicker || "Approved project evidence",
+      kicker: entry.kicker || null,
       title: entry.title,
       text: entry.text,
       image: entry.image || proofAssets.sales,
@@ -5892,7 +5847,6 @@ function buildDocumentedProofCards(scope = {}) {
 
   return [
     {
-      kicker: "Ready for project evidence",
       title: `Before-condition photos for ${scopeLabel}`,
       text: "Add real attic photos that show why the attic needed the work before the project started, especially when the final recommendation was more than a simple top-off.",
       image: proofAssets.dirtyReset,
@@ -5903,7 +5857,6 @@ function buildDocumentedProofCards(scope = {}) {
       cta: "Open target page"
     },
     {
-      kicker: "Ready for project evidence",
       title: `Inspection findings and scope notes for ${scopeLabel}`,
       text: "This slot is for real documented findings that show what the attic inspection uncovered and why the scope was sequenced the way it was.",
       image: proofAssets.sales,
@@ -5914,7 +5867,6 @@ function buildDocumentedProofCards(scope = {}) {
       cta: "Open target page"
     },
     {
-      kicker: "Ready for project evidence",
       title: `Finished-attic outcome for ${scopeLabel}`,
       text: "Use real after photos that show the attic looked cleaner, more intentional, and more complete after the work was finished.",
       image: service?.image || proofAssets.insulation,
@@ -7851,19 +7803,9 @@ function renderCorePage(page, currentUrl) {
 
       <section class="section review-proof-section">
         <div class="review-widget review-widget--page reveal" aria-label="Google review preview">
-          <div class="review-widget__header">
-            <div class="google-mark" aria-hidden="true"><span>G</span></div>
-            <div>
-              <p class="panel-kicker">Google Reviews</p>
-              <h2>Trusted by homeowners</h2>
-            </div>
-          </div>
-          <div class="review-score">
-            <strong>5.0</strong>
-            <div>
-              <div class="stars" aria-label="Five star rating">★★★★★</div>
-              <p>Approved review excerpts or a synced review feed can live here as review sources are connected.</p>
-            </div>
+          ${renderReviewWidgetHeader("Trusted by homeowners")}
+          <div class="review-widget__shell">
+            <p>Approved review excerpts or a synced review feed can live here as review sources are connected.</p>
           </div>
         </div>
       </section>

@@ -377,6 +377,12 @@ a {
   letter-spacing: 0;
 }
 
+.hero-review-banner__count {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
 .eyebrow {
   margin: 0 0 18px;
   color: var(--blue);
@@ -638,6 +644,16 @@ h3 {
     align-self: start;
     margin-top: 70px;
   }
+
+  .hero--market .review-widget,
+  .hero--city .review-widget {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+    justify-self: stretch;
+    width: 100%;
+    margin-top: 14px;
+  }
 }
 
 .panel-kicker {
@@ -885,6 +901,12 @@ h3 {
   backdrop-filter: blur(18px);
 }
 
+.hero--market .review-widget,
+.hero--city .review-widget {
+  justify-self: stretch;
+  width: 100%;
+}
+
 .review-widget__header {
   display: grid;
   grid-template-columns: 46px 1fr;
@@ -898,6 +920,28 @@ h3 {
   color: var(--white);
   font-size: 26px;
   line-height: 1;
+}
+
+.review-widget__rating {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 10px;
+  color: #dcebe5;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.review-widget__rating strong {
+  color: var(--cyan);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.review-widget__rating .stars {
+  font-size: 15px;
 }
 
 .google-mark {
@@ -1023,6 +1067,34 @@ h3 {
   border-radius: var(--radius);
 }
 
+.review-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.review-copy.is-collapsible [data-review-copy] {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+}
+
+.review-copy.is-expanded [data-review-copy] {
+  display: block;
+  overflow: visible;
+}
+
+.review-toggle {
+  width: fit-content;
+  padding: 0;
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 800;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
 .review-stars {
   display: flex;
   gap: 4px;
@@ -1039,7 +1111,7 @@ h3 {
 .review-excerpt-mini__quote {
   margin: 0;
   color: var(--white);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.55;
 }
 
@@ -1083,7 +1155,7 @@ h3 {
 .review-carousel__quote {
   margin: 0;
   color: var(--white);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.55;
 }
 
@@ -1099,6 +1171,17 @@ h3 {
 .review-carousel__meta strong {
   color: var(--white);
   font-size: 13px;
+}
+
+.proof-queue-card--review {
+  align-content: start;
+}
+
+.proof-review__quote {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 .attic-map.section {
@@ -2976,24 +3059,12 @@ textarea {
     max-width: 100%;
   }
 
-  .inspection-lead--module {
-    display: block;
-    width: 100%;
-    margin: 0 0 10px;
-    font-size: clamp(28px, 8vw, 44px);
-    font-weight: 850;
-    line-height: 0.98;
-  }
-
-  .inspection-lead--module.reveal,
-  .hero-device.attic-card.reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-
   .media-caption {
-    display: none;
+    display: block;
+  }
+
+  .media-caption p {
+    font-size: clamp(28px, 8vw, 44px);
   }
 
   .hero-actions {
