@@ -1613,6 +1613,39 @@ h3 {
   margin-left: 0;
 }
 
+.before-after-proof-card__media {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.before-after-proof-card__panel {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.before-after-proof-card__label {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 28px;
+  padding: 0 10px;
+  align-items: center;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(36, 113, 90, 0.08);
+  border: 1px solid rgba(36, 113, 90, 0.16);
+  border-radius: 999px;
+}
+
+.before-after-proof-card__image {
+  border-radius: var(--radius);
+}
+
 .proof-queue-card {
   display: grid;
   align-content: start;
@@ -3408,6 +3441,10 @@ textarea {
 
   .service-showcase__control:hover {
     transform: none;
+  }
+
+  .before-after-proof-card__media {
+    grid-template-columns: 1fr;
   }
 
   .service-showcase__control--prev {

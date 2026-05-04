@@ -25,6 +25,10 @@ These files let Good Attic load real review excerpts and documented attic eviden
 - `city`
 - `image`
 - `alt`
+- `beforeImage`
+- `beforeAlt`
+- `afterImage`
+- `afterAlt`
 - `targetUrl`
 - `targetLabel`
 
@@ -66,17 +70,20 @@ These files let Good Attic load real review excerpts and documented attic eviden
 ```json
 {
   "kicker": "Approved project evidence",
-  "title": "Contaminated insulation before removal in Chesterfield",
-  "text": "Photo set and findings summary showing why the attic needed removal and reset work before reinstalling insulation.",
-  "status": "Approved asset",
-  "assetType": "before photo",
+  "title": "Chesterfield attic before-and-after set 1",
+  "text": "Real attic photos showing the documented attic condition before work and the finished attic afterward.",
+  "status": "Real before/after photo set",
+  "assetType": "before and after photos",
   "market": "st-louis-mo",
-  "serviceSlug": "insulation-removal",
   "city": "chesterfield-mo",
-  "image": "assets/dirty-old-attic-needing-restoration.png",
-  "alt": "Contaminated insulation before removal in Chesterfield attic",
-  "targetUrl": "/st-louis-mo/insulation-removal/",
-  "targetLabel": "Open St. Louis removal page"
+  "image": "assets/proof/st-louis-mo/chesterfield-mo/project-1-after.jpg",
+  "alt": "Finished attic condition from Chesterfield before-and-after photo set 1",
+  "beforeImage": "assets/proof/st-louis-mo/chesterfield-mo/project-1-before.jpg",
+  "beforeAlt": "Before attic condition from Chesterfield before-and-after photo set 1",
+  "afterImage": "assets/proof/st-louis-mo/chesterfield-mo/project-1-after.jpg",
+  "afterAlt": "Finished attic condition from Chesterfield before-and-after photo set 1",
+  "targetUrl": "/st-louis-mo/service-areas/chesterfield-mo/",
+  "targetLabel": "Chesterfield city page"
 }
 ```
 

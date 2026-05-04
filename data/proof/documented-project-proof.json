@@ -6,5 +6,636 @@
     "City is optional and should match a support city slug when the proof belongs on a city support page.",
     "assetType examples: before photo, after photo, inspection notes, contamination photo, air sealing detail."
   ],
-  "items": []
+  "items": [
+    {
+      "market": "salt-lake-city-ut",
+      "city": "west-jordan-ut",
+      "title": "West Jordan attic before-and-after set 1",
+      "text": "Real attic photos from a West Jordan home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/west-jordan-ut/project-1-after.jpg",
+      "alt": "Finished attic condition from West Jordan before-and-after photo set 1",
+      "beforeImage": "assets/proof/salt-lake-city-ut/west-jordan-ut/project-1-before.png",
+      "beforeAlt": "Before attic condition from West Jordan before-and-after photo set 1",
+      "afterImage": "assets/proof/salt-lake-city-ut/west-jordan-ut/project-1-after.jpg",
+      "afterAlt": "Finished attic condition from West Jordan before-and-after photo set 1",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/west-jordan-ut/",
+      "targetLabel": "West Jordan city page",
+      "tags": [
+        "salt-lake-proof",
+        "west-jordan-ut",
+        "brian-l"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "west-jordan-ut",
+      "title": "West Jordan attic before-and-after set 2",
+      "text": "Real attic photos from a West Jordan home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/west-jordan-ut/project-2-after.jpg",
+      "alt": "Finished attic condition from West Jordan before-and-after photo set 2",
+      "beforeImage": "assets/proof/salt-lake-city-ut/west-jordan-ut/project-2-before.jpg",
+      "beforeAlt": "Before attic condition from West Jordan before-and-after photo set 2",
+      "afterImage": "assets/proof/salt-lake-city-ut/west-jordan-ut/project-2-after.jpg",
+      "afterAlt": "Finished attic condition from West Jordan before-and-after photo set 2",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/west-jordan-ut/",
+      "targetLabel": "West Jordan city page",
+      "tags": [
+        "salt-lake-proof",
+        "west-jordan-ut",
+        "dorothy-n"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "west-jordan-ut",
+      "title": "West Jordan attic before-and-after set 3",
+      "text": "Real attic photos from a West Jordan home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/west-jordan-ut/project-3-after.jpg",
+      "alt": "Finished attic condition from West Jordan before-and-after photo set 3",
+      "beforeImage": "assets/proof/salt-lake-city-ut/west-jordan-ut/project-3-before.jpg",
+      "beforeAlt": "Before attic condition from West Jordan before-and-after photo set 3",
+      "afterImage": "assets/proof/salt-lake-city-ut/west-jordan-ut/project-3-after.jpg",
+      "afterAlt": "Finished attic condition from West Jordan before-and-after photo set 3",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/west-jordan-ut/",
+      "targetLabel": "West Jordan city page",
+      "tags": [
+        "salt-lake-proof",
+        "west-jordan-ut",
+        "zach-p"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "sandy-ut",
+      "title": "Sandy attic before-and-after set 1",
+      "text": "Real attic photos from a Sandy home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/sandy-ut/project-1-after.jpg",
+      "alt": "Finished attic condition from Sandy before-and-after photo set 1",
+      "beforeImage": "assets/proof/salt-lake-city-ut/sandy-ut/project-1-before.jpg",
+      "beforeAlt": "Before attic condition from Sandy before-and-after photo set 1",
+      "afterImage": "assets/proof/salt-lake-city-ut/sandy-ut/project-1-after.jpg",
+      "afterAlt": "Finished attic condition from Sandy before-and-after photo set 1",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/sandy-ut/",
+      "targetLabel": "Sandy city page",
+      "tags": [
+        "salt-lake-proof",
+        "sandy-ut",
+        "josh-v"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "sandy-ut",
+      "title": "Sandy attic before-and-after set 2",
+      "text": "Real attic photos from a Sandy home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/sandy-ut/project-2-after.jpg",
+      "alt": "Finished attic condition from Sandy before-and-after photo set 2",
+      "beforeImage": "assets/proof/salt-lake-city-ut/sandy-ut/project-2-before.jpg",
+      "beforeAlt": "Before attic condition from Sandy before-and-after photo set 2",
+      "afterImage": "assets/proof/salt-lake-city-ut/sandy-ut/project-2-after.jpg",
+      "afterAlt": "Finished attic condition from Sandy before-and-after photo set 2",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/sandy-ut/",
+      "targetLabel": "Sandy city page",
+      "tags": [
+        "salt-lake-proof",
+        "sandy-ut",
+        "katie-n"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "sandy-ut",
+      "title": "Sandy attic before-and-after set 3",
+      "text": "Real attic photos from a Sandy home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/sandy-ut/project-3-after.jpg",
+      "alt": "Finished attic condition from Sandy before-and-after photo set 3",
+      "beforeImage": "assets/proof/salt-lake-city-ut/sandy-ut/project-3-before.jpg",
+      "beforeAlt": "Before attic condition from Sandy before-and-after photo set 3",
+      "afterImage": "assets/proof/salt-lake-city-ut/sandy-ut/project-3-after.jpg",
+      "afterAlt": "Finished attic condition from Sandy before-and-after photo set 3",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/sandy-ut/",
+      "targetLabel": "Sandy city page",
+      "tags": [
+        "salt-lake-proof",
+        "sandy-ut",
+        "wade-d"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "draper-ut",
+      "title": "Draper attic before-and-after set 1",
+      "text": "Real attic photos from a Draper home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/draper-ut/project-1-after.jpg",
+      "alt": "Finished attic condition from Draper before-and-after photo set 1",
+      "beforeImage": "assets/proof/salt-lake-city-ut/draper-ut/project-1-before.jpg",
+      "beforeAlt": "Before attic condition from Draper before-and-after photo set 1",
+      "afterImage": "assets/proof/salt-lake-city-ut/draper-ut/project-1-after.jpg",
+      "afterAlt": "Finished attic condition from Draper before-and-after photo set 1",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/draper-ut/",
+      "targetLabel": "Draper city page",
+      "tags": [
+        "salt-lake-proof",
+        "draper-ut",
+        "deb-g"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "draper-ut",
+      "title": "Draper attic before-and-after set 2",
+      "text": "Real attic photos from a Draper home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/draper-ut/project-2-after.jpg",
+      "alt": "Finished attic condition from Draper before-and-after photo set 2",
+      "beforeImage": "assets/proof/salt-lake-city-ut/draper-ut/project-2-before.jpg",
+      "beforeAlt": "Before attic condition from Draper before-and-after photo set 2",
+      "afterImage": "assets/proof/salt-lake-city-ut/draper-ut/project-2-after.jpg",
+      "afterAlt": "Finished attic condition from Draper before-and-after photo set 2",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/draper-ut/",
+      "targetLabel": "Draper city page",
+      "tags": [
+        "salt-lake-proof",
+        "draper-ut",
+        "james-lillian"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "draper-ut",
+      "title": "Draper attic before-and-after set 3",
+      "text": "Real attic photos from a Draper home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/draper-ut/project-3-after.jpg",
+      "alt": "Finished attic condition from Draper before-and-after photo set 3",
+      "beforeImage": "assets/proof/salt-lake-city-ut/draper-ut/project-3-before.jpg",
+      "beforeAlt": "Before attic condition from Draper before-and-after photo set 3",
+      "afterImage": "assets/proof/salt-lake-city-ut/draper-ut/project-3-after.jpg",
+      "afterAlt": "Finished attic condition from Draper before-and-after photo set 3",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/draper-ut/",
+      "targetLabel": "Draper city page",
+      "tags": [
+        "salt-lake-proof",
+        "draper-ut",
+        "mike-kelly"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "american-fork-ut",
+      "title": "American Fork attic before-and-after set 1",
+      "text": "Real attic photos from an American Fork home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/american-fork-ut/project-1-after.jpg",
+      "alt": "Finished attic condition from American Fork before-and-after photo set 1",
+      "beforeImage": "assets/proof/salt-lake-city-ut/american-fork-ut/project-1-before.jpg",
+      "beforeAlt": "Before attic condition from American Fork before-and-after photo set 1",
+      "afterImage": "assets/proof/salt-lake-city-ut/american-fork-ut/project-1-after.jpg",
+      "afterAlt": "Finished attic condition from American Fork before-and-after photo set 1",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/american-fork-ut/",
+      "targetLabel": "American Fork city page",
+      "tags": [
+        "salt-lake-proof",
+        "american-fork-ut",
+        "aaron-f"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "american-fork-ut",
+      "title": "American Fork attic before-and-after set 2",
+      "text": "Real attic photos from an American Fork home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/american-fork-ut/project-2-after.jpg",
+      "alt": "Finished attic condition from American Fork before-and-after photo set 2",
+      "beforeImage": "assets/proof/salt-lake-city-ut/american-fork-ut/project-2-before.jpg",
+      "beforeAlt": "Before attic condition from American Fork before-and-after photo set 2",
+      "afterImage": "assets/proof/salt-lake-city-ut/american-fork-ut/project-2-after.jpg",
+      "afterAlt": "Finished attic condition from American Fork before-and-after photo set 2",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/american-fork-ut/",
+      "targetLabel": "American Fork city page",
+      "tags": [
+        "salt-lake-proof",
+        "american-fork-ut",
+        "angela-runion"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "american-fork-ut",
+      "title": "American Fork attic before-and-after set 3",
+      "text": "Real attic photos from an American Fork home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/american-fork-ut/project-3-after.jpg",
+      "alt": "Finished attic condition from American Fork before-and-after photo set 3",
+      "beforeImage": "assets/proof/salt-lake-city-ut/american-fork-ut/project-3-before.jpg",
+      "beforeAlt": "Before attic condition from American Fork before-and-after photo set 3",
+      "afterImage": "assets/proof/salt-lake-city-ut/american-fork-ut/project-3-after.jpg",
+      "afterAlt": "Finished attic condition from American Fork before-and-after photo set 3",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/american-fork-ut/",
+      "targetLabel": "American Fork city page",
+      "tags": [
+        "salt-lake-proof",
+        "american-fork-ut",
+        "kevin-b"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "herriman-ut",
+      "title": "Herriman attic before-and-after set 1",
+      "text": "Real attic photos from a Herriman home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/herriman-ut/project-1-after.jpg",
+      "alt": "Finished attic condition from Herriman before-and-after photo set 1",
+      "beforeImage": "assets/proof/salt-lake-city-ut/herriman-ut/project-1-before.jpg",
+      "beforeAlt": "Before attic condition from Herriman before-and-after photo set 1",
+      "afterImage": "assets/proof/salt-lake-city-ut/herriman-ut/project-1-after.jpg",
+      "afterAlt": "Finished attic condition from Herriman before-and-after photo set 1",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/herriman-ut/",
+      "targetLabel": "Herriman city page",
+      "tags": [
+        "salt-lake-proof",
+        "herriman-ut",
+        "jenna-k"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "herriman-ut",
+      "title": "Herriman attic before-and-after set 2",
+      "text": "Real attic photos from a Herriman home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/herriman-ut/project-2-after.jpg",
+      "alt": "Finished attic condition from Herriman before-and-after photo set 2",
+      "beforeImage": "assets/proof/salt-lake-city-ut/herriman-ut/project-2-before.jpg",
+      "beforeAlt": "Before attic condition from Herriman before-and-after photo set 2",
+      "afterImage": "assets/proof/salt-lake-city-ut/herriman-ut/project-2-after.jpg",
+      "afterAlt": "Finished attic condition from Herriman before-and-after photo set 2",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/herriman-ut/",
+      "targetLabel": "Herriman city page",
+      "tags": [
+        "salt-lake-proof",
+        "herriman-ut",
+        "sam-m"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "herriman-ut",
+      "title": "Herriman attic before-and-after set 3",
+      "text": "Real attic photos from a Herriman home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/herriman-ut/project-3-after.jpg",
+      "alt": "Finished attic condition from Herriman before-and-after photo set 3",
+      "beforeImage": "assets/proof/salt-lake-city-ut/herriman-ut/project-3-before.jpg",
+      "beforeAlt": "Before attic condition from Herriman before-and-after photo set 3",
+      "afterImage": "assets/proof/salt-lake-city-ut/herriman-ut/project-3-after.jpg",
+      "afterAlt": "Finished attic condition from Herriman before-and-after photo set 3",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/herriman-ut/",
+      "targetLabel": "Herriman city page",
+      "tags": [
+        "salt-lake-proof",
+        "herriman-ut",
+        "todd-l"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "holladay-ut",
+      "title": "Holladay attic before-and-after set 1",
+      "text": "Real attic photos from a Holladay home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/holladay-ut/project-1-after.jpg",
+      "alt": "Finished attic condition from Holladay before-and-after photo set 1",
+      "beforeImage": "assets/proof/salt-lake-city-ut/holladay-ut/project-1-before.jpg",
+      "beforeAlt": "Before attic condition from Holladay before-and-after photo set 1",
+      "afterImage": "assets/proof/salt-lake-city-ut/holladay-ut/project-1-after.jpg",
+      "afterAlt": "Finished attic condition from Holladay before-and-after photo set 1",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/holladay-ut/",
+      "targetLabel": "Holladay city page",
+      "tags": [
+        "salt-lake-proof",
+        "holladay-ut",
+        "jeremy-abernathy-removal-only"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "holladay-ut",
+      "title": "Holladay attic before-and-after set 2",
+      "text": "Real attic photos from a Holladay home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/holladay-ut/project-2-after.jpg",
+      "alt": "Finished attic condition from Holladay before-and-after photo set 2",
+      "beforeImage": "assets/proof/salt-lake-city-ut/holladay-ut/project-2-before.png",
+      "beforeAlt": "Before attic condition from Holladay before-and-after photo set 2",
+      "afterImage": "assets/proof/salt-lake-city-ut/holladay-ut/project-2-after.jpg",
+      "afterAlt": "Finished attic condition from Holladay before-and-after photo set 2",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/holladay-ut/",
+      "targetLabel": "Holladay city page",
+      "tags": [
+        "salt-lake-proof",
+        "holladay-ut",
+        "marianne-jackson"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "holladay-ut",
+      "title": "Holladay attic before-and-after set 3",
+      "text": "Real attic photos from a Holladay home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/holladay-ut/project-3-after.jpg",
+      "alt": "Finished attic condition from Holladay before-and-after photo set 3",
+      "beforeImage": "assets/proof/salt-lake-city-ut/holladay-ut/project-3-before.jpg",
+      "beforeAlt": "Before attic condition from Holladay before-and-after photo set 3",
+      "afterImage": "assets/proof/salt-lake-city-ut/holladay-ut/project-3-after.jpg",
+      "afterAlt": "Finished attic condition from Holladay before-and-after photo set 3",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/holladay-ut/",
+      "targetLabel": "Holladay city page",
+      "tags": [
+        "salt-lake-proof",
+        "holladay-ut",
+        "naomi-w"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "millcreek-ut",
+      "title": "Millcreek attic before-and-after set 1",
+      "text": "Real attic photos from a Millcreek home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/millcreek-ut/project-1-after.jpg",
+      "alt": "Finished attic condition from Millcreek before-and-after photo set 1",
+      "beforeImage": "assets/proof/salt-lake-city-ut/millcreek-ut/project-1-before.jpg",
+      "beforeAlt": "Before attic condition from Millcreek before-and-after photo set 1",
+      "afterImage": "assets/proof/salt-lake-city-ut/millcreek-ut/project-1-after.jpg",
+      "afterAlt": "Finished attic condition from Millcreek before-and-after photo set 1",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/millcreek-ut/",
+      "targetLabel": "Millcreek city page",
+      "tags": [
+        "salt-lake-proof",
+        "millcreek-ut",
+        "brett-s"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "millcreek-ut",
+      "title": "Millcreek attic before-and-after set 2",
+      "text": "Real attic photos from a Millcreek home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/millcreek-ut/project-2-after.jpg",
+      "alt": "Finished attic condition from Millcreek before-and-after photo set 2",
+      "beforeImage": "assets/proof/salt-lake-city-ut/millcreek-ut/project-2-before.jpg",
+      "beforeAlt": "Before attic condition from Millcreek before-and-after photo set 2",
+      "afterImage": "assets/proof/salt-lake-city-ut/millcreek-ut/project-2-after.jpg",
+      "afterAlt": "Finished attic condition from Millcreek before-and-after photo set 2",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/millcreek-ut/",
+      "targetLabel": "Millcreek city page",
+      "tags": [
+        "salt-lake-proof",
+        "millcreek-ut",
+        "brian-j"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "millcreek-ut",
+      "title": "Millcreek attic before-and-after set 3",
+      "text": "Real attic photos from a Millcreek home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/millcreek-ut/project-3-after.jpg",
+      "alt": "Finished attic condition from Millcreek before-and-after photo set 3",
+      "beforeImage": "assets/proof/salt-lake-city-ut/millcreek-ut/project-3-before.jpg",
+      "beforeAlt": "Before attic condition from Millcreek before-and-after photo set 3",
+      "afterImage": "assets/proof/salt-lake-city-ut/millcreek-ut/project-3-after.jpg",
+      "afterAlt": "Finished attic condition from Millcreek before-and-after photo set 3",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/millcreek-ut/",
+      "targetLabel": "Millcreek city page",
+      "tags": [
+        "salt-lake-proof",
+        "millcreek-ut",
+        "steve-t"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "cottonwood-heights-ut",
+      "title": "Cottonwood Heights attic before-and-after set 1",
+      "text": "Real attic photos from a Cottonwood Heights home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/cottonwood-heights-ut/project-1-after.jpg",
+      "alt": "Finished attic condition from Cottonwood Heights before-and-after photo set 1",
+      "beforeImage": "assets/proof/salt-lake-city-ut/cottonwood-heights-ut/project-1-before.jpg",
+      "beforeAlt": "Before attic condition from Cottonwood Heights before-and-after photo set 1",
+      "afterImage": "assets/proof/salt-lake-city-ut/cottonwood-heights-ut/project-1-after.jpg",
+      "afterAlt": "Finished attic condition from Cottonwood Heights before-and-after photo set 1",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/cottonwood-heights-ut/",
+      "targetLabel": "Cottonwood Heights city page",
+      "tags": [
+        "salt-lake-proof",
+        "cottonwood-heights-ut",
+        "dorothy-b"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "cottonwood-heights-ut",
+      "title": "Cottonwood Heights attic before-and-after set 2",
+      "text": "Real attic photos from a Cottonwood Heights home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/cottonwood-heights-ut/project-2-after.jpg",
+      "alt": "Finished attic condition from Cottonwood Heights before-and-after photo set 2",
+      "beforeImage": "assets/proof/salt-lake-city-ut/cottonwood-heights-ut/project-2-before.jpg",
+      "beforeAlt": "Before attic condition from Cottonwood Heights before-and-after photo set 2",
+      "afterImage": "assets/proof/salt-lake-city-ut/cottonwood-heights-ut/project-2-after.jpg",
+      "afterAlt": "Finished attic condition from Cottonwood Heights before-and-after photo set 2",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/cottonwood-heights-ut/",
+      "targetLabel": "Cottonwood Heights city page",
+      "tags": [
+        "salt-lake-proof",
+        "cottonwood-heights-ut",
+        "steve-poche"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "cottonwood-heights-ut",
+      "title": "Cottonwood Heights attic before-and-after set 3",
+      "text": "Real attic photos from a Cottonwood Heights home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/cottonwood-heights-ut/project-3-after.jpg",
+      "alt": "Finished attic condition from Cottonwood Heights before-and-after photo set 3",
+      "beforeImage": "assets/proof/salt-lake-city-ut/cottonwood-heights-ut/project-3-before.png",
+      "beforeAlt": "Before attic condition from Cottonwood Heights before-and-after photo set 3",
+      "afterImage": "assets/proof/salt-lake-city-ut/cottonwood-heights-ut/project-3-after.jpg",
+      "afterAlt": "Finished attic condition from Cottonwood Heights before-and-after photo set 3",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/cottonwood-heights-ut/",
+      "targetLabel": "Cottonwood Heights city page",
+      "tags": [
+        "salt-lake-proof",
+        "cottonwood-heights-ut",
+        "tim-peterson"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "sugar-house-ut",
+      "title": "Sugar House attic before-and-after set 1",
+      "text": "Real attic photos from a Sugar House home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/sugar-house-ut/project-1-after.jpg",
+      "alt": "Finished attic condition from Sugar House before-and-after photo set 1",
+      "beforeImage": "assets/proof/salt-lake-city-ut/sugar-house-ut/project-1-before.jpg",
+      "beforeAlt": "Before attic condition from Sugar House before-and-after photo set 1",
+      "afterImage": "assets/proof/salt-lake-city-ut/sugar-house-ut/project-1-after.jpg",
+      "afterAlt": "Finished attic condition from Sugar House before-and-after photo set 1",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/sugar-house-ut/",
+      "targetLabel": "Sugar House city page",
+      "tags": [
+        "salt-lake-proof",
+        "sugar-house-ut",
+        "cameron-f"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "sugar-house-ut",
+      "title": "Sugar House attic before-and-after set 2",
+      "text": "Real attic photos from a Sugar House home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/sugar-house-ut/project-2-after.jpg",
+      "alt": "Finished attic condition from Sugar House before-and-after photo set 2",
+      "beforeImage": "assets/proof/salt-lake-city-ut/sugar-house-ut/project-2-before.jpg",
+      "beforeAlt": "Before attic condition from Sugar House before-and-after photo set 2",
+      "afterImage": "assets/proof/salt-lake-city-ut/sugar-house-ut/project-2-after.jpg",
+      "afterAlt": "Finished attic condition from Sugar House before-and-after photo set 2",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/sugar-house-ut/",
+      "targetLabel": "Sugar House city page",
+      "tags": [
+        "salt-lake-proof",
+        "sugar-house-ut",
+        "kirk-n"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "sugar-house-ut",
+      "title": "Sugar House attic before-and-after set 3",
+      "text": "Real attic photos from a Sugar House home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/sugar-house-ut/project-3-after.jpg",
+      "alt": "Finished attic condition from Sugar House before-and-after photo set 3",
+      "beforeImage": "assets/proof/salt-lake-city-ut/sugar-house-ut/project-3-before.jpg",
+      "beforeAlt": "Before attic condition from Sugar House before-and-after photo set 3",
+      "afterImage": "assets/proof/salt-lake-city-ut/sugar-house-ut/project-3-after.jpg",
+      "afterAlt": "Finished attic condition from Sugar House before-and-after photo set 3",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/sugar-house-ut/",
+      "targetLabel": "Sugar House city page",
+      "tags": [
+        "salt-lake-proof",
+        "sugar-house-ut",
+        "patti-v"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "south-jordan-ut",
+      "title": "South Jordan attic before-and-after set 1",
+      "text": "Real attic photos from a South Jordan home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/south-jordan-ut/project-1-after.jpg",
+      "alt": "Finished attic condition from South Jordan before-and-after photo set 1",
+      "beforeImage": "assets/proof/salt-lake-city-ut/south-jordan-ut/project-1-before.jpg",
+      "beforeAlt": "Before attic condition from South Jordan before-and-after photo set 1",
+      "afterImage": "assets/proof/salt-lake-city-ut/south-jordan-ut/project-1-after.jpg",
+      "afterAlt": "Finished attic condition from South Jordan before-and-after photo set 1",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/south-jordan-ut/",
+      "targetLabel": "South Jordan city page",
+      "tags": [
+        "salt-lake-proof",
+        "south-jordan-ut",
+        "dan-a"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "south-jordan-ut",
+      "title": "South Jordan attic before-and-after set 2",
+      "text": "Real attic photos from a South Jordan home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/south-jordan-ut/project-2-after.jpg",
+      "alt": "Finished attic condition from South Jordan before-and-after photo set 2",
+      "beforeImage": "assets/proof/salt-lake-city-ut/south-jordan-ut/project-2-before.jpg",
+      "beforeAlt": "Before attic condition from South Jordan before-and-after photo set 2",
+      "afterImage": "assets/proof/salt-lake-city-ut/south-jordan-ut/project-2-after.jpg",
+      "afterAlt": "Finished attic condition from South Jordan before-and-after photo set 2",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/south-jordan-ut/",
+      "targetLabel": "South Jordan city page",
+      "tags": [
+        "salt-lake-proof",
+        "south-jordan-ut",
+        "jessica-k"
+      ]
+    },
+    {
+      "market": "salt-lake-city-ut",
+      "city": "south-jordan-ut",
+      "title": "South Jordan attic before-and-after set 3",
+      "text": "Real attic photos from a South Jordan home showing the documented attic condition before work and the finished attic afterward.",
+      "image": "assets/proof/salt-lake-city-ut/south-jordan-ut/project-3-after.jpg",
+      "alt": "Finished attic condition from South Jordan before-and-after photo set 3",
+      "beforeImage": "assets/proof/salt-lake-city-ut/south-jordan-ut/project-3-before.jpg",
+      "beforeAlt": "Before attic condition from South Jordan before-and-after photo set 3",
+      "afterImage": "assets/proof/salt-lake-city-ut/south-jordan-ut/project-3-after.jpg",
+      "afterAlt": "Finished attic condition from South Jordan before-and-after photo set 3",
+      "status": "Real before/after photo set",
+      "assetType": "before and after photos",
+      "targetUrl": "/salt-lake-city-ut/service-areas/south-jordan-ut/",
+      "targetLabel": "South Jordan city page",
+      "tags": [
+        "salt-lake-proof",
+        "south-jordan-ut",
+        "scott-g"
+      ]
+    }
+  ]
 }

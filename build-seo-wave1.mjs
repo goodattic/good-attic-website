@@ -104,6 +104,10 @@ function normalizeDocumentedProofEntry(entry, index) {
     text,
     image: normalizeOptionalString(entry.image),
     alt: normalizeOptionalString(entry.alt),
+    beforeImage: normalizeOptionalString(entry.beforeImage),
+    beforeAlt: normalizeOptionalString(entry.beforeAlt),
+    afterImage: normalizeOptionalString(entry.afterImage),
+    afterAlt: normalizeOptionalString(entry.afterAlt),
     status: normalizeOptionalString(entry.status),
     assetType: normalizeOptionalString(entry.assetType),
     targetUrl: normalizeOptionalString(entry.targetUrl),
@@ -3598,6 +3602,38 @@ function renderEvidenceGrid(items, currentUrl) {
   `;
 }
 
+function renderBeforeAfterProofGrid(items, currentUrl) {
+  return `
+    <div class="feature-grid evidence-grid before-after-proof-grid">
+      ${items
+        .map(
+          (item) => `
+            <article class="feature-card evidence-card before-after-proof-card reveal">
+              <div class="before-after-proof-card__media">
+                <figure class="before-after-proof-card__panel">
+                  <span class="before-after-proof-card__label">Before</span>
+                  ${renderImg(currentUrl, item.beforeImage || item.image, item.beforeAlt || item.alt || item.title, {
+                    className: "before-after-proof-card__image"
+                  })}
+                </figure>
+                <figure class="before-after-proof-card__panel">
+                  <span class="before-after-proof-card__label">After</span>
+                  ${renderImg(currentUrl, item.afterImage || item.image, item.afterAlt || item.alt || item.title, {
+                    className: "before-after-proof-card__image"
+                  })}
+                </figure>
+              </div>
+              <h3>${escapeHtml(item.title)}</h3>
+              <p>${escapeHtml(item.text)}</p>
+              ${item.status ? `<span class="page-card-link__cta">${escapeHtml(item.status)}</span>` : ""}
+            </article>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
 function renderProofQueueGrid(items, currentUrl) {
   return `
     <div class="feature-grid proof-queue-grid">
@@ -5226,6 +5262,7 @@ function buildServicePage(market, service) {
 
 function buildCityPage(market, city) {
   const evidenceGallery = buildCityEvidenceGallery(market, city);
+  const cityPhotoProof = documentedProofEntries({ marketSlug: market.slug, citySlug: city.slug });
   const inspectionChecklist = buildCityInspectionChecklist(market, city);
   const escalationPanels = buildCityEscalationPanels(market, city);
   const cityResourceCards = buildCityResourceCards(market, city);
@@ -5359,13 +5396,19 @@ function buildCityPage(market, city) {
 
       <section class="section">
         <div class="section-heading reveal">
-          <p class="eyebrow">What gets documented</p>
-          <h2>How Good Attic turns a ${escapeHtml(city.shortName)} attic problem into a clearer local service path.</h2>
+          <p class="eyebrow">${cityPhotoProof.length ? "Real attic proof" : "What gets documented"}</p>
+          <h2>${
+            cityPhotoProof.length
+              ? `Real before-and-after attic photos from ${escapeHtml(city.shortName)}.`
+              : `How Good Attic turns a ${escapeHtml(city.shortName)} attic problem into a clearer local service path.`
+          }</h2>
           <p class="section-subcopy">${escapeHtml(
-            "The goal of this local page is not to fake a branch office. It is to show how the attic gets documented and routed into the right market team and scope."
+            cityPhotoProof.length
+              ? `These are real attic photo sets from ${city.shortName} homes, showing documented attic conditions before the work and the finished attic afterward.`
+              : "The goal of this local page is not to fake a branch office. It is to show how the attic gets documented and routed into the right market team and scope."
           )}</p>
         </div>
-        ${renderEvidenceGrid(evidenceGallery, currentUrl)}
+        ${cityPhotoProof.length ? renderBeforeAfterProofGrid(cityPhotoProof, currentUrl) : renderEvidenceGrid(evidenceGallery, currentUrl)}
       </section>
 
       <section class="section">
@@ -5794,7 +5837,11 @@ function approvedReviewEntries(scope = {}) {
 }
 
 function documentedProofEntries(scope = {}) {
-  return documentedProjectProof.filter((entry) => matchesProofScope(entry, scope));
+  return documentedProjectProof.filter((entry) => {
+    if (!matchesProofScope(entry, scope)) return false;
+    if (!scope.citySlug && entry.city) return false;
+    return true;
+  });
 }
 
 function buildReviewExcerptCards(scope = {}) {
