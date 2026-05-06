@@ -36,6 +36,18 @@ const proofAssets = {
 const proofDataDirectory = path.join(__dirname, "data", "proof");
 const approvedReviewDataPath = path.join(proofDataDirectory, "approved-review-excerpts.json");
 const documentedProjectProofDataPath = path.join(proofDataDirectory, "documented-project-proof.json");
+const stateOptions = [
+  "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+  "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+  "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+  "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+  "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+  "DC"
+];
+const stateOptionsMarkup = [
+  '<option value="">State</option>',
+  ...stateOptions.map((abbr) => `<option value="${abbr}">${abbr}</option>`)
+].join("\n");
 
 function normalizeOptionalString(value) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
@@ -3315,7 +3327,9 @@ function renderModal(currentUrl) {
               </label>
               <label>
                 <span>State</span>
-                <input type="text" name="state" autocomplete="address-level1" required>
+                <select name="state" autocomplete="address-level1" required>
+                  ${stateOptionsMarkup}
+                </select>
               </label>
               <label>
                 <span>ZIP code</span>
@@ -3398,7 +3412,9 @@ function renderLeadForm(currentUrl) {
         </label>
         <label>
           <span>State</span>
-          <input type="text" name="state" autocomplete="address-level1" placeholder="State" required>
+          <select name="state" autocomplete="address-level1" required>
+            ${stateOptionsMarkup}
+          </select>
         </label>
         <label>
           <span>ZIP code</span>
@@ -3481,7 +3497,9 @@ function renderHomepageLeadForm(currentUrl, formName) {
         </label>
         <label>
           <span>State</span>
-          <input type="text" name="state" autocomplete="address-level1" placeholder="State" required>
+          <select name="state" autocomplete="address-level1" required>
+            ${stateOptionsMarkup}
+          </select>
         </label>
         <label>
           <span>ZIP code</span>

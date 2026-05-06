@@ -25,7 +25,6 @@ function enableFullDatePickerTrigger() {
     const openPicker = (event) => {
       if (input.disabled || input.readOnly || typeof input.showPicker !== "function") return;
 
-      event.preventDefault();
       input.focus({ preventScroll: true });
 
       try {
@@ -35,7 +34,6 @@ function enableFullDatePickerTrigger() {
       }
     };
 
-    input.addEventListener("pointerdown", openPicker);
     input.addEventListener("click", openPicker);
   });
 }

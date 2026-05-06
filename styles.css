@@ -2592,6 +2592,10 @@ textarea {
   min-width: 0;
 }
 
+.form-three label:nth-child(2) select {
+  text-transform: uppercase;
+}
+
 .form-section-title {
   margin: 12px 0 2px;
   color: var(--ink);
@@ -3538,8 +3542,6 @@ textarea {
   .people-grid,
   .person-card,
   .proof-grid .person-card,
-  .form-two,
-  .form-three,
   .modal-form {
     grid-template-columns: 1fr;
   }
@@ -3662,6 +3664,7 @@ textarea {
     width: 100%;
     max-width: 100%;
     min-width: 0;
+    margin: 0 auto;
     max-height: none;
     overflow-x: hidden;
     overflow-y: visible;
@@ -3703,6 +3706,10 @@ textarea {
     font-size: 28px;
   }
 
+  .modal-form.contact-form {
+    justify-self: center;
+  }
+
   .project-picker,
   .project-picker--compact {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3725,6 +3732,48 @@ textarea {
   select,
   textarea {
     font-size: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .contact-form .form-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .contact-form .form-three {
+    grid-template-columns: minmax(0, 1.2fr) minmax(72px, 0.72fr) minmax(78px, 0.82fr);
+    gap: 8px;
+  }
+
+  .contact-form label {
+    min-width: 0;
+  }
+
+  .contact-form span {
+    font-size: 12px;
+  }
+
+  .contact-form input,
+  .contact-form select,
+  .contact-form textarea {
+    min-height: 48px;
+    padding: 12px 10px;
+    font-size: 16px;
+  }
+
+  .contact-form textarea {
+    min-height: 110px;
+    padding-top: 12px;
+  }
+
+  .modal-content {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .modal-form.contact-form {
+    justify-items: stretch;
   }
 }
 
