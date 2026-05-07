@@ -5312,7 +5312,6 @@ function buildServicePage(market, service) {
     ],
     canonical_url: `${site.baseUrl}/${market.slug}/${service.slug}/`,
     related_links: [
-      { label: market.name, url: `/${market.slug}/` },
       ...market.supportCities.map((city) => ({
         label: cityDisplayName(city),
         url: `/${market.slug}/service-areas/${city.slug}/`
@@ -5469,7 +5468,7 @@ function buildServicePage(market, service) {
             return {
               url: `/${market.slug}/${relatedSlug}/`,
               title: relatedService.name,
-              kicker: market.shortName,
+              kicker: "Related service",
               text: relatedService.summary,
               image: relatedService.image,
               alt: `${relatedService.name} in ${market.name}`,
@@ -5578,7 +5577,6 @@ function buildCityPage(market, city) {
     ],
     canonical_url: `${site.baseUrl}/${market.slug}/service-areas/${city.slug}/`,
     related_links: [
-      { label: market.name, url: `/${market.slug}/` },
       ...serviceCatalog.map((service) => ({ label: service.name, url: `/${market.slug}/${service.slug}/` })),
       { label: "Contact Good Attic", url: "/contact/" }
     ],
@@ -5698,7 +5696,7 @@ function buildCityPage(market, city) {
           serviceCatalog.map((service) => ({
             url: `/${market.slug}/${service.slug}/`,
             title: service.name,
-            kicker: market.shortName,
+            kicker: cityDisplayName(city),
             text: service.summary,
             image: service.image,
             alt: `${service.name} for ${cityDisplayName(city)}`,
@@ -5741,15 +5739,6 @@ function buildCityPage(market, city) {
         ${renderFeatureGrid(
           [
             {
-              url: `/${market.slug}/`,
-              title: `${marketDisplayName(market)} market hub`,
-              kicker: "Main local authority page",
-              text: `Start with the ${market.shortName} hub when you want the full local attic story, city support pages, and the ${marketPhone.phoneDisplay} market contact path in one place.`,
-              image: proofAssets.sales,
-              alt: `${marketDisplayName(market)} market hub`,
-              cta: "Open market hub"
-            },
-            {
               url: "/contact/",
               title: "Contact Good Attic",
               kicker: "Direct request path",
@@ -5784,7 +5773,7 @@ function buildCityPage(market, city) {
       ${renderCtaStrip(
         currentUrl,
         `Need attic help in ${city.shortName}?`,
-        `Start with the ${market.shortName} market hub or send a request directly through contact so the right local service path can start.`,
+        `Send the request through contact so the right ${market.shortName} service path can start without making the homeowner choose the technical scope first.`,
         { label: "Tell Us About Your Attic", url: "/contact/", kicker: "Conversion" }
       )}
     `
@@ -8179,6 +8168,23 @@ function renderCorePage(page, currentUrl) {
         cardPoints: page.trust_elements
       })}
 
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Approved excerpt library</p>
+          <h2>${escapeHtml(
+            reviewLibraryHasEntries
+              ? `All ${approvedReviewCount} approved Good Attic customer reviews in one place.`
+              : "The homeowner review themes this site is prepared to ingest once you approve real excerpts."
+          )}</h2>
+          <p class="section-subcopy">${escapeHtml(
+            reviewLibraryHasEntries
+              ? "These are real customer excerpts loaded from the shared proof data layer. Add more approved reviews to that data file and this hub will continue to grow automatically."
+              : "These are shells for real homeowner feedback, not fabricated quotes. Once approved excerpts exist, they can be dropped into the shared data layer and flow to the correct proof and market pages."
+          )}</p>
+        </div>
+        ${renderProofQueueGrid(buildReviewExcerptCards({}), currentUrl)}
+      </section>
+
       <section class="section review-proof-section">
         <div class="review-widget review-widget--page reveal" aria-label="Google review preview">
           ${renderReviewWidgetHeader("Trusted by Good Attic customers")}
@@ -8229,23 +8235,6 @@ function renderCorePage(page, currentUrl) {
           ],
           currentUrl
         )}
-      </section>
-
-      <section class="section">
-        <div class="section-heading reveal">
-          <p class="eyebrow">Approved excerpt library</p>
-          <h2>${escapeHtml(
-            reviewLibraryHasEntries
-              ? `All ${approvedReviewCount} approved Good Attic customer reviews in one place.`
-              : "The homeowner review themes this site is prepared to ingest once you approve real excerpts."
-          )}</h2>
-          <p class="section-subcopy">${escapeHtml(
-            reviewLibraryHasEntries
-              ? "These are real customer excerpts loaded from the shared proof data layer. Add more approved reviews to that data file and this hub will continue to grow automatically."
-              : "These are shells for real homeowner feedback, not fabricated quotes. Once approved excerpts exist, they can be dropped into the shared data layer and flow to the correct proof and market pages."
-          )}</p>
-        </div>
-        ${renderProofQueueGrid(buildReviewExcerptCards({}), currentUrl)}
       </section>
 
       <section class="section">
