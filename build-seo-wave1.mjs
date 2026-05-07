@@ -2793,6 +2793,14 @@ function marketBySlug(slug) {
   return marketCatalog.find((market) => market.slug === slug);
 }
 
+function cityRecordBySlug(slug) {
+  for (const market of marketCatalog) {
+    const city = market.supportCities.find((item) => item.slug === slug);
+    if (city) return { market, city };
+  }
+  return null;
+}
+
 function resourceFeatureImage(resource) {
   if (resource.slug.startsWith("attic-insulation-cost-")) return proofAssets.hotColdInsulation;
   if (resource.slug === "insulation-removal-vs-top-off") return proofAssets.dirtyReset;
@@ -3984,6 +3992,20 @@ function renderReviewStars(className = "review-stars") {
   `;
 }
 
+function reviewOriginLabel(entry) {
+  const market = entry.market ? marketBySlug(entry.market) : null;
+  const cityRecord = entry.city ? cityRecordBySlug(entry.city) : null;
+
+  if (cityRecord) return cityRecord.city.name;
+  if (market) return market.name;
+  return "Good Attic homeowner";
+}
+
+function reviewMetaLabel(entry) {
+  const origin = reviewOriginLabel(entry);
+  return entry.source ? `${origin} • ${entry.source}` : origin;
+}
+
 function renderMiniReviewCard(entry, currentUrl) {
   return `
     <article class="review-excerpt-mini">
@@ -3991,7 +4013,7 @@ function renderMiniReviewCard(entry, currentUrl) {
       ${renderExpandableReviewText(entry.quote, "review-excerpt-mini__quote")}
       <div class="review-excerpt-mini__meta">
         <strong>${escapeHtml(entry.reviewerLabel || "Local homeowner")}</strong>
-        <span>${escapeHtml(entry.source || "Approved review excerpt")}</span>
+        <span>${escapeHtml(reviewMetaLabel(entry))}</span>
       </div>
       ${
         entry.targetUrl && entry.targetLabel
@@ -4009,7 +4031,7 @@ function renderCarouselReviewCard(entry) {
       ${renderExpandableReviewText(entry.quote, "review-carousel__quote")}
       <div class="review-carousel__meta">
         <strong>${escapeHtml(entry.reviewerLabel || "Local homeowner")}</strong>
-        <span>${escapeHtml(entry.source || "Approved review excerpt")}</span>
+        <span>${escapeHtml(reviewMetaLabel(entry))}</span>
       </div>
     </article>
   `;
@@ -4030,27 +4052,66 @@ function marketHubReviewEntries(marketSlug) {
   return approvedReviewEntries({ marketSlug }).filter((entry) => !entry.city);
 }
 
+function sharedTeamReviewEntries(targetMarketSlug, limit = 6) {
+  const sourcePools = marketCatalog
+    .filter((market) => market.slug !== targetMarketSlug)
+    .map((market) => approvedReviewEntries({ marketSlug: market.slug }))
+    .filter((entries) => entries.length > 0);
+
+  const balancedEntries = [];
+  let poolIndex = 0;
+
+  while (balancedEntries.length < limit && sourcePools.some((entries) => entries.length > 0)) {
+    const activePool = sourcePools[poolIndex % sourcePools.length];
+    const nextEntry = activePool.shift();
+    if (nextEntry) balancedEntries.push(nextEntry);
+    poolIndex += 1;
+  }
+
+  return balancedEntries;
+}
+
+function reviewSummaryByMarket() {
+  return marketCatalog
+    .map((market) => ({
+      market,
+      count: approvedReviewEntries({ marketSlug: market.slug }).length
+    }))
+    .filter((item) => item.count > 0);
+}
+
 function renderMarketReviewWidget(currentUrl, market) {
-  const reviewEntries = marketHubReviewEntries(market.slug);
+  const marketSpecificEntries = marketHubReviewEntries(market.slug);
+  const sharedTeamEntries = market.slug === "kansas-city-mo" ? sharedTeamReviewEntries(market.slug) : [];
+  const reviewEntries = marketSpecificEntries.length ? marketSpecificEntries : sharedTeamEntries;
+  const isSharedTeamWidget = market.slug === "kansas-city-mo" && !marketSpecificEntries.length && sharedTeamEntries.length > 0;
   const desktopReviewCards = reviewEntries.map((entry) => renderCarouselReviewCard(entry)).join("");
   const mobileCarouselCards = [
     ...reviewEntries.map((entry) => renderCarouselReviewCard(entry)),
     renderReviewHubCarouselCard(
       currentUrl,
       `${market.shortName} review library`,
-      `Browse the broader Good Attic review hub for more homeowner feedback connected to ${market.shortName}.`
+      isSharedTeamWidget
+        ? `Browse the full Good Attic review hub for shared-team homeowner feedback while Kansas City-specific reviews build over time.`
+        : `Browse the broader Good Attic review hub for more homeowner feedback connected to ${market.shortName}.`
     )
   ].join("");
 
   return `
     <aside class="review-widget review-widget--market" aria-label="${escapeHtml(market.shortName)} Google review widget">
-      ${renderReviewWidgetHeader(`${market.shortName} homeowner feedback`)}
+      ${renderReviewWidgetHeader(
+        isSharedTeamWidget ? `${market.shortName} trust built by the same team` : `${market.shortName} homeowner feedback`
+      )}
       <div class="review-widget__stack review-widget__stack--desktop">
         <div class="review-widget__shell">
-          <strong>${escapeHtml(market.shortName)} review widget zone</strong>
-          <p>Use this area for the actual Google Business Profile review widget tied to the ${escapeHtml(
-            market.shortName
-          )} market so the location hub carries the fuller live review feed.</p>
+          <strong>${escapeHtml(isSharedTeamWidget ? `${market.shortName} shared-team review path` : `${market.shortName} review widget zone`)}</strong>
+          <p>${
+            isSharedTeamWidget
+              ? `Kansas City is run by the same Good Attic team that has already earned homeowner reviews in existing markets. Use this section to show shared-team feedback while Kansas City-specific reviews are still being collected.`
+              : `Use this area for the actual Google Business Profile review widget tied to the ${escapeHtml(
+                  market.shortName
+                )} market so the location hub carries the fuller live review feed.`
+          }</p>
           <a class="page-card-link__cta" href="${hrefFrom(currentUrl, "/reviews/")}">Open review library</a>
         </div>
         ${
@@ -4085,7 +4146,9 @@ function renderCityReviewWidget(currentUrl, market, city) {
       `${city.shortName} review hub`,
       reviewEntries.length
         ? `See the broader Good Attic review hub for more homeowner feedback connected to ${city.shortName} and the surrounding market.`
-        : `No city-assigned excerpts are loaded for ${city.shortName} yet, so the full Good Attic review hub is the best next place to browse approved homeowner feedback.`
+        : market.slug === "kansas-city-mo"
+          ? `Kansas City-specific reviews are still building, so the full Good Attic review hub is the best place to browse homeowner feedback earned by the same team in existing markets.`
+          : `No city-assigned excerpts are loaded for ${city.shortName} yet, so the full Good Attic review hub is the best next place to browse approved homeowner feedback.`
     )
   ].join("");
 
@@ -4101,10 +4164,16 @@ function renderCityReviewWidget(currentUrl, market, city) {
                ${reviewEntries.map((entry) => renderMiniReviewCard(entry, currentUrl)).join("")}
              </div>`
           : `<div class="review-widget__shell review-widget__shell--desktop-city">
-               <strong>${escapeHtml(city.shortName)} excerpt zone</strong>
-               <p>Use this section for individual approved homeowner excerpts that match the attic issues, service mix, and local trust questions most relevant near ${escapeHtml(
-                 city.shortName
-               )}.</p>
+             <strong>${escapeHtml(city.shortName)} excerpt zone</strong>
+               <p>${
+                 market.slug === "kansas-city-mo"
+                   ? `Kansas City-specific homeowner excerpts are still building, so this page points back to the central Good Attic review hub for shared-team feedback until more local review volume is available near ${escapeHtml(
+                       city.shortName
+                     )}.`
+                   : `Use this section for individual approved homeowner excerpts that match the attic issues, service mix, and local trust questions most relevant near ${escapeHtml(
+                       city.shortName
+                     )}.`
+               }</p>
                <a class="page-card-link__cta" href="${hrefFrom(currentUrl, "/reviews/")}">Open review library</a>
              </div>`
       }
@@ -7911,6 +7980,7 @@ function renderCorePage(page, currentUrl) {
 
   if (page.slug === "reviews") {
     const reviewLibraryHasEntries = approvedReviewEntries({}).length > 0;
+    const reviewMarketSummary = reviewSummaryByMarket();
     return `
       ${renderHero(currentUrl, page, {
         eyebrow: "Reviews & Proof",
@@ -7923,9 +7993,23 @@ function renderCorePage(page, currentUrl) {
 
       <section class="section review-proof-section">
         <div class="review-widget review-widget--page reveal" aria-label="Google review preview">
-          ${renderReviewWidgetHeader("Trusted by homeowners")}
+          ${renderReviewWidgetHeader("Trusted by homeowners across Good Attic markets")}
           <div class="review-widget__shell">
-            <p>Approved review excerpts or a synced review feed can live here as review sources are connected.</p>
+            <p>${
+              reviewLibraryHasEntries
+                ? "This is the central Good Attic review hub. It aggregates approved homeowner feedback across markets so newer locations can point back to one honest trust page while their own local review volume grows."
+                : "Approved review excerpts or a synced review feed can live here as review sources are connected."
+            }</p>
+            ${
+              reviewMarketSummary.length
+                ? `<div class="page-chip-list">${reviewMarketSummary
+                    .map(
+                      ({ market, count }) =>
+                        `<span class="page-chip">${escapeHtml(market.shortName)}: ${count} approved review${count === 1 ? "" : "s"}</span>`
+                    )
+                    .join("")}</div>`
+                : ""
+            }
           </div>
         </div>
       </section>
@@ -7979,7 +8063,7 @@ function renderCorePage(page, currentUrl) {
           )}</h2>
           <p class="section-subcopy">${escapeHtml(
             reviewLibraryHasEntries
-              ? "These are real homeowner excerpts loaded from the shared proof data layer so they can reinforce the right market, service, and city paths without hardcoding them into individual pages."
+              ? "These are real homeowner excerpts loaded from the shared proof data layer so they can reinforce the right market, service, and city paths while still rolling up into one central review library."
               : "These are shells for real homeowner feedback, not fabricated quotes. Once approved excerpts exist, they can be dropped into the shared data layer and flow to the correct proof and market pages."
           )}</p>
         </div>
