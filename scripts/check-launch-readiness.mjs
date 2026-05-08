@@ -1,4 +1,4 @@
-import { access, readFile } from "fs/promises";
+import { access, readFile, readdir } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -53,6 +53,18 @@ function extractBaseUrl(buildFile) {
   return match ? match[1] : null;
 }
 
+async function findHtmlFiles(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files = await Promise.all(entries.map(async (entry) => {
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) return findHtmlFiles(fullPath);
+    if (entry.isFile() && entry.name.endsWith(".html")) return [fullPath];
+    return [];
+  }));
+
+  return files.flat();
+}
+
 async function main() {
   console.log("Good Attic launch readiness check\n");
 
@@ -102,6 +114,34 @@ async function main() {
     ok("sitemap.xml contains launch domain URLs");
   } else {
     fail("sitemap.xml does not look launch-ready");
+    failed = true;
+  }
+
+  const pagesMissingMetaDescriptions = pages.filter((page) => {
+    const description = page.meta_description;
+    return typeof description !== "string" || description.trim().length < 50 || description.includes("undefined");
+  });
+
+  if (pagesMissingMetaDescriptions.length === 0) {
+    ok("Page data includes usable meta descriptions");
+  } else {
+    fail(`Page data has missing/placeholder meta descriptions: ${pagesMissingMetaDescriptions.map((page) => page.url).join(", ")}`);
+    failed = true;
+  }
+
+  const htmlFiles = await findHtmlFiles(projectRoot);
+  const htmlFilesWithPlaceholders = [];
+  for (const htmlFile of htmlFiles) {
+    const html = await readFile(htmlFile, "utf8");
+    if (html.includes('content="undefined"') || html.includes(">undefined<")) {
+      htmlFilesWithPlaceholders.push(path.relative(projectRoot, htmlFile));
+    }
+  }
+
+  if (htmlFilesWithPlaceholders.length === 0) {
+    ok("Generated HTML has no undefined metadata placeholders");
+  } else {
+    fail(`Generated HTML contains undefined placeholders: ${htmlFilesWithPlaceholders.join(", ")}`);
     failed = true;
   }
 
