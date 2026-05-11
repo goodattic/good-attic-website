@@ -4982,6 +4982,201 @@ function renderCityFanBridgeSection(currentUrl, market, city) {
   `;
 }
 
+const saltLakeCityMoatProfiles = {
+  "west-jordan-ut": {
+    pattern: "Newer suburban layouts, broad rooflines, and rooms over garages can make attic performance feel uneven even when the home looks modern.",
+    symptom: "West Jordan homeowners often start with hot upstairs bedrooms, a front room or bonus room that lags behind, or a utility bill that does not match the age of the home.",
+    inspection: "The first question is whether the attic needs more insulation depth, air sealing around the ceiling plane, ventilation support, or a cleaner reset over garage-adjacent rooms.",
+    priority: "Start with attic insulation and air sealing, then consider fan support if the attic heat load is still the documented problem."
+  },
+  "sandy-ut": {
+    pattern: "Sandy homes can mix established neighborhoods, sloped roof exposure, and attic systems that have slowly drifted away from modern comfort expectations.",
+    symptom: "The most useful search intent is usually year-round comfort imbalance: warm upper rooms in summer, weaker heat retention in winter, or older insulation that feels present but tired.",
+    inspection: "The attic assessment should separate insulation depth, dusty or settled material, attic bypasses, and heat-management needs before recommending the next step.",
+    priority: "Start by deciding whether the existing insulation is worth building on, then sequence air sealing and replacement insulation before treating fans as the default answer."
+  },
+  "draper-ut": {
+    pattern: "Draper projects often involve larger homes, premium expectations, broad roof exposure, and upper levels where a small attic weakness can affect several rooms.",
+    symptom: "Homeowners usually want a higher-confidence answer for upper-level heat, uneven bedrooms, or a home that should feel more refined than it does.",
+    inspection: "The assessment should look at whether the attic needs a full performance sequence: removal if needed, air sealing, insulation depth, and ventilation fit.",
+    priority: "Start with a whole-attic plan rather than a single-product fix so the finished scope matches the size and expectations of the home."
+  },
+  "american-fork-ut": {
+    pattern: "American Fork homes often bring a mix of newer growth, family-heavy layouts, and attic systems where comfort and utility concerns show up together.",
+    symptom: "The search usually starts with seasonal inefficiency, dusty or settled insulation, or rooms that never quite feel finished after HVAC adjustments.",
+    inspection: "The first decision is whether the attic can be topped off cleanly or whether old material, air leaks, or heat buildup change the honest scope.",
+    priority: "Start with attic condition and insulation depth, then use air sealing or removal when the attic floor needs correction before the final insulation layer."
+  },
+  "herriman-ut": {
+    pattern: "Herriman homes often look newer from the outside while still having builder-grade attic performance that shows up in upstairs bedrooms and rooms over garages.",
+    symptom: "The high-value searches are usually hot upstairs rooms, garage-room comfort, and insulation gaps in a home the owner expected to perform better.",
+    inspection: "The assessment should check attic depth consistency, bypasses at the ceiling plane, garage-adjacent areas, and whether ventilation support has actually earned its place.",
+    priority: "Start with insulation consistency and air sealing; add ventilation support only when the attic heat story supports it."
+  },
+  "holladay-ut": {
+    pattern: "Holladay homes often deserve a more careful attic plan because established, high-value properties can have older attic layers and custom details hidden above the ceiling.",
+    symptom: "Homeowners tend to notice comfort drift, older insulation, dusty attic conditions, or a house that should feel steadier given the quality of the home.",
+    inspection: "The assessment should document whether the attic needs removal, sealing, insulation rebuild, or a more careful restoration sequence before adding more material.",
+    priority: "Start with condition and cleanliness, then rebuild the attic system in the right order so the work feels worthy of the home."
+  },
+  "millcreek-ut": {
+    pattern: "Millcreek attic work often involves older-home details, settled material, dusty attic conditions, and hidden bypasses that make a simple top-off too shallow.",
+    symptom: "The search intent usually starts with uneven comfort, dust, old insulation, or uncertainty about whether the attic needs cleanup before insulation.",
+    inspection: "The assessment should check whether the attic floor is accessible enough to seal, whether old insulation is worth keeping, and whether replacement should follow removal.",
+    priority: "Start with removal-versus-top-off logic, then sequence air sealing and insulation so older-home attic weaknesses are not buried."
+  },
+  "cottonwood-heights-ut": {
+    pattern: "Cottonwood Heights homes can combine mountain-side exposure, upper-level heat gain, winter comfort drift, and larger attic systems that need coordinated decisions.",
+    symptom: "Homeowners usually search when upper rooms run warm, comfort changes by season, or the attic seems to need more than a commodity insulation bid.",
+    inspection: "The assessment should document insulation depth, leakage, attic heat, access, and whether ventilation support makes sense after the boundary is handled.",
+    priority: "Start with the attic as a system: condition, air sealing, insulation, and fan fit should be evaluated together."
+  },
+  "sugar-house-ut": {
+    pattern: "Sugar House homes often bring older construction, character-home details, settled insulation, and attic access conditions that make sequencing more important.",
+    symptom: "Homeowners tend to search because rooms never feel right year-round, attic material looks aged, or the home needs a careful reset rather than a quick add-on.",
+    inspection: "The assessment should separate old insulation condition, air leaks, attic access, and restoration needs before deciding whether to top off or remove.",
+    priority: "Start with older-home attic condition, then move into removal, sealing, and replacement insulation when the existing base layer is no longer trustworthy."
+  },
+  "south-jordan-ut": {
+    pattern: "South Jordan homes often share newer suburban comfort problems: upper bedrooms, lofts, and garage-adjacent rooms that expose attic shortcuts quickly.",
+    symptom: "The strongest search intent is hot upstairs comfort, builder-grade insulation concerns, and rooms that feel disconnected from the rest of the home.",
+    inspection: "The assessment should check depth, coverage consistency, bypasses, garage-room boundaries, and whether fan support belongs after insulation and sealing.",
+    priority: "Start with insulation and air sealing around the comfort complaint; use ventilation support only when attic heat buildup is clearly part of the finding."
+  }
+};
+
+function buildCityMoatProfile(market, city) {
+  if (market.slug !== "salt-lake-city-ut") return null;
+  return saltLakeCityMoatProfiles[city.slug] || null;
+}
+
+function buildCityMoatFaqs(market, city) {
+  const profile = buildCityMoatProfile(market, city);
+  if (!profile) return [];
+
+  return [
+    {
+      question: `What attic service is usually the best starting point in ${city.shortName}?`,
+      answer: `${profile.priority} Good Attic still starts with a documented attic assessment because the right sequence depends on what the attic is actually doing.`
+    },
+    {
+      question: `Do ${city.shortName} homeowners always need new attic insulation?`,
+      answer:
+        "Not always. Some homes need a clean top-off, some need air sealing first, and others need old or contaminated insulation removed before replacement makes sense."
+    },
+    {
+      question: `How does Good Attic keep the ${city.shortName} page local without claiming a fake office?`,
+      answer: `${city.shortName} is served through the Salt Lake City market hub. This page adds local attic patterns, real proof where available, reviews, and clear routing into the right market service pages.`
+    }
+  ];
+}
+
+function renderCityMoatSections(currentUrl, market, city) {
+  const profile = buildCityMoatProfile(market, city);
+  if (!profile) return "";
+
+  const proofCount = documentedProofEntries({ marketSlug: market.slug, citySlug: city.slug }).length;
+
+  return `
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Local attic decision map</p>
+          <h2>How Good Attic thinks through ${escapeHtml(city.shortName)} attic problems before recommending a scope.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "This is the local decision layer: it helps homeowners and search engines understand what usually matters in this city without inventing a fake local office or unsupported claims."
+          )}</p>
+        </div>
+        ${renderTileGrid([
+          {
+            title: `${city.shortName} home pattern`,
+            text: profile.pattern
+          },
+          {
+            title: "Most common starting symptom",
+            text: profile.symptom
+          },
+          {
+            title: "First inspection question",
+            text: profile.inspection
+          },
+          {
+            title: "Likely service sequence",
+            text: profile.priority
+          }
+        ])}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Proof-backed local estimate path</p>
+          <h2>What makes a ${escapeHtml(city.shortName)} attic estimate more trustworthy.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            proofCount
+              ? `${city.shortName} already has ${proofCount} real before-and-after attic photo sets loaded into this page, so the local proof section can support both homeowner trust and search relevance.`
+              : "When real project proof is available, it should explain what was documented, why the scope made sense, and what changed after the attic was corrected."
+          )}</p>
+        </div>
+        ${renderFeatureGrid(
+          [
+            {
+              url: `/resources/attic-insulation-cost-${market.slug}/`,
+              title: `Attic Insulation Cost in ${market.shortName}`,
+              kicker: `${city.shortName} estimate context`,
+              text: `Use the market cost guide when a ${city.shortName} homeowner wants to understand how attic condition, access, removal, air sealing, and replacement insulation change the estimate.`,
+              image: proofAssets.sales,
+              alt: `Attic insulation cost guidance for ${city.shortName}`,
+              cta: "Read cost guide"
+            },
+            {
+              url: "/resources/what-happens-during-an-attic-inspection/",
+              title: "What Happens During an Attic Inspection",
+              kicker: "Documentation path",
+              text: "Use the inspection guide to explain why Good Attic documents insulation depth, attic condition, air leaks, ventilation clues, contamination, and access before pricing the work.",
+              image: proofAssets.grossAttic,
+              alt: `Attic inspection documentation for ${city.shortName}`,
+              cta: "Read inspection guide"
+            },
+            {
+              url: "/reviews/",
+              title: "Good Attic Review Hub",
+              kicker: "Trust path",
+              text: `Use the review hub when ${city.shortName} homeowners want broader customer proof before choosing the right attic scope.`,
+              image: proofAssets.sales,
+              alt: `Good Attic customer reviews for ${city.shortName} homeowners`,
+              cta: "Open reviews"
+            }
+          ],
+          currentUrl,
+          true
+        )}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Best-fit service routing</p>
+          <h2>How ${escapeHtml(city.shortName)} homeowners should choose between insulation, removal, sealing, fans, and pest restoration.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "The goal is not to push every service at once. The goal is to identify the first honest move, then connect the homeowner to the deeper market page for that service."
+          )}</p>
+        </div>
+        ${renderAudiencePanels([
+          {
+            title: "If the home feels uneven but the attic is clean",
+            text: `Start with attic insulation and air sealing logic for ${city.shortName}. A clean attic may be a candidate for top-off, but the attic floor should still be checked for leakage first.`
+          },
+          {
+            title: "If the attic looks dirty, damaged, or pest-affected",
+            text: "Start with removal or pest issue restoration before adding new insulation. Covering a compromised base layer is usually the weaker long-term decision."
+          },
+          {
+            title: "If upstairs rooms stay hot after the basics are addressed",
+            text: "Consider attic fan or ventilation support only after insulation depth, attic leakage, and attic condition have been documented clearly."
+          }
+        ])}
+      </section>
+  `;
+}
+
 function buildSupportCityLinks(currentUrl, market) {
   return market.supportCities.map((city) => ({
     url: `/${market.slug}/service-areas/${city.slug}/`,
@@ -6634,7 +6829,7 @@ function buildCityPage(market, city) {
       ...serviceCatalog.map((service) => ({ label: service.name, url: `/${market.slug}/${service.slug}/` })),
       { label: "Contact Good Attic", url: "/contact/" }
     ],
-    faq_items: city.faq,
+    faq_items: [...city.faq, ...buildCityMoatFaqs(market, city)],
     trust_elements: [
       `Supported through the ${market.shortName} market`,
       "Real service coverage reassurance",
@@ -6697,7 +6892,7 @@ function buildCityPage(market, city) {
           )}</p>
         </div>
         ${renderTileGrid(buildKeywordIntentPanels(market, city))}
-      </section>
+      </section>${renderCityMoatSections(currentUrl, market, city)}
 
       ${renderCityInsulationBridgeSection(currentUrl, market, city)}
       ${renderCityRemovalBridgeSection(currentUrl, market, city)}
