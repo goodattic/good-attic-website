@@ -4357,6 +4357,214 @@ function renderCityRemovalBridgeSection(currentUrl, market, city) {
   `;
 }
 
+function buildAirSealingAuthorityPanels(market) {
+  const marketSpecific = {
+    "salt-lake-city-ut": {
+      before:
+        "Salt Lake City homes often show air-sealing problems through dusty rooms, hot upstairs spaces, winter heat loss, and attic floors that were insulated before the bypasses were tightened.",
+      leaks:
+        "In many Salt Lake City attics, the important leakage paths are small but repeated: top plates, wiring holes, plumbing penetrations, attic hatches, and chases that quietly connect the living space to the attic.",
+      cost:
+        "Salt Lake City attic air sealing cost changes when old insulation has to be moved or removed, when the attic floor is difficult to access, or when the project is paired with blown-in insulation afterward."
+    },
+    "st-louis-mo": {
+      before:
+        "St. Louis homes often have older framing, mixed insulation history, humid summers, winter drafts, and attic bypasses that make air sealing just as important as adding insulation depth.",
+      leaks:
+        "In St. Louis attics, leakage often hides around older wall cavities, plumbing stacks, wiring runs, attic access points, chases, and ceiling penetrations that let conditioned air escape upward.",
+      cost:
+        "St. Louis attic air sealing cost changes with attic age, access, whether insulation removal is needed first, and how many bypasses are exposed once the attic floor is inspected."
+    },
+    "kansas-city-mo": {
+      before:
+        "Kansas City homes can feel the effect of attic air leaks during both summer heat and winter cold, especially when upper rooms stay uncomfortable even though insulation is already present.",
+      leaks:
+        "In Kansas City attics, common leakage targets include top plates, open chases, electrical and plumbing penetrations, recessed fixtures, attic hatches, and transitions hidden under loose insulation.",
+      cost:
+        "Kansas City attic air sealing cost depends on attic access, leakage volume, whether old insulation blocks the work area, and whether sealing is bundled with removal or replacement insulation."
+    }
+  }[market.slug];
+
+  return {
+    beforeInsulation: [
+      {
+        title: "Air sealing belongs before the final insulation layer",
+        text: marketSpecific.before
+      },
+      {
+        title: "Insulation slows heat; sealing stops air movement",
+        text: "A deeper insulation blanket can still underperform if conditioned air is escaping through the attic floor. Air sealing closes the leakage paths the insulation depends on."
+      },
+      {
+        title: "The attic floor is the control boundary",
+        text: "Good Attic looks at the ceiling plane as a system so the recommendation is not just more material, but a tighter boundary under the finished insulation."
+      }
+    ],
+    leakageTargets: [
+      {
+        title: "Top plates, wall gaps, and open chases",
+        text: marketSpecific.leaks
+      },
+      {
+        title: "Plumbing, wiring, and fixture penetrations",
+        text: "Small holes can add up across an attic. The inspection needs to identify repeated penetrations instead of only looking for one dramatic gap."
+      },
+      {
+        title: "Attic hatches and access points",
+        text: "A leaky attic access can undermine the attic boundary, especially when it is not insulated, weatherstripped, or treated as part of the same sealing plan."
+      }
+    ],
+    symptoms: [
+      {
+        title: "Hot upstairs rooms despite existing insulation",
+        text: `When ${market.shortName} homes already have insulation but still feel uneven, attic air leakage may be one of the reasons the house will not hold comfort consistently.`
+      },
+      {
+        title: "Dust, attic smell, or stale air movement",
+        text: "Air leaks can move more than temperature. They can also create pathways for dusty attic air, odors, and uncontrolled air exchange into the living space."
+      },
+      {
+        title: "Energy waste that feels invisible",
+        text: "Homeowners often notice the bills before they see the bypasses. Air sealing helps explain the hidden loss behind comfort complaints and HVAC run time."
+      }
+    ],
+    cost: [
+      {
+        title: "Access changes the scope",
+        text: "Attic height, crawl paths, buried leakage points, and tight work areas can all affect how much time and preparation the sealing work requires."
+      },
+      {
+        title: "Old insulation may need to move first",
+        text: "If insulation hides the attic floor or is dirty, pest-affected, or not worth preserving, removal or cleanup may be needed before thorough sealing can happen."
+      },
+      {
+        title: "Bundling with insulation can be smarter",
+        text: marketSpecific.cost
+      }
+    ]
+  };
+}
+
+function buildAirSealingCitySupportCards(market) {
+  return market.supportCities.map((city) => ({
+    url: `/${market.slug}/service-areas/${city.slug}/`,
+    title: `${cityDisplayName(city)} attic air sealing support`,
+    kicker: "City support page",
+    text: `${city.shortName} supports the ${market.shortName} attic air sealing page with local comfort patterns, proof, reviews, and homeowner language without replacing the main service page.`,
+    image: serviceBySlug("attic-air-sealing").image,
+    alt: `Attic air sealing support page for ${cityDisplayName(city)}`,
+    cta: "View city page"
+  }));
+}
+
+function renderAirSealingAuthoritySections(currentUrl, market) {
+  const panels = buildAirSealingAuthorityPanels(market);
+
+  return `
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Air sealing before insulation</p>
+          <h2>What attic air sealing fixes before more insulation goes in ${escapeHtml(market.shortName)}.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "This section answers the search intent behind attic air leaks, air sealing before insulation, and why more insulation alone may not solve the comfort problem."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.beforeInsulation)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Leakage targets</p>
+          <h2>Where attic air leaks usually hide before Good Attic seals the attic floor.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "The strongest air-sealing page explains the actual leakage points homeowners cannot see from the hallway, not just the idea of sealing in general."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.leakageTargets)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Comfort, dust, and energy</p>
+          <h2>Why homeowners usually start searching for attic air sealing in ${escapeHtml(market.shortName)}.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "Air sealing often becomes important after the homeowner realizes insulation is present, but the home still feels dusty, uneven, drafty, or expensive to condition."
+          )}</p>
+        </div>
+        ${renderAudiencePanels(panels.symptoms)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Air sealing cost drivers</p>
+          <h2>What changes attic air sealing cost in ${escapeHtml(market.shortName)}.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "We are keeping this SEO-safe by explaining scope drivers instead of publishing made-up price ranges before an attic is inspected."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.cost)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">City page strategy</p>
+          <h2>How the ${escapeHtml(market.shortName)} city pages support this attic air sealing page.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "The market air sealing page should carry the deeper explanation. City pages add local symptoms, proof, reviews, and neighborhood relevance, then route homeowners back into the right service path."
+          )}</p>
+        </div>
+        ${renderFeatureGrid(buildAirSealingCitySupportCards(market), currentUrl, false)}
+      </section>
+  `;
+}
+
+function renderCityAirSealingBridgeSection(currentUrl, market, city) {
+  return `
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Attic air sealing path</p>
+          <h2>How ${escapeHtml(city.shortName)} connects to the main ${escapeHtml(market.shortName)} attic air sealing page.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "This city page adds local attic context while the market air sealing page handles the deeper answer about air leaks, attic bypasses, cost drivers, and why sealing often belongs before insulation."
+          )}</p>
+        </div>
+        ${renderFeatureGrid(
+          [
+            {
+              url: `/${market.slug}/attic-air-sealing/`,
+              title: `Attic Air Sealing in ${market.shortName}`,
+              kicker: `${city.shortName} service path`,
+              text: `Use the main ${market.shortName} attic air sealing page when the attic may need bypass sealing, attic hatch sealing, or air sealing before the final insulation layer.`,
+              image: serviceBySlug("attic-air-sealing").image,
+              alt: `Attic air sealing in ${market.shortName}`,
+              cta: "Open air sealing page"
+            },
+            {
+              url: "/resources/attic-air-sealing-vs-more-insulation/",
+              title: "Air Sealing vs More Insulation",
+              kicker: "Decision guide",
+              text: "Use this guide when the homeowner is trying to decide whether uneven comfort is caused by missing insulation depth, attic leakage, or both.",
+              image: proofAssets.airSealing,
+              alt: "Attic air sealing versus more insulation guide",
+              cta: "Compare options"
+            },
+            {
+              url: `/${market.slug}/attic-insulation/`,
+              title: `Attic Insulation in ${market.shortName}`,
+              kicker: "Insulation sequence",
+              text: `Use the attic insulation page when ${city.shortName} homeowners need the final insulation layer explained after sealing, removal, or attic prep.`,
+              image: serviceBySlug("attic-insulation").image,
+              alt: `Attic insulation in ${market.shortName}`,
+              cta: "Open insulation page"
+            }
+          ],
+          currentUrl,
+          true
+        )}
+      </section>
+  `;
+}
+
 function buildSupportCityLinks(currentUrl, market) {
   return market.supportCities.map((city) => ({
     url: `/${market.slug}/service-areas/${city.slug}/`,
@@ -5612,7 +5820,12 @@ function buildServicePage(market, service) {
     ],
     "attic-pest-remediation": [`rodent attic cleanup ${marketShort}`, `contaminated attic insulation ${marketShort}`],
     "attic-fans": [`solar attic fans ${marketShort}`, `attic fan installation ${marketShort}`],
-    "attic-air-sealing": [`attic sealing ${marketShort}`, `air leak sealing attic ${marketShort}`]
+    "attic-air-sealing": [
+      `attic air sealing ${marketShort}`,
+      `attic air sealing cost ${marketShort}`,
+      `air sealing before insulation ${marketShort}`,
+      `attic air leaks ${marketShort}`
+    ]
   }[service.slug];
 
   const page = {
@@ -5631,7 +5844,7 @@ function buildServicePage(market, service) {
       "insulation-removal": `Insulation Removal in ${marketDisplayName(market)} | Old Attic Insulation`,
       "attic-pest-remediation": `Attic Pest Remediation in ${market.name} | Good Attic`,
       "attic-fans": `Attic Fans in ${market.name} | Good Attic`,
-      "attic-air-sealing": `Attic Air Sealing in ${market.name} | Good Attic`
+      "attic-air-sealing": `Attic Air Sealing in ${marketDisplayName(market)} | Stop Attic Leaks`
     }[service.slug],
     meta_description: {
       "salt-lake-city-ut": {
@@ -5644,7 +5857,7 @@ function buildServicePage(market, service) {
         "attic-fans":
           "Good Attic installs attic fan solutions in Salt Lake City to help reduce attic heat buildup and support better attic performance.",
         "attic-air-sealing":
-          "Stop attic air leaks in Salt Lake City with attic air sealing designed to improve comfort, efficiency, and year-round performance."
+          "Stop attic air leaks in Salt Lake City with air sealing before insulation, attic bypass sealing, and comfort-focused attic upgrades."
       },
       "st-louis-mo": {
         "attic-insulation":
@@ -5656,7 +5869,7 @@ function buildServicePage(market, service) {
         "attic-fans":
           "Good Attic provides attic fan solutions in St. Louis to help manage attic heat buildup and improve attic ventilation support.",
         "attic-air-sealing":
-          "Good Attic helps St. Louis homeowners reduce attic air leaks that contribute to comfort problems and energy loss."
+          "Good Attic helps St. Louis homeowners seal attic air leaks, reduce drafts, support insulation, and improve hot upstairs comfort."
       },
       "kansas-city-mo": {
         "attic-insulation":
@@ -5668,7 +5881,7 @@ function buildServicePage(market, service) {
         "attic-fans":
           "Good Attic installs attic fan solutions in Kansas City to help reduce attic heat buildup and support better attic airflow.",
         "attic-air-sealing":
-          "Good Attic helps Kansas City homeowners stop attic air leaks that contribute to comfort issues and energy waste."
+          "Good Attic helps Kansas City homeowners seal attic air leaks, support insulation, reduce energy waste, and improve upstairs comfort."
       }
     }[market.slug][service.slug],
     h1: {
@@ -5732,7 +5945,7 @@ function buildServicePage(market, service) {
           )}</p>
         </div>
         ${renderTileGrid(buildServiceKeywordPanels(market, service))}
-      </section>${service.slug === "attic-insulation" ? renderInsulationAuthoritySections(currentUrl, market) : ""}${service.slug === "insulation-removal" ? renderRemovalAuthoritySections(currentUrl, market) : ""}
+      </section>${service.slug === "attic-insulation" ? renderInsulationAuthoritySections(currentUrl, market) : ""}${service.slug === "insulation-removal" ? renderRemovalAuthoritySections(currentUrl, market) : ""}${service.slug === "attic-air-sealing" ? renderAirSealingAuthoritySections(currentUrl, market) : ""}
 
       <section class="section">
         <div class="section-heading reveal">
@@ -6061,6 +6274,7 @@ function buildCityPage(market, city) {
 
       ${renderCityInsulationBridgeSection(currentUrl, market, city)}
       ${renderCityRemovalBridgeSection(currentUrl, market, city)}
+      ${renderCityAirSealingBridgeSection(currentUrl, market, city)}
 
       <section class="section">
         <div class="section-heading reveal">
