@@ -4565,6 +4565,423 @@ function renderCityAirSealingBridgeSection(currentUrl, market, city) {
   `;
 }
 
+function buildPestAuthorityPanels(market) {
+  const marketSpecific = {
+    "salt-lake-city-ut": {
+      contamination:
+        "Salt Lake City attic pest issues often show up as rodent droppings, nesting material, damaged insulation, dusty odor, and insulation that no longer feels safe to keep as the base layer.",
+      restoration:
+        "After affected insulation is removed, Salt Lake City homes often need sanitation, attic air sealing, and replacement insulation considered together so the attic does not get rebuilt over the same weak points.",
+      scope:
+        "Salt Lake City attic pest remediation cost changes with contamination spread, insulation volume, access, odor, debris, and whether the project includes removal, sanitation, sealing, and replacement insulation."
+    },
+    "st-louis-mo": {
+      contamination:
+        "St. Louis attic pest issues often combine older insulation, squirrel or rodent history, musty attic odor, droppings, nesting debris, and attic areas that need more than a light cleanup.",
+      restoration:
+        "After affected material is removed, St. Louis homes often need sanitation and rebuild planning so older attics are not simply covered back up with the same air leaks, odor, or damaged insulation underneath.",
+      scope:
+        "St. Louis attic pest remediation cost changes with attic age, contamination level, insulation condition, access, odor control needs, and whether the attic needs a full restoration path."
+    },
+    "kansas-city-mo": {
+      contamination:
+        "Kansas City attic pest issues can leave droppings, nesting debris, damaged insulation, odor, and dusty attic conditions that should be inspected before the project is treated as a simple cleanup.",
+      restoration:
+        "After affected insulation is removed, Kansas City homes often benefit from a cleaner sequence around sanitation, air sealing, and replacement insulation so the attic is restored instead of patched.",
+      scope:
+        "Kansas City attic pest remediation cost changes with contamination spread, access, removal volume, sanitation needs, and whether the attic needs sealing and replacement insulation after cleanup."
+    }
+  }[market.slug];
+
+  return {
+    contamination: [
+      {
+        title: "Pest control does not restore the attic by itself",
+        text: marketSpecific.contamination
+      },
+      {
+        title: "Droppings and nesting debris change the insulation decision",
+        text: "Once insulation has been contaminated, compressed, tunneled through, or used for nesting, the better question is whether it is still worth keeping under the rebuilt attic."
+      },
+      {
+        title: "Odor can point to a bigger attic issue",
+        text: "Attic smells often come from the material and surfaces left behind after pest activity, which is why remediation should document more than the entry point."
+      }
+    ],
+    restoration: [
+      {
+        title: "Removal creates access to the real attic floor",
+        text: "When affected insulation comes out, the attic can be inspected for hidden bypasses, damaged areas, debris, and conditions that were covered by old material."
+      },
+      {
+        title: "Sanitation belongs where the attic was actually affected",
+        text: "A cleaner scope identifies what needs sanitation attention instead of treating the attic like a vague odor problem or a generic insulation job."
+      },
+      {
+        title: "The rebuild should not skip sealing and replacement planning",
+        text: marketSpecific.restoration
+      }
+    ],
+    cost: [
+      {
+        title: "Contamination spread changes the estimate",
+        text: "A small isolated area and a broad attic-floor contamination pattern are different scopes, even if both started with the same pest issue."
+      },
+      {
+        title: "Access, volume, and odor affect the work",
+        text: "Tight attic access, deep insulation, multiple layers, nesting debris, odor, and surface conditions all affect how the remediation plan should be built."
+      },
+      {
+        title: "Remediation plus rebuild is different from cleanup alone",
+        text: marketSpecific.scope
+      }
+    ],
+    proof: [
+      {
+        title: "Document the attic before minimizing the scope",
+        text: "Photos, findings, and clear next steps help homeowners understand why a pest-affected attic may need removal, sanitation, sealing, and new insulation rather than a quick surface pass."
+      },
+      {
+        title: "Separate exclusion from attic restoration",
+        text: "Animal exclusion matters, but Good Attic's page should explain the restoration work left inside the attic after the access issue has been handled."
+      },
+      {
+        title: "Restore the attic into something trustworthy",
+        text: "The end goal is an attic the homeowner can believe in again: cleaner, better documented, and ready for a performance-focused rebuild."
+      }
+    ]
+  };
+}
+
+function buildPestCitySupportCards(market) {
+  return market.supportCities.map((city) => ({
+    url: `/${market.slug}/service-areas/${city.slug}/`,
+    title: `${cityDisplayName(city)} attic pest issue support`,
+    kicker: "City support page",
+    text: `${city.shortName} supports the ${market.shortName} attic pest issues page with local contamination language, proof, reviews, and nearby homeowner context without replacing the main remediation page.`,
+    image: serviceBySlug("attic-pest-remediation").image,
+    alt: `Attic pest issue support page for ${cityDisplayName(city)}`,
+    cta: "View city page"
+  }));
+}
+
+function renderPestAuthoritySections(currentUrl, market) {
+  const panels = buildPestAuthorityPanels(market);
+
+  return `
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Attic pest contamination</p>
+          <h2>What attic pest issues usually leave behind in ${escapeHtml(market.shortName)} homes.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "This section makes the page stronger for rodent attic cleanup, contaminated attic insulation, attic odor, and restoration searches without pretending pest control alone solves the attic."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.contamination)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Cleanup into restoration</p>
+          <h2>Why attic pest remediation often becomes removal, sanitation, sealing, and rebuild planning.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "The honest answer is usually a sequence. The attic has to be cleaned enough, documented enough, and rebuilt carefully enough to stop feeling like a hidden liability."
+          )}</p>
+        </div>
+        ${renderAudiencePanels(panels.restoration)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Remediation cost drivers</p>
+          <h2>What changes attic pest remediation cost in ${escapeHtml(market.shortName)}.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "We are keeping this SEO-safe by explaining real scope drivers instead of publishing made-up price ranges before the attic is inspected."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.cost)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Proof and trust</p>
+          <h2>How Good Attic should document pest-affected attic restoration.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "Pest issue pages need evidence language because homeowners are deciding whether the attic needs a light cleanup or a more complete reset."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.proof)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">City page strategy</p>
+          <h2>How the ${escapeHtml(market.shortName)} city pages support this attic pest issues page.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "The market pest issues page should carry the deeper contamination and restoration explanation. City pages add local proof, reviews, nearby homeowner language, and clean routes back into the remediation scope."
+          )}</p>
+        </div>
+        ${renderFeatureGrid(buildPestCitySupportCards(market), currentUrl, false)}
+      </section>
+  `;
+}
+
+function renderCityPestBridgeSection(currentUrl, market, city) {
+  return `
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Attic pest issue path</p>
+          <h2>How ${escapeHtml(city.shortName)} connects to the main ${escapeHtml(market.shortName)} attic pest issues page.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "This city page adds local attic context while the market pest issues page handles the deeper answer about contaminated insulation, droppings, odor, sanitation, removal, and attic restoration sequence."
+          )}</p>
+        </div>
+        ${renderFeatureGrid(
+          [
+            {
+              url: `/${market.slug}/attic-pest-remediation/`,
+              title: `Attic Pest Issues in ${market.shortName}`,
+              kicker: `${city.shortName} service path`,
+              text: `Use the main ${market.shortName} pest issues page when the attic may need contaminated insulation removal, sanitation, odor cleanup, or a fuller restoration plan.`,
+              image: serviceBySlug("attic-pest-remediation").image,
+              alt: `Attic pest issues in ${market.shortName}`,
+              cta: "Open pest issues page"
+            },
+            {
+              url: "/resources/signs-of-attic-pest-contamination/",
+              title: "Signs of Attic Pest Contamination",
+              kicker: "Contamination guide",
+              text: "Use this guide when the homeowner is trying to understand whether droppings, nesting debris, odor, or damaged insulation point to a bigger attic restoration scope.",
+              image: proofAssets.pestDamage,
+              alt: "Signs of attic pest contamination guide",
+              cta: "Read contamination guide"
+            },
+            {
+              url: "/resources/when-attic-cleanup-becomes-restoration/",
+              title: "When Attic Cleanup Becomes Restoration",
+              kicker: "Restoration guide",
+              text: `Use this guide when ${city.shortName} homeowners need help seeing why cleanup, removal, sanitation, sealing, and replacement insulation may belong in one plan.`,
+              image: proofAssets.grossAttic,
+              alt: "Attic cleanup becomes restoration guide",
+              cta: "Read restoration guide"
+            }
+          ],
+          currentUrl,
+          true
+        )}
+      </section>
+  `;
+}
+
+function buildFanAuthorityPanels(market) {
+  const profile = marketServiceProfiles[market.slug];
+  const marketSpecific = {
+    "salt-lake-city-ut": {
+      fit:
+        "Salt Lake City attic fan conversations often start with summer heat, upstairs rooms that stay warm, and attics where ventilation support may help only after insulation and air sealing are understood.",
+      airflow:
+        "Because Salt Lake City homes can see strong sun exposure and dusty attic conditions, the fan recommendation should account for intake, exhaust, insulation depth, and whether the attic boundary is already tight enough.",
+      cost:
+        "Salt Lake City attic fan installation cost changes with fan type, power path, roof or gable placement, attic access, ventilation fit, and whether insulation or air sealing needs to happen first."
+    },
+    "st-louis-mo": {
+      fit:
+        "St. Louis attic fan conversations often start with humid summer heat, hot second floors, older attic layouts, and homes where ventilation has to be weighed against insulation and air sealing first.",
+      airflow:
+        "Because St. Louis homes often have mixed-age ventilation paths, the fan recommendation should verify intake and exhaust instead of assuming a powered fan is automatically the right fix.",
+      cost:
+        "St. Louis attic fan installation cost changes with attic layout, fan type, roof or gable placement, wiring path, ventilation balance, and whether air sealing or insulation should lead the scope."
+    },
+    "kansas-city-mo": {
+      fit:
+        "Kansas City attic fan conversations often start with seasonal heat swings, upper rooms that will not cool down, and attics where a fan may help only if airflow and the attic boundary are ready for it.",
+      airflow:
+        "Because Kansas City homes vary widely by age and attic design, the fan recommendation should confirm the ventilation path before treating the fan as a universal hot-room fix.",
+      cost:
+        "Kansas City attic fan installation cost changes with fan type, attic access, placement, wiring or solar fit, ventilation balance, and whether insulation or air sealing should happen first."
+    }
+  }[market.slug];
+
+  return {
+    fit: [
+      {
+        title: "An attic fan should be a fit decision, not a reflex",
+        text: marketSpecific.fit
+      },
+      {
+        title: "Hot upstairs rooms can have more than one attic cause",
+        text: `${profile.upperFloor} can come from attic heat buildup, thin insulation, air leaks, weak airflow, or several of those problems working together.`
+      },
+      {
+        title: "The attic system should lead the product choice",
+        text: "Good Attic should inspect the attic as a system before recommending a fan so the product supports the solution instead of distracting from the real problem."
+      }
+    ],
+    ventilation: [
+      {
+        title: "Intake and exhaust need to make sense together",
+        text: marketSpecific.airflow
+      },
+      {
+        title: "A fan can underperform if the attic boundary is weak",
+        text: "If conditioned air is leaking into the attic, a fan may not solve the homeowner's comfort complaint until air sealing and insulation are addressed."
+      },
+      {
+        title: "Ventilation support is not the same as insulation performance",
+        text: "Fans help manage attic heat and airflow. Insulation and sealing control heat transfer and air movement between the attic and living space."
+      }
+    ],
+    cost: [
+      {
+        title: "Fan type and placement matter",
+        text: "Solar fan, powered fan, roof location, gable location, access, and installation path can all change the scope."
+      },
+      {
+        title: "Ventilation balance affects the recommendation",
+        text: "A fan should be matched to the attic's intake and exhaust story so it does not create a mismatched airflow problem."
+      },
+      {
+        title: "The best estimate explains what comes before the fan",
+        text: marketSpecific.cost
+      }
+    ],
+    decision: [
+      {
+        title: "Choose a fan when heat-management support is the actual gap",
+        text: "The strongest fan recommendation happens when the attic has a real heat-management problem and the rest of the attic system is healthy enough to benefit."
+      },
+      {
+        title: "Choose insulation or sealing first when the boundary is failing",
+        text: "If the attic is thinly insulated, leaky, dirty, or compromised, the fan may be a secondary step rather than the lead solution."
+      },
+      {
+        title: "Use inspection findings to avoid the wrong spend",
+        text: "Homeowners need a clear reason why the fan is being recommended, what it will and will not solve, and how it fits the whole attic plan."
+      }
+    ]
+  };
+}
+
+function buildFanCitySupportCards(market) {
+  return market.supportCities.map((city) => ({
+    url: `/${market.slug}/service-areas/${city.slug}/`,
+    title: `${cityDisplayName(city)} attic fan support`,
+    kicker: "City support page",
+    text: `${city.shortName} supports the ${market.shortName} attic fan page with local hot-room language, proof, reviews, and nearby homeowner context without replacing the main ventilation page.`,
+    image: serviceBySlug("attic-fans").image,
+    alt: `Attic fan support page for ${cityDisplayName(city)}`,
+    cta: "View city page"
+  }));
+}
+
+function renderFanAuthoritySections(currentUrl, market) {
+  const panels = buildFanAuthorityPanels(market);
+
+  return `
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Attic fan fit</p>
+          <h2>When attic fans actually make sense in ${escapeHtml(market.shortName)} homes.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "This section answers high-intent attic fan, attic ventilation, solar attic fan, and hot upstairs searches while keeping the recommendation tied to inspection findings."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.fit)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Ventilation support</p>
+          <h2>Why attic fan installation should follow the airflow story, not lead it.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "The best fan page explains intake, exhaust, attic boundary health, and why a fan is not the same thing as fixing insulation or air leakage."
+          )}</p>
+        </div>
+        ${renderAudiencePanels(panels.ventilation)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Fan cost drivers</p>
+          <h2>What changes attic fan installation cost in ${escapeHtml(market.shortName)}.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "We are keeping the page useful and SEO-safe by explaining scope drivers instead of inventing a one-size-fits-all price before inspection."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.cost)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Fan, insulation, or air sealing</p>
+          <h2>How Good Attic helps homeowners avoid buying the wrong attic fix.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "This section connects attic fan searches back to the whole attic system, which is stronger for rankings and better for homeowner trust."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.decision)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">City page strategy</p>
+          <h2>How the ${escapeHtml(market.shortName)} city pages support this attic fan page.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "The market fan page should carry the deeper ventilation and heat-management explanation. City pages add local hot-room relevance, proof, reviews, and routes into the right attic system decision."
+          )}</p>
+        </div>
+        ${renderFeatureGrid(buildFanCitySupportCards(market), currentUrl, false)}
+      </section>
+  `;
+}
+
+function renderCityFanBridgeSection(currentUrl, market, city) {
+  return `
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Attic fan path</p>
+          <h2>How ${escapeHtml(city.shortName)} connects to the main ${escapeHtml(market.shortName)} attic fan page.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "This city page adds local comfort context while the market fan page handles the deeper answer about attic ventilation, fan fit, hot upstairs rooms, airflow, and when insulation or air sealing should come first."
+          )}</p>
+        </div>
+        ${renderFeatureGrid(
+          [
+            {
+              url: `/${market.slug}/attic-fans/`,
+              title: `Attic Fans in ${market.shortName}`,
+              kicker: `${city.shortName} service path`,
+              text: `Use the main ${market.shortName} attic fan page when the attic may need ventilation support, fan installation, or a clearer answer about hot upstairs rooms.`,
+              image: serviceBySlug("attic-fans").image,
+              alt: `Attic fans in ${market.shortName}`,
+              cta: "Open fan page"
+            },
+            {
+              url: "/resources/attic-fan-vs-ventilation-fix/",
+              title: "Attic Fan vs Ventilation Fix",
+              kicker: "Decision guide",
+              text: "Use this guide when the homeowner wants to know whether a fan is the right fix or whether the attic needs insulation, sealing, or ventilation balance first.",
+              image: proofAssets.fans,
+              alt: "Attic fan versus ventilation fix guide",
+              cta: "Read fan guide"
+            },
+            {
+              url: "/resources/why-upstairs-rooms-stay-hot/",
+              title: "Why Upstairs Rooms Stay Hot",
+              kicker: "Comfort guide",
+              text: `Use this guide when ${city.shortName} homeowners are starting from hot-room symptoms and need the attic system explained before choosing a service.`,
+              image: proofAssets.hotColdHouse,
+              alt: "Why upstairs rooms stay hot guide",
+              cta: "Read comfort guide"
+            }
+          ],
+          currentUrl,
+          true
+        )}
+      </section>
+  `;
+}
+
 function buildSupportCityLinks(currentUrl, market) {
   return market.supportCities.map((city) => ({
     url: `/${market.slug}/service-areas/${city.slug}/`,
@@ -5818,8 +6235,18 @@ function buildServicePage(market, service) {
       `attic insulation removal cost ${marketShort}`,
       `insulation removal and replacement ${marketShort}`
     ],
-    "attic-pest-remediation": [`rodent attic cleanup ${marketShort}`, `contaminated attic insulation ${marketShort}`],
-    "attic-fans": [`solar attic fans ${marketShort}`, `attic fan installation ${marketShort}`],
+    "attic-pest-remediation": [
+      `attic pest cleanup ${marketShort}`,
+      `rodent attic cleanup ${marketShort}`,
+      `contaminated attic insulation ${marketShort}`,
+      `attic restoration ${marketShort}`
+    ],
+    "attic-fans": [
+      `attic fan installation ${marketShort}`,
+      `attic ventilation ${marketShort}`,
+      `solar attic fans ${marketShort}`,
+      `hot upstairs rooms ${marketShort}`
+    ],
     "attic-air-sealing": [
       `attic air sealing ${marketShort}`,
       `attic air sealing cost ${marketShort}`,
@@ -5842,8 +6269,8 @@ function buildServicePage(market, service) {
     seo_title: {
       "attic-insulation": `Attic Insulation in ${marketDisplayName(market)} | Blown-In & Removal`,
       "insulation-removal": `Insulation Removal in ${marketDisplayName(market)} | Old Attic Insulation`,
-      "attic-pest-remediation": `Attic Pest Remediation in ${market.name} | Good Attic`,
-      "attic-fans": `Attic Fans in ${market.name} | Good Attic`,
+      "attic-pest-remediation": `Attic Pest Issues in ${marketDisplayName(market)} | Cleanup & Restoration`,
+      "attic-fans": `Attic Fans in ${marketDisplayName(market)} | Ventilation & Hot Rooms`,
       "attic-air-sealing": `Attic Air Sealing in ${marketDisplayName(market)} | Stop Attic Leaks`
     }[service.slug],
     meta_description: {
@@ -5853,9 +6280,9 @@ function buildServicePage(market, service) {
         "insulation-removal":
           "Good Attic removes old, dirty, damaged, or contaminated attic insulation in Salt Lake City and prepares attics for replacement, sealing, or cleanup.",
         "attic-pest-remediation":
-          "Get help with rodent-contaminated insulation, nesting debris, attic odors, and attic pest cleanup in Salt Lake City.",
+          "Get Salt Lake City help with attic pest issues, rodent-contaminated insulation, droppings, odor, cleanup, sanitation, and attic restoration.",
         "attic-fans":
-          "Good Attic installs attic fan solutions in Salt Lake City to help reduce attic heat buildup and support better attic performance.",
+          "Good Attic helps Salt Lake City homeowners with attic fan installation, attic ventilation, hot upstairs rooms, and heat-management inspections.",
         "attic-air-sealing":
           "Stop attic air leaks in Salt Lake City with air sealing before insulation, attic bypass sealing, and comfort-focused attic upgrades."
       },
@@ -5865,9 +6292,9 @@ function buildServicePage(market, service) {
         "insulation-removal":
           "Good Attic removes old, dirty, musty, or contaminated attic insulation in St. Louis and prepares attics for replacement, sealing, or cleanup.",
         "attic-pest-remediation":
-          "Get help with attic pest contamination, nesting debris, rodent damage, and attic cleanup in St. Louis.",
+          "Get St. Louis help with attic pest issues, rodent-contaminated insulation, droppings, odor, cleanup, sanitation, and attic restoration.",
         "attic-fans":
-          "Good Attic provides attic fan solutions in St. Louis to help manage attic heat buildup and improve attic ventilation support.",
+          "Good Attic helps St. Louis homeowners with attic fan installation, attic ventilation, hot upstairs rooms, and heat-management inspections.",
         "attic-air-sealing":
           "Good Attic helps St. Louis homeowners seal attic air leaks, reduce drafts, support insulation, and improve hot upstairs comfort."
       },
@@ -5877,9 +6304,9 @@ function buildServicePage(market, service) {
         "insulation-removal":
           "Good Attic removes old, dirty, damaged, or contaminated attic insulation in Kansas City and prepares attics for replacement, sealing, or cleanup.",
         "attic-pest-remediation":
-          "Get help with attic pest cleanup, rodent-damaged insulation, nesting debris, and attic contamination in Kansas City.",
+          "Get Kansas City help with attic pest issues, rodent-contaminated insulation, droppings, odor, cleanup, sanitation, and attic restoration.",
         "attic-fans":
-          "Good Attic installs attic fan solutions in Kansas City to help reduce attic heat buildup and support better attic airflow.",
+          "Good Attic helps Kansas City homeowners with attic fan installation, attic ventilation, hot upstairs rooms, and heat-management inspections.",
         "attic-air-sealing":
           "Good Attic helps Kansas City homeowners seal attic air leaks, support insulation, reduce energy waste, and improve upstairs comfort."
       }
@@ -5945,7 +6372,7 @@ function buildServicePage(market, service) {
           )}</p>
         </div>
         ${renderTileGrid(buildServiceKeywordPanels(market, service))}
-      </section>${service.slug === "attic-insulation" ? renderInsulationAuthoritySections(currentUrl, market) : ""}${service.slug === "insulation-removal" ? renderRemovalAuthoritySections(currentUrl, market) : ""}${service.slug === "attic-air-sealing" ? renderAirSealingAuthoritySections(currentUrl, market) : ""}
+      </section>${service.slug === "attic-insulation" ? renderInsulationAuthoritySections(currentUrl, market) : ""}${service.slug === "insulation-removal" ? renderRemovalAuthoritySections(currentUrl, market) : ""}${service.slug === "attic-air-sealing" ? renderAirSealingAuthoritySections(currentUrl, market) : ""}${service.slug === "attic-pest-remediation" ? renderPestAuthoritySections(currentUrl, market) : ""}${service.slug === "attic-fans" ? renderFanAuthoritySections(currentUrl, market) : ""}
 
       <section class="section">
         <div class="section-heading reveal">
@@ -6275,6 +6702,8 @@ function buildCityPage(market, city) {
       ${renderCityInsulationBridgeSection(currentUrl, market, city)}
       ${renderCityRemovalBridgeSection(currentUrl, market, city)}
       ${renderCityAirSealingBridgeSection(currentUrl, market, city)}
+      ${renderCityPestBridgeSection(currentUrl, market, city)}
+      ${renderCityFanBridgeSection(currentUrl, market, city)}
 
       <section class="section">
         <div class="section-heading reveal">
