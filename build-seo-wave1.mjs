@@ -5045,9 +5045,140 @@ const saltLakeCityMoatProfiles = {
   }
 };
 
+const stLouisCityMoatProfiles = {
+  "chesterfield-mo": {
+    pattern: "Chesterfield attic projects often involve larger suburban homes, broad roof exposure, and upper levels where comfort drift can be expensive and frustrating.",
+    symptom: "Homeowners usually start with hot upstairs rooms, seasonal energy waste, or an attic that clearly needs more than a quick insulation guess.",
+    inspection: "The assessment should check insulation depth, attic leakage, old material condition, and whether heat-management support belongs after the boundary is improved.",
+    priority: "Start with insulation condition and air sealing, then decide whether removal or fan support belongs in the broader scope."
+  },
+  "st-charles-mo": {
+    pattern: "St. Charles has mixed-age attic conditions, so older insulation, newer builder-grade shortcuts, pest history, and comfort issues can all show up differently house to house.",
+    symptom: "The strongest local searches usually begin with hot upstairs rooms, old insulation, dusty attic conditions, or uncertainty about whether the attic needs removal first.",
+    inspection: "The assessment should separate clean top-off candidates from attics that need removal, sanitation, air sealing, or a fuller rebuild.",
+    priority: "Start with removal-versus-top-off logic, then sequence sealing and replacement insulation around the attic condition."
+  },
+  "ballwin-mo": {
+    pattern: "Ballwin attic problems often show up in family homes where upper bedrooms, bonus spaces, and daily comfort matter more than a generic insulation label.",
+    symptom: "Homeowners usually notice rooms that feel too hot, too cold, dusty, or harder to stabilize than the rest of the house.",
+    inspection: "The assessment should look for settled insulation, attic bypasses, dust or pest indicators, and whether ventilation support is secondary to insulation and sealing.",
+    priority: "Start with comfort-driven insulation and air sealing, then add removal or fan support only when the attic findings justify it."
+  },
+  "o-fallon-mo": {
+    pattern: "O'Fallon attic issues often come from newer suburban layouts where builder-grade attic performance does not keep up with upper-floor comfort expectations.",
+    symptom: "Homeowners usually search because the upstairs runs hot, seasonal bills feel high, or the attic seems too basic for the way the home is used.",
+    inspection: "The assessment should check coverage consistency, bypasses, attic heat, and whether the home needs better sequencing rather than a one-product answer.",
+    priority: "Start with insulation consistency and air sealing, then consider fan support if attic heat remains the documented issue."
+  },
+  "st-peters-mo": {
+    pattern: "St. Peters homes often need a practical suburban attic plan that weighs builder-grade insulation, aging material, and upstairs comfort in one decision.",
+    symptom: "The common search path is hot upper rooms, visible but underperforming insulation, or a need for a cleaner attic plan than a basic top-off.",
+    inspection: "The assessment should document insulation depth, leakage, attic condition, and whether existing material is worth keeping.",
+    priority: "Start with insulation and air sealing if the attic is clean; move to removal first when the base layer is dirty, damaged, or contaminated."
+  },
+  "clayton-mo": {
+    pattern: "Clayton attic projects often involve older, high-value homes where character-home details and premium expectations make sequencing more important.",
+    symptom: "Homeowners usually notice upper-floor imbalance, aging insulation, draftiness, or attic conditions that deserve more care than a commodity bid.",
+    inspection: "The assessment should document older insulation condition, air leakage, access constraints, and whether removal belongs before the rebuild.",
+    priority: "Start with condition and air sealing, then rebuild insulation only after the attic floor is clean enough and visible enough to trust."
+  },
+  "des-peres-mo": {
+    pattern: "Des Peres attic work often involves larger established homes where comfort drift, attic aging, and energy strain need a more coordinated plan.",
+    symptom: "The search usually starts with upstairs comfort complaints, higher utility strain, or insulation that is present but not persuasive.",
+    inspection: "The assessment should connect attic condition, leakage, access, insulation depth, and heat-management needs before pricing the scope.",
+    priority: "Start with whole-attic sequencing: cleanup if needed, air sealing where visible, and replacement insulation as the finish layer."
+  },
+  "frontenac-mo": {
+    pattern: "Frontenac homes often need premium attic execution because valuable homes can still hide old insulation, weak attic boundaries, and upper-level comfort drift.",
+    symptom: "Homeowners usually want a higher-confidence answer for uneven rooms, aging attic material, and an attic that should match the quality of the home.",
+    inspection: "The assessment should treat the attic as part of the home's overall quality, documenting condition, leakage, insulation, and ventilation fit carefully.",
+    priority: "Start with a premium whole-attic plan rather than a small patch, especially when comfort, cleanliness, and efficiency overlap."
+  },
+  "town-and-country-mo": {
+    pattern: "Town and Country attic issues often show up across larger homes with broad rooflines, complex layouts, and upper-floor comfort drift.",
+    symptom: "The strongest local searches usually begin with hot upper rooms, winter comfort loss, or attic systems that need more coordination than added material.",
+    inspection: "The assessment should weigh insulation, air sealing, removal, fan fit, and attic heat as one system because larger homes amplify small attic weaknesses.",
+    priority: "Start with the whole attic system, then sequence cleanup, sealing, insulation, and ventilation support in the order the findings support."
+  },
+  "wildwood-mo": {
+    pattern: "Wildwood attic projects often involve larger suburban homes where broad roof exposure and room-to-room comfort differences make attic issues hard to ignore.",
+    symptom: "Homeowners usually search because upstairs rooms drift, the attic feels underbuilt, or comfort and efficiency concerns are showing up together.",
+    inspection: "The assessment should document attic condition, insulation depth, leakage, ventilation clues, and whether removal is needed before performance work.",
+    priority: "Start with insulation condition and air sealing, then add fan support or removal when the attic evidence points there."
+  }
+};
+
+const kansasCityMoatProfiles = {
+  "overland-park-ks": {
+    pattern: "Overland Park attic projects often involve larger suburban homes where premium comfort expectations meet broad rooflines and upper-floor heat.",
+    symptom: "Homeowners usually start with hot upstairs rooms, energy waste, or an attic that does not support the quality of the home.",
+    inspection: "The assessment should document insulation depth, air leakage, attic heat, and whether old material or ventilation fit changes the plan.",
+    priority: "Start with insulation and air sealing, then consider fan support if attic heat remains the confirmed gap."
+  },
+  "olathe-ks": {
+    pattern: "Olathe homes often bring family-heavy layouts, newer growth, and attic systems where builder-grade performance can show up in daily comfort.",
+    symptom: "The common search path is hot upstairs rooms, underperforming insulation, or bills that rise whenever the seasons swing.",
+    inspection: "The assessment should check coverage consistency, bypasses, attic condition, and whether the existing insulation is clean enough to build on.",
+    priority: "Start with insulation depth and air sealing; use removal first when old or dirty material makes a top-off the weaker answer."
+  },
+  "lee-s-summit-mo": {
+    pattern: "Lee's Summit attic issues often come from mixed-age suburban homes where comfort, dirty insulation, and seasonal swings overlap.",
+    symptom: "Homeowners usually search because upstairs rooms are uncomfortable, the attic looks tired, or old insulation may need to come out before anything new goes in.",
+    inspection: "The assessment should separate top-off candidates from attics that need removal, sanitation, air sealing, or replacement insulation.",
+    priority: "Start with removal-versus-top-off logic, then rebuild with sealing and insulation once the attic floor is ready."
+  },
+  "lenexa-ks": {
+    pattern: "Lenexa attic projects often involve suburban homes where comfort, efficiency, and attic cleanliness need a coordinated answer.",
+    symptom: "Homeowners usually notice drifting upstairs temperatures, wasted energy, or an attic that seems present but not truly performing.",
+    inspection: "The assessment should document insulation depth, attic leakage, access, condition, and whether fan support is premature.",
+    priority: "Start with insulation and air sealing; bring in removal or fan support only when the attic findings make that sequence stronger."
+  },
+  "leawood-ks": {
+    pattern: "Leawood attic projects often deserve premium-level planning because valuable homes can still hide aging insulation, leakage, and upper-floor comfort drift.",
+    symptom: "The search usually starts with a home that should feel more refined than it does, especially in upper rooms or seasonal transitions.",
+    inspection: "The assessment should document condition, leakage, insulation depth, ventilation fit, and whether a cleaner reset is needed before adding material.",
+    priority: "Start with a premium whole-attic plan, then sequence cleanup, sealing, and insulation so the finished attic matches the home."
+  },
+  "shawnee-ks": {
+    pattern: "Shawnee homes often bring a mix of mature and newer suburban attic conditions, so the right answer can change quickly from one house to the next.",
+    symptom: "Homeowners usually search because upstairs rooms are hot, insulation looks underwhelming, or comfort and cleanup questions are arriving together.",
+    inspection: "The assessment should check whether the attic needs more coverage, a tighter boundary, a cleaner reset, or ventilation support.",
+    priority: "Start with evidence: insulation and sealing for clean attics, removal or restoration first when the base layer is compromised."
+  },
+  "prairie-village-ks": {
+    pattern: "Prairie Village attic work often involves older, valuable homes where attic aging and character-home details make quick top-offs risky.",
+    symptom: "Homeowners usually notice uneven rooms, older insulation, dust, or an attic that needs careful sequencing before performance improves.",
+    inspection: "The assessment should document old insulation condition, air leaks, access limitations, and whether removal belongs before the final insulation layer.",
+    priority: "Start with older-home attic condition, then use removal, air sealing, and replacement insulation in the order the attic earns."
+  },
+  "blue-springs-mo": {
+    pattern: "Blue Springs attic issues often show up as practical suburban comfort problems where seasonal swings expose weak attic boundaries.",
+    symptom: "Homeowners usually search because upstairs rooms drift, energy waste feels unexplained, or the attic needs more than a generic insulation upgrade.",
+    inspection: "The assessment should connect comfort symptoms to insulation depth, leakage, attic condition, and whether cleanup or removal is part of the honest path.",
+    priority: "Start with insulation and leakage findings, then decide whether removal, air sealing, or fan support needs to lead."
+  },
+  "liberty-mo": {
+    pattern: "Liberty homes can vary by age and layout, which makes attic documentation especially important before choosing a service path.",
+    symptom: "The common search path is upper-floor comfort, old or dusty insulation, or uncertainty about whether the attic needs a clean reset.",
+    inspection: "The assessment should document condition, depth, leakage, access, and pest or dust history before recommending a top-off or rebuild.",
+    priority: "Start with attic condition, then sequence removal, sealing, insulation, and fan support only as the findings justify."
+  },
+  "parkville-mo": {
+    pattern: "Parkville attic projects often involve desirable, mixed-age homes where premium expectations and older attic details can overlap.",
+    symptom: "Homeowners usually search because upper rooms drift, old insulation looks tired, or the attic deserves a better plan than a commodity fix.",
+    inspection: "The assessment should document insulation condition, attic leakage, heat-management clues, and whether the attic needs cleanup before performance work.",
+    priority: "Start with a premium condition-first attic plan, then rebuild around sealing, insulation, and ventilation support where appropriate."
+  }
+};
+
+const cityMoatProfilesByMarket = {
+  "salt-lake-city-ut": saltLakeCityMoatProfiles,
+  "st-louis-mo": stLouisCityMoatProfiles,
+  "kansas-city-mo": kansasCityMoatProfiles
+};
+
 function buildCityMoatProfile(market, city) {
-  if (market.slug !== "salt-lake-city-ut") return null;
-  return saltLakeCityMoatProfiles[city.slug] || null;
+  return cityMoatProfilesByMarket[market.slug]?.[city.slug] || null;
 }
 
 function buildCityMoatFaqs(market, city) {
@@ -5066,7 +5197,7 @@ function buildCityMoatFaqs(market, city) {
     },
     {
       question: `How does Good Attic keep the ${city.shortName} page local without claiming a fake office?`,
-      answer: `${city.shortName} is served through the Salt Lake City market hub. This page adds local attic patterns, real proof where available, reviews, and clear routing into the right market service pages.`
+      answer: `${city.shortName} is served through the ${market.shortName} market hub. This page adds local attic patterns, real proof where available, reviews, and clear routing into the right market service pages.`
     }
   ];
 }
