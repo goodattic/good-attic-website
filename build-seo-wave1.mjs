@@ -223,11 +223,11 @@ const serviceCatalog = [
     related: ["insulation-removal", "attic-air-sealing", "attic-fans"],
     marketIntro: {
       "salt-lake-city-ut":
-        "Need attic insulation in Salt Lake City? Good Attic helps solve hot and cold rooms, energy waste, and underperforming attic insulation with a cleaner, more complete attic plan.",
+        "Need attic insulation in Salt Lake City? Good Attic helps with blown-in attic insulation, old insulation removal, air sealing, hot and cold rooms, and energy waste with a cleaner, more complete attic plan.",
       "st-louis-mo":
-        "Need attic insulation in St. Louis? Good Attic helps solve hot upstairs rooms, winter heat loss, and energy waste with attic insulation that fits the house and the attic condition.",
+        "Need attic insulation in St. Louis? Good Attic helps with blown-in attic insulation, hot upstairs rooms, winter heat loss, old insulation removal, and air sealing when the attic needs a fuller fix.",
       "kansas-city-mo":
-        "Need attic insulation in Kansas City? Good Attic helps reduce attic heat gain, winter heat loss, and underperforming insulation problems with a measured, attic-first approach."
+        "Need attic insulation in Kansas City? Good Attic helps with blown-in attic insulation, attic air sealing, winter heat loss, hot upstairs rooms, and underperforming insulation problems."
     },
     marketReason: {
       "salt-lake-city-ut":
@@ -556,9 +556,9 @@ const marketCatalog = [
       "attic insulation company salt lake city",
       "attic cleanup salt lake city"
     ],
-    seoTitle: "Attic Services in Salt Lake City, UT | Good Attic",
+    seoTitle: "Attic Insulation & Services in Salt Lake City | Good Attic",
     metaDescription:
-      "Good Attic provides attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing in Salt Lake City.",
+      "Good Attic helps Salt Lake City homeowners with attic insulation, removal, air sealing, attic fans, pest issues, comfort problems, and energy waste.",
     h1: "Attic Services in Salt Lake City, UT",
     intro:
       "In Salt Lake City, attic problems usually show up as hot upstairs rooms in summer, expensive heating bills in winter, or old insulation that is dusty, dirty, or no longer doing its job. Good Attic helps homeowners solve those problems with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
@@ -1045,9 +1045,9 @@ const marketCatalog = [
     state: "MO",
     primaryKeyword: "attic services st louis",
     secondaryKeywords: ["attic company st louis", "attic specialists st louis", "attic cleanup st louis"],
-    seoTitle: "Attic Services in St. Louis, MO | Good Attic",
+    seoTitle: "Attic Insulation & Services in St. Louis | Good Attic",
     metaDescription:
-      "Good Attic helps St. Louis homeowners with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+      "Good Attic helps St. Louis homeowners fix hot upstairs rooms, old insulation, energy waste, attic air leaks, attic fans, and attic pest issues.",
     h1: "Attic Services in St. Louis, MO",
     intro:
       "In St. Louis, attic problems usually show up as hot second floors in summer, drafty rooms in winter, or old attic insulation that is dirty, musty, damaged, or no longer performing well. Good Attic helps homeowners solve those problems with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
@@ -1538,9 +1538,9 @@ const marketCatalog = [
       "attic specialists kansas city",
       "attic cleanup kansas city"
     ],
-    seoTitle: "Attic Services in Kansas City, MO | Good Attic",
+    seoTitle: "Attic Insulation & Services in Kansas City | Good Attic",
     metaDescription:
-      "Good Attic provides premium attic services in Kansas City, including attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
+      "Good Attic helps Kansas City homeowners with attic insulation, removal, air sealing, attic fans, pest issues, comfort problems, and energy waste.",
     h1: "Attic Services in Kansas City, MO",
     intro:
       "In Kansas City, attic problems often show up as hot upstairs rooms in summer, winter heat loss, and insulation that simply is not keeping up with the house. Good Attic helps homeowners solve those attic problems with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.",
@@ -2765,9 +2765,9 @@ const homeRecord = {
   city: null,
   primary_keyword: "good attic",
   secondary_keywords: ["attic insulation company", "attic specialist", "attic services"],
-  seo_title: "Good Attic | Premium Attic Insulation & Attic Services",
+  seo_title: "Good Attic | Attic Insulation, Removal & Air Sealing",
   meta_description:
-    "Good Attic helps homeowners solve hot and cold rooms, old insulation, attic pest issues, and energy waste with premium attic services.",
+    "Premium attic insulation, insulation removal, air sealing, fans, and attic pest issue restoration for hot rooms, energy waste, and dirty insulation.",
   h1: "Premium Attic Insulation & Attic Services",
   intro:
     "The homepage remains the brand authority page and central conversion hub. It should route homeowners toward services, locations, and real market hubs without losing the premium homepage design direction already approved.",
@@ -5257,7 +5257,7 @@ function buildServicePage(market, service) {
     ),
     secondary_keywords: secondaryKeywords,
     seo_title: {
-      "attic-insulation": `Attic Insulation in ${market.name} | Good Attic`,
+      "attic-insulation": `Attic Insulation in ${marketDisplayName(market)} | Blown-In & Removal`,
       "insulation-removal": `Insulation Removal in ${market.name} | Good Attic`,
       "attic-pest-remediation": `Attic Pest Remediation in ${market.name} | Good Attic`,
       "attic-fans": `Attic Fans in ${market.name} | Good Attic`,
@@ -5266,7 +5266,7 @@ function buildServicePage(market, service) {
     meta_description: {
       "salt-lake-city-ut": {
         "attic-insulation":
-          "Need attic insulation in Salt Lake City? Good Attic helps solve hot and cold rooms, energy waste, and underperforming attic insulation.",
+          "Need attic insulation in Salt Lake City? Good Attic helps with blown-in attic insulation, old insulation removal, air sealing, hot rooms, and energy waste.",
         "insulation-removal":
           "Good Attic removes old, dirty, damaged, or contaminated attic insulation in Salt Lake City and helps homeowners start fresh.",
         "attic-pest-remediation":
@@ -5278,7 +5278,7 @@ function buildServicePage(market, service) {
       },
       "st-louis-mo": {
         "attic-insulation":
-          "Need attic insulation in St. Louis? Good Attic helps solve hot upstairs rooms, winter heat loss, and energy waste.",
+          "Need attic insulation in St. Louis? Good Attic helps with blown-in attic insulation, hot upstairs rooms, old insulation removal, air sealing, and energy waste.",
         "insulation-removal":
           "Good Attic removes old, dirty, damaged, or contaminated attic insulation in St. Louis and prepares attics for the right next step.",
         "attic-pest-remediation":
@@ -5290,7 +5290,7 @@ function buildServicePage(market, service) {
       },
       "kansas-city-mo": {
         "attic-insulation":
-          "Need attic insulation in Kansas City? Good Attic helps reduce attic heat gain, winter heat loss, and underperforming insulation problems.",
+          "Need attic insulation in Kansas City? Good Attic helps with blown-in attic insulation, attic air sealing, old insulation removal, hot rooms, and energy waste.",
         "insulation-removal":
           "Good Attic removes old, dirty, damaged, or contaminated attic insulation in Kansas City and helps homeowners reset the attic the right way.",
         "attic-pest-remediation":
@@ -6291,12 +6291,12 @@ const resourcePages = [
       "batts vs blown insulation",
       "best attic insulation type"
     ],
-    seo_title: "Blown Insulation vs Rolled Insulation | Which Fits an Attic Better?",
+    seo_title: "Blown-In vs Rolled Attic Insulation | Which Is Better?",
     meta_description:
-      "Compare blown-in and rolled attic insulation, when each type can make sense, and why attic condition, air sealing, and coverage matter before choosing material.",
-    h1: "Blown Insulation vs Rolled Insulation",
+      "Compare blown-in and rolled attic insulation for hot rooms, energy bills, coverage gaps, air sealing, and when old insulation should be removed first.",
+    h1: "Blown-In vs Rolled Attic Insulation",
     intro:
-      "Blown-in insulation and rolled insulation can both be useful, but they are not interchangeable answers for every attic. The better choice depends on attic access, existing material, coverage gaps, air leakage, contamination, and whether the attic needs prep work before anything new is installed.",
+      "Blown-in attic insulation and rolled insulation can both be useful, but they are not interchangeable answers for every attic. If you are comparing them because of hot rooms, energy bills, or thin attic coverage, the better choice depends on access, existing material, coverage gaps, air leakage, contamination, and whether the attic needs prep work before anything new is installed.",
     page_purpose: "Legacy blog replacement for blown vs rolled insulation intent",
     cta_primary: "Get attic guidance",
     breadcrumb_items: [
@@ -6466,12 +6466,12 @@ const resourcePages = [
       "spray foam vs cellulose attic",
       "attic insulation options"
     ],
-    seo_title: "Spray Foam vs Blown-In Attic Insulation | How to Compare the Options",
+    seo_title: "Spray Foam vs Blown-In Attic Insulation | Pros & Fit",
     meta_description:
-      "Compare spray foam and blown-in attic insulation, what each approach is trying to solve, and why attic design and prep work matter before choosing.",
+      "Compare spray foam vs blown-in attic insulation for vented attics, air sealing, cost fit, hot rooms, and what to check before choosing.",
     h1: "Spray Foam vs Blown-In Attic Insulation",
     intro:
-      "Spray foam and blown-in insulation are often compared like they are simple product swaps. In real attics, the better question is what the house needs the attic boundary to do, whether the attic is vented or unvented, and whether the existing attic is clean enough to support the next system.",
+      "Spray foam and blown-in attic insulation are often compared like simple product swaps. In real attics, the better question is what the house needs the attic boundary to do, whether the attic is vented or unvented, whether air sealing is part of the answer, and whether the existing attic is clean enough to support the next system.",
     page_purpose: "Legacy blog replacement for spray foam vs blown-in insulation intent",
     cta_primary: "Get attic guidance",
     breadcrumb_items: [
@@ -6641,12 +6641,12 @@ const resourcePages = [
       "radiant barrier myths",
       "attic heat control"
     ],
-    seo_title: "Radiant Barrier vs Attic Insulation | What Each One Actually Solves",
+    seo_title: "Radiant Barrier vs Attic Insulation | What Works Best?",
     meta_description:
-      "Learn how radiant barrier, attic insulation, ventilation, and air sealing each affect attic heat and comfort without treating one product as a universal fix.",
+      "See when radiant barrier helps, when attic insulation matters more, and how ventilation, air sealing, and hot upstairs rooms change the answer.",
     h1: "Radiant Barrier vs Attic Insulation",
     intro:
-      "Radiant barrier gets searched by homeowners who are trying to solve heat. That makes sense, but radiant barrier and attic insulation do different jobs. The better question is whether the attic needs heat reflection, thermal resistance, air sealing, ventilation support, or a broader correction.",
+      "Radiant barrier gets searched by homeowners who are trying to solve attic heat and hot upstairs rooms. That makes sense, but radiant barrier and attic insulation do different jobs. The better question is whether the attic needs heat reflection, thermal resistance, air sealing, ventilation support, or a broader correction.",
     page_purpose: "Legacy blog replacement for radiant barrier attic intent",
     cta_primary: "Get attic guidance",
     breadcrumb_items: [
