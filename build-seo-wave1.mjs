@@ -3992,6 +3992,162 @@ function buildServiceKeywordPanels(market, service) {
   return panels[service.slug] || [];
 }
 
+function buildInsulationAuthorityPanels(market) {
+  return {
+    blownIn: [
+      {
+        title: `Blown-in attic insulation in ${market.shortName}`,
+        text: `Blown-in insulation is often the right finish layer when a ${market.shortName} attic needs more even coverage across open attic floor areas, irregular framing, and hard-to-reach edges.`
+      },
+      {
+        title: "Coverage only works when the attic is ready",
+        text: "Loose-fill insulation can cover a lot of attic space quickly, but it should not be used to hide dirty material, open attic bypasses, blocked ventilation paths, or insulation that should have been removed first."
+      },
+      {
+        title: "Depth, airflow, and access all matter",
+        text: "The recommendation should explain the target depth, whether baffles or pathways need protection, and how the installer will keep the finished attic consistent instead of patchy."
+      }
+    ],
+    sequence: [
+      {
+        title: "Top-off when the attic is clean and stable",
+        text: "A top-off can make sense when the existing insulation is clean, dry, reasonably even, and still worth using as the base layer for the new material."
+      },
+      {
+        title: "Remove first when the base layer is compromised",
+        text: "Old attic insulation should usually come out first when it is dirty, pest-affected, compressed, musty, or no longer a trustworthy surface to build on."
+      },
+      {
+        title: "Air seal before the final insulation layer",
+        text: "Air sealing belongs before the final insulation layer when the attic floor has obvious bypasses, wiring gaps, pipe penetrations, top-plate openings, or dusty air movement."
+      }
+    ],
+    symptoms: [
+      {
+        title: "Hot upstairs rooms",
+        text: `Hot upper rooms in ${market.shortName} can come from thin insulation, attic heat buildup, weak airflow, or ceiling-plane leakage. The page needs to answer all of those possibilities instead of pretending depth alone fixes every case.`
+      },
+      {
+        title: "Energy bills that do not match the home",
+        text: "When HVAC equipment works hard but the home still feels uneven, attic insulation is one of the first places to inspect because heat gain, heat loss, and air leakage often overlap."
+      },
+      {
+        title: "Old insulation that looks present but performs poorly",
+        text: "Many attics still have insulation, but it may be thin, settled, dusty, contaminated, or uneven enough that the homeowner is living with the symptoms anyway."
+      }
+    ]
+  };
+}
+
+function buildInsulationCitySupportCards(market) {
+  return market.supportCities.map((city) => ({
+    url: `/${market.slug}/service-areas/${city.slug}/`,
+    title: `${cityDisplayName(city)} attic insulation support`,
+    kicker: "City support page",
+    text: `${city.shortName} supports the ${market.shortName} attic insulation page with local comfort patterns, proof, reviews, and nearby homeowner language without replacing the main service page.`,
+    image: serviceBySlug("attic-insulation").image,
+    alt: `Attic insulation support page for ${cityDisplayName(city)}`,
+    cta: "View city page"
+  }));
+}
+
+function renderInsulationAuthoritySections(currentUrl, market) {
+  const panels = buildInsulationAuthorityPanels(market);
+
+  return `
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Blown-in attic insulation</p>
+          <h2>How Good Attic thinks about blown-in attic insulation in ${escapeHtml(market.shortName)}.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "This section gives high-intent insulation searches a direct answer while keeping the recommendation tied to attic condition, prep, and install quality."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.blownIn)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Removal, top-off, or air sealing first</p>
+          <h2>The strongest attic insulation pages explain the sequence, not just the material.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "This is where Good Attic separates simple insulation additions from full attic resets, especially when old insulation, leaks, or contamination change the honest scope."
+          )}</p>
+        </div>
+        ${renderAudiencePanels(panels.sequence)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Comfort and energy symptoms</p>
+          <h2>Why homeowners usually start searching for attic insulation in ${escapeHtml(market.shortName)}.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "These are the real-life symptoms behind the keyword data: homeowners rarely care about insulation as a product until the house starts feeling wrong."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.symptoms)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">City page strategy</p>
+          <h2>How the ${escapeHtml(market.shortName)} city pages support this attic insulation page.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "The market service page should be the main attic insulation authority page. City pages should add local proof, local symptoms, reviews, and neighborhood language, then route homeowners back into the right service path."
+          )}</p>
+        </div>
+        ${renderFeatureGrid(buildInsulationCitySupportCards(market), currentUrl, false)}
+      </section>
+  `;
+}
+
+function renderCityInsulationBridgeSection(currentUrl, market, city) {
+  return `
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Attic insulation path</p>
+          <h2>How ${escapeHtml(city.shortName)} connects to the main ${escapeHtml(market.shortName)} attic insulation page.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "This city page gives local context and proof. The market attic insulation page carries the deeper service explanation, blown-in insulation guidance, removal-versus-top-off logic, and air sealing sequence."
+          )}</p>
+        </div>
+        ${renderFeatureGrid(
+          [
+            {
+              url: `/${market.slug}/attic-insulation/`,
+              title: `Attic Insulation in ${market.shortName}`,
+              kicker: `${city.shortName} service path`,
+              text: `Use the main ${market.shortName} attic insulation page when the question is about blown-in insulation, old insulation removal, air sealing before insulation, or the full insulation scope.`,
+              image: serviceBySlug("attic-insulation").image,
+              alt: `Attic insulation in ${market.shortName}`,
+              cta: "Open insulation page"
+            },
+            {
+              url: `/resources/attic-insulation-cost-${market.slug}/`,
+              title: `Attic Insulation Cost in ${market.shortName}`,
+              kicker: "Cost guide",
+              text: `Use the cost guide when the homeowner wants to understand what changes the estimate before Good Attic inspects the ${city.shortName} attic.`,
+              image: proofAssets.sales,
+              alt: `Attic insulation cost guide for ${market.shortName}`,
+              cta: "Read cost guide"
+            },
+            {
+              url: "/resources/blown-insulation-vs-rolled-insulation/",
+              title: "Blown-In vs Rolled Attic Insulation",
+              kicker: "Decision guide",
+              text: "Use this guide when the homeowner is comparing insulation material types instead of choosing the correct attic sequence first.",
+              image: proofAssets.insulation,
+              alt: "Blown-in versus rolled attic insulation guide",
+              cta: "Compare options"
+            }
+          ],
+          currentUrl,
+          true
+        )}
+      </section>
+  `;
+}
+
 function buildSupportCityLinks(currentUrl, market) {
   return market.supportCities.map((city) => ({
     url: `/${market.slug}/service-areas/${city.slug}/`,
@@ -5362,7 +5518,7 @@ function buildServicePage(market, service) {
           )}</p>
         </div>
         ${renderTileGrid(buildServiceKeywordPanels(market, service))}
-      </section>
+      </section>${service.slug === "attic-insulation" ? renderInsulationAuthoritySections(currentUrl, market) : ""}
 
       <section class="section">
         <div class="section-heading reveal">
@@ -5688,6 +5844,8 @@ function buildCityPage(market, city) {
         </div>
         ${renderTileGrid(buildKeywordIntentPanels(market, city))}
       </section>
+
+      ${renderCityInsulationBridgeSection(currentUrl, market, city)}
 
       <section class="section">
         <div class="section-heading reveal">
