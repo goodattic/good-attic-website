@@ -3150,11 +3150,138 @@ function relatedLinkText(url, label) {
   return `Open ${label} as the next relevant page in the attic planning path.`;
 }
 
+function guideLinksForService(serviceSlug, marketSlug = null) {
+  const costGuide = marketSlug
+    ? [{ label: `Attic Insulation Cost in ${marketBySlug(marketSlug).name}`, url: `/resources/attic-insulation-cost-${marketSlug}/` }]
+    : [];
+
+  const guideMap = {
+    "attic-insulation": [
+      ...costGuide,
+      { label: "Blown-In vs Rolled Attic Insulation", url: "/resources/blown-insulation-vs-rolled-insulation/" },
+      { label: "What R-Value Means for an Attic", url: "/resources/what-r-value-means-for-an-attic/" }
+    ],
+    "insulation-removal": [
+      { label: "Insulation Removal vs Top-Off", url: "/resources/insulation-removal-vs-top-off/" },
+      { label: "When Attic Cleanup Becomes Restoration", url: "/resources/when-attic-cleanup-becomes-restoration/" },
+      ...costGuide
+    ],
+    "attic-air-sealing": [
+      { label: "Attic Air Sealing vs More Insulation", url: "/resources/attic-air-sealing-vs-more-insulation/" },
+      { label: "What Happens During an Attic Inspection", url: "/resources/what-happens-during-an-attic-inspection/" },
+      ...costGuide
+    ],
+    "attic-pest-remediation": [
+      { label: "Signs of Attic Pest Contamination", url: "/resources/signs-of-attic-pest-contamination/" },
+      { label: "When Attic Cleanup Becomes Restoration", url: "/resources/when-attic-cleanup-becomes-restoration/" },
+      { label: "Insulation Removal vs Top-Off", url: "/resources/insulation-removal-vs-top-off/" }
+    ],
+    "attic-fans": [
+      { label: "Attic Fan vs Ventilation Fix", url: "/resources/attic-fan-vs-ventilation-fix/" },
+      { label: "Why Upstairs Rooms Stay Hot", url: "/resources/why-upstairs-rooms-stay-hot/" },
+      { label: "Radiant Barrier vs Attic Insulation", url: "/resources/radiant-barrier-vs-attic-insulation/" }
+    ]
+  };
+
+  return guideMap[serviceSlug] || [];
+}
+
+function coreServiceLinkLabel(service) {
+  return service.slug === "attic-fans" ? "Attic Fan Services" : `${service.name} Services`;
+}
+
+function contextualRelatedLinks(page) {
+  if (page.page_type === "market") {
+    return [
+      { label: `Attic Insulation in ${marketBySlug(page.market).name}`, url: `/${page.market}/attic-insulation/` },
+      { label: `Insulation Removal in ${marketBySlug(page.market).name}`, url: `/${page.market}/insulation-removal/` },
+      { label: `Attic Air Sealing in ${marketBySlug(page.market).name}`, url: `/${page.market}/attic-air-sealing/` },
+      { label: "Good Attic Reviews", url: "/reviews/" }
+    ];
+  }
+
+  if (page.page_type === "service") {
+    const market = marketBySlug(page.market);
+    const service = serviceBySlug(page.slug);
+    return [
+      { label: `${market.name} Market Hub`, url: `/${market.slug}/` },
+      { label: coreServiceLinkLabel(service), url: `/services/${service.slug}/` },
+      ...guideLinksForService(service.slug, market.slug),
+      ...service.related.map((relatedSlug) => {
+        const relatedService = serviceBySlug(relatedSlug);
+        return { label: `${relatedService.name} in ${market.name}`, url: `/${market.slug}/${relatedSlug}/` };
+      })
+    ];
+  }
+
+  if (page.page_type === "core-service") {
+    const service = serviceBySlug(page.slug);
+    return [
+      ...marketCatalog.map((market) => ({
+        label: `${service.name} in ${market.name}`,
+        url: `/${market.slug}/${service.slug}/`
+      })),
+      ...guideLinksForService(service.slug)
+    ];
+  }
+
+  if (page.page_type === "support") {
+    const market = marketBySlug(page.market);
+    return [
+      { label: `${market.name} Market Hub`, url: `/${market.slug}/` },
+      { label: `Attic Insulation in ${market.name}`, url: `/${market.slug}/attic-insulation/` },
+      { label: `Insulation Removal in ${market.name}`, url: `/${market.slug}/insulation-removal/` },
+      { label: `Attic Insulation Cost in ${market.name}`, url: `/resources/attic-insulation-cost-${market.slug}/` },
+      { label: "What Happens During an Attic Inspection", url: "/resources/what-happens-during-an-attic-inspection/" }
+    ];
+  }
+
+  if (page.page_type === "resource") {
+    if (page.market) {
+      const market = marketBySlug(page.market);
+      return [
+        { label: `Attic Insulation in ${market.name}`, url: `/${market.slug}/attic-insulation/` },
+        { label: `Insulation Removal in ${market.name}`, url: `/${market.slug}/insulation-removal/` },
+        { label: `${market.name} Market Hub`, url: `/${market.slug}/` },
+        { label: "Financing Options", url: "/financing/" }
+      ];
+    }
+
+    const resourceServiceMap = {
+      "blown-insulation-vs-rolled-insulation": "attic-insulation",
+      "spray-foam-vs-blown-in-attic-insulation": "attic-insulation",
+      "radiant-barrier-vs-attic-insulation": "attic-insulation",
+      "insulation-removal-vs-top-off": "insulation-removal",
+      "attic-air-sealing-vs-more-insulation": "attic-air-sealing",
+      "signs-of-attic-pest-contamination": "attic-pest-remediation",
+      "attic-fan-vs-ventilation-fix": "attic-fans",
+      "what-r-value-means-for-an-attic": "attic-insulation",
+      "why-upstairs-rooms-stay-hot": "attic-fans",
+      "when-attic-cleanup-becomes-restoration": "insulation-removal",
+      "what-happens-during-an-attic-inspection": "attic-insulation"
+    };
+    const serviceSlug = resourceServiceMap[page.slug];
+    const service = serviceSlug ? serviceBySlug(serviceSlug) : null;
+
+    return [
+      ...(service ? [{ label: coreServiceLinkLabel(service), url: `/services/${service.slug}/` }] : []),
+      ...marketCatalog.map((market) => ({
+        label: service ? `${service.name} in ${market.name}` : `${market.name} Market Hub`,
+        url: service ? `/${market.slug}/${service.slug}/` : `/${market.slug}/`
+      })),
+      { label: "Attic Resources", url: "/resources/" }
+    ];
+  }
+
+  return [];
+}
+
 function renderRelatedLinksSection(page, currentUrl) {
-  const uniqueLinks = (page.related_links || []).filter((item, index, list) => item.url !== page.url && list.findIndex((candidate) => candidate.url === item.url) === index);
+  const relatedCandidates = [...contextualRelatedLinks(page), ...(page.related_links || [])];
+  const uniqueLinks = relatedCandidates.filter((item, index, list) => item.url !== page.url && list.findIndex((candidate) => candidate.url === item.url) === index);
   if (!uniqueLinks.length) return "";
 
-  const cards = uniqueLinks.slice(0, 3).map((item) => ({
+  const cards = uniqueLinks.slice(0, 4).map((item) => ({
     url: item.url,
     title: item.label,
     kicker: "Best next page",
@@ -3804,8 +3931,6 @@ function renderResourcePage(page, currentUrl) {
       </div>
       ${renderFaq(page.faq_items)}
     </section>
-
-    ${renderRelatedLinksSection(page, currentUrl)}
 
     ${renderCtaStrip(currentUrl, page.cta.title, page.cta.text, page.cta.primary)}
   `;
@@ -10447,7 +10572,7 @@ function renderPage(page) {
   ${renderHeader(currentUrl, page)}
   ${mainOpenTag}
     ${bodyContent}
-    ${page.page_type === "resource" ? "" : renderRelatedLinksSection(page, currentUrl)}
+    ${renderRelatedLinksSection(page, currentUrl)}
   </main>
   ${renderFooter()}
   ${renderModal(currentUrl)}
