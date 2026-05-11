@@ -18,20 +18,20 @@ const site = {
 };
 
 const proofAssets = {
-  insulation: "assets/attic-insulation.png",
-  removal: "assets/attic-insulation-removal.png",
-  airSealing: "assets/attic-air-sealing.png",
-  fans: "assets/attic-fans.png",
-  pests: "assets/animals-in-the-attic.png",
-  dirtyReset: "assets/dirty-old-attic-needing-restoration.png",
-  grossAttic: "assets/gross-attic.png",
-  grossDusty: "assets/gross-dusty-attic.png",
-  hotColdInsulation: "assets/hot-cold-attic-insulation.png",
-  hotColdHouse: "assets/hot-cold-house-attic-issues.png",
-  unevenTemps: "assets/hot-cold-uneven-temperatures-attic.png",
-  pestDamage: "assets/pest-issues-in-attic.png",
-  pestDamageTransparent: "assets/pest-issues-in-attic-transparent-v2.png",
-  sales: "assets/good-attic-insulation-sales-appointment.png"
+  insulation: "assets/attic-insulation.webp",
+  removal: "assets/attic-insulation-removal.webp",
+  airSealing: "assets/attic-air-sealing.webp",
+  fans: "assets/attic-fans.webp",
+  pests: "assets/animals-in-the-attic.webp",
+  dirtyReset: "assets/dirty-old-attic-needing-restoration.webp",
+  grossAttic: "assets/gross-attic.webp",
+  grossDusty: "assets/gross-dusty-attic.webp",
+  hotColdInsulation: "assets/hot-cold-attic-insulation.webp",
+  hotColdHouse: "assets/hot-cold-house-attic-issues.webp",
+  unevenTemps: "assets/hot-cold-uneven-temperatures-attic.webp",
+  pestDamage: "assets/pest-issues-in-attic.webp",
+  pestDamageTransparent: "assets/pest-issues-in-attic-transparent-v2.webp",
+  sales: "assets/good-attic-insulation-sales-appointment.webp"
 };
 
 const proofDataDirectory = path.join(__dirname, "data", "proof");
@@ -166,7 +166,8 @@ const serviceCatalog = [
     slug: "attic-insulation",
     name: "Attic Insulation",
     summary: "Upgrade underperforming attic insulation so the whole home feels steadier, cleaner, and more efficient.",
-    image: "assets/attic-insulation.png",
+    image: "assets/attic-insulation.webp",
+    thumbImage: "assets/thumbs/attic-insulation-card.webp",
     heroHeading: "Modern attic insulation levels make the whole home work better.",
     heroText:
       "Fresh, properly installed attic insulation helps stabilize temperatures, reduce energy waste, and support the rest of the attic system.",
@@ -242,7 +243,8 @@ const serviceCatalog = [
     slug: "insulation-removal",
     name: "Insulation Removal",
     summary: "Remove compromised attic material so the space can be cleaned up, sealed, and rebuilt the right way.",
-    image: "assets/attic-insulation-removal.png",
+    image: "assets/attic-insulation-removal.webp",
+    thumbImage: "assets/thumbs/attic-insulation-removal-card.webp",
     heroHeading: "Old, contaminated attics need a clean reset.",
     heroText:
       "When attic insulation is dirty, damaged, compressed, or contaminated, removal is often the right first step before real improvement can happen.",
@@ -318,7 +320,8 @@ const serviceCatalog = [
     slug: "attic-pest-remediation",
     name: "Attic Pest Remediation",
     summary: "Clean up the attic after rodents or other attic pests so the space can be sanitary, usable, and ready for restoration.",
-    image: "assets/animals-in-the-attic.png",
+    image: "assets/animals-in-the-attic.webp",
+    thumbImage: "assets/thumbs/animals-in-the-attic-card.webp",
     heroHeading: "After pests leave, the attic still needs restoration.",
     heroText:
       "Droppings, nesting debris, odors, damaged insulation, and contaminated material can linger long after pest activity starts or stops.",
@@ -394,7 +397,8 @@ const serviceCatalog = [
     slug: "attic-fans",
     name: "Attic Fans",
     summary: "Support attic airflow with fan solutions that help reduce trapped heat and back up the rest of the attic strategy.",
-    image: "assets/attic-fans.png",
+    image: "assets/attic-fans.webp",
+    thumbImage: "assets/thumbs/attic-fans-card.webp",
     heroHeading: "Ventilation improvements help the attic stop cooking itself.",
     heroText:
       "Attic fan solutions can help reduce trapped heat and support a more stable attic environment when the house is a good fit for them.",
@@ -470,7 +474,8 @@ const serviceCatalog = [
     slug: "attic-air-sealing",
     name: "Attic Air Sealing",
     summary: "Stop conditioned air from leaking into the attic and dusty attic air from drifting back into the home.",
-    image: "assets/attic-air-sealing.png",
+    image: "assets/attic-air-sealing.webp",
+    thumbImage: "assets/thumbs/attic-air-sealing-card.webp",
     heroHeading: "Small attic leaks add up to major comfort and air quality loss.",
     heroText:
       "Attic air sealing closes the bypasses and penetrations that quietly waste energy and move dusty attic air toward the living space.",
@@ -3381,27 +3386,27 @@ function renderProjectPicker(currentUrl, compact = false) {
     {
       label: "Attic Insulation",
       value: "Attic Insulation",
-      image: "assets/attic-insulation.png"
+      image: "assets/thumbs/attic-insulation-card.webp"
     },
     {
       label: "Insulation Removal",
       value: "Insulation Removal",
-      image: "assets/attic-insulation-removal.png"
+      image: "assets/thumbs/attic-insulation-removal-card.webp"
     },
     {
       label: "Attic Pest Issues",
       value: "Attic Pest Issues",
-      image: "assets/animals-in-the-attic.png"
+      image: "assets/thumbs/animals-in-the-attic-card.webp"
     },
     {
       label: "Attic Air Sealing",
       value: "Attic Air Sealing",
-      image: "assets/attic-air-sealing.png"
+      image: "assets/thumbs/attic-air-sealing-card.webp"
     },
     {
       label: "Attic Fans",
       value: "Attic Fans",
-      image: "assets/attic-fans.png"
+      image: "assets/thumbs/attic-fans-card.webp"
     },
     {
       label: "Other",
@@ -5439,7 +5444,7 @@ function buildSupportCityLinks(currentUrl, market) {
     title: cityDisplayName(city),
     kicker: "Service area",
     text: `Explore the attic services, common local issues, and next-step links for homeowners in ${city.shortName}.`,
-    image: "assets/good-attic-insulation-sales-appointment.png",
+    image: "assets/good-attic-insulation-sales-appointment.webp",
     alt: `${cityDisplayName(city)} service area support page`,
     cta: "Explore city page"
   }));
@@ -6310,7 +6315,7 @@ function buildMarketPage(market) {
                 .map(
                   (service) => `
                     <a class="hero-service-card" href="${hrefFrom(currentUrl, `/${market.slug}/${service.slug}/`)}">
-                      <img src="${escapeHtml(assetHref(currentUrl, service.image))}" alt="">
+                      <img src="${escapeHtml(assetHref(currentUrl, service.thumbImage || service.image))}" alt="" decoding="async">
                       <span>${escapeHtml(serviceUiName(service))}</span>
                     </a>
                   `
@@ -6354,7 +6359,7 @@ function buildMarketPage(market) {
             .map(
               (service, index) => `
                 <button class="service-thumb${index === 0 ? " is-active" : ""}" type="button" data-service-thumb aria-label="Show ${escapeHtml(serviceUiName(service))} slide">
-                  <img src="${escapeHtml(assetHref(currentUrl, service.image))}" alt="">
+                  <img src="${escapeHtml(assetHref(currentUrl, service.thumbImage || service.image))}" alt="" loading="lazy" decoding="async">
                   <span>${escapeHtml(serviceUiName(service))}</span>
                 </button>
               `
@@ -6524,7 +6529,7 @@ function buildMarketPage(market) {
           <h2>Dust, odors, and old insulation should not be part of daily life in ${escapeHtml(market.shortName)}.</h2>
           <p>In ${escapeHtml(market.shortName)}, homeowners often start here when dirty insulation, attic dust, or contamination begin affecting how the house feels. Good Attic looks at cleanup, sanitation, sealing, and insulation as one connected attic path.</p>
         </div>
-        <img class="image-transparent" src="${escapeHtml(assetHref(currentUrl, "assets/gross-attic.png"))}" alt="Gross attic with old dirty insulation">
+        <img class="image-transparent" src="${escapeHtml(assetHref(currentUrl, "assets/gross-attic.webp"))}" alt="Gross attic with old dirty insulation">
       </article>
 
       <article class="story reverse reveal">
@@ -6533,7 +6538,7 @@ function buildMarketPage(market) {
           <h2>Rooms that never feel right in ${escapeHtml(market.shortName)} often start above the ceiling.</h2>
           <p>${escapeHtml(market.whyText)}</p>
         </div>
-        <img class="image-transparent" src="${escapeHtml(assetHref(currentUrl, "assets/hot-cold-uneven-temperatures-attic.png"))}" alt="House cutaway showing uneven hot and cold attic temperature issues">
+        <img class="image-transparent" src="${escapeHtml(assetHref(currentUrl, "assets/hot-cold-uneven-temperatures-attic.webp"))}" alt="House cutaway showing uneven hot and cold attic temperature issues">
       </article>
 
       <article class="story reveal">
@@ -6542,7 +6547,7 @@ function buildMarketPage(market) {
           <h2>After pests make the attic their home, the attic needs a full restoration.</h2>
           <p>Pest-damaged insulation, droppings, odors, and contamination can all linger in ${escapeHtml(market.shortName)} homes long after the animals are gone. Good Attic focuses on the cleanup, sanitation, and restoration that makes the space better than before.</p>
         </div>
-        <img class="image-transparent image-pest-damage" src="${escapeHtml(assetHref(currentUrl, "assets/pest-issues-in-attic-transparent-v2.png"))}" alt="Pest activity and contamination inside a damaged attic">
+        <img class="image-transparent image-pest-damage" src="${escapeHtml(assetHref(currentUrl, "assets/pest-issues-in-attic-transparent-v2.webp"))}" alt="Pest activity and contamination inside a damaged attic">
       </article>
     </section>
 
@@ -6596,7 +6601,7 @@ function buildMarketPage(market) {
       <div class="creator-sticky reveal">
         <p class="eyebrow">Process</p>
         <h2>A calm, transparent experience for ${escapeHtml(market.shortName)} homeowners with a space most people never see.</h2>
-        <img src="${escapeHtml(assetHref(currentUrl, "assets/good-attic-insulation-sales-appointment.png"))}" alt="Good Attic project manager reviewing an attic insulation quote with a homeowner">
+        <img src="${escapeHtml(assetHref(currentUrl, "assets/good-attic-insulation-sales-appointment.webp"))}" alt="Good Attic project manager reviewing an attic insulation quote with a homeowner">
       </div>
 
       <div class="creator-list">
@@ -7105,7 +7110,7 @@ function buildCityPage(market, city) {
                   .map(
                     (service) => `
                       <a class="hero-service-card" href="${hrefFrom(currentUrl, `/${market.slug}/${service.slug}/`)}">
-                        <img src="${escapeHtml(assetHref(currentUrl, service.image))}" alt="">
+                      <img src="${escapeHtml(assetHref(currentUrl, service.thumbImage || service.image))}" alt="" decoding="async">
                         <span>${escapeHtml(serviceUiName(service))}</span>
                       </a>
                     `
@@ -7528,7 +7533,7 @@ function buildCostResourcePage(market) {
             title: `${market.name} market hub`,
             kicker: "Market page",
             text: market.intro,
-            image: "assets/good-attic-insulation-sales-appointment.png",
+            image: "assets/good-attic-insulation-sales-appointment.webp",
             alt: `${market.name} attic services`,
             cta: "Open market hub"
           }
@@ -8672,7 +8677,7 @@ const resourcePages = [
             title: "Request an attic assessment",
             kicker: "Next step",
             text: "If the home is showing both leakage and insulation symptoms, the attic assessment is the cleanest way to separate the real causes.",
-            image: "assets/good-attic-insulation-sales-appointment.png",
+            image: "assets/good-attic-insulation-sales-appointment.webp",
             alt: "Request an attic assessment",
             cta: "Start a request"
           }
@@ -8845,7 +8850,7 @@ const resourcePages = [
             title: "Request an attic assessment",
             kicker: "Next step",
             text: "If the attic has visible contamination or odor, the documented assessment is the cleanest way to decide how complete the cleanup needs to be.",
-            image: "assets/gross-attic.png",
+            image: "assets/gross-attic.webp",
             alt: "Request an attic assessment after pest contamination",
             cta: "Start a request"
           }
@@ -9794,7 +9799,7 @@ function renderCorePage(page, currentUrl) {
               title: "Assess the attic honestly",
               kicker: "Step 1",
               text: "Find the actual issue instead of selling a one-size-fits-all solution.",
-              image: "assets/good-attic-insulation-sales-appointment.png",
+              image: "assets/good-attic-insulation-sales-appointment.webp",
               cta: "Explore services"
             },
             {
@@ -9802,7 +9807,7 @@ function renderCorePage(page, currentUrl) {
               title: "Communicate clearly",
               kicker: "Step 2",
               text: "Use homeowner-friendly language, visible documentation, and cleaner next steps.",
-              image: "assets/gross-attic.png",
+              image: "assets/gross-attic.webp",
               cta: "View trust page"
             },
             {
@@ -9810,7 +9815,7 @@ function renderCorePage(page, currentUrl) {
               title: "Finish with confidence",
               kicker: "Step 3",
               text: "Deliver work that feels respectful, photo-ready, and done right the first time.",
-              image: "assets/attic-insulation.png",
+              image: "assets/attic-insulation.webp",
               cta: "Start a request"
             }
           ],
@@ -10001,7 +10006,7 @@ function renderCorePage(page, currentUrl) {
             title: market.name,
             kicker: "Market hub",
             text: market.intro,
-            image: "assets/good-attic-insulation-sales-appointment.png",
+            image: "assets/good-attic-insulation-sales-appointment.webp",
             alt: market.name,
             cta: "Explore market"
           })),
@@ -10206,7 +10211,7 @@ function renderCorePage(page, currentUrl) {
             title: market.name,
             kicker: "Market hub",
             text: market.intro,
-            image: "assets/good-attic-insulation-sales-appointment.png",
+            image: "assets/good-attic-insulation-sales-appointment.webp",
             alt: market.name,
             cta: "Open market hub"
           })),

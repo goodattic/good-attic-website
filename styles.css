@@ -471,7 +471,7 @@ h3 {
   place-items: center;
   background:
     linear-gradient(rgba(23, 33, 28, 0.1), rgba(23, 33, 28, 0.58)),
-    url("https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1100&q=80") center / cover;
+    url("assets/backgrounds/home-ambient.webp") center / cover;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
@@ -2395,7 +2395,7 @@ h3 {
   text-align: center;
   background:
     linear-gradient(rgba(23, 33, 28, 0.88), rgba(23, 33, 28, 0.88)),
-    url("https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1800&q=80") center / cover;
+    url("assets/backgrounds/market-ambient-1.webp") center / cover;
 }
 
 .quote-section blockquote {
@@ -2429,7 +2429,7 @@ h3 {
   color: var(--white);
   background:
     linear-gradient(90deg, rgba(23, 33, 28, 0.92), rgba(23, 33, 28, 0.22)),
-    url("https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1800&q=80") center / cover;
+    url("assets/backgrounds/market-ambient-2.webp") center / cover;
 }
 
 .cta-strip h2 {
@@ -2889,7 +2889,7 @@ textarea {
   place-items: center;
   background:
     linear-gradient(rgba(23, 33, 28, 0.08), rgba(23, 33, 28, 0.22)),
-    url("https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=900&q=80") center / cover;
+    url("assets/backgrounds/mobile-ambient.webp") center / cover;
 }
 
 .mini-phone {
