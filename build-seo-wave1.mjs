@@ -6858,16 +6858,7 @@ function buildServicePage(market, service) {
         ${renderEvidenceGrid(evidenceGallery, currentUrl)}
       </section>
 
-      <section class="section">
-        <div class="section-heading reveal">
-          <p class="eyebrow">Proof path for this service</p>
-          <h2>The real project evidence that should eventually support ${escapeHtml(service.name.toLowerCase())} in ${escapeHtml(market.shortName)}.</h2>
-          <p class="section-subcopy">${escapeHtml(
-            "These proof slots are set up so approved project photos and documented findings can drop into the right page later without redesigning the service architecture."
-          )}</p>
-        </div>
-        ${renderProofQueueGrid(buildDocumentedProofCards({ marketSlug: market.slug, serviceSlug: service.slug }), currentUrl)}
-      </section>
+      ${renderServiceProjectProofSection(currentUrl, market, service)}
 
       <section class="section">
         <div class="section-heading reveal">
@@ -7606,6 +7597,90 @@ function documentedProofEntries(scope = {}) {
     if (!scope.citySlug && entry.city) return false;
     return true;
   });
+}
+
+function serviceProjectProofEntries(scope = {}) {
+  const limit = typeof scope.limit === "number" ? scope.limit : 3;
+  const exactServiceEntries = documentedProjectProof.filter((entry) => {
+    if (scope.marketSlug && entry.market !== scope.marketSlug) return false;
+    return scope.serviceSlug ? entry.serviceSlug === scope.serviceSlug : true;
+  });
+  const marketEntries = documentedProjectProof.filter((entry) => {
+    if (scope.marketSlug && entry.market !== scope.marketSlug) return false;
+    return Boolean(entry.beforeImage && entry.afterImage);
+  });
+  const cityBalancedMarketEntries = [
+    ...marketEntries.filter(
+      (entry, index, entries) => entries.findIndex((candidate) => candidate.city === entry.city) === index
+    ),
+    ...marketEntries
+  ];
+  const seen = new Set();
+
+  return [...exactServiceEntries, ...cityBalancedMarketEntries]
+    .filter((entry) => {
+      const key = `${entry.market || ""}:${entry.city || ""}:${entry.title}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, limit);
+}
+
+function serviceProofContextText(service) {
+  return {
+    "attic-insulation":
+      "For insulation planning, before-and-after proof helps homeowners see the starting attic condition, cleanup needs, and finished coverage instead of approving a blind top-off.",
+    "insulation-removal":
+      "For removal work, before-and-after proof is especially useful because the starting condition often explains why old insulation should be removed before the attic is rebuilt.",
+    "attic-air-sealing":
+      "For air sealing, project proof supports the larger inspection standard: document the attic first, explain where performance is being lost, then show the finished attic condition.",
+    "attic-pest-remediation":
+      "For attic pest issues, real project proof matters because contamination, odor, cleanup, and insulation replacement should be tied back to visible documented conditions.",
+    "attic-fans":
+      "For attic fan and ventilation decisions, project proof keeps the recommendation connected to the full attic system rather than treating trapped heat as a fan-only question."
+  }[service.slug];
+}
+
+function cityLabelForProofEntry(entry, market) {
+  const city = entry.city && market ? market.supportCities.find((item) => item.slug === entry.city) : null;
+  return city ? cityDisplayName(city) : market ? marketDisplayName(market) : "Good Attic";
+}
+
+function buildServiceProjectProofCards(market, service, limit = 3) {
+  return serviceProjectProofEntries({ marketSlug: market.slug, serviceSlug: service.slug, limit }).map((entry) => {
+    const cityLabel = cityLabelForProofEntry(entry, market);
+    return {
+      ...entry,
+      title: `${cityLabel} documented attic project`,
+      text: `${entry.text} ${serviceProofContextText(service)}`,
+      status: "Real before/after attic proof"
+    };
+  });
+}
+
+function renderServiceProjectProofSection(currentUrl, market, service) {
+  const projectProof = buildServiceProjectProofCards(market, service);
+  const hasProjectProof = projectProof.length > 0;
+
+  return `
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">${hasProjectProof ? "Real project proof" : "Proof path for this service"}</p>
+          <h2>${escapeHtml(
+            hasProjectProof
+              ? `Documented attic project proof supporting ${service.name.toLowerCase()} decisions in ${market.shortName}.`
+              : `The real project evidence that should eventually support ${service.name.toLowerCase()} in ${market.shortName}.`
+          )}</h2>
+          <p class="section-subcopy">${escapeHtml(
+            hasProjectProof
+              ? "These are real approved before-and-after attic photo sets from this market. The captions keep the claim honest: they document Good Attic's photo-first project standard, while service-specific pages explain how that proof supports the decision process."
+              : "These proof slots are set up so approved project photos and documented findings can drop into the right page later without redesigning the service architecture."
+          )}</p>
+        </div>
+        ${hasProjectProof ? renderBeforeAfterProofGrid(projectProof, currentUrl) : renderProofQueueGrid(buildDocumentedProofCards({ marketSlug: market.slug, serviceSlug: service.slug }), currentUrl)}
+      </section>
+  `;
 }
 
 function buildReviewExcerptCards(scope = {}) {
