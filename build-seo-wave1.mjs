@@ -2804,6 +2804,9 @@ function cityRecordBySlug(slug) {
 
 function resourceFeatureImage(resource) {
   if (resource.slug.startsWith("attic-insulation-cost-")) return proofAssets.hotColdInsulation;
+  if (resource.slug === "blown-insulation-vs-rolled-insulation") return proofAssets.insulation;
+  if (resource.slug === "spray-foam-vs-blown-in-attic-insulation") return proofAssets.hotColdInsulation;
+  if (resource.slug === "radiant-barrier-vs-attic-insulation") return proofAssets.fans;
   if (resource.slug === "insulation-removal-vs-top-off") return proofAssets.dirtyReset;
   if (resource.slug === "attic-air-sealing-vs-more-insulation") return proofAssets.airSealing;
   if (resource.slug === "signs-of-attic-pest-contamination") return proofAssets.pestDamage;
@@ -2965,7 +2968,7 @@ function renderSiteJsonLd(page) {
         "@id": `${site.baseUrl}/#organization`,
         name: site.name,
         url: `${site.baseUrl}/`,
-        logo: `${site.baseUrl}/assets/good-attic-logo.png`,
+        logo: `${site.baseUrl}/assets/good-attic-mark-gradient.png`,
         description: site.description,
         telephone: pagePhone.phoneSchema || pagePhone.phoneDisplay,
         areaServed,
@@ -3087,7 +3090,11 @@ function renderMetaTags(page, currentUrl) {
   <meta name="twitter:title" content="${escapeHtml(page.seo_title)}">
   <meta name="twitter:description" content="${escapeHtml(page.meta_description)}">
   <meta name="twitter:image" content="${escapeHtml(absoluteImage)}">
-  <meta name="theme-color" content="#0f5a43">`;
+  <meta name="theme-color" content="#0f5a43">
+  <link rel="icon" type="image/png" sizes="32x32" href="${escapeHtml(assetHref(currentUrl, "assets/favicon-32.png"))}">
+  <link rel="icon" type="image/png" sizes="192x192" href="${escapeHtml(assetHref(currentUrl, "assets/favicon-192.png"))}">
+  <link rel="apple-touch-icon" sizes="180x180" href="${escapeHtml(assetHref(currentUrl, "assets/apple-touch-icon.png"))}">
+  <link rel="manifest" href="${escapeHtml(assetHref(currentUrl, "site.webmanifest"))}">`;
 }
 
 function renderImg(currentUrl, src, alt, options = {}) {
@@ -5542,7 +5549,19 @@ function buildCityPage(market, city) {
           "draper-ut":
             "Good Attic provides attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing in Draper.",
           "american-fork-ut":
-            "Good Attic serves American Fork homeowners with attic insulation, attic cleanup, attic fans, and attic air sealing."
+            "Good Attic serves American Fork homeowners with attic insulation, attic cleanup, attic fans, and attic air sealing.",
+          "herriman-ut":
+            "Good Attic helps Herriman homeowners solve upstairs comfort, garage-room heat, insulation gaps, attic ventilation, and air sealing issues with documented attic assessments.",
+          "holladay-ut":
+            "Good Attic serves Holladay homeowners with premium attic insulation, insulation removal, attic cleanup, air sealing, and ventilation solutions for older and custom homes.",
+          "millcreek-ut":
+            "Good Attic helps Millcreek homeowners improve comfort, reduce attic energy loss, clean up damaged insulation, and document attic upgrade options clearly.",
+          "cottonwood-heights-ut":
+            "Good Attic serves Cottonwood Heights homeowners with attic insulation, removal, air sealing, ventilation, and attic pest issue restoration for mountain-side homes.",
+          "sugar-house-ut":
+            "Good Attic helps Sugar House homeowners with attic insulation, old insulation removal, attic cleanup, air sealing, and comfort fixes for older Salt Lake homes.",
+          "south-jordan-ut":
+            "Good Attic serves South Jordan homeowners with attic insulation, insulation removal, attic fans, air sealing, and attic cleanup for comfort and efficiency problems."
         },
         "st-louis-mo": {
           "chesterfield-mo":
@@ -5552,7 +5571,19 @@ function buildCityPage(market, city) {
           "ballwin-mo":
             "Good Attic provides attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing in Ballwin.",
           "o-fallon-mo":
-            "Good Attic serves O'Fallon homeowners with attic services designed to improve comfort, reduce waste, and clean up damaged insulation."
+            "Good Attic serves O'Fallon homeowners with attic services designed to improve comfort, reduce waste, and clean up damaged insulation.",
+          "st-peters-mo":
+            "Good Attic helps St. Peters homeowners fix attic insulation, removal, pest issue, ventilation, and air sealing problems with clear inspection documentation.",
+          "clayton-mo":
+            "Good Attic serves Clayton homeowners with premium attic insulation, insulation removal, air sealing, attic ventilation, and restoration for high-value homes.",
+          "des-peres-mo":
+            "Good Attic helps Des Peres homeowners solve attic comfort, energy-loss, insulation removal, air sealing, and ventilation issues with documented recommendations.",
+          "frontenac-mo":
+            "Good Attic serves Frontenac homeowners with careful attic insulation, removal, air sealing, ventilation, and attic cleanup services for premium homes.",
+          "town-and-country-mo":
+            "Good Attic helps Town and Country homeowners improve attic insulation, cleanup damaged materials, seal leaks, and solve upstairs comfort problems.",
+          "wildwood-mo":
+            "Good Attic serves Wildwood homeowners with attic insulation, insulation removal, attic fans, pest issue cleanup, and air sealing for larger suburban homes."
         },
         "kansas-city-mo": {
           "overland-park-ks":
@@ -5562,9 +5593,22 @@ function buildCityPage(market, city) {
           "lee-s-summit-mo":
             "Good Attic provides attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing in Lee's Summit.",
           "lenexa-ks":
-            "Good Attic serves Lenexa homeowners with premium attic services designed to improve comfort and clean up attic problems."
+            "Good Attic serves Lenexa homeowners with premium attic services designed to improve comfort and clean up attic problems.",
+          "leawood-ks":
+            "Good Attic serves Leawood homeowners with premium attic insulation, insulation removal, air sealing, attic ventilation, and documented comfort recommendations.",
+          "shawnee-ks":
+            "Good Attic helps Shawnee homeowners solve attic insulation, air sealing, ventilation, cleanup, and upstairs comfort issues with clear attic assessments.",
+          "prairie-village-ks":
+            "Good Attic serves Prairie Village homeowners with attic insulation, old insulation removal, air sealing, ventilation, and cleanup for older high-value homes.",
+          "blue-springs-mo":
+            "Good Attic helps Blue Springs homeowners improve attic insulation, remove damaged materials, seal air leaks, and solve attic comfort problems.",
+          "liberty-mo":
+            "Good Attic serves Liberty homeowners with attic insulation, insulation removal, attic fans, pest issue cleanup, and air sealing for Northland homes.",
+          "parkville-mo":
+            "Good Attic helps Parkville homeowners with attic insulation, air sealing, ventilation, removal, and attic cleanup for comfort and efficiency issues."
         }
-      }[market.slug][city.slug],
+      }[market.slug]?.[city.slug] ||
+      `Good Attic serves ${cityDisplayName(city)} homeowners with attic insulation, insulation removal, attic pest issues, attic fans, and attic air sealing through the ${market.shortName} market.`,
     h1: `Attic Services in ${city.name}`,
     intro: city.intro,
     page_purpose: "City support page for suburb/city search demand",
@@ -6236,6 +6280,531 @@ function buildDocumentedProofCards(scope = {}) {
 
 const resourcePages = [
   ...marketCatalog.map((market) => buildCostResourcePage(market)),
+  buildResourcePage({
+    slug: "blown-insulation-vs-rolled-insulation",
+    url: "/resources/blown-insulation-vs-rolled-insulation/",
+    market: null,
+    primary_keyword: "blown insulation vs rolled insulation",
+    secondary_keywords: [
+      "blown in attic insulation",
+      "rolled attic insulation",
+      "batts vs blown insulation",
+      "best attic insulation type"
+    ],
+    seo_title: "Blown Insulation vs Rolled Insulation | Which Fits an Attic Better?",
+    meta_description:
+      "Compare blown-in and rolled attic insulation, when each type can make sense, and why attic condition, air sealing, and coverage matter before choosing material.",
+    h1: "Blown Insulation vs Rolled Insulation",
+    intro:
+      "Blown-in insulation and rolled insulation can both be useful, but they are not interchangeable answers for every attic. The better choice depends on attic access, existing material, coverage gaps, air leakage, contamination, and whether the attic needs prep work before anything new is installed.",
+    page_purpose: "Legacy blog replacement for blown vs rolled insulation intent",
+    cta_primary: "Get attic guidance",
+    breadcrumb_items: [
+      { label: "Home", url: "/" },
+      { label: "Resources", url: "/resources/" },
+      { label: "Blown Insulation vs Rolled Insulation", url: "/resources/blown-insulation-vs-rolled-insulation/" }
+    ],
+    canonical_url: `${site.baseUrl}/resources/blown-insulation-vs-rolled-insulation/`,
+    related_links: [
+      { label: "Attic Insulation Services", url: "/services/attic-insulation/" },
+      { label: "What R-Value Means for an Attic", url: "/resources/what-r-value-means-for-an-attic/" },
+      { label: "Insulation Removal vs Top-Off", url: "/resources/insulation-removal-vs-top-off/" },
+      { label: "Attic Resources", url: "/resources/" }
+    ],
+    faq_items: [
+      {
+        question: "Is blown-in insulation better than rolled insulation for attics?",
+        answer:
+          "Often, blown-in insulation is easier to install evenly across open attic floors and around irregular framing, but the right answer depends on the attic layout and condition."
+      },
+      {
+        question: "Can rolled insulation still make sense in an attic?",
+        answer:
+          "Yes. Rolled batts can fit some defined spaces, but they need careful installation and can underperform when gaps, compression, or obstacles prevent consistent coverage."
+      },
+      {
+        question: "Should the attic be air sealed before choosing insulation type?",
+        answer:
+          "Usually, yes. Air sealing and prep work should be considered before the final insulation layer because new material does not close the attic bypasses underneath it."
+      }
+    ],
+    trust_elements: [
+      "Answers the material question without pretending material is the whole job",
+      "Connects insulation choice to attic condition and prep work",
+      "Routes homeowners into real service and local pages"
+    ],
+    hero: {
+      eyebrow: "Resources • Insulation comparison",
+      cardKicker: "Material choice is only one layer",
+      cardTitle: "The best attic insulation type depends on the attic it is going into.",
+      cardText:
+        "Blown-in insulation often wins for broad, even coverage. Rolled insulation can still have a place. But neither performs well if the attic is dirty, leaky, underprepared, or uneven before the install.",
+      cardPoints: [
+        "Coverage consistency",
+        "Attic access and obstacles",
+        "Existing insulation condition",
+        "Air sealing before the finish layer"
+      ]
+    },
+    sections: [
+      {
+        eyebrow: "Where blown-in insulation usually fits",
+        heading: "Blown-in attic insulation is often chosen when the attic needs even coverage across open areas.",
+        layout: "tiles",
+        items: [
+          {
+            title: "It fills irregular attic spaces more easily",
+            text: "Loose-fill material can settle around framing, low-clearance areas, and attic shapes that are difficult to cover with large rolls."
+          },
+          {
+            title: "It can create a more continuous top layer",
+            text: "When installed correctly, blown-in insulation can reduce gaps and thin spots across the attic floor."
+          },
+          {
+            title: "It still needs a prepared attic",
+            text: "The material should usually follow cleanup, air sealing, baffles, and any needed removal instead of covering problems that should remain visible."
+          }
+        ]
+      },
+      {
+        eyebrow: "Where rolled insulation can struggle",
+        heading: "Rolled insulation can underperform when the attic layout makes clean, gap-free installation difficult.",
+        layout: "panels",
+        items: [
+          {
+            title: "Gaps and compression matter",
+            text: "Batts lose effectiveness when they are cut poorly, squeezed into spaces, or left with uncovered edges."
+          },
+          {
+            title: "Obstacles make coverage harder",
+            text: "Wiring, framing, low slopes, and mechanical penetrations can make rolled insulation harder to place consistently."
+          },
+          {
+            title: "Old material changes the answer",
+            text: "If the attic already has dirty, compressed, or pest-affected insulation, the first decision may be removal versus top-off, not blown versus rolled."
+          }
+        ]
+      },
+      {
+        eyebrow: "How Good Attic thinks about the choice",
+        heading: "The insulation type should be chosen after the attic has been evaluated as a system.",
+        layout: "tiles",
+        items: [
+          {
+            title: "Check the attic floor first",
+            text: "Air leaks, access limitations, and contaminated material can change the scope before material type is even discussed."
+          },
+          {
+            title: "Choose the finish layer second",
+            text: "Once the attic is ready, the final insulation approach should support the depth, coverage, and performance target."
+          },
+          {
+            title: "Document the reason behind the recommendation",
+            text: "A good quote should explain why the chosen insulation approach fits the actual attic, not just which product was sold."
+          }
+        ]
+      },
+      {
+        eyebrow: "Best next pages",
+        heading: "Use these pages once the material comparison turns into a real attic decision.",
+        layout: "features",
+        withImages: true,
+        items: [
+          {
+            url: "/services/attic-insulation/",
+            title: "Attic Insulation Services",
+            kicker: "Core service",
+            text: serviceBySlug("attic-insulation").summary,
+            image: serviceBySlug("attic-insulation").image,
+            alt: "Attic insulation services",
+            cta: "View insulation service"
+          },
+          {
+            url: "/resources/what-r-value-means-for-an-attic/",
+            title: "What R-Value Means for an Attic",
+            kicker: "Depth guide",
+            text: "Use this guide when the question moves from insulation type to how much insulation the attic should actually have.",
+            image: proofAssets.insulation,
+            alt: "Attic R-value guide",
+            cta: "Compare depth"
+          },
+          {
+            url: "/resources/insulation-removal-vs-top-off/",
+            title: "Insulation Removal vs Top-Off",
+            kicker: "Scope decision",
+            text: "Use this guide when the bigger question is whether the old insulation is still worth building on.",
+            image: proofAssets.dirtyReset,
+            alt: "Insulation removal versus top-off guide",
+            cta: "Compare scope"
+          }
+        ]
+      },
+      {
+        eyebrow: "Local service paths",
+        heading: "Move from the material comparison into the closest local attic insulation page.",
+        subcopy:
+          "These pages connect the insulation choice to the local team, service number, and market-specific attic conditions.",
+        layout: "features",
+        withImages: true,
+        items: buildLocalizedResourceCards("attic-insulation", "Local insulation path", "Open local service")
+      }
+    ],
+    cta: {
+      title: "Need help choosing the right insulation path for the attic you actually have?",
+      text: "The cleanest answer comes after the attic condition, leakage, access, and existing insulation are documented.",
+      primary: { label: "Request an Attic Assessment", url: "/contact/", kicker: "Next step" }
+    }
+  }),
+  buildResourcePage({
+    slug: "spray-foam-vs-blown-in-attic-insulation",
+    url: "/resources/spray-foam-vs-blown-in-attic-insulation/",
+    market: null,
+    primary_keyword: "spray foam vs blown in insulation",
+    secondary_keywords: [
+      "spray foam attic insulation",
+      "blown in attic insulation",
+      "spray foam vs cellulose attic",
+      "attic insulation options"
+    ],
+    seo_title: "Spray Foam vs Blown-In Attic Insulation | How to Compare the Options",
+    meta_description:
+      "Compare spray foam and blown-in attic insulation, what each approach is trying to solve, and why attic design and prep work matter before choosing.",
+    h1: "Spray Foam vs Blown-In Attic Insulation",
+    intro:
+      "Spray foam and blown-in insulation are often compared like they are simple product swaps. In real attics, the better question is what the house needs the attic boundary to do, whether the attic is vented or unvented, and whether the existing attic is clean enough to support the next system.",
+    page_purpose: "Legacy blog replacement for spray foam vs blown-in insulation intent",
+    cta_primary: "Get attic guidance",
+    breadcrumb_items: [
+      { label: "Home", url: "/" },
+      { label: "Resources", url: "/resources/" },
+      { label: "Spray Foam vs Blown-In Attic Insulation", url: "/resources/spray-foam-vs-blown-in-attic-insulation/" }
+    ],
+    canonical_url: `${site.baseUrl}/resources/spray-foam-vs-blown-in-attic-insulation/`,
+    related_links: [
+      { label: "Attic Insulation Services", url: "/services/attic-insulation/" },
+      { label: "Attic Air Sealing Services", url: "/services/attic-air-sealing/" },
+      { label: "Attic Fan Services", url: "/services/attic-fans/" },
+      { label: "Attic Resources", url: "/resources/" }
+    ],
+    faq_items: [
+      {
+        question: "Is spray foam always better than blown-in insulation?",
+        answer:
+          "No. Spray foam changes the attic assembly in a different way, and it is not automatically the right answer for every home or every budget."
+      },
+      {
+        question: "When does blown-in insulation usually make more sense?",
+        answer:
+          "Blown-in insulation usually makes sense when the attic remains a vented attic and needs a stronger, more consistent thermal layer after the right prep work."
+      },
+      {
+        question: "Why should ventilation and air sealing be discussed before choosing?",
+        answer:
+          "Because spray foam, air sealing, blown-in insulation, and attic ventilation all affect how the attic manages heat, moisture, leakage, and comfort."
+      }
+    ],
+    trust_elements: [
+      "Compares systems without pushing one product as universal",
+      "Keeps the attic assembly and ventilation strategy in view",
+      "Routes into insulation, air sealing, and ventilation pages"
+    ],
+    hero: {
+      eyebrow: "Resources • Insulation options",
+      cardKicker: "Compare the attic system, not just the product",
+      cardTitle: "Spray foam and blown-in insulation solve attic problems in different ways.",
+      cardText:
+        "The better choice depends on attic design, ventilation strategy, leakage, existing conditions, and the outcome the homeowner actually needs. A product-first answer is usually too shallow.",
+      cardPoints: [
+        "Vented vs unvented attic strategy",
+        "Air leakage and boundary control",
+        "Existing insulation condition",
+        "Cost, complexity, and long-term fit"
+      ]
+    },
+    sections: [
+      {
+        eyebrow: "How blown-in insulation is usually used",
+        heading: "Blown-in insulation is commonly used to improve the attic floor in a vented attic.",
+        layout: "tiles",
+        items: [
+          {
+            title: "It strengthens the thermal layer",
+            text: "After cleanup and sealing decisions, blown-in insulation can bring the attic floor closer to a modern coverage target."
+          },
+          {
+            title: "It works with traditional attic ventilation",
+            text: "In many homes, the attic remains vented while insulation and air sealing improve the boundary below."
+          },
+          {
+            title: "It can be simpler to service later",
+            text: "A vented attic with blown-in insulation can remain easier to inspect and adjust when the project is sequenced correctly."
+          }
+        ]
+      },
+      {
+        eyebrow: "Why spray foam is a bigger design decision",
+        heading: "Spray foam can change the attic assembly, so it should not be treated like a quick swap.",
+        layout: "panels",
+        items: [
+          {
+            title: "It can move the thermal boundary",
+            text: "Foam applied at the roof deck can create a different attic strategy than insulation installed on the attic floor."
+          },
+          {
+            title: "Ventilation assumptions can change",
+            text: "Because the attic assembly changes, the ventilation and moisture conversation has to be handled carefully."
+          },
+          {
+            title: "Existing attic issues still matter",
+            text: "Old insulation, contamination, pest history, and leakage do not stop mattering just because a different product is being considered."
+          }
+        ]
+      },
+      {
+        eyebrow: "How to make the decision cleaner",
+        heading: "The right comparison starts with what the attic needs corrected first.",
+        layout: "tiles",
+        items: [
+          {
+            title: "Document the current attic",
+            text: "Depth, contamination, access, ventilation, and obvious bypasses should all be visible in the recommendation."
+          },
+          {
+            title: "Decide the attic strategy",
+            text: "The project should clarify whether the attic is staying vented with improved floor insulation or needs a different assembly conversation."
+          },
+          {
+            title: "Choose the product after the plan",
+            text: "The material should support the attic plan rather than becoming the plan by itself."
+          }
+        ]
+      },
+      {
+        eyebrow: "Best next pages",
+        heading: "Use these pages when the comparison turns into a project path.",
+        layout: "features",
+        withImages: true,
+        items: [
+          {
+            url: "/services/attic-insulation/",
+            title: "Attic Insulation Services",
+            kicker: "Core service",
+            text: serviceBySlug("attic-insulation").summary,
+            image: serviceBySlug("attic-insulation").image,
+            alt: "Attic insulation services",
+            cta: "View insulation service"
+          },
+          {
+            url: "/services/attic-air-sealing/",
+            title: "Attic Air Sealing Services",
+            kicker: "Boundary path",
+            text: serviceBySlug("attic-air-sealing").summary,
+            image: serviceBySlug("attic-air-sealing").image,
+            alt: "Attic air sealing services",
+            cta: "Compare sealing path"
+          },
+          {
+            url: "/resources/attic-fan-vs-ventilation-fix/",
+            title: "Attic Fan vs Ventilation Fix",
+            kicker: "Ventilation guide",
+            text: "Use this guide when the insulation comparison raises questions about attic heat, airflow, or ventilation support.",
+            image: proofAssets.fans,
+            alt: "Attic fan and ventilation guide",
+            cta: "Compare ventilation"
+          }
+        ]
+      },
+      {
+        eyebrow: "Local service paths",
+        heading: "Move from the product comparison into the closest local insulation page.",
+        subcopy:
+          "The local pages keep the attic recommendation tied to the market team and the homes they are actually inspecting.",
+        layout: "features",
+        withImages: true,
+        items: buildLocalizedResourceCards("attic-insulation", "Local insulation path", "Open local service")
+      }
+    ],
+    cta: {
+      title: "Need help comparing insulation options without getting stuck in product-only advice?",
+      text: "Start with the attic assessment. Once the attic strategy is clear, the material choice becomes much easier to defend.",
+      primary: { label: "Request an Attic Assessment", url: "/contact/", kicker: "Next step" }
+    }
+  }),
+  buildResourcePage({
+    slug: "radiant-barrier-vs-attic-insulation",
+    url: "/resources/radiant-barrier-vs-attic-insulation/",
+    market: null,
+    primary_keyword: "radiant barrier vs attic insulation",
+    secondary_keywords: [
+      "radiant barrier attic",
+      "does radiant barrier work",
+      "radiant barrier myths",
+      "attic heat control"
+    ],
+    seo_title: "Radiant Barrier vs Attic Insulation | What Each One Actually Solves",
+    meta_description:
+      "Learn how radiant barrier, attic insulation, ventilation, and air sealing each affect attic heat and comfort without treating one product as a universal fix.",
+    h1: "Radiant Barrier vs Attic Insulation",
+    intro:
+      "Radiant barrier gets searched by homeowners who are trying to solve heat. That makes sense, but radiant barrier and attic insulation do different jobs. The better question is whether the attic needs heat reflection, thermal resistance, air sealing, ventilation support, or a broader correction.",
+    page_purpose: "Legacy blog replacement for radiant barrier attic intent",
+    cta_primary: "Get attic guidance",
+    breadcrumb_items: [
+      { label: "Home", url: "/" },
+      { label: "Resources", url: "/resources/" },
+      { label: "Radiant Barrier vs Attic Insulation", url: "/resources/radiant-barrier-vs-attic-insulation/" }
+    ],
+    canonical_url: `${site.baseUrl}/resources/radiant-barrier-vs-attic-insulation/`,
+    related_links: [
+      { label: "Attic Insulation Services", url: "/services/attic-insulation/" },
+      { label: "Attic Fan Services", url: "/services/attic-fans/" },
+      { label: "Why Upstairs Rooms Stay Hot", url: "/resources/why-upstairs-rooms-stay-hot/" },
+      { label: "Attic Resources", url: "/resources/" }
+    ],
+    faq_items: [
+      {
+        question: "Does radiant barrier replace attic insulation?",
+        answer:
+          "No. Radiant barrier and insulation address different parts of attic heat movement. One should not be treated as a universal substitute for the other."
+      },
+      {
+        question: "When can radiant barrier help?",
+        answer:
+          "Radiant barrier can help in some heat-gain situations when installed correctly and when the attic conditions support that type of recommendation."
+      },
+      {
+        question: "Why might insulation, sealing, or ventilation matter more?",
+        answer:
+          "Many comfort problems come from thin insulation, attic floor leakage, poor coverage, or ventilation issues rather than radiant heat alone."
+      }
+    ],
+    trust_elements: [
+      "Separates radiant heat claims from full attic performance",
+      "Keeps insulation, sealing, and ventilation in the same decision frame",
+      "Routes high-interest radiant barrier searches into relevant Good Attic pages"
+    ],
+    hero: {
+      eyebrow: "Resources • Heat control",
+      cardKicker: "One heat problem, several possible causes",
+      cardTitle: "Radiant barrier can be part of a heat strategy, but it is not the whole attic system.",
+      cardText:
+        "A hot attic may need stronger insulation, a tighter attic floor, better airflow, or a different heat-management layer. The right answer starts with the attic conditions, not with a product claim.",
+      cardPoints: [
+        "Radiant heat vs conductive heat",
+        "Insulation depth and consistency",
+        "Ventilation and attic airflow",
+        "When hot rooms need a broader attic plan"
+      ]
+    },
+    sections: [
+      {
+        eyebrow: "What radiant barrier is trying to do",
+        heading: "Radiant barrier is usually discussed as a way to reduce radiant heat gain.",
+        layout: "tiles",
+        items: [
+          {
+            title: "It is about reflected radiant heat",
+            text: "Radiant barrier is not the same thing as adding thermal resistance to the attic floor."
+          },
+          {
+            title: "Installation details matter",
+            text: "Radiant barrier claims can fall apart when the product is installed in the wrong context or expected to solve the wrong problem."
+          },
+          {
+            title: "It does not clean up attic defects",
+            text: "A radiant barrier does not remove contaminated insulation, close bypasses, or correct thin coverage."
+          }
+        ]
+      },
+      {
+        eyebrow: "What attic insulation is trying to do",
+        heading: "Insulation slows heat movement through the attic boundary when the layer is installed correctly.",
+        layout: "panels",
+        items: [
+          {
+            title: "It improves thermal resistance",
+            text: "A stronger attic insulation layer helps slow heat gain and heat loss across the ceiling plane."
+          },
+          {
+            title: "Coverage and prep still matter",
+            text: "Insulation needs consistent depth and a prepared attic floor to perform as intended."
+          },
+          {
+            title: "It may need sealing or ventilation support",
+            text: "Hot upstairs rooms can involve insulation, airflow, and leakage at the same time."
+          }
+        ]
+      },
+      {
+        eyebrow: "How to make the heat-control decision",
+        heading: "A better attic recommendation separates symptom, cause, and product.",
+        layout: "tiles",
+        items: [
+          {
+            title: "Document why the attic is hot",
+            text: "Heat buildup, weak insulation, air leakage, and ventilation details can all contribute to the same homeowner complaint."
+          },
+          {
+            title: "Avoid one-product answers",
+            text: "The strongest recommendation explains why the chosen scope matches the attic instead of leaning on a universal product promise."
+          },
+          {
+            title: "Route the fix to the actual failure point",
+            text: "Sometimes the next step is insulation. Sometimes it is sealing, ventilation support, or cleanup before anything else."
+          }
+        ]
+      },
+      {
+        eyebrow: "Best next pages",
+        heading: "Use these pages when radiant barrier research turns into an attic performance decision.",
+        layout: "features",
+        withImages: true,
+        items: [
+          {
+            url: "/services/attic-insulation/",
+            title: "Attic Insulation Services",
+            kicker: "Core service",
+            text: serviceBySlug("attic-insulation").summary,
+            image: serviceBySlug("attic-insulation").image,
+            alt: "Attic insulation services",
+            cta: "View insulation service"
+          },
+          {
+            url: "/services/attic-fans/",
+            title: "Attic Fan Services",
+            kicker: "Ventilation support",
+            text: serviceBySlug("attic-fans").summary,
+            image: serviceBySlug("attic-fans").image,
+            alt: "Attic fan services",
+            cta: "View fan service"
+          },
+          {
+            url: "/resources/why-upstairs-rooms-stay-hot/",
+            title: "Why Upstairs Rooms Stay Hot",
+            kicker: "Comfort guide",
+            text: "Use this guide when radiant barrier research is really coming from hot bedrooms, bonus rooms, or second-floor comfort issues.",
+            image: proofAssets.hotColdHouse,
+            alt: "Hot upstairs room attic guide",
+            cta: "Open comfort guide"
+          }
+        ]
+      },
+      {
+        eyebrow: "Local service paths",
+        heading: "Move from radiant barrier research into the closest local attic insulation page.",
+        subcopy:
+          "The local pages help turn heat-control research into an inspection-backed attic recommendation.",
+        layout: "features",
+        withImages: true,
+        items: buildLocalizedResourceCards("attic-insulation", "Local insulation path", "Open local service")
+      }
+    ],
+    cta: {
+      title: "Need help figuring out whether radiant barrier, insulation, or ventilation is the better path?",
+      text: "The attic assessment is where the heat-control question gets tied to the actual conditions in the attic.",
+      primary: { label: "Request an Attic Assessment", url: "/contact/", kicker: "Next step" }
+    }
+  }),
   buildResourcePage({
     slug: "insulation-removal-vs-top-off",
     url: "/resources/insulation-removal-vs-top-off/",
