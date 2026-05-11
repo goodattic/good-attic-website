@@ -4148,6 +4148,215 @@ function renderCityInsulationBridgeSection(currentUrl, market, city) {
   `;
 }
 
+function buildRemovalAuthorityPanels(market) {
+  const profile = marketServiceProfiles[market.slug];
+  const marketSpecific = {
+    "salt-lake-city-ut": {
+      condition:
+        "Dust-heavy attics, older insulation layers, rodent activity, and rooms over garages can make Salt Lake City removal projects more about resetting the attic than simply hauling material out.",
+      risk:
+        "A quick top-off can leave dusty or pest-affected material in place, which makes the attic look fuller while the homeowner still has the same base problem.",
+      rebuild:
+        "After removal, Salt Lake City homes often benefit from air sealing, baffle/pathway protection, and blown-in insulation that is installed onto a cleaner attic floor."
+    },
+    "st-louis-mo": {
+      condition:
+        "St. Louis attics often bring older-home layouts, humidity history, musty material, squirrel or rodent aftermath, and insulation that no longer feels like a trustworthy base layer.",
+      risk:
+        "Adding insulation over musty, dirty, or pest-affected material can trap the reason the attic felt unhealthy in the first place.",
+      rebuild:
+        "After removal, St. Louis homes often need a cleaner sequence around sanitation, air sealing, and replacement insulation so the attic does not go back together with the same weaknesses."
+    },
+    "kansas-city-mo": {
+      condition:
+        "Kansas City removal projects often start with dusty insulation, pest history, mixed-age attic layouts, and seasonal comfort complaints that point to more than a simple top-off.",
+      risk:
+        "Layering over compromised insulation can hide the problem while seasonal heat gain, winter heat loss, and attic air leakage continue to affect the home.",
+      rebuild:
+        "After removal, Kansas City homes often need attic air sealing, replacement insulation, and heat-management details considered together so the reset actually performs."
+    }
+  }[market.slug];
+
+  return {
+    decide: [
+      {
+        title: "Remove old attic insulation when the base layer is no longer trustworthy",
+        text: marketSpecific.condition
+      },
+      {
+        title: "Top-off only when the existing material is still clean enough to keep",
+        text: `If the attic insulation in ${market.shortName} is dry, clean, stable, and evenly distributed, adding insulation may still make sense. If not, removal becomes the more honest starting point.`
+      },
+      {
+        title: "Removal is a scope decision, not just a demolition step",
+        text: "The goal is to decide whether the attic should be built on, partially corrected, or fully reset before replacement insulation goes in."
+      }
+    ],
+    cost: [
+      {
+        title: "Contamination changes attic insulation removal cost",
+        text: "Rodent droppings, nesting debris, odors, moisture history, and dirty insulation all affect how carefully the attic has to be protected, collected, and prepared."
+      },
+      {
+        title: "Access and volume shape the removal estimate",
+        text: "Tight attic access, low clearances, deep material, multiple layers, and difficult pathways can all make the removal scope more involved."
+      },
+      {
+        title: "Removal plus replacement is different from removal alone",
+        text: "When the homeowner wants the attic reset fully, the estimate should explain removal, cleanup, air sealing, and the replacement insulation path instead of treating each piece as disconnected."
+      }
+    ],
+    rebuild: [
+      {
+        title: "The attic floor becomes visible again",
+        text: "Once old insulation is removed, the team can see bypasses, gaps, damaged areas, and conditions that were hidden under the old material."
+      },
+      {
+        title: "Air sealing gets easier to do correctly",
+        text: "Removal can create the access needed to seal attic penetrations before replacement insulation covers the attic floor again."
+      },
+      {
+        title: "Replacement insulation gets a cleaner foundation",
+        text: marketSpecific.rebuild
+      }
+    ],
+    risk: [
+      {
+        title: "Covering old insulation can preserve the wrong attic story",
+        text: marketSpecific.risk
+      },
+      {
+        title: "Pest history can outlast the animal problem",
+        text: "Even after exclusion or pest control, insulation can still hold odor, debris, damaged material, and contamination that belongs in the attic restoration conversation."
+      },
+      {
+        title: "A cleaner attic reset gives the homeowner more confidence",
+        text: "Removal is often the moment the project shifts from adding product to restoring the attic into a space the homeowner can trust again."
+      }
+    ]
+  };
+}
+
+function buildRemovalCitySupportCards(market) {
+  return market.supportCities.map((city) => ({
+    url: `/${market.slug}/service-areas/${city.slug}/`,
+    title: `${cityDisplayName(city)} insulation removal support`,
+    kicker: "City support page",
+    text: `${city.shortName} adds local attic context, proof, reviews, and homeowner language while the ${market.shortName} insulation removal page stays the main removal authority page.`,
+    image: serviceBySlug("insulation-removal").image,
+    alt: `Insulation removal support page for ${cityDisplayName(city)}`,
+    cta: "View city page"
+  }));
+}
+
+function renderRemovalAuthoritySections(currentUrl, market) {
+  const panels = buildRemovalAuthorityPanels(market);
+
+  return `
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Remove or top off</p>
+          <h2>How Good Attic decides whether old attic insulation should be removed in ${escapeHtml(market.shortName)}.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "The removal page needs to answer the decision behind the service: when the attic can be built on, when it needs a partial correction, and when it deserves a full reset."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.decide)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Removal cost drivers</p>
+          <h2>What changes attic insulation removal cost in ${escapeHtml(market.shortName)}.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "We are not publishing fake price ranges. We are explaining the real scope drivers that make one attic removal project different from another."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.cost)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Removal plus rebuild</p>
+          <h2>Why insulation removal often makes replacement insulation and air sealing better.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "Removal is most powerful when it creates access for the attic to be cleaned, sealed, documented, and rebuilt in the right order."
+          )}</p>
+        </div>
+        ${renderAudiencePanels(panels.rebuild)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Why not just cover it?</p>
+          <h2>What homeowners risk when compromised attic insulation gets buried instead of removed.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "This section helps homeowners understand why the cheaper-looking path is not always the better attic decision."
+          )}</p>
+        </div>
+        ${renderTileGrid(panels.risk)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">City page strategy</p>
+          <h2>How the ${escapeHtml(market.shortName)} city pages support this insulation removal page.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "The market removal page should carry the deep removal, cost, contamination, and rebuild explanation. City pages add local proof and local search relevance, then route homeowners back into the strongest service page."
+          )}</p>
+        </div>
+        ${renderFeatureGrid(buildRemovalCitySupportCards(market), currentUrl, false)}
+      </section>
+  `;
+}
+
+function renderCityRemovalBridgeSection(currentUrl, market, city) {
+  return `
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Insulation removal path</p>
+          <h2>How ${escapeHtml(city.shortName)} connects to the main ${escapeHtml(market.shortName)} insulation removal page.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "This city page can rank for local attic problems, while the market removal page handles the deeper answer about old insulation, contamination, cost drivers, removal versus top-off, and rebuild sequence."
+          )}</p>
+        </div>
+        ${renderFeatureGrid(
+          [
+            {
+              url: `/${market.slug}/insulation-removal/`,
+              title: `Insulation Removal in ${market.shortName}`,
+              kicker: `${city.shortName} service path`,
+              text: `Use the main ${market.shortName} removal page when the attic may need old insulation removed before cleanup, air sealing, or replacement insulation.`,
+              image: serviceBySlug("insulation-removal").image,
+              alt: `Insulation removal in ${market.shortName}`,
+              cta: "Open removal page"
+            },
+            {
+              url: "/resources/insulation-removal-vs-top-off/",
+              title: "Insulation Removal vs Top-Off",
+              kicker: "Decision guide",
+              text: "Use this guide when the homeowner is deciding whether old insulation can stay or whether the attic needs a cleaner reset first.",
+              image: proofAssets.dirtyReset,
+              alt: "Insulation removal versus top-off guide",
+              cta: "Compare options"
+            },
+            {
+              url: `/${market.slug}/attic-insulation/`,
+              title: `Attic Insulation in ${market.shortName}`,
+              kicker: "Rebuild path",
+              text: `Use the attic insulation page when removal is likely to lead into replacement insulation, blown-in insulation, and air sealing before the final layer.`,
+              image: serviceBySlug("attic-insulation").image,
+              alt: `Attic insulation in ${market.shortName}`,
+              cta: "Open insulation page"
+            }
+          ],
+          currentUrl,
+          true
+        )}
+      </section>
+  `;
+}
+
 function buildSupportCityLinks(currentUrl, market) {
   return market.supportCities.map((city) => ({
     url: `/${market.slug}/service-areas/${city.slug}/`,
@@ -5395,7 +5604,12 @@ function buildServicePage(market, service) {
       `blown-in attic insulation ${marketShort}`,
       `attic insulation contractor ${marketShort}`
     ],
-    "insulation-removal": [`attic insulation removal ${marketShort}`, `remove old insulation ${marketShort}`],
+    "insulation-removal": [
+      `attic insulation removal ${marketShort}`,
+      `remove old insulation ${marketShort}`,
+      `attic insulation removal cost ${marketShort}`,
+      `insulation removal and replacement ${marketShort}`
+    ],
     "attic-pest-remediation": [`rodent attic cleanup ${marketShort}`, `contaminated attic insulation ${marketShort}`],
     "attic-fans": [`solar attic fans ${marketShort}`, `attic fan installation ${marketShort}`],
     "attic-air-sealing": [`attic sealing ${marketShort}`, `air leak sealing attic ${marketShort}`]
@@ -5414,7 +5628,7 @@ function buildServicePage(market, service) {
     secondary_keywords: secondaryKeywords,
     seo_title: {
       "attic-insulation": `Attic Insulation in ${marketDisplayName(market)} | Blown-In & Removal`,
-      "insulation-removal": `Insulation Removal in ${market.name} | Good Attic`,
+      "insulation-removal": `Insulation Removal in ${marketDisplayName(market)} | Old Attic Insulation`,
       "attic-pest-remediation": `Attic Pest Remediation in ${market.name} | Good Attic`,
       "attic-fans": `Attic Fans in ${market.name} | Good Attic`,
       "attic-air-sealing": `Attic Air Sealing in ${market.name} | Good Attic`
@@ -5424,7 +5638,7 @@ function buildServicePage(market, service) {
         "attic-insulation":
           "Need attic insulation in Salt Lake City? Good Attic helps with blown-in attic insulation, old insulation removal, air sealing, hot rooms, and energy waste.",
         "insulation-removal":
-          "Good Attic removes old, dirty, damaged, or contaminated attic insulation in Salt Lake City and helps homeowners start fresh.",
+          "Good Attic removes old, dirty, damaged, or contaminated attic insulation in Salt Lake City and prepares attics for replacement, sealing, or cleanup.",
         "attic-pest-remediation":
           "Get help with rodent-contaminated insulation, nesting debris, attic odors, and attic pest cleanup in Salt Lake City.",
         "attic-fans":
@@ -5436,7 +5650,7 @@ function buildServicePage(market, service) {
         "attic-insulation":
           "Need attic insulation in St. Louis? Good Attic helps with blown-in attic insulation, hot upstairs rooms, old insulation removal, air sealing, and energy waste.",
         "insulation-removal":
-          "Good Attic removes old, dirty, damaged, or contaminated attic insulation in St. Louis and prepares attics for the right next step.",
+          "Good Attic removes old, dirty, musty, or contaminated attic insulation in St. Louis and prepares attics for replacement, sealing, or cleanup.",
         "attic-pest-remediation":
           "Get help with attic pest contamination, nesting debris, rodent damage, and attic cleanup in St. Louis.",
         "attic-fans":
@@ -5448,7 +5662,7 @@ function buildServicePage(market, service) {
         "attic-insulation":
           "Need attic insulation in Kansas City? Good Attic helps with blown-in attic insulation, attic air sealing, old insulation removal, hot rooms, and energy waste.",
         "insulation-removal":
-          "Good Attic removes old, dirty, damaged, or contaminated attic insulation in Kansas City and helps homeowners reset the attic the right way.",
+          "Good Attic removes old, dirty, damaged, or contaminated attic insulation in Kansas City and prepares attics for replacement, sealing, or cleanup.",
         "attic-pest-remediation":
           "Get help with attic pest cleanup, rodent-damaged insulation, nesting debris, and attic contamination in Kansas City.",
         "attic-fans":
@@ -5518,7 +5732,7 @@ function buildServicePage(market, service) {
           )}</p>
         </div>
         ${renderTileGrid(buildServiceKeywordPanels(market, service))}
-      </section>${service.slug === "attic-insulation" ? renderInsulationAuthoritySections(currentUrl, market) : ""}
+      </section>${service.slug === "attic-insulation" ? renderInsulationAuthoritySections(currentUrl, market) : ""}${service.slug === "insulation-removal" ? renderRemovalAuthoritySections(currentUrl, market) : ""}
 
       <section class="section">
         <div class="section-heading reveal">
@@ -5846,6 +6060,7 @@ function buildCityPage(market, city) {
       </section>
 
       ${renderCityInsulationBridgeSection(currentUrl, market, city)}
+      ${renderCityRemovalBridgeSection(currentUrl, market, city)}
 
       <section class="section">
         <div class="section-heading reveal">
