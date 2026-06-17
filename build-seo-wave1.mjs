@@ -17,6 +17,20 @@ const site = {
   footerDisclaimer: "Service availability, recommendations, and pricing depend on inspection findings and local conditions."
 };
 
+const googleAdsTrackingSnippet = `  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-10789892066"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-10789892066');
+    gtag('config', 'AW-11103039262/_4E-CN313tIaEJ7eq64p', { 'phone_conversion_number': '385-336-0062' });
+    gtag('config', 'AW-11103039262/-7syCOa6-e0aEJ7eq64p', { 'phone_conversion_number': '314-916-1220' });
+    gtag('config', 'AW-11103039262/35RYCNWL7bgcEJ7eq64p', { 'phone_conversion_number': '816-207-9488' });
+    window.goodAtticPhoneConversionNumbersConfigured = true;
+    window.goodAtticGoogleTagConfigured = true;
+  </script>`;
+
 const proofAssets = {
   insulation: "assets/attic-insulation.webp",
   removal: "assets/attic-insulation-removal.webp",
@@ -32,6 +46,44 @@ const proofAssets = {
   pestDamage: "assets/pest-issues-in-attic.webp",
   pestDamageTransparent: "assets/pest-issues-in-attic-transparent-v2.webp",
   sales: "assets/good-attic-insulation-sales-appointment.webp"
+};
+
+const authoritySourceLibrary = {
+  energyStarAttic: {
+    title: "ENERGY STAR: Well-insulated and sealed attics",
+    text: "Official homeowner guidance on why attic air sealing and insulation work together for comfort and energy waste.",
+    url: "https://www.energystar.gov/products/energy_star_home_upgrade/attic_insulation"
+  },
+  energyStarRValues: {
+    title: "ENERGY STAR: Recommended insulation R-values",
+    text: "Climate-zone attic insulation guidance for comparing existing depth, target R-values, and retrofit decisions.",
+    url: "https://www.energystar.gov/saveathome/seal_insulate/identify-problems-you-want-fix/diy-checks-inspections/insulation-r-values"
+  },
+  energyStarSealInsulate: {
+    title: "ENERGY STAR: Seal and insulate",
+    text: "Guidance on prioritizing air sealing and insulation projects around comfort, drafts, and energy use.",
+    url: "https://www.energystar.gov/saveathome/seal_insulate"
+  },
+  doeInsulationTypes: {
+    title: "U.S. Department of Energy: Types of insulation",
+    text: "Reference guidance for insulation types, installation fit, and radiant barrier considerations.",
+    url: "https://www.energy.gov/energysaver/types-insulation"
+  },
+  bsescAirSealing: {
+    title: "Building Science Education: Air sealing existing attics",
+    text: "Building-science guidance that attic floor penetrations should be sealed before insulating existing vented attics.",
+    url: "https://bsesc.energy.gov/energy-basics/air-sealing-existing-attics"
+  },
+  cdcRodentCleanup: {
+    title: "CDC: Cleaning up after rodents",
+    text: "Public health guidance for safely handling rodent urine, droppings, nesting material, and heavy infestations.",
+    url: "https://www.cdc.gov/healthy-pets/rodent-control/clean-up.html"
+  },
+  epaMoldMoisture: {
+    title: "EPA: Mold, moisture, and your home",
+    text: "Official guidance that moisture control is central to mold prevention and cleanup decisions.",
+    url: "https://www.epa.gov/mold/brief-guide-mold-moisture-and-your-home"
+  }
 };
 
 const proofDataDirectory = path.join(__dirname, "data", "proof");
@@ -155,9 +207,9 @@ const marketPhones = {
     smsHref: "sms:+13149161220"
   },
   "kansas-city-mo": {
-    phoneDisplay: "816-434-0308",
-    phoneHref: "tel:+18164340308",
-    smsHref: "sms:+18164340308"
+    phoneDisplay: "816-207-9488",
+    phoneHref: "tel:+18162079488",
+    smsHref: "sms:+18162079488"
   }
 };
 
@@ -2613,7 +2665,7 @@ const corePages = [
     trust_elements: [
       "Built around real attic decision questions",
       "Structured to support the service pages, not distract from them",
-      "No fake pricing, fake projects, or fake office claims"
+      "No fake pricing, fake projects, or unsupported office claims"
     ]
   },
   {
@@ -2809,6 +2861,10 @@ function cityRecordBySlug(slug) {
 
 function resourceFeatureImage(resource) {
   if (resource.slug.startsWith("attic-insulation-cost-")) return proofAssets.hotColdInsulation;
+  if (resource.slug.startsWith("hot-upstairs-rooms-")) return proofAssets.hotColdHouse;
+  if (resource.slug.startsWith("attic-cleanup-restoration-")) return proofAssets.grossAttic;
+  if (resource.slug.startsWith("attic-pest-contamination-")) return proofAssets.pestDamage;
+  if (resource.slug.startsWith("attic-air-sealing-")) return proofAssets.airSealing;
   if (resource.slug === "blown-insulation-vs-rolled-insulation") return proofAssets.insulation;
   if (resource.slug === "spray-foam-vs-blown-in-attic-insulation") return proofAssets.hotColdInsulation;
   if (resource.slug === "radiant-barrier-vs-attic-insulation") return proofAssets.fans;
@@ -3035,6 +3091,8 @@ function renderServiceJsonLd(page) {
 
 function renderArticleJsonLd(page) {
   if (page.page_type !== "resource") return "";
+  const citations = resourceAuthoritySources(page).map((source) => source.url);
+  const market = page.market ? marketBySlug(page.market) : null;
 
   return `<script type="application/ld+json">${JSON.stringify({
     "@context": "https://schema.org",
@@ -3044,7 +3102,41 @@ function renderArticleJsonLd(page) {
     mainEntityOfPage: page.canonical_url,
     url: page.canonical_url,
     publisher: { "@id": `${site.baseUrl}/#organization` },
-    about: [page.primary_keyword, ...(page.secondary_keywords || [])]
+    about: [page.primary_keyword, ...(page.secondary_keywords || [])],
+    citation: citations,
+    ...(market ? { spatialCoverage: { "@type": "AdministrativeArea", name: market.name } } : {})
+  })}</script>`;
+}
+
+function renderAreaServiceJsonLd(page) {
+  if (!["market", "support"].includes(page.page_type)) return "";
+
+  const market = marketBySlug(page.market);
+  if (!market) return "";
+
+  const cityRecord = page.page_type === "support" ? cityRecordBySlug(page.city) : null;
+  const areaName = cityRecord?.city?.name || market.name;
+  const phone = phoneForPage(page);
+
+  return `<script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "@id": `${page.canonical_url}#service-area`,
+    name: page.h1,
+    serviceType: "Attic insulation and attic services",
+    description: page.intro || page.meta_description,
+    provider: { "@id": `${site.baseUrl}/#organization` },
+    areaServed: { "@type": "AdministrativeArea", name: areaName },
+    availableChannel: {
+      "@type": "ServiceChannel",
+      servicePhone: {
+        "@type": "ContactPoint",
+        telephone: phone.phoneSchema || phone.phoneDisplay,
+        contactType: "customer service",
+        areaServed: areaName
+      }
+    },
+    url: page.canonical_url
   })}</script>`;
 }
 
@@ -3359,7 +3451,7 @@ function renderHeader(currentUrl, page) {
             <a href="${pagePhone.smsHref}">Text</a>
           </div>
         </div>
-        <button class="nav-cta" type="button" data-open-modal>Get A Quote</button>
+        <button class="nav-cta" type="button" data-open-modal>Get a quote</button>
       </nav>
     </header>
   `;
@@ -3882,6 +3974,10 @@ function renderFaq(items) {
 }
 
 function renderCtaStrip(currentUrl, title, text, primary) {
+  const primaryAction = primary.phone
+    ? renderPhoneDropdownButton(primary.label || "Contact our team", primary.phone)
+    : `<a class="button primary" href="${hrefFrom(currentUrl, primary.url)}">${escapeHtml(displayCopy(primary.label))}</a>`;
+
   return `
     <section class="cta-strip reveal">
       <div>
@@ -3890,9 +3986,67 @@ function renderCtaStrip(currentUrl, title, text, primary) {
         <p class="section-subcopy section-subcopy--light">${escapeHtml(displayCopy(text))}</p>
       </div>
       <div class="cta-strip__actions">
-        <a class="button primary" href="${hrefFrom(currentUrl, primary.url)}">${escapeHtml(displayCopy(primary.label))}</a>
+        ${primaryAction}
         <a class="button secondary" href="${hrefFrom(currentUrl, "/financing/")}">Financing Options</a>
       </div>
+    </section>
+  `;
+}
+
+function renderPhoneDropdownButton(label, phone, buttonClass = "button primary") {
+  return `
+    <div class="phone-dropdown phone-dropdown--cta" data-phone-dropdown>
+      <button class="${escapeHtml(buttonClass)}" type="button" aria-expanded="false" data-phone-dropdown-toggle>
+        ${escapeHtml(displayCopy(label))}
+      </button>
+      <div class="phone-dropdown__menu">
+        <a href="${phone.phoneHref}">Call ${escapeHtml(phone.phoneDisplay)}</a>
+        <a href="${phone.smsHref}">Text ${escapeHtml(phone.phoneDisplay)}</a>
+      </div>
+    </div>
+  `;
+}
+
+function renderHomeServiceLocalSection(currentUrl, market, options = {}) {
+  const phone = marketPhones[market.slug] || phoneForPage({ market: market.slug });
+  const city = options.city || null;
+  const service = options.service || null;
+  const resourceTitle = options.resourceTitle || null;
+  const areaLabel = city ? city.shortName : market.shortName;
+  const serviceLabel = service ? service.name.toLowerCase() : "attic services";
+  const contextHeading = city
+    ? `${city.shortName} is served through the ${market.shortName} Good Attic team.`
+    : `${market.shortName} homeowners reach a local Good Attic path without needing to visit an office.`;
+  const contextSubcopy = city
+    ? `Good Attic is a home-service attic company, so the important local step happens at the property. This page ties ${city.shortName} homeowners to the right ${market.shortName} phone path, service pages, and inspection flow.`
+    : `Good Attic is a home-service attic company. The assessment happens where the attic is, so this page keeps local relevance tied to the ${market.shortName} team, service-area coverage, and documented attic findings instead of relying on walk-in office traffic.`;
+  const routeText = resourceTitle
+    ? `This ${resourceTitle.toLowerCase()} guide keeps the research path connected to the ${market.shortName} market hub, local service pages, and the ${phone.phoneDisplay} call or text path.`
+    : service
+      ? `This ${serviceLabel} page connects the service question to the ${market.shortName} market team, local city coverage, and the ${phone.phoneDisplay} call or text path.`
+      : `This page keeps ${areaLabel} connected to the market hub, service pages, nearby city coverage, and the ${phone.phoneDisplay} call or text path.`;
+
+  return `
+    <section class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Home-service local path</p>
+        <h2>${escapeHtml(contextHeading)}</h2>
+        <p class="section-subcopy">${escapeHtml(contextSubcopy)}</p>
+      </div>
+      ${renderAudiencePanels([
+        {
+          title: "Call or text the market team",
+          text: `Use ${phone.phoneDisplay} for the ${market.shortName} contact path. The goal is to get the attic details to the team that serves the home, not send the homeowner through a generic national handoff.`
+        },
+        {
+          title: "The assessment happens at the home",
+          text: "Attic condition, access, insulation depth, air leakage, ventilation clues, and contamination all have to be reviewed at the property before the scope can be recommended responsibly."
+        },
+        {
+          title: "Local coverage stays accurate",
+          text: `${routeText} It supports local search without implying a walk-in storefront or separate branch in every nearby city.`
+        }
+      ])}
     </section>
   `;
 }
@@ -3902,6 +4056,68 @@ function renderStructuredSection(section, currentUrl) {
   if (section.layout === "panels") return renderAudiencePanels(section.items);
   if (section.layout === "features") return renderFeatureGrid(section.items, currentUrl, section.withImages || false);
   return "";
+}
+
+function resourceAuthoritySources(page) {
+  if (page.page_type !== "resource") return [];
+  const slug = page.slug || "";
+  const keys = new Set(["energyStarAttic", "energyStarRValues"]);
+
+  if (slug.includes("air-sealing") || slug.includes("hot-upstairs") || slug.includes("upstairs-rooms")) {
+    keys.add("bsescAirSealing");
+    keys.add("energyStarSealInsulate");
+  }
+
+  if (
+    slug.includes("r-value") ||
+    slug.includes("insulation-cost") ||
+    slug.includes("blown") ||
+    slug.includes("spray-foam") ||
+    slug.includes("cellulose") ||
+    slug.includes("fiberglass")
+  ) {
+    keys.add("doeInsulationTypes");
+  }
+
+  if (slug.includes("radiant") || slug.includes("attic-fan") || slug.includes("ventilation")) {
+    keys.add("doeInsulationTypes");
+  }
+
+  if (slug.includes("pest") || slug.includes("cleanup") || slug.includes("restoration")) {
+    keys.add("cdcRodentCleanup");
+    keys.add("epaMoldMoisture");
+  }
+
+  return [...keys].map((key) => authoritySourceLibrary[key]).filter(Boolean);
+}
+
+function renderAuthoritySources(page) {
+  const sources = resourceAuthoritySources(page);
+  if (!sources.length) return "";
+
+  return `
+    <section class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Source notes</p>
+        <h2>Independent references that inform this attic guidance.</h2>
+        <p class="section-subcopy">These sources are included for context. They do not endorse Good Attic, and the right project scope still depends on documented attic conditions.</p>
+      </div>
+      <div class="feature-grid">
+        ${sources
+          .map(
+            (source) => `
+              <a class="feature-card page-card-link reveal" href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">
+                <p class="eyebrow page-card-link__kicker">Reference</p>
+                <h3>${escapeHtml(source.title)}</h3>
+                <p>${escapeHtml(source.text)}</p>
+                <span class="page-card-link__cta">Open source</span>
+              </a>
+            `
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
 }
 
 function renderResourcePage(page, currentUrl) {
@@ -3914,9 +4130,9 @@ function renderResourcePage(page, currentUrl) {
       cardPoints: page.hero?.cardPoints || page.trust_elements
     })}
 
-    ${page.sections
-      .map(
-        (section) => `
+      ${page.sections
+        .map(
+          (section) => `
           <section class="section">
             <div class="section-heading reveal">
               <p class="eyebrow">${escapeHtml(section.eyebrow)}</p>
@@ -3929,6 +4145,10 @@ function renderResourcePage(page, currentUrl) {
       )
       .join("")}
 
+    ${page.market ? renderHomeServiceLocalSection(currentUrl, marketBySlug(page.market), { resourceTitle: page.h1 }) : ""}
+
+    ${renderAuthoritySources(page)}
+
     <section class="section">
       <div class="section-heading reveal">
         <p class="eyebrow">FAQ</p>
@@ -3937,7 +4157,12 @@ function renderResourcePage(page, currentUrl) {
       ${renderFaq(page.faq_items)}
     </section>
 
-    ${renderCtaStrip(currentUrl, page.cta.title, page.cta.text, page.cta.primary)}
+    ${renderCtaStrip(
+      currentUrl,
+      page.cta.title,
+      page.cta.text,
+      page.market ? { label: "Contact our team", phone: phoneForPage(page), kicker: page.cta.primary?.kicker || "Next step" } : page.cta.primary
+    )}
   `;
 }
 
@@ -3945,8 +4170,8 @@ function renderHero(currentUrl, page, options = {}) {
   const actions =
     options.actions ||
     [
-      { label: page.cta_primary, url: "/contact/" },
-      { label: "Get A Quote", modal: true }
+      page.market ? { label: "Contact our team", phone: phoneForPage(page) } : { label: page.cta_primary, url: "/contact/" },
+      { label: "Get a quote", modal: true }
     ];
 
   return `
@@ -3962,7 +4187,9 @@ function renderHero(currentUrl, page, options = {}) {
               ? `<div class="page-hero__actions">
                   ${actions
                     .map((action) =>
-                      action.modal
+                      action.phone
+                        ? renderPhoneDropdownButton(action.label || "Contact our team", action.phone)
+                        : action.modal
                         ? `<button class="button ${action.secondary ? "secondary" : "primary"}" type="button" data-open-modal>${escapeHtml(
                             displayCopy(action.label)
                           )}</button>`
@@ -5326,8 +5553,8 @@ function buildCityMoatFaqs(market, city) {
         "Not always. Some homes need a clean top-off, some need air sealing first, and others need old or contaminated insulation removed before replacement makes sense."
     },
     {
-      question: `How does Good Attic keep the ${city.shortName} page local without claiming a fake office?`,
-      answer: `${city.shortName} is served through the ${market.shortName} market hub. This page adds local attic patterns, real proof where available, reviews, and clear routing into the right market service pages.`
+      question: `How does Good Attic keep the ${city.shortName} page local for a home-service business?`,
+      answer: `${city.shortName} is served through the ${market.shortName} market hub. This page adds local attic patterns, real proof where available, reviews, and clear routing into the right market service pages without implying a walk-in office in every city.`
     }
   ];
 }
@@ -5344,7 +5571,7 @@ function renderCityMoatSections(currentUrl, market, city) {
           <p class="eyebrow">Local attic decision map</p>
           <h2>How Good Attic thinks through ${escapeHtml(city.shortName)} attic problems before recommending a scope.</h2>
           <p class="section-subcopy">${escapeHtml(
-            "This is the local decision layer: it helps homeowners and search engines understand what usually matters in this city without inventing a fake local office or unsupported claims."
+            "This is the local decision layer: it helps homeowners and search engines understand what usually matters in this city without inventing a separate storefront claim."
           )}</p>
         </div>
         ${renderTileGrid([
@@ -5370,7 +5597,7 @@ function renderCityMoatSections(currentUrl, market, city) {
       <section class="section">
         <div class="section-heading reveal">
           <p class="eyebrow">Proof-backed local estimate path</p>
-          <h2>What makes a ${escapeHtml(city.shortName)} attic estimate more trustworthy.</h2>
+          <h2>What makes an attic estimate in ${escapeHtml(city.shortName)} more trustworthy.</h2>
           <p class="section-subcopy">${escapeHtml(
             proofCount
               ? `${city.shortName} already has ${proofCount} real before-and-after attic photo sets loaded into this page, so the local proof section can support both homeowner trust and search relevance.`
@@ -5383,7 +5610,7 @@ function renderCityMoatSections(currentUrl, market, city) {
               url: `/resources/attic-insulation-cost-${market.slug}/`,
               title: `Attic Insulation Cost in ${market.shortName}`,
               kicker: `${city.shortName} estimate context`,
-              text: `Use the market cost guide when a ${city.shortName} homeowner wants to understand how attic condition, access, removal, air sealing, and replacement insulation change the estimate.`,
+              text: `Use the market cost guide when ${city.shortName} homeowners want to understand how attic condition, access, removal, air sealing, and replacement insulation change the estimate.`,
               image: proofAssets.sales,
               alt: `Attic insulation cost guidance for ${city.shortName}`,
               cta: "Read cost guide"
@@ -6315,7 +6542,7 @@ function buildMarketPage(market) {
                 .map(
                   (service) => `
                     <a class="hero-service-card" href="${hrefFrom(currentUrl, `/${market.slug}/${service.slug}/`)}">
-                      <img src="${escapeHtml(assetHref(currentUrl, service.thumbImage || service.image))}" alt="" decoding="async">
+                      <img src="${escapeHtml(assetHref(currentUrl, service.thumbImage || service.image))}" alt="" loading="lazy" decoding="async">
                       <span>${escapeHtml(serviceUiName(service))}</span>
                     </a>
                   `
@@ -6339,7 +6566,7 @@ function buildMarketPage(market) {
           .map(
             (service, index) => `
               <article class="service-showcase__slide${index === 0 ? " is-active" : ""}" data-service-slide>
-                <img src="${escapeHtml(assetHref(currentUrl, service.image))}" alt="${escapeHtml(serviceUiName(service))} service in ${escapeHtml(market.name)}">
+                <img src="${escapeHtml(assetHref(currentUrl, service.image))}" alt="${escapeHtml(serviceUiName(service))} service in ${escapeHtml(market.name)}" loading="lazy" decoding="async">
                 <div class="service-showcase__overlay">
                   <p class="panel-kicker">${escapeHtml(serviceUiName(service))}</p>
                   <h3>${escapeHtml(service.heroHeading)}</h3>
@@ -6383,9 +6610,11 @@ function buildMarketPage(market) {
               <a class="home-hub-chip" href="${hrefFrom(currentUrl, `/${market.slug}/service-areas/${city.slug}/`)}">${escapeHtml(cityDisplayName(city))}</a>
             `
           )
-          .join("")}
+        .join("")}
       </div>
     </section>
+
+    ${renderHomeServiceLocalSection(currentUrl, market)}
 
     <section class="section">
       <div class="section-heading reveal">
@@ -6396,6 +6625,17 @@ function buildMarketPage(market) {
         )}</p>
       </div>
       ${renderTileGrid(buildKeywordIntentPanels(market))}
+    </section>
+
+    <section class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Market problem guides</p>
+        <h2>Local guides for the attic symptoms ${escapeHtml(market.shortName)} homeowners usually research before they call.</h2>
+        <p class="section-subcopy">${escapeHtml(
+          "These guides connect common homeowner questions to the right market service pages without adding fake neighborhood claims or thin duplicate city content."
+        )}</p>
+      </div>
+      ${renderFeatureGrid(buildMarketProblemGuideCards(market), currentUrl, true)}
     </section>
 
     <section class="attic-map section reveal" aria-labelledby="attic-map-title">
@@ -6529,7 +6769,7 @@ function buildMarketPage(market) {
           <h2>Dust, odors, and old insulation should not be part of daily life in ${escapeHtml(market.shortName)}.</h2>
           <p>In ${escapeHtml(market.shortName)}, homeowners often start here when dirty insulation, attic dust, or contamination begin affecting how the house feels. Good Attic looks at cleanup, sanitation, sealing, and insulation as one connected attic path.</p>
         </div>
-        <img class="image-transparent" src="${escapeHtml(assetHref(currentUrl, "assets/gross-attic.webp"))}" alt="Gross attic with old dirty insulation">
+        <img class="image-transparent" src="${escapeHtml(assetHref(currentUrl, "assets/gross-attic.webp"))}" alt="Gross attic with old dirty insulation" loading="lazy" decoding="async">
       </article>
 
       <article class="story reverse reveal">
@@ -6538,7 +6778,7 @@ function buildMarketPage(market) {
           <h2>Rooms that never feel right in ${escapeHtml(market.shortName)} often start above the ceiling.</h2>
           <p>${escapeHtml(market.whyText)}</p>
         </div>
-        <img class="image-transparent" src="${escapeHtml(assetHref(currentUrl, "assets/hot-cold-uneven-temperatures-attic.webp"))}" alt="House cutaway showing uneven hot and cold attic temperature issues">
+        <img class="image-transparent" src="${escapeHtml(assetHref(currentUrl, "assets/hot-cold-uneven-temperatures-attic.webp"))}" alt="House cutaway showing uneven hot and cold attic temperature issues" loading="lazy" decoding="async">
       </article>
 
       <article class="story reveal">
@@ -6547,7 +6787,7 @@ function buildMarketPage(market) {
           <h2>After pests make the attic their home, the attic needs a full restoration.</h2>
           <p>Pest-damaged insulation, droppings, odors, and contamination can all linger in ${escapeHtml(market.shortName)} homes long after the animals are gone. Good Attic focuses on the cleanup, sanitation, and restoration that makes the space better than before.</p>
         </div>
-        <img class="image-transparent image-pest-damage" src="${escapeHtml(assetHref(currentUrl, "assets/pest-issues-in-attic-transparent-v2.webp"))}" alt="Pest activity and contamination inside a damaged attic">
+        <img class="image-transparent image-pest-damage" src="${escapeHtml(assetHref(currentUrl, "assets/pest-issues-in-attic-transparent-v2.webp"))}" alt="Pest activity and contamination inside a damaged attic" loading="lazy" decoding="async">
       </article>
     </section>
 
@@ -6601,7 +6841,7 @@ function buildMarketPage(market) {
       <div class="creator-sticky reveal">
         <p class="eyebrow">Process</p>
         <h2>A calm, transparent experience for ${escapeHtml(market.shortName)} homeowners with a space most people never see.</h2>
-        <img src="${escapeHtml(assetHref(currentUrl, "assets/good-attic-insulation-sales-appointment.webp"))}" alt="Good Attic project manager reviewing an attic insulation quote with a homeowner">
+        <img src="${escapeHtml(assetHref(currentUrl, "assets/good-attic-insulation-sales-appointment.webp"))}" alt="Good Attic project manager reviewing an attic insulation quote with a homeowner" loading="lazy" decoding="async">
       </div>
 
       <div class="creator-list">
@@ -6837,9 +7077,11 @@ function buildServicePage(market, service) {
           <p class="section-subcopy">${escapeHtml(
             `The goal is to explain what is actually happening in attics across ${market.shortName}, not just repeat a generic service description.`
           )}</p>
-        </div>
-        ${renderTileGrid(insights.localDrivers)}
-      </section>
+      </div>
+      ${renderTileGrid(insights.localDrivers)}
+    </section>
+
+      ${renderHomeServiceLocalSection(currentUrl, market, { service })}
 
       <section class="section">
         <div class="section-heading reveal">
@@ -6967,8 +7209,8 @@ function buildServicePage(market, service) {
       ${renderCtaStrip(
         currentUrl,
         `Need ${service.name.toLowerCase()} in ${market.shortName}?`,
-        "Use the contact page for a full request or open the quote modal for a quick start. Financing stays linked here because larger attic scopes often need it.",
-        { label: "Request an Attic Estimate", url: "/contact/", kicker: "Conversion" }
+        `Call or text the ${market.shortName} team directly, or use the quote modal for a quick start. Financing stays linked here because larger attic scopes often need it.`,
+        { label: "Contact our team", phone: marketPhones[market.slug], kicker: "Local contact" }
       )}
     `
   };
@@ -7110,7 +7352,7 @@ function buildCityPage(market, city) {
                   .map(
                     (service) => `
                       <a class="hero-service-card" href="${hrefFrom(currentUrl, `/${market.slug}/${service.slug}/`)}">
-                      <img src="${escapeHtml(assetHref(currentUrl, service.thumbImage || service.image))}" alt="" decoding="async">
+                      <img src="${escapeHtml(assetHref(currentUrl, service.thumbImage || service.image))}" alt="" loading="lazy" decoding="async">
                         <span>${escapeHtml(serviceUiName(service))}</span>
                       </a>
                     `
@@ -7140,11 +7382,24 @@ function buildCityPage(market, city) {
           <p class="eyebrow">High-intent local searches</p>
           <h2>The attic search patterns this ${escapeHtml(city.shortName)} page is built to answer.</h2>
           <p class="section-subcopy">${escapeHtml(
-            "City pages should help homeowners who search locally for insulation companies, attic insulation removal cost, blown-in insulation, and attic restoration without pretending there is a fake local office."
+            "City pages should help homeowners who search locally for insulation companies, attic insulation removal cost, blown-in insulation, and attic restoration without pretending there is a walk-in office in every city."
           )}</p>
         </div>
         ${renderTileGrid(buildKeywordIntentPanels(market, city))}
-      </section>${renderCityMoatSections(currentUrl, market, city)}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Best matching market guides</p>
+          <h2>Resource guides that fit the way ${escapeHtml(city.shortName)} homeowners usually describe attic problems.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            `These links move the city page into deeper ${market.shortName} problem guides, then back into the correct service pages when the homeowner is ready for a scope.`
+          )}</p>
+        </div>
+        ${renderFeatureGrid(buildCityProblemGuideCards(market, city), currentUrl, true)}
+      </section>
+
+      ${renderCityMoatSections(currentUrl, market, city)}
 
       ${renderCityInsulationBridgeSection(currentUrl, market, city)}
       ${renderCityRemovalBridgeSection(currentUrl, market, city)}
@@ -7155,7 +7410,7 @@ function buildCityPage(market, city) {
       <section class="section">
         <div class="section-heading reveal">
           <p class="eyebrow">Inspection checkpoints nearby</p>
-          <h2>What Good Attic checks before routing a ${escapeHtml(city.shortName)} attic into the right local scope.</h2>
+          <h2>What Good Attic checks before routing an attic in ${escapeHtml(city.shortName)} into the right local scope.</h2>
           <p class="section-subcopy">${escapeHtml(
             `The goal is to document what the attic is actually doing near ${city.shortName} before the project gets reduced to the first service label that sounds plausible.`
           )}</p>
@@ -7169,12 +7424,12 @@ function buildCityPage(market, city) {
           <h2>${
             cityPhotoProof.length
               ? `Real before-and-after attic photos from ${escapeHtml(city.shortName)}.`
-              : `How Good Attic turns a ${escapeHtml(city.shortName)} attic problem into a clearer local service path.`
+              : `How Good Attic turns an attic problem in ${escapeHtml(city.shortName)} into a clearer local service path.`
           }</h2>
           <p class="section-subcopy">${escapeHtml(
             cityPhotoProof.length
               ? `These are real attic photo sets from ${city.shortName} homes, showing documented attic conditions before the work and the finished attic afterward.`
-              : "The goal of this local page is not to fake a branch office. It is to show how the attic gets documented and routed into the right market team and scope."
+              : "The goal of this local page is to show how the attic gets documented at the home and routed into the right market team and scope."
           )}</p>
         </div>
         ${cityPhotoProof.length ? renderBeforeAfterProofGrid(cityPhotoProof, currentUrl) : renderEvidenceGrid(evidenceGallery, currentUrl)}
@@ -7183,7 +7438,7 @@ function buildCityPage(market, city) {
       <section class="section">
         <div class="section-heading reveal">
           <p class="eyebrow">When the scope gets bigger</p>
-          <h2>What usually turns a ${escapeHtml(city.shortName)} attic project into a broader correction.</h2>
+          <h2>What usually turns an attic project in ${escapeHtml(city.shortName)} into a broader correction.</h2>
           <p class="section-subcopy">${escapeHtml(
             "These are the moments where the attic usually needs a more complete plan so the homeowner gets a cleaner result and a more trustworthy finish line."
           )}</p>
@@ -7246,13 +7501,13 @@ function buildCityPage(market, city) {
         ${renderFeatureGrid(
           [
             {
-              url: "/contact/",
-              title: "Contact Good Attic",
-              kicker: "Direct request path",
-              text: `Use the contact page when the attic symptoms are already clear enough to send the request straight into the ${market.shortName} team.`,
+              url: `/${market.slug}/`,
+              title: `${market.shortName} market hub`,
+              kicker: "Local contact path",
+              text: `Use the ${market.shortName} hub when the attic symptoms are already clear enough to move into local phone routing, service pages, and nearby city coverage.`,
               image: proofAssets.insulation,
-              alt: `Contact Good Attic from ${cityDisplayName(city)}`,
-              cta: "Start a request"
+              alt: `${market.name} local contact path from ${cityDisplayName(city)}`,
+              cta: "Open market hub"
             },
             {
               url: "/resources/what-happens-during-an-attic-inspection/",
@@ -7269,6 +7524,8 @@ function buildCityPage(market, city) {
         )}
       </section>
 
+      ${renderHomeServiceLocalSection(currentUrl, market, { city })}
+
       <section class="section">
         <div class="section-heading reveal">
           <p class="eyebrow">FAQ</p>
@@ -7280,8 +7537,8 @@ function buildCityPage(market, city) {
       ${renderCtaStrip(
         currentUrl,
         `Need attic help in ${city.shortName}?`,
-        `Send the request through contact so the right ${market.shortName} service path can start without making the homeowner choose the technical scope first.`,
-        { label: "Tell Us About Your Attic", url: "/contact/", kicker: "Conversion" }
+        `Call or text the ${market.shortName} team so the local service path can start without making the homeowner choose the technical scope first.`,
+        { label: "Contact our team", phone: marketPhones[market.slug], kicker: "Local contact" }
       )}
     `
   };
@@ -7447,7 +7704,7 @@ function buildCostResourcePage(market) {
     h1: `Attic Insulation Cost in ${market.name}`,
     intro: `If you are researching attic insulation cost in ${market.shortName}, the first thing to know is that honest pricing depends on attic condition more than headline square-footage math. Good Attic treats cost as a scope question: what has to happen in the attic before new insulation becomes a real solution?`,
     page_purpose: "Authority article for cost intent",
-    cta_primary: "Request a local attic estimate",
+    cta_primary: "Contact our team",
     breadcrumb_items: [
       { label: "Home", url: "/" },
       { label: "Resources", url: "/resources/" },
@@ -7543,7 +7800,7 @@ function buildCostResourcePage(market) {
     cta: {
       title: `Need a real attic insulation estimate in ${market.shortName}?`,
       text: "The cleanest next step is still a documented attic assessment. That is how the cost conversation stays tied to the actual attic instead of guesswork.",
-      primary: { label: "Request a Local Estimate", url: "/contact/", kicker: "Next step" }
+      primary: { label: "Contact our team", phone: marketPhones[market.slug], kicker: "Local contact" }
     }
   };
 }
@@ -7583,6 +7840,541 @@ function buildMarketRouteCards(kickerLabel, ctaLabel, textBuilder) {
     alt: `${market.name} market routing`,
     cta: ctaLabel
   }));
+}
+
+function marketProblemGuideSlug(topic, market) {
+  return `${topic.slugPrefix}-${market.slug}`;
+}
+
+function marketProblemGuideText(market, topic) {
+  const textByTopic = {
+    "hot-upstairs-rooms": `Use this guide when ${market.shortName} homeowners start with hot upstairs rooms, rooms over garages, or upper-floor comfort complaints and need to understand whether insulation, sealing, or attic fan support should lead.`,
+    "attic-cleanup-restoration": `Use this guide when the attic in ${market.shortName} looks too dusty, old, musty, or damaged for a simple top-off and the decision may need to move toward removal, cleanup, and rebuild sequencing.`,
+    "attic-pest-contamination": `Use this guide when pest history, odor, droppings, or damaged insulation could turn a ${market.shortName} attic project into cleanup, sanitation, removal, and restoration work.`,
+    "attic-air-sealing": `Use this guide when ${market.shortName} homeowners need to understand why attic air leaks can make new insulation underperform and why sealing may belong before the final insulation layer.`
+  };
+
+  return textByTopic[topic.key] || topic.meta(market);
+}
+
+function cityProblemGuideText(market, city, topic) {
+  const textByTopic = {
+    "hot-upstairs-rooms": `Use this guide when ${city.shortName} homeowners are trying to decide whether hot rooms, rooms over garages, or upper-floor comfort complaints point first to insulation, sealing, or fan support in the ${market.shortName} market.`,
+    "attic-cleanup-restoration": `Use this guide when the attic in ${city.shortName} looks dusty, aged, or too compromised for a simple top-off, so the next step may need removal and restoration logic instead of another layer of insulation.`,
+    "attic-pest-contamination": `Use this guide when pest history, odor, droppings, or damaged insulation could change an attic in ${city.shortName} from a comfort project into cleanup and rebuild work.`,
+    "attic-air-sealing": `Use this guide when ${city.shortName} homeowners suspect the attic boundary is leaking and want to understand why sealing may need to happen before new insulation.`
+  };
+
+  return textByTopic[topic.key] || marketProblemGuideText(market, topic);
+}
+
+function buildMarketProblemGuideCard(market, topic, city = null) {
+  const slug = marketProblemGuideSlug(topic, market);
+
+  return {
+    url: `/resources/${slug}/`,
+    title: topic.title(market),
+    kicker: city ? `${city.shortName} • ${topic.guideLabel}` : `${market.shortName} • ${topic.guideLabel}`,
+    text: city ? cityProblemGuideText(market, city, topic) : marketProblemGuideText(market, topic),
+    image: resourceFeatureImage({ slug }),
+    alt: topic.title(market),
+    cta: "Read guide"
+  };
+}
+
+function buildMarketProblemGuideCards(market) {
+  return marketProblemTopics.map((topic) => buildMarketProblemGuideCard(market, topic));
+}
+
+function buildCityProblemGuideCards(market, city) {
+  const profile = buildCityMoatProfile(market, city);
+  const combinedCityText = [
+    city.intro,
+    ...(city.commonProblems || []).flatMap((item) => [item.title, item.text]),
+    ...(city.whyCall || []),
+    ...(city.faq || []).flatMap((item) => [item.question, item.answer]),
+    profile?.pattern,
+    profile?.symptom,
+    profile?.inspection,
+    profile?.priority
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  const signalMap = {
+    "hot-upstairs-rooms": ["hot", "heat", "upper", "upstairs", "second-floor", "garage", "bonus", "comfort"],
+    "attic-cleanup-restoration": ["dirty", "dust", "dusty", "old", "older", "aging", "settled", "cleanup", "reset", "removal", "restore"],
+    "attic-pest-contamination": ["rodent", "squirrel", "wildlife", "odor", "dropping", "contamin", "nest"],
+    "attic-air-sealing": ["air seal", "air-seal", "leak", "bypass", "boundary", "draft", "efficiency", "energy", "winter"]
+  };
+
+  const rankedTopics = marketProblemTopics
+    .map((topic, index) => ({
+      topic,
+      index,
+      score: (signalMap[topic.key] || []).filter((signal) => combinedCityText.includes(signal)).length
+    }))
+    .sort((a, b) => b.score - a.score || a.index - b.index);
+
+  const selectedTopics = rankedTopics.filter((item) => item.score > 0).map((item) => item.topic);
+  const fallbackTopics = marketProblemTopics.filter((topic) =>
+    ["hot-upstairs-rooms", "attic-cleanup-restoration", "attic-air-sealing"].includes(topic.key)
+  );
+
+  for (const topic of fallbackTopics) {
+    if (selectedTopics.length >= 3) break;
+    if (!selectedTopics.includes(topic)) selectedTopics.push(topic);
+  }
+
+  return selectedTopics.slice(0, 3).map((topic) => buildMarketProblemGuideCard(market, topic, city));
+}
+
+function marketProblemProfile(market) {
+  return {
+    "salt-lake-city-ut": {
+      climate:
+        "dry summer heat, cold winter swings, and strong roof exposure that can make upper rooms feel disconnected from the thermostat",
+      homeMix:
+        "newer west and south valley homes, older central and east-side homes, and foothill-adjacent properties with very different attic access and ventilation details",
+      comfortPattern:
+        "upper bedrooms, bonus rooms, and rooms over garages that heat up quickly when attic depth, air sealing, or ventilation paths are not doing enough",
+      cleanupPattern:
+        "dusty or settled insulation, old blown material, and attic floors that may need a cleaner reset before new insulation is worth installing",
+      pestPattern:
+        "rodent or wildlife activity near attic access points, roof edges, foothill corridors, and older penetrations without turning that into a one-size-fits-all claim",
+      sealingPattern:
+        "ceiling-plane leaks around can lights, bath fans, chases, attic hatches, knee walls, and rooms over garages",
+      proofNote:
+        "This supports the Salt Lake City market hub without claiming a separate storefront in every city."
+    },
+    "st-louis-mo": {
+      climate:
+        "humid summers, cold winter drafts, and shoulder-season swings that can expose weak attic insulation and air leakage",
+      homeMix:
+        "older city and inner-suburb homes, 1.5-story layouts, larger west-county homes, and newer suburban homes that do not all fail the same way",
+      comfortPattern:
+        "hot second floors, stale upper bedrooms, and rooms under older rooflines where insulation depth alone may not explain the complaint",
+      cleanupPattern:
+        "musty, dusty, aged, or animal-affected attic material that can make removal and cleanup part of the real scope",
+      pestPattern:
+        "mouse, squirrel, or other attic activity that should be documented before anyone decides whether the attic needs cleanup, sanitation, or replacement insulation",
+      sealingPattern:
+        "attic bypasses, plumbing and wiring penetrations, access hatches, kneewall edges, and older framing gaps that can leak conditioned air",
+      proofNote:
+        "This supports the St. Louis market hub and keeps neighborhood-level content tied to real service pages."
+    },
+    "kansas-city-mo": {
+      climate:
+        "hot humid summers, windy cold snaps, and big seasonal swings that make the attic matter on both sides of the year",
+      homeMix:
+        "Johnson County suburbs, Missouri-side neighborhoods, Northland homes, and newer builder-grade attics that can all need different attic scopes",
+      comfortPattern:
+        "second-floor heat, rooms over garages, and newer suburban comfort complaints where insulation, air sealing, and ventilation should be evaluated together",
+      cleanupPattern:
+        "dirty, settled, or builder-grade attic conditions where the right answer may be a better reset instead of only adding more insulation",
+      pestPattern:
+        "possible rodent or wildlife history that should be verified with attic photos before making cleanup or insulation replacement recommendations",
+      sealingPattern:
+        "ceiling leaks around lights, bath fans, chases, hatches, and garage-adjacent rooms that can make fresh insulation underperform",
+      proofNote:
+        "This supports a new Kansas City market honestly, using market-specific guidance without pretending every city already has its own project history."
+    }
+  }[market.slug];
+}
+
+const marketProblemTopics = [
+  {
+    key: "hot-upstairs-rooms",
+    slugPrefix: "hot-upstairs-rooms",
+    serviceSlug: "attic-insulation",
+    relatedServiceSlugs: ["attic-insulation", "attic-air-sealing", "attic-fans"],
+    guideLabel: "Comfort guide",
+    title: (market) => `Hot Upstairs Rooms in ${market.name}`,
+    seoTitle: (market) => `Hot Upstairs Rooms in ${market.name} | Attic Causes & Fixes`,
+    meta: (market) =>
+      `Learn why upstairs rooms stay hot in ${market.name}, including attic insulation, air sealing, ventilation, and inspection steps before choosing a fix.`,
+    intro: (market, profile) =>
+      `Hot upstairs rooms in ${market.shortName} are usually not solved by guessing at one product. The attic has to be read as a system: insulation depth, air leakage, ventilation paths, attic access, and the condition of the material already in place. In ${market.shortName}, ${profile.climate}, so the right next step is a documented attic assessment instead of a quick top-off assumption.`,
+    heroPoints: ["Attic insulation depth", "Air leakage at the ceiling plane", "Ventilation and heat movement", "Rooms over garages and exposed rooflines"],
+    sections: (market, profile) => [
+      {
+        eyebrow: "Local comfort signals",
+        heading: `Why upstairs rooms in ${market.shortName} can stay hot even when the AC is running.`,
+        subcopy:
+          "The attic is often the missing middle between the thermostat and the rooms that never feel right.",
+        layout: "tiles",
+        items: [
+          {
+            title: "The roof is loading the attic with heat",
+            text: `In ${market.shortName}, ${profile.climate}. If attic heat is not buffered well, upper rooms can feel hotter than the rest of the house.`
+          },
+          {
+            title: "Air leaks bypass the insulation",
+            text: `Leaks at ${profile.sealingPattern} can let conditioned air escape while attic heat presses back into the living space.`
+          },
+          {
+            title: "The attic may not be ready for a top-off",
+            text: `If the existing material is thin, uneven, dirty, or compressed, more insulation alone may hide the deeper attic issue.`
+          },
+          {
+            title: "The room location matters",
+            text: `${profile.comfortPattern} often need a more careful attic read than open rooms below the main attic field.`
+          }
+        ]
+      },
+      {
+        eyebrow: "Better diagnosis",
+        heading: "What to inspect before paying for another comfort fix.",
+        layout: "panels",
+        items: [
+          {
+            title: "Insulation coverage",
+            text: "Depth, evenness, edge coverage, and access-area gaps should be checked before assuming the attic only needs more material."
+          },
+          {
+            title: "Air sealing opportunities",
+            text: "The inspection should look for bypasses that make the upper floor feel hot even when insulation appears present."
+          },
+          {
+            title: "Ventilation path",
+            text: "Intake, exhaust, baffles, and trapped heat patterns should be reviewed as part of the attic system, not as an isolated fan decision."
+          }
+        ]
+      }
+    ],
+    faq: (market) => [
+      {
+        question: `Can attic insulation fix hot upstairs rooms in ${market.shortName}?`,
+        answer: `It can help when the attic is underinsulated or uneven, but the best result usually depends on checking air sealing, ventilation, and the existing attic condition first.`
+      },
+      {
+        question: "Should I add an attic fan first?",
+        answer:
+          "Not automatically. A fan can be part of the answer in some attics, but it should not replace checking insulation coverage, air leaks, intake paths, and attic heat movement."
+      },
+      {
+        question: "Why does one upstairs room feel worse than the others?",
+        answer:
+          "Rooms over garages, rooms under long roof slopes, bonus rooms, and rooms near attic access points can be exposed to different attic conditions than the rest of the upper floor."
+      }
+    ]
+  },
+  {
+    key: "attic-cleanup-restoration",
+    slugPrefix: "attic-cleanup-restoration",
+    serviceSlug: "insulation-removal",
+    relatedServiceSlugs: ["insulation-removal", "attic-pest-remediation", "attic-insulation"],
+    guideLabel: "Restoration guide",
+    title: (market) => `Attic Cleanup and Restoration in ${market.name}`,
+    seoTitle: (market) => `Attic Cleanup & Restoration in ${market.name} | When Removal Makes Sense`,
+    meta: (market) =>
+      `Learn when attic cleanup and restoration in ${market.name} should include insulation removal, sanitation, air sealing, and a cleaner rebuild.`,
+    intro: (market, profile) =>
+      `Attic cleanup in ${market.shortName} should not be treated like a cosmetic sweep if the insulation is dirty, damaged, musty, or pest-affected. The safer decision is to document what is there, decide whether the attic can be built on, and only then choose between removal, sanitation, air sealing, and new insulation. ${profile.proofNote}`,
+    heroPoints: ["Removal versus top-off", "Dirty or damaged material", "Pest history and odor", "Cleaner rebuild sequence"],
+    sections: (market, profile) => [
+      {
+        eyebrow: "When cleanup gets bigger",
+        heading: `The attic conditions in ${market.shortName} that turn cleanup into restoration.`,
+        subcopy:
+          "The goal is not to make every attic project bigger. The goal is to avoid installing new insulation over a problem that should have been reset first.",
+        layout: "tiles",
+        items: [
+          {
+            title: "The existing insulation is not worth building on",
+            text: `${profile.cleanupPattern} can make removal the cleaner starting point before new insulation is installed.`
+          },
+          {
+            title: "There is possible pest history",
+            text: `${profile.pestPattern} should be documented before the attic is priced as a simple insulation job.`
+          },
+          {
+            title: "Odor, dust, or staining changes the scope",
+            text: "When attic material has visible staining, odor, or heavy dust, the recommendation should explain cleanup and sanitation logic clearly."
+          },
+          {
+            title: "Air sealing belongs before the rebuild",
+            text: `If ${profile.sealingPattern} are leaking, it is usually smarter to address them before the final insulation layer goes in.`
+          }
+        ]
+      },
+      {
+        eyebrow: "Restoration sequence",
+        heading: "A better attic reset follows a clear order.",
+        layout: "panels",
+        items: [
+          {
+            title: "Document the attic first",
+            text: "Photos and findings should show why the attic needs cleanup, removal, sanitation, sealing, or replacement insulation."
+          },
+          {
+            title: "Remove what should not stay",
+            text: "Old or compromised material should not be hidden under new insulation when it is part of the real attic problem."
+          },
+          {
+            title: "Rebuild the attic intentionally",
+            text: "The finished attic should be cleaner, better sealed where needed, and insulated in a way that matches the home."
+          }
+        ]
+      }
+    ],
+    faq: (market) => [
+      {
+        question: `When does attic cleanup in ${market.shortName} require insulation removal?`,
+        answer:
+          "Removal starts making sense when the existing insulation is dirty, pest-affected, wet, musty, heavily settled, or not a good base for new material."
+      },
+      {
+        question: "Can new insulation be installed over old insulation?",
+        answer:
+          "Sometimes, but only when the old material is clean enough and the attic does not need air sealing, sanitation, or a reset first."
+      },
+      {
+        question: "Is attic restoration different from attic insulation?",
+        answer:
+          "Yes. Restoration is the broader process of removing compromised material, cleaning or sanitizing when needed, tightening problem areas, and then rebuilding the attic insulation layer."
+      }
+    ]
+  },
+  {
+    key: "attic-pest-contamination",
+    slugPrefix: "attic-pest-contamination",
+    serviceSlug: "attic-pest-remediation",
+    relatedServiceSlugs: ["attic-pest-remediation", "insulation-removal", "attic-insulation"],
+    guideLabel: "Pest issue guide",
+    title: (market) => `Attic Pest Contamination in ${market.name}`,
+    seoTitle: (market) => `Attic Pest Contamination in ${market.name} | Cleanup & Insulation Decisions`,
+    meta: (market) =>
+      `Learn how attic pest contamination in ${market.name} can affect insulation removal, cleanup, sanitation, and the rebuild plan.`,
+    intro: (market, profile) =>
+      `Attic pest contamination in ${market.shortName} needs a more careful conversation than simply adding new insulation. The attic should be inspected for droppings, trails, damaged insulation, odor, access points, and whether the existing material should be removed before the attic is rebuilt. Good Attic keeps this page focused on attic cleanup and insulation decisions, not pest-control claims.`,
+    heroPoints: ["Droppings and trails", "Damaged insulation", "Odor and sanitation", "Removal and rebuild planning"],
+    sections: (market, profile) => [
+      {
+        eyebrow: "What contamination changes",
+        heading: `How pest history can change an attic project in ${market.shortName}.`,
+        subcopy:
+          "The issue is not just whether an animal was present. The issue is what it left behind and what that means for the insulation system.",
+        layout: "tiles",
+        items: [
+          {
+            title: "The insulation may no longer be a clean base",
+            text: "Droppings, trails, nesting, and urine staining can make old insulation something to remove instead of cover."
+          },
+          {
+            title: "Odor can point to a deeper reset",
+            text: "If odor is present, the plan should explain cleanup, removal, and sanitation expectations before the attic is re-insulated."
+          },
+          {
+            title: "Entry patterns should be documented",
+            text: `${profile.pestPattern} can affect how the attic findings are explained and what needs to happen before the rebuild.`
+          },
+          {
+            title: "The rebuild still has to perform",
+            text: "After cleanup, the attic may still need air sealing, correct insulation depth, and ventilation review to support comfort."
+          }
+        ]
+      },
+      {
+        eyebrow: "Inspection standard",
+        heading: "What homeowners should expect to see before approving attic remediation.",
+        layout: "panels",
+        items: [
+          {
+            title: "Photo documentation",
+            text: "The recommendation should show visible evidence of the attic condition instead of relying on vague contamination language."
+          },
+          {
+            title: "Clear scope boundaries",
+            text: "Homeowners should understand what Good Attic is handling in the attic and when a separate pest-control provider is needed."
+          },
+          {
+            title: "A rebuild plan",
+            text: "The attic should not stop at cleanup if the insulation layer, air boundary, or access details also need to be corrected."
+          }
+        ]
+      }
+    ],
+    faq: (market) => [
+      {
+        question: `Does Good Attic provide pest control in ${market.shortName}?`,
+        answer:
+          "Good Attic focuses on attic pest issues after activity has affected the attic: contaminated insulation, cleanup, removal, sanitation-related scope, and rebuilding the attic insulation layer. Active pest control may require a separate specialist."
+      },
+      {
+        question: "Do I always need to remove insulation after pest activity?",
+        answer:
+          "Not always. The decision depends on the amount of contamination, odor, damage, and whether the existing insulation is still a clean base for the attic."
+      },
+      {
+        question: "Why is documentation important for attic pest issues?",
+        answer:
+          "Documentation helps separate a small finding from a larger restoration need and gives the homeowner a clearer reason for each part of the scope."
+      }
+    ]
+  },
+  {
+    key: "attic-air-sealing",
+    slugPrefix: "attic-air-sealing",
+    serviceSlug: "attic-air-sealing",
+    relatedServiceSlugs: ["attic-air-sealing", "attic-insulation", "attic-fans"],
+    guideLabel: "Air sealing guide",
+    title: (market) => `Attic Air Sealing in ${market.name}`,
+    seoTitle: (market) => `Attic Air Sealing in ${market.name} | Why Insulation Alone May Not Be Enough`,
+    meta: (market) =>
+      `Learn why attic air sealing in ${market.name} can matter before adding insulation, especially for hot rooms, drafts, and energy waste.`,
+    intro: (market, profile) =>
+      `Attic air sealing in ${market.shortName} is the part of the attic conversation homeowners often never hear about until insulation alone fails to fix the problem. If conditioned air can leak through the ceiling plane, new insulation may still underperform. The better approach is to inspect the attic boundary, seal the right leakage points, and then build the insulation layer on top of a tighter attic system.`,
+    heroPoints: ["Ceiling-plane leaks", "Insulation performance", "Hot rooms and drafts", "Better attic sequencing"],
+    sections: (market, profile) => [
+      {
+        eyebrow: "Why sealing matters",
+        heading: `The air leaks in ${market.shortName} attics that can make insulation work too hard.`,
+        subcopy:
+          "Air sealing is not glamorous, but it is often the difference between adding material and actually improving the attic system.",
+        layout: "tiles",
+        items: [
+          {
+            title: "Leaks move air around the insulation",
+            text: `${profile.sealingPattern} can let conditioned air escape into the attic or attic air influence rooms below.`
+          },
+          {
+            title: "Hot rooms and drafts can share a cause",
+            text: `${profile.climate} means the same weak attic boundary can show up as summer heat and winter discomfort.`
+          },
+          {
+            title: "More insulation can hide the leakage",
+            text: "If the attic is topped off before obvious bypasses are sealed, the problem can become harder to see later."
+          },
+          {
+            title: "The attic sequence matters",
+            text: "A tighter attic boundary belongs before the final insulation layer whenever the inspection shows meaningful air leakage."
+          }
+        ]
+      },
+      {
+        eyebrow: "Inspection clues",
+        heading: "What Good Attic looks for before recommending air sealing.",
+        layout: "panels",
+        items: [
+          {
+            title: "Accessible bypasses",
+            text: "The inspection should look for visible penetrations, gaps, hatches, framing transitions, and other reachable leakage paths."
+          },
+          {
+            title: "Rooms that tell on the attic",
+            text: `${profile.comfortPattern} often point back to an attic boundary that deserves more attention.`
+          },
+          {
+            title: "Insulation timing",
+            text: "If new insulation is being installed, the air sealing conversation should happen before the attic floor is covered."
+          }
+        ]
+      }
+    ],
+    faq: (market) => [
+      {
+        question: `Is attic air sealing worth it in ${market.shortName}?`,
+        answer:
+          "It can be very worthwhile when the attic has visible bypasses, hot rooms, drafts, or energy waste. The right answer depends on what the inspection finds."
+      },
+      {
+        question: "Should air sealing happen before or after insulation?",
+        answer:
+          "When air sealing is needed, it usually belongs before the final insulation layer because the leakage points are easier to access and document."
+      },
+      {
+        question: "Can air sealing replace insulation?",
+        answer:
+          "No. Air sealing and insulation solve different parts of the attic system. The strongest plan often uses both in the right order."
+      }
+    ]
+  }
+];
+
+function buildMarketProblemResourcePage(market, topic) {
+  const profile = marketProblemProfile(market);
+  const primaryService = serviceBySlug(topic.serviceSlug);
+  const relatedServices = topic.relatedServiceSlugs.map((slug) => serviceBySlug(slug)).filter(Boolean);
+  const slug = `${topic.slugPrefix}-${market.slug}`;
+
+  return buildResourcePage({
+    slug,
+    url: `/resources/${slug}/`,
+    market: market.slug,
+    primary_keyword: `${topic.title(market).toLowerCase()}`,
+    secondary_keywords: relatedServices.map((service) => `${service.name.toLowerCase()} ${market.shortName.toLowerCase()}`),
+    seo_title: topic.seoTitle(market),
+    meta_description: topic.meta(market),
+    h1: topic.title(market),
+    intro: topic.intro(market, profile),
+    page_purpose: `Market-specific ${topic.guideLabel.toLowerCase()} for ${market.shortName}`,
+    cta_primary: "Contact our team",
+    breadcrumb_items: [
+      { label: "Home", url: "/" },
+      { label: "Resources", url: "/resources/" },
+      { label: topic.title(market), url: `/resources/${slug}/` }
+    ],
+    canonical_url: `${site.baseUrl}/resources/${slug}/`,
+    related_links: [
+      { label: primaryService.name, url: `/${market.slug}/${primaryService.slug}/` },
+      ...relatedServices
+        .filter((service) => service.slug !== primaryService.slug)
+        .map((service) => ({ label: service.name, url: `/${market.slug}/${service.slug}/` })),
+      { label: `${market.name} Attic Services`, url: `/${market.slug}/` },
+      { label: "All Good Attic Reviews", url: "/reviews/" }
+    ],
+    faq_items: topic.faq(market),
+    trust_elements: ["Market-specific attic guidance", "No unsupported office or project claims", "Routes into the correct service path"],
+    hero: {
+      eyebrow: `Resources • ${market.shortName}`,
+      cardKicker: topic.guideLabel,
+      cardTitle: `${topic.title(market)} should be diagnosed before a product is picked.`,
+      cardText: topic.meta(market),
+      cardPoints: topic.heroPoints
+    },
+    sections: [
+      ...topic.sections(market, profile),
+      {
+        eyebrow: "Keep going",
+        heading: `The next local pages for this problem in ${market.shortName}.`,
+        subcopy:
+          "This keeps the content hierarchy clean: problem guide first, then the correct market service page or market hub when the homeowner is ready to act.",
+        layout: "features",
+        withImages: true,
+        items: [
+          ...relatedServices.map((service) => ({
+            url: `/${market.slug}/${service.slug}/`,
+            title: `${service.name} in ${market.name}`,
+            kicker: `${market.shortName} service page`,
+            text: service.marketIntro[market.slug],
+            image: service.image,
+            alt: `${service.name} in ${market.name}`,
+            cta: "Open local service"
+          })),
+          {
+            url: `/${market.slug}/`,
+            title: `${market.name} market hub`,
+            kicker: "Market hub",
+            text: market.intro,
+            image: proofAssets.sales,
+            alt: `${market.name} attic services`,
+            cta: "Open market hub"
+          }
+        ]
+      }
+    ],
+    cta: {
+      title: `Want Good Attic to inspect this attic issue in ${market.shortName}?`,
+      text: "The best next step is a documented attic assessment so the recommendation matches the attic instead of guessing at one product.",
+      primary: { label: "Contact our team", phone: marketPhones[market.slug], kicker: "Local contact" }
+    }
+  });
+}
+
+function buildMarketProblemResourcePages() {
+  return marketCatalog.flatMap((market) => marketProblemTopics.map((topic) => buildMarketProblemResourcePage(market, topic)));
 }
 
 function matchesProofScope(entry, scope = {}) {
@@ -8174,6 +8966,356 @@ const resourcePages = [
     cta: {
       title: "Need help comparing insulation options without getting stuck in product-only advice?",
       text: "Start with the attic assessment. Once the attic strategy is clear, the material choice becomes much easier to defend.",
+      primary: { label: "Request an Attic Assessment", url: "/contact/", kicker: "Next step" }
+    }
+  }),
+  buildResourcePage({
+    slug: "cellulose-vs-fiberglass-attic-insulation",
+    url: "/resources/cellulose-vs-fiberglass-attic-insulation/",
+    market: null,
+    primary_keyword: "cellulose vs fiberglass insulation",
+    secondary_keywords: [
+      "cellulose attic insulation",
+      "fiberglass attic insulation",
+      "best blown in attic insulation",
+      "attic insulation materials"
+    ],
+    seo_title: "Cellulose vs Fiberglass Attic Insulation | How to Choose",
+    meta_description:
+      "Compare cellulose and fiberglass attic insulation by coverage, settling, moisture concerns, attic prep, air sealing, and when old insulation should be removed first.",
+    h1: "Cellulose vs Fiberglass Attic Insulation",
+    intro:
+      "Cellulose and fiberglass are often compared like simple product labels, but the better attic decision depends on the house, the existing insulation, attic access, air leakage, moisture history, pest history, and the depth and coverage target. The material matters. The attic it is going into matters more.",
+    page_purpose: "Legacy blog replacement for cellulose vs fiberglass insulation intent",
+    cta_primary: "Get attic guidance",
+    breadcrumb_items: [
+      { label: "Home", url: "/" },
+      { label: "Resources", url: "/resources/" },
+      { label: "Cellulose vs Fiberglass Attic Insulation", url: "/resources/cellulose-vs-fiberglass-attic-insulation/" }
+    ],
+    canonical_url: `${site.baseUrl}/resources/cellulose-vs-fiberglass-attic-insulation/`,
+    related_links: [
+      { label: "Attic Insulation Services", url: "/services/attic-insulation/" },
+      { label: "Blown-In vs Rolled Attic Insulation", url: "/resources/blown-insulation-vs-rolled-insulation/" },
+      { label: "What R-Value Means for an Attic", url: "/resources/what-r-value-means-for-an-attic/" },
+      { label: "Attic Resources", url: "/resources/" }
+    ],
+    faq_items: [
+      {
+        question: "Is cellulose better than fiberglass for attic insulation?",
+        answer:
+          "Not universally. Cellulose and fiberglass can both be useful attic materials, but the best fit depends on the attic condition, install quality, coverage target, and whether prep work is needed first."
+      },
+      {
+        question: "Can fiberglass work well in an attic?",
+        answer:
+          "Yes. Fiberglass can perform well when it is installed at the right depth, kept consistent, protected from wind washing, and not compressed or interrupted by gaps."
+      },
+      {
+        question: "Should material type be chosen before attic air sealing?",
+        answer:
+          "Usually no. Air sealing, access, old insulation condition, and ventilation details should be evaluated before treating material choice as the whole plan."
+      }
+    ],
+    trust_elements: [
+      "Uses GSC demand from a legacy blog topic without creating a thin duplicate",
+      "Compares materials while keeping attic prep and install quality in view",
+      "Routes into insulation service, R-value, and local market pages"
+    ],
+    hero: {
+      eyebrow: "Resources • Material comparison",
+      cardKicker: "Material fit depends on attic condition",
+      cardTitle: "Cellulose and fiberglass are only as good as the attic plan underneath them.",
+      cardText:
+        "A clean, sealed, well-prepared attic can make either material easier to defend. A dirty, leaky, uneven attic can make the material comparison feel more important than it really is.",
+      cardPoints: [
+        "Coverage and installed depth",
+        "Air sealing before the final layer",
+        "Existing insulation condition",
+        "Moisture, pest, and cleanup history"
+      ]
+    },
+    sections: [
+      {
+        eyebrow: "Where cellulose usually fits",
+        heading: "Cellulose is often considered when the attic needs dense, loose-fill coverage across open areas.",
+        layout: "tiles",
+        items: [
+          {
+            title: "It can cover irregular attic areas",
+            text: "Loose-fill cellulose can settle around framing, wiring, and uneven attic shapes when installed correctly."
+          },
+          {
+            title: "Depth and density still matter",
+            text: "The material name does not solve the project by itself. Installed depth, coverage consistency, and settling expectations all matter."
+          },
+          {
+            title: "The attic has to be ready for it",
+            text: "If the existing attic is contaminated, damp, or too uneven to build on honestly, material choice should come after the cleanup and prep decision."
+          }
+        ]
+      },
+      {
+        eyebrow: "Where fiberglass usually fits",
+        heading: "Fiberglass can work well when it is installed consistently and protected from common attic mistakes.",
+        layout: "panels",
+        items: [
+          {
+            title: "It is common in both batt and blown forms",
+            text: "The comparison is not always cellulose versus rolled fiberglass. Some attics use blown fiberglass as the final coverage layer."
+          },
+          {
+            title: "Gaps and compression can hurt performance",
+            text: "Fiberglass needs to keep its intended thickness and continuity. Poor cuts, gaps, and compressed areas can reduce the value of the install."
+          },
+          {
+            title: "Wind and attic airflow need attention",
+            text: "Baffles, ventilation paths, and attic airflow details can change how well the final insulation layer holds up over time."
+          }
+        ]
+      },
+      {
+        eyebrow: "How to make the decision",
+        heading: "The better question is not only which material, but what the attic needs before the material goes in.",
+        layout: "tiles",
+        items: [
+          {
+            title: "Check the existing layer",
+            text: "Old, dirty, settled, or pest-affected insulation may push the project toward removal before either material is added."
+          },
+          {
+            title: "Find the attic floor leaks",
+            text: "Air bypasses should be discussed before the final insulation layer because new material does not close the holes underneath it."
+          },
+          {
+            title: "Choose for the specific attic",
+            text: "The recommendation should explain why the chosen material, depth, and sequence fit the home instead of relying on a universal product answer."
+          }
+        ]
+      },
+      {
+        eyebrow: "Best next pages",
+        heading: "Use these pages when material comparison turns into a real attic scope.",
+        layout: "features",
+        withImages: true,
+        items: [
+          {
+            url: "/services/attic-insulation/",
+            title: "Attic Insulation Services",
+            kicker: "Core service",
+            text: serviceBySlug("attic-insulation").summary,
+            image: serviceBySlug("attic-insulation").image,
+            alt: "Attic insulation services",
+            cta: "View insulation service"
+          },
+          {
+            url: "/resources/blown-insulation-vs-rolled-insulation/",
+            title: "Blown-In vs Rolled Attic Insulation",
+            kicker: "Install format",
+            text: "Use this guide when the material question also needs the loose-fill versus batt installation comparison.",
+            image: proofAssets.insulation,
+            alt: "Blown-in versus rolled attic insulation guide",
+            cta: "Compare install format"
+          },
+          {
+            url: "/resources/insulation-removal-vs-top-off/",
+            title: "Insulation Removal vs Top-Off",
+            kicker: "Scope decision",
+            text: "Use this guide when the existing attic material may not be clean or stable enough to build on.",
+            image: proofAssets.dirtyReset,
+            alt: "Insulation removal versus top-off guide",
+            cta: "Compare scope"
+          }
+        ]
+      },
+      {
+        eyebrow: "Local service paths",
+        heading: "Move from material research into the closest local attic insulation page.",
+        subcopy:
+          "The local service pages connect material questions to the market team, service number, and attic conditions homeowners are actually dealing with.",
+        layout: "features",
+        withImages: true,
+        items: buildLocalizedResourceCards("attic-insulation", "Local insulation path", "Open local service")
+      }
+    ],
+    cta: {
+      title: "Need help choosing insulation material without guessing?",
+      text: "A stronger recommendation starts with the attic condition, then chooses the material and sequence that fit the home.",
+      primary: { label: "Request an Attic Assessment", url: "/contact/", kicker: "Next step" }
+    }
+  }),
+  buildResourcePage({
+    slug: "diy-vs-professional-attic-insulation",
+    url: "/resources/diy-vs-professional-attic-insulation/",
+    market: null,
+    primary_keyword: "diy attic insulation vs professional",
+    secondary_keywords: [
+      "hire attic insulation contractor",
+      "can I insulate my attic myself",
+      "attic insulation installation mistakes",
+      "professional attic insulation"
+    ],
+    seo_title: "DIY vs Professional Attic Insulation | When to Hire",
+    meta_description:
+      "Compare DIY attic insulation with hiring a professional for attic access, air sealing, baffles, old insulation, contamination, safety, and documentation.",
+    h1: "DIY vs Professional Attic Insulation",
+    intro:
+      "Some attic insulation projects look simple from the hallway. Others only look simple until old insulation, tight access, air leaks, ventilation paths, pest history, or cleanup needs show up. The decision is not whether a homeowner is capable. It is whether the attic is simple enough to do safely and correctly without missing the problems underneath the material.",
+    page_purpose: "Legacy blog replacement for hire vs DIY attic insulation intent",
+    cta_primary: "Get attic guidance",
+    breadcrumb_items: [
+      { label: "Home", url: "/" },
+      { label: "Resources", url: "/resources/" },
+      { label: "DIY vs Professional Attic Insulation", url: "/resources/diy-vs-professional-attic-insulation/" }
+    ],
+    canonical_url: `${site.baseUrl}/resources/diy-vs-professional-attic-insulation/`,
+    related_links: [
+      { label: "Attic Insulation Services", url: "/services/attic-insulation/" },
+      { label: "What Happens During an Attic Inspection", url: "/resources/what-happens-during-an-attic-inspection/" },
+      { label: "Insulation Removal vs Top-Off", url: "/resources/insulation-removal-vs-top-off/" },
+      { label: "Attic Resources", url: "/resources/" }
+    ],
+    faq_items: [
+      {
+        question: "Can homeowners install attic insulation themselves?",
+        answer:
+          "Sometimes, especially when the attic is clean, easy to access, uncomplicated, and the homeowner understands ventilation, safety, and coverage requirements."
+      },
+      {
+        question: "When is professional attic insulation usually the better route?",
+        answer:
+          "Professional help is usually the better route when the attic has contamination, difficult access, removal needs, air sealing needs, ventilation details, or a larger comfort problem to diagnose."
+      },
+      {
+        question: "What is the biggest DIY attic insulation mistake?",
+        answer:
+          "One common mistake is adding material before checking whether the attic floor leaks, old insulation is worth keeping, or ventilation paths need protection."
+      }
+    ],
+    trust_elements: [
+      "Turns hire-vs-DIY search demand into honest decision support",
+      "Avoids scare tactics while explaining real attic complexity",
+      "Routes homeowners into assessment, service, and local pages"
+    ],
+    hero: {
+      eyebrow: "Resources • Project decision",
+      cardKicker: "DIY can fit some attics",
+      cardTitle: "The deciding factor is whether the attic is simple, clean, accessible, and ready.",
+      cardText:
+        "Adding insulation is only one visible part of the job. The hidden work is finding what should happen before the final layer gets installed.",
+      cardPoints: [
+        "Clean attic vs contaminated attic",
+        "Simple top-off vs removal or reset",
+        "Air sealing and baffle details",
+        "Documentation before scope"
+      ]
+    },
+    sections: [
+      {
+        eyebrow: "When DIY may be reasonable",
+        heading: "A homeowner-led attic insulation project makes the most sense when the attic is simple and stable.",
+        layout: "tiles",
+        items: [
+          {
+            title: "The attic is clean and easy to access",
+            text: "DIY becomes more realistic when the attic floor is visible enough to work safely and there is no sign of contamination or damage."
+          },
+          {
+            title: "The scope is a small, straightforward top-off",
+            text: "A limited depth improvement can be simpler than an attic that needs removal, sealing, baffles, or cleanup."
+          },
+          {
+            title: "Ventilation paths are understood",
+            text: "A homeowner should know how to avoid blocking soffit airflow, burying hazards, or creating coverage problems around access points."
+          }
+        ]
+      },
+      {
+        eyebrow: "When hiring is the cleaner answer",
+        heading: "Professional attic insulation matters more when the attic needs diagnosis before material.",
+        layout: "panels",
+        items: [
+          {
+            title: "Old insulation may need to be removed",
+            text: "Dirty, settled, damaged, or pest-affected material can turn a top-off into a reset project."
+          },
+          {
+            title: "Air sealing may belong before insulation",
+            text: "Open attic bypasses can make new insulation underperform if the final layer is installed before the attic floor is tightened."
+          },
+          {
+            title: "Access and safety are not small details",
+            text: "Tight spaces, low clearance, heat, wiring, can lights, and uneven framing can all make the attic harder than it appears from below."
+          }
+        ]
+      },
+      {
+        eyebrow: "How to compare the paths",
+        heading: "The best choice should come from attic evidence, not from pride or pressure.",
+        layout: "tiles",
+        items: [
+          {
+            title: "Ask what the project would miss",
+            text: "If a DIY plan only adds material but does not evaluate leaks, old insulation, airflow, or contamination, the scope may be incomplete."
+          },
+          {
+            title: "Ask what the quote documents",
+            text: "A professional recommendation should show why the attic needs that scope instead of simply naming a product and price."
+          },
+          {
+            title: "Choose the route that leaves the attic resolved",
+            text: "The right path is the one that handles the actual condition of the attic, not just the one that looks quickest on day one."
+          }
+        ]
+      },
+      {
+        eyebrow: "Best next pages",
+        heading: "Use these pages before deciding whether to DIY, top off, or ask for a professional scope.",
+        layout: "features",
+        withImages: true,
+        items: [
+          {
+            url: "/resources/what-happens-during-an-attic-inspection/",
+            title: "What Happens During an Attic Inspection",
+            kicker: "Assessment guide",
+            text: "Use this guide to understand what a documented attic assessment should uncover before material is added.",
+            image: proofAssets.sales,
+            alt: "Attic inspection guide",
+            cta: "Read inspection guide"
+          },
+          {
+            url: "/services/attic-insulation/",
+            title: "Attic Insulation Services",
+            kicker: "Core service",
+            text: serviceBySlug("attic-insulation").summary,
+            image: serviceBySlug("attic-insulation").image,
+            alt: "Attic insulation services",
+            cta: "View insulation service"
+          },
+          {
+            url: "/resources/insulation-removal-vs-top-off/",
+            title: "Insulation Removal vs Top-Off",
+            kicker: "Scope decision",
+            text: "Use this guide when the old insulation may change the project before any DIY or professional path makes sense.",
+            image: proofAssets.dirtyReset,
+            alt: "Insulation removal versus top-off guide",
+            cta: "Compare scope"
+          }
+        ]
+      },
+      {
+        eyebrow: "Local service paths",
+        heading: "If the attic looks bigger than a simple DIY project, use the closest local insulation page next.",
+        subcopy:
+          "The local pages connect the decision to a market team and phone path without pretending every home needs the same scope.",
+        layout: "features",
+        withImages: true,
+        items: buildLocalizedResourceCards("attic-insulation", "Local insulation path", "Open local service")
+      }
+    ],
+    cta: {
+      title: "Need a second set of eyes before deciding DIY or professional?",
+      text: "Start with the attic condition. Once the attic is documented, the right path gets much easier to choose.",
       primary: { label: "Request an Attic Assessment", url: "/contact/", kicker: "Next step" }
     }
   }),
@@ -9746,6 +10888,8 @@ const resourcePages = [
   })
 ];
 
+resourcePages.push(...buildMarketProblemResourcePages());
+
 function buildAllPages() {
   const coreServicePages = serviceCatalog.map((service) => buildCoreServicePage(service));
   const marketPages = marketCatalog.map((market) => buildMarketPage(market));
@@ -9866,7 +11010,7 @@ function renderCorePage(page, currentUrl) {
       <section class="section">
         <div class="section-heading reveal">
           <p class="eyebrow">Real market coverage</p>
-          <h2>Good Attic is building trust through real service areas, not fake office pages.</h2>
+          <h2>Good Attic is building trust through real service areas and home-based assessments.</h2>
         </div>
         ${renderFeatureGrid(
           buildMarketRouteCards("Market route", "Open market hub", (market) =>
@@ -9885,7 +11029,7 @@ function renderCorePage(page, currentUrl) {
         ${renderAudiencePanels([
           {
             title: "Real service-area architecture",
-            text: "The site routes homeowners into real markets and support cities without pretending there are separate branch offices where none exist."
+            text: "The site routes homeowners into real markets and support cities without pretending there are walk-in storefronts where none exist."
           },
           {
             title: "Real review and proof policy",
@@ -10046,8 +11190,24 @@ function renderCorePage(page, currentUrl) {
   }
 
   if (page.slug === "resources") {
-    const costResources = resourcePages.filter((resource) => resource.market);
+    const costResources = resourcePages.filter((resource) => resource.slug.startsWith("attic-insulation-cost-"));
+    const marketProblemResources = resourcePages.filter(
+      (resource) => resource.market && !resource.slug.startsWith("attic-insulation-cost-")
+    );
     const evergreenResources = resourcePages.filter((resource) => !resource.market);
+    const featuredResourceSlugs = [
+      "attic-insulation-cost-salt-lake-city-ut",
+      "why-upstairs-rooms-stay-hot",
+      "insulation-removal-vs-top-off",
+      "attic-air-sealing-vs-more-insulation",
+      "cellulose-vs-fiberglass-attic-insulation",
+      "diy-vs-professional-attic-insulation",
+      "signs-of-attic-pest-contamination",
+      "hot-upstairs-rooms-kansas-city-mo"
+    ];
+    const featuredResources = featuredResourceSlugs
+      .map((slug) => resourcePages.find((resource) => resource.slug === slug))
+      .filter(Boolean);
 
     return `
       ${renderHero(currentUrl, page, {
@@ -10069,7 +11229,7 @@ function renderCorePage(page, currentUrl) {
           )}</p>
         </div>
         ${renderFeatureGrid(
-          resourcePages.map((resource) => ({
+          featuredResources.map((resource) => ({
             url: resource.url,
             title: resource.h1,
             kicker: resource.market ? marketBySlug(resource.market)?.shortName || "Resource" : "Resource guide",
@@ -10129,6 +11289,29 @@ function renderCorePage(page, currentUrl) {
             image: resourceFeatureImage(resource),
             alt: resource.h1,
             cta: "Compare cost drivers"
+          })),
+          currentUrl,
+          true
+        )}
+      </section>
+
+      <section class="section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Market problem guides</p>
+          <h2>Local problem pages that connect homeowner symptoms to the right attic service path.</h2>
+          <p class="section-subcopy">${escapeHtml(
+            "These guides go deeper by market without pretending Good Attic has a walk-in office in every city. Each one routes into the correct market hub and service pages."
+          )}</p>
+        </div>
+        ${renderFeatureGrid(
+          marketProblemResources.map((resource) => ({
+            url: resource.url,
+            title: resource.h1,
+            kicker: marketBySlug(resource.market)?.shortName || "Market guide",
+            text: resource.meta_description,
+            image: resourceFeatureImage(resource),
+            alt: resource.h1,
+            cta: "Read local guide"
           })),
           currentUrl,
           true
@@ -10249,8 +11432,8 @@ function renderCorePage(page, currentUrl) {
             text: "Support-city pages should help with local relevance and homeowner orientation, then feed back upward into the correct market and market-service pages."
           },
           {
-            title: "No fabricated office signals",
-            text: "Good Attic can build strong local SEO without inventing addresses, branches, or office-level markup where those things do not actually exist."
+            title: "No unsupported storefront signals",
+            text: "Good Attic can build strong local SEO by showing real service-area coverage, local phone paths, and home-based assessments without inventing branches or office-level markup where those things do not actually exist."
           }
         ])}
       </section>
@@ -10612,8 +11795,8 @@ function renderCorePage(page, currentUrl) {
 
 function renderPage(page) {
   const currentUrl = page.url;
-  const stylesHref = assetHref(currentUrl, "styles.css");
-  const scriptHref = assetHref(currentUrl, "script.js");
+  const stylesHref = `${assetHref(currentUrl, "styles.css")}?v=thank-you-20260609b`;
+  const scriptHref = `${assetHref(currentUrl, "script.js")}?v=thank-you-20260609b`;
   const mainOpenTag = page.page_type === "market" ? '<main id="top">' : '<main class="page-main">';
 
   let bodyContent = "";
@@ -10641,9 +11824,11 @@ function renderPage(page) {
   <link rel="canonical" href="${escapeHtml(page.canonical_url)}">
   <title>${escapeHtml(page.seo_title)}</title>
   ${renderMetaTags(page, currentUrl)}
+${googleAdsTrackingSnippet}
   <link rel="stylesheet" href="${escapeHtml(stylesHref)}">
   ${renderSiteJsonLd(page)}
   ${renderServiceJsonLd(page)}
+  ${renderAreaServiceJsonLd(page)}
   ${renderArticleJsonLd(page)}
   ${renderFaqJsonLd(page)}
   ${page.url === "/" ? "" : renderBreadcrumbJsonLd(page)}

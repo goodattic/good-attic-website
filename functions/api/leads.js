@@ -18,6 +18,28 @@ const REQUIRED_FIELDS = [
   "zip"
 ];
 
+const ATTRIBUTION_FIELDS = [
+  "gclid",
+  "gbraid",
+  "wbraid",
+  "gad_source",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_id",
+  "utm_term",
+  "utm_content",
+  "ad_landing_page",
+  "ad_landing_page_path",
+  "ad_referrer",
+  "attribution_captured_at",
+  "page_path",
+  "page_market",
+  "page_market_label",
+  "page_service_context",
+  "page_url"
+];
+
 function jsonResponse(body, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -41,6 +63,13 @@ function cleanLongText(value, maxLength = 2000) {
 function normalizeProjectTypes(value) {
   const items = Array.isArray(value) ? value : value ? [value] : [];
   return items.map((item) => clean(item, 80)).filter((item) => ALLOWED_PROJECTS.has(item));
+}
+
+function buildAttribution(payload) {
+  return ATTRIBUTION_FIELDS.reduce((attribution, field) => {
+    attribution[field] = clean(payload[field], 500);
+    return attribution;
+  }, {});
 }
 
 function validatePayload(payload) {
@@ -85,6 +114,7 @@ async function handleLeadRequest({ request, env }) {
     );
   }
 
+  const attribution = buildAttribution(payload);
   const lead = {
     first_name: clean(payload.first_name, 100),
     last_name: clean(payload.last_name, 100),
@@ -114,6 +144,8 @@ async function handleLeadRequest({ request, env }) {
     lead_source: clean(payload.lead_source, 120) || "Good Attic website",
     form_name: clean(payload.form_name, 120),
     source_page: clean(payload.source_page, 500),
+    ...attribution,
+    attribution,
     submitted_at: new Date().toISOString()
   };
 

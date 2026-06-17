@@ -66,4 +66,14 @@ GHL_WEBHOOK_URL=<your GoHighLevel inbound webhook URL>
 
 The simple local preview command serves static files only, so it does not run Cloudflare Pages Functions. Test the CRM submission on a Cloudflare preview/production deployment or with Cloudflare Pages local tooling.
 
+### Address Autocomplete
+
+Lead forms support Google Places address autocomplete when a restricted browser key is available. In Cloudflare Pages, add this production environment variable:
+
+```text
+GOOGLE_MAPS_BROWSER_KEY=<your restricted Google Maps Platform browser key>
+```
+
+Restrict the key to the live domain, enable the Maps JavaScript API and Places API needed for address autocomplete, and keep manual address entry as the fallback.
+
 Before launch, confirm the live canonical domain in `build-seo-wave1.mjs` and confirm the GoHighLevel workflow receives and maps the submitted fields correctly.

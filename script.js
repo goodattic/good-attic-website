@@ -11,8 +11,297 @@ const processCarousel = document.querySelector("[data-process-carousel]");
 const serviceCarousel = document.querySelector("[data-service-carousel]");
 const heroServiceCarousel = document.querySelector(".hero-service-carousel");
 let modalScrollY = 0;
+let leadThankYouModal = null;
+let leadThankYouScrollY = 0;
+let addressAutocompleteInitPromise = null;
+
+const googleAdsTracking = {
+  googleTagId: "AW-10789892066",
+  destinationId: "AW-11103039262",
+  leadConversionSendTo: "AW-11103039262/SDRICJin3tIaEJ7eq64p",
+  phoneConversionConfigs: [
+    {
+      sendTo: "AW-11103039262/_4E-CN313tIaEJ7eq64p",
+      phoneNumber: "385-336-0062"
+    },
+    {
+      sendTo: "AW-11103039262/-7syCOa6-e0aEJ7eq64p",
+      phoneNumber: "314-916-1220"
+    },
+    {
+      sendTo: "AW-11103039262/35RYCNWL7bgcEJ7eq64p",
+      phoneNumber: "816-207-9488"
+    }
+  ],
+  attributionStorageKey: "good_attic_ad_attribution",
+  attributionMaxAgeMs: 90 * 24 * 60 * 60 * 1000
+};
+
+const addressAutocompleteConfig = {
+  configEndpoint: "/api/site-config",
+  callbackName: "__goodAtticInitAddressAutocomplete",
+  mapsScriptId: "good-attic-google-maps-places",
+  debounceMs: 260,
+  minQueryLength: 3,
+  maxSuggestions: 5
+};
+
+const attributionParamNames = [
+  "gclid",
+  "gbraid",
+  "wbraid",
+  "gad_source",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_id",
+  "utm_term",
+  "utm_content"
+];
+
+const pageContextRules = [
+  {
+    market: "ut",
+    market_label: "Salt Lake City, UT",
+    pattern: /^\/(?:salt-lake-city-ut(?:\/|$)|resources\/[^/]+-salt-lake-city-ut\/?$)/
+  },
+  {
+    market: "mo_stl",
+    market_label: "St. Louis, MO",
+    pattern: /^\/(?:st-louis-mo(?:\/|$)|resources\/[^/]+-st-louis-mo\/?$)/
+  },
+  {
+    market: "mo_kc",
+    market_label: "Kansas City, MO",
+    pattern: /^\/(?:kansas-city-mo(?:\/|$)|resources\/[^/]+-kansas-city-mo\/?$)/
+  }
+];
+
+const marketContactNumbers = {
+  general: {
+    phoneDisplay: "855-51-ATTIC",
+    smsHref: "sms:+18555128842"
+  },
+  ut: {
+    phoneDisplay: "385-336-0062",
+    smsHref: "sms:+13853360062"
+  },
+  mo_stl: {
+    phoneDisplay: "314-916-1220",
+    smsHref: "sms:+13149161220"
+  },
+  mo_kc: {
+    phoneDisplay: "816-207-9488",
+    smsHref: "sms:+18162079488"
+  }
+};
+
+const addressAutocompleteBiases = {
+  ut: {
+    south: 39.8,
+    west: -112.4,
+    north: 41.2,
+    east: -110.7
+  },
+  mo_stl: {
+    south: 38.15,
+    west: -91.25,
+    north: 39.15,
+    east: -89.15
+  },
+  mo_kc: {
+    south: 38.45,
+    west: -95.2,
+    north: 39.65,
+    east: -93.75
+  }
+};
+
+const serviceContextRules = [
+  { service_context: "attic_insulation", pattern: /\/attic-insulation\/?$/ },
+  { service_context: "insulation_removal", pattern: /\/insulation-removal\/?$/ },
+  { service_context: "attic_air_sealing", pattern: /\/attic-air-sealing\/?$/ },
+  { service_context: "attic_fans", pattern: /\/attic-fans\/?$/ },
+  { service_context: "attic_pest_remediation", pattern: /\/attic-pest-remediation\/?$/ }
+];
+
+function getPageContext() {
+  const path = window.location.pathname;
+  const market = pageContextRules.find((rule) => rule.pattern.test(path));
+  const service = serviceContextRules.find((rule) => rule.pattern.test(path));
+
+  return {
+    page_path: path,
+    page_market: market?.market || "general",
+    page_market_label: market?.market_label || "General",
+    page_service_context: service?.service_context || "general",
+    page_url: window.location.href
+  };
+}
+
+function getPageMarketContact() {
+  const pageMarket = getPageContext().page_market;
+  return marketContactNumbers[pageMarket] || marketContactNumbers.general;
+}
+
+function ensureGoogleTag() {
+  window.dataLayer = window.dataLayer || [];
+
+  if (typeof window.gtag !== "function") {
+    window.gtag = function gtag() {
+      window.dataLayer.push(arguments);
+    };
+  }
+
+  if (!document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${googleAdsTracking.googleTagId}"]`)) {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${googleAdsTracking.googleTagId}`;
+    document.head.appendChild(script);
+  }
+
+  if (!window.goodAtticGoogleTagConfigured) {
+    window.gtag("js", new Date());
+    window.gtag("config", googleAdsTracking.googleTagId);
+    window.goodAtticGoogleTagConfigured = true;
+  }
+
+  if (!window.goodAtticPhoneConversionNumbersConfigured) {
+    googleAdsTracking.phoneConversionConfigs.forEach((config) => {
+      window.gtag("config", config.sendTo, {
+        phone_conversion_number: config.phoneNumber
+      });
+    });
+    window.goodAtticPhoneConversionNumbersConfigured = true;
+  }
+}
+
+function readStoredAttribution() {
+  try {
+    const stored = window.localStorage.getItem(googleAdsTracking.attributionStorageKey);
+    if (!stored) return {};
+
+    const parsed = JSON.parse(stored);
+    const capturedAt = Date.parse(parsed.captured_at || "");
+
+    if (!capturedAt || Date.now() - capturedAt > googleAdsTracking.attributionMaxAgeMs) {
+      window.localStorage.removeItem(googleAdsTracking.attributionStorageKey);
+      return {};
+    }
+
+    return parsed;
+  } catch (error) {
+    return {};
+  }
+}
+
+function captureAttribution() {
+  const params = new URLSearchParams(window.location.search);
+  const attribution = readStoredAttribution();
+  let hasNewAttribution = false;
+
+  attributionParamNames.forEach((name) => {
+    const value = params.get(name);
+    if (value) {
+      attribution[name] = value.slice(0, 500);
+      hasNewAttribution = true;
+    }
+  });
+
+  if (hasNewAttribution) {
+    attribution.captured_at = new Date().toISOString();
+    attribution.landing_page = window.location.href;
+    attribution.landing_page_path = `${window.location.pathname}${window.location.search}`;
+    attribution.referrer = document.referrer || attribution.referrer || "";
+
+    try {
+      window.localStorage.setItem(googleAdsTracking.attributionStorageKey, JSON.stringify(attribution));
+    } catch (error) {
+      // Attribution is useful but should never block the form experience.
+    }
+  }
+
+  return attribution;
+}
+
+function addAttributionToPayload(payload) {
+  const attribution = captureAttribution();
+  const pageContext = getPageContext();
+
+  attributionParamNames.forEach((name) => {
+    if (attribution[name]) payload[name] = attribution[name];
+  });
+
+  payload.ad_landing_page = attribution.landing_page || window.location.href;
+  payload.ad_landing_page_path = attribution.landing_page_path || `${window.location.pathname}${window.location.search}`;
+  payload.ad_referrer = attribution.referrer || document.referrer || "";
+  payload.attribution_captured_at = attribution.captured_at || "";
+  Object.assign(payload, pageContext);
+
+  return payload;
+}
+
+function setEnhancedConversionData(payload) {
+  const userData = {};
+  const address = {};
+
+  if (payload.email) userData.email = String(payload.email).trim().toLowerCase();
+  if (payload.phone) userData.phone_number = String(payload.phone).replace(/[^\d+]/g, "");
+  if (payload.first_name) address.first_name = String(payload.first_name).trim();
+  if (payload.last_name) address.last_name = String(payload.last_name).trim();
+  if (payload.street_address) address.street = String(payload.street_address).trim();
+  if (payload.city) address.city = String(payload.city).trim();
+  if (payload.state) address.region = String(payload.state).trim();
+  if (payload.zip) address.postal_code = String(payload.zip).trim();
+
+  if (Object.keys(address).length) userData.address = address;
+  if (Object.keys(userData).length) window.gtag("set", "user_data", userData);
+}
+
+function trackLeadConversion(payload) {
+  ensureGoogleTag();
+  setEnhancedConversionData(payload);
+
+  window.gtag("event", "conversion", {
+    send_to: googleAdsTracking.leadConversionSendTo
+  });
+
+  window.gtag("event", "generate_lead", {
+    event_category: "Lead",
+    event_label: payload.form_name || "Good Attic lead form"
+  });
+}
+
+function trackPhoneClick(link) {
+  ensureGoogleTag();
+
+  window.gtag("event", "phone_click", {
+    event_category: "Phone",
+    event_label: link.getAttribute("href") || "",
+    page_location: window.location.href,
+    page_market: getPageContext().page_market
+  });
+}
+
+function trackSmsClick(link) {
+  ensureGoogleTag();
+
+  window.gtag("event", "sms_click", {
+    event_category: "SMS",
+    event_label: link.getAttribute("href") || "",
+    page_location: window.location.href,
+    page_market: getPageContext().page_market
+  });
+}
+
+ensureGoogleTag();
+captureAttribution();
 
 document.querySelector("[data-year]").textContent = new Date().getFullYear();
+
+document.querySelectorAll('a[href^="tel:"]').forEach((link) => {
+  link.addEventListener("click", () => trackPhoneClick(link));
+});
 
 function updateSourcePageFields() {
   document.querySelectorAll("[data-source-page]").forEach((input) => {
@@ -136,6 +425,70 @@ function closeModal() {
   window.scrollTo(0, modalScrollY);
 }
 
+function getLeadThankYouModal() {
+  if (leadThankYouModal) return leadThankYouModal;
+
+  leadThankYouModal = document.createElement("div");
+  leadThankYouModal.className = "modal thank-you-modal";
+  leadThankYouModal.setAttribute("aria-hidden", "true");
+  leadThankYouModal.setAttribute("data-lead-thank-you-modal", "");
+  leadThankYouModal.innerHTML = `
+    <div class="modal-backdrop thank-you-modal__backdrop" data-close-lead-thank-you></div>
+    <div class="thank-you-modal__panel" role="dialog" aria-modal="true" aria-labelledby="lead-thank-you-title" aria-describedby="lead-thank-you-description">
+      <button class="modal-close thank-you-modal__close" type="button" aria-label="Close thank you message" data-close-lead-thank-you>&times;</button>
+      <div class="thank-you-modal__mark" aria-hidden="true"></div>
+      <p class="eyebrow">Request received</p>
+      <h2 id="lead-thank-you-title">Thank you.</h2>
+      <div id="lead-thank-you-description" class="thank-you-modal__copy">
+        <p>We'll be reaching out shortly to help.</p>
+        <p class="thank-you-modal__soon">Need us sooner?</p>
+      </div>
+      <a class="button primary" href="sms:+18555128842" data-lead-thank-you-text>Shoot us a text</a>
+    </div>
+  `;
+
+  leadThankYouModal.querySelectorAll("[data-close-lead-thank-you]").forEach((button) => {
+    button.addEventListener("click", closeLeadThankYou);
+  });
+
+  const textLink = leadThankYouModal.querySelector("[data-lead-thank-you-text]");
+  if (textLink) textLink.addEventListener("click", () => trackSmsClick(textLink));
+
+  document.body.appendChild(leadThankYouModal);
+  return leadThankYouModal;
+}
+
+function openLeadThankYou() {
+  if (modal && modal.classList.contains("is-open")) closeModal();
+
+  const thankYou = getLeadThankYouModal();
+  const textLink = thankYou.querySelector("[data-lead-thank-you-text]");
+  if (textLink) textLink.setAttribute("href", getPageMarketContact().smsHref);
+
+  leadThankYouScrollY = window.scrollY || window.pageYOffset || 0;
+  body.style.setProperty("--modal-scroll-lock-top", `-${leadThankYouScrollY}px`);
+  body.classList.add("modal-open");
+  thankYou.classList.add("is-open");
+  thankYou.setAttribute("aria-hidden", "false");
+
+  if (textLink) {
+    textLink.focus();
+  } else {
+    const closeButton = thankYou.querySelector("[data-close-lead-thank-you]");
+    if (closeButton) closeButton.focus();
+  }
+}
+
+function closeLeadThankYou() {
+  if (!leadThankYouModal || !leadThankYouModal.classList.contains("is-open")) return;
+
+  leadThankYouModal.classList.remove("is-open");
+  leadThankYouModal.setAttribute("aria-hidden", "true");
+  body.classList.remove("modal-open");
+  body.style.removeProperty("--modal-scroll-lock-top");
+  window.scrollTo(0, leadThankYouScrollY);
+}
+
 document.querySelectorAll("[data-open-modal]").forEach((button) => {
   button.addEventListener("click", openModal);
 });
@@ -153,7 +506,12 @@ if (modal) {
 }
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closeModal();
+  if (event.key !== "Escape") return;
+  if (leadThankYouModal?.classList.contains("is-open")) {
+    closeLeadThankYou();
+    return;
+  }
+  if (modal?.classList.contains("is-open")) closeModal();
 });
 
 navToggle.addEventListener("click", () => {
@@ -519,8 +877,436 @@ function syncProjectTypeValidity(projectOptions) {
   return hasSelection;
 }
 
+const addressFieldConfig = [
+  { name: "street_address", message: "Enter the property street address." },
+  { name: "city", message: "Enter the property city." },
+  { name: "state", message: "Select the property state." },
+  { name: "zip", message: "Enter the property ZIP code." }
+];
+
+function getAddressInputs(form) {
+  return addressFieldConfig
+    .map((field) => ({ ...field, input: form.elements[field.name] }))
+    .filter((field) => field.input);
+}
+
+function syncFullAddressValidity(form) {
+  const addressInputs = getAddressInputs(form);
+  if (!addressInputs.length) return true;
+
+  let isValid = true;
+
+  addressInputs.forEach(({ input, message }) => {
+    const value = String(input.value || "").trim();
+    input.setCustomValidity("");
+
+    if (!value) {
+      input.setCustomValidity(message);
+      isValid = false;
+    }
+  });
+
+  return isValid;
+}
+
+function reportFirstInvalidAddressField(form) {
+  const firstInvalid = getAddressInputs(form).find(({ input }) => !String(input.value || "").trim());
+  if (firstInvalid?.input) firstInvalid.input.reportValidity();
+}
+
+function buildFullAddress(payload) {
+  const street = String(payload.street_address || "").trim();
+  const city = String(payload.city || "").trim();
+  const state = String(payload.state || "").trim();
+  const zip = String(payload.zip || "").trim();
+  const region = [state, zip].filter(Boolean).join(" ");
+
+  return [street, city, region].filter(Boolean).join(", ");
+}
+
+function getInlineGoogleMapsApiKey() {
+  const metaKey = document.querySelector('meta[name="good-attic-google-maps-api-key"]')?.content;
+  const windowKey = window.GOOD_ATTIC_GOOGLE_MAPS_API_KEY;
+  const key = typeof windowKey === "string" && windowKey.trim() ? windowKey : metaKey;
+
+  return typeof key === "string" ? key.trim() : "";
+}
+
+async function getGoogleMapsApiKey() {
+  const inlineKey = getInlineGoogleMapsApiKey();
+  if (inlineKey) return inlineKey;
+  if (window.location.protocol === "file:") return "";
+
+  try {
+    const response = await fetch(addressAutocompleteConfig.configEndpoint, {
+      credentials: "same-origin",
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) return "";
+
+    const config = await response.json();
+    const key = config.googleMapsBrowserKey || config.google_maps_browser_key || config.mapsApiKey;
+
+    return typeof key === "string" ? key.trim() : "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function loadGoogleMapsScript(key) {
+  if (!key) return Promise.resolve(false);
+  if (window.google?.maps?.importLibrary) return Promise.resolve(true);
+  if (window.goodAtticMapsScriptPromise) return window.goodAtticMapsScriptPromise;
+
+  window.goodAtticMapsScriptPromise = new Promise((resolve) => {
+    const existingScript = document.getElementById(addressAutocompleteConfig.mapsScriptId);
+
+    window[addressAutocompleteConfig.callbackName] = () => {
+      resolve(Boolean(window.google?.maps?.importLibrary));
+    };
+
+    if (existingScript) {
+      existingScript.addEventListener("load", () => resolve(Boolean(window.google?.maps?.importLibrary)), { once: true });
+      existingScript.addEventListener("error", () => resolve(false), { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    const params = new URLSearchParams({
+      key,
+      callback: addressAutocompleteConfig.callbackName,
+      loading: "async",
+      v: "weekly"
+    });
+
+    script.id = addressAutocompleteConfig.mapsScriptId;
+    script.async = true;
+    script.defer = true;
+    script.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
+    script.onerror = () => resolve(false);
+    document.head.appendChild(script);
+  });
+
+  return window.goodAtticMapsScriptPromise;
+}
+
+async function loadGoogleMapsPlaces(key) {
+  const mapsReady = await loadGoogleMapsScript(key);
+  if (!mapsReady || typeof window.google?.maps?.importLibrary !== "function") return null;
+
+  try {
+    const placesLibrary = await window.google.maps.importLibrary("places");
+    if (!placesLibrary?.AutocompleteSuggestion || !placesLibrary?.AutocompleteSessionToken) return null;
+    return placesLibrary;
+  } catch (error) {
+    return null;
+  }
+}
+
+function findAddressComponent(components, type) {
+  return components.find((component) => component.types.includes(type));
+}
+
+function getAddressComponentValue(components, type, name = "long") {
+  const component = findAddressComponent(components, type);
+  if (!component) return "";
+
+  if (name === "short") {
+    return component.shortText || component.short_name || component.longText || component.long_name || "";
+  }
+
+  return component.longText || component.long_name || component.shortText || component.short_name || "";
+}
+
+function parseGoogleAddress(place) {
+  const components = Array.isArray(place?.addressComponents)
+    ? place.addressComponents
+    : Array.isArray(place?.address_components)
+      ? place.address_components
+      : [];
+  if (!components.length) return null;
+
+  const streetNumber = getAddressComponentValue(components, "street_number");
+  const route = getAddressComponentValue(components, "route", "short") || getAddressComponentValue(components, "route");
+  const subpremise = getAddressComponentValue(components, "subpremise");
+  const city =
+    getAddressComponentValue(components, "locality") ||
+    getAddressComponentValue(components, "postal_town") ||
+    getAddressComponentValue(components, "sublocality_level_1") ||
+    getAddressComponentValue(components, "administrative_area_level_3") ||
+    getAddressComponentValue(components, "administrative_area_level_2");
+  const state = getAddressComponentValue(components, "administrative_area_level_1", "short");
+  const postalCode = getAddressComponentValue(components, "postal_code");
+  const zip = postalCode.replace(/[^\d]/g, "").slice(0, 5);
+  const streetParts = [streetNumber, route].filter(Boolean);
+
+  if (subpremise && streetParts.length) streetParts.push(`#${subpremise}`);
+
+  return {
+    street_address: streetParts.join(" "),
+    city,
+    state,
+    zip
+  };
+}
+
+function getAddressAutocompleteLocationBias() {
+  const marketBias = addressAutocompleteBiases[getPageContext().page_market];
+  if (!marketBias) return null;
+
+  return {
+    south: marketBias.south,
+    west: marketBias.west,
+    north: marketBias.north,
+    east: marketBias.east
+  };
+}
+
+function setAddressFieldValue(form, name, value) {
+  const input = form.elements[name];
+  if (!input || !value) return;
+
+  input.value = value;
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  input.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function getAddressSuggestionLabel(suggestion) {
+  const prediction = suggestion?.placePrediction;
+  const text = prediction?.text?.text || prediction?.text?.toString?.();
+  const mainText = prediction?.mainText?.text || prediction?.mainText?.toString?.();
+  const secondaryText = prediction?.secondaryText?.text || prediction?.secondaryText?.toString?.();
+
+  if (text) return text;
+  return [mainText, secondaryText].filter(Boolean).join(", ");
+}
+
+function createAddressSuggestionsList(input) {
+  const list = document.createElement("div");
+  const id = `address-suggestions-${Date.now()}-${Math.round(Math.random() * 100000)}`;
+
+  list.id = id;
+  list.className = "address-suggestions";
+  list.setAttribute("role", "listbox");
+  list.hidden = true;
+
+  input.closest("label")?.classList.add("address-autocomplete-field");
+  input.insertAdjacentElement("afterend", list);
+  input.setAttribute("aria-autocomplete", "list");
+  input.setAttribute("aria-expanded", "false");
+  input.setAttribute("aria-controls", id);
+
+  return list;
+}
+
+function hideAddressSuggestions(state) {
+  state.list.hidden = true;
+  state.list.innerHTML = "";
+  state.input.setAttribute("aria-expanded", "false");
+  state.activeIndex = -1;
+}
+
+function updateAddressSuggestionActive(state) {
+  [...state.list.querySelectorAll(".address-suggestion")].forEach((button, index) => {
+    const isActive = index === state.activeIndex;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+  });
+}
+
+async function selectAddressSuggestion(state, suggestion) {
+  const prediction = suggestion?.placePrediction;
+  const label = getAddressSuggestionLabel(suggestion);
+
+  hideAddressSuggestions(state);
+  if (label) setAddressFieldValue(state.form, "street_address", label);
+  if (!prediction?.toPlace) return;
+
+  try {
+    const place = prediction.toPlace();
+    await place.fetchFields({ fields: ["addressComponents", "formattedAddress"] });
+    const address = parseGoogleAddress(place);
+
+    if (address) {
+      if (!address.street_address && label) address.street_address = label;
+      Object.entries(address).forEach(([name, value]) => {
+        setAddressFieldValue(state.form, name, value);
+      });
+      syncFullAddressValidity(state.form);
+    }
+  } catch (error) {
+    syncFullAddressValidity(state.form);
+  } finally {
+    state.sessionToken = null;
+    state.input.focus();
+  }
+}
+
+function renderAddressSuggestions(state, suggestions) {
+  state.suggestions = suggestions.slice(0, addressAutocompleteConfig.maxSuggestions);
+  state.list.innerHTML = "";
+
+  if (!state.suggestions.length) {
+    hideAddressSuggestions(state);
+    return;
+  }
+
+  state.suggestions.forEach((suggestion, index) => {
+    const label = getAddressSuggestionLabel(suggestion);
+    if (!label) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "address-suggestion";
+    button.id = `${state.list.id}-option-${index}`;
+    button.setAttribute("role", "option");
+    button.setAttribute("aria-selected", "false");
+    button.textContent = label;
+    button.addEventListener("pointerdown", (event) => event.preventDefault());
+    button.addEventListener("click", () => {
+      selectAddressSuggestion(state, suggestion);
+    });
+    state.list.appendChild(button);
+  });
+
+  if (!state.list.children.length) {
+    hideAddressSuggestions(state);
+    return;
+  }
+
+  state.activeIndex = 0;
+  state.list.hidden = false;
+  state.input.setAttribute("aria-expanded", "true");
+  updateAddressSuggestionActive(state);
+}
+
+async function requestAddressSuggestions(state) {
+  const query = state.input.value.trim();
+  if (query.length < addressAutocompleteConfig.minQueryLength) {
+    hideAddressSuggestions(state);
+    return;
+  }
+
+  const { AutocompleteSessionToken, AutocompleteSuggestion } = state.placesLibrary;
+  if (!state.sessionToken) state.sessionToken = new AutocompleteSessionToken();
+
+  const requestId = state.requestId + 1;
+  const request = {
+    input: query,
+    includedRegionCodes: ["us"],
+    language: "en-US",
+    region: "us",
+    sessionToken: state.sessionToken
+  };
+  const locationBias = getAddressAutocompleteLocationBias();
+
+  if (locationBias) request.locationBias = locationBias;
+  state.requestId = requestId;
+
+  try {
+    const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+    if (requestId !== state.requestId) return;
+    renderAddressSuggestions(state, (suggestions || []).filter((suggestion) => suggestion.placePrediction));
+  } catch (error) {
+    hideAddressSuggestions(state);
+  }
+}
+
+function attachAddressAutocomplete(form, placesLibrary) {
+  const streetInput = form.elements.street_address;
+  if (!streetInput || streetInput.dataset.addressAutocomplete === "enabled") return;
+  if (!placesLibrary?.AutocompleteSuggestion || !placesLibrary?.AutocompleteSessionToken) return;
+
+  const placeholder = streetInput.getAttribute("placeholder") || "Street address";
+  const state = {
+    form,
+    input: streetInput,
+    list: createAddressSuggestionsList(streetInput),
+    placesLibrary,
+    suggestions: [],
+    activeIndex: -1,
+    requestId: 0,
+    sessionToken: null,
+    timeout: null
+  };
+
+  streetInput.dataset.addressAutocompletePlaceholder = placeholder;
+  if (!streetInput.getAttribute("placeholder")) streetInput.setAttribute("placeholder", placeholder);
+  streetInput.dataset.addressAutocomplete = "enabled";
+
+  streetInput.addEventListener("input", () => {
+    window.clearTimeout(state.timeout);
+    state.timeout = window.setTimeout(() => {
+      requestAddressSuggestions(state);
+    }, addressAutocompleteConfig.debounceMs);
+  });
+
+  streetInput.addEventListener("keydown", (event) => {
+    if (state.list.hidden || !state.suggestions.length) {
+      if (event.key === "Escape") hideAddressSuggestions(state);
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      state.activeIndex = Math.min(state.activeIndex + 1, state.suggestions.length - 1);
+      updateAddressSuggestionActive(state);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      state.activeIndex = Math.max(state.activeIndex - 1, 0);
+      updateAddressSuggestionActive(state);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      selectAddressSuggestion(state, state.suggestions[Math.max(state.activeIndex, 0)]);
+    } else if (event.key === "Escape") {
+      hideAddressSuggestions(state);
+    }
+  });
+
+  streetInput.addEventListener("blur", () => {
+    window.setTimeout(() => hideAddressSuggestions(state), 180);
+  });
+}
+
+function enableAddressAutocomplete(forms) {
+  if (!addressAutocompleteInitPromise) {
+    addressAutocompleteInitPromise = (async () => {
+      const key = await getGoogleMapsApiKey();
+      const placesLibrary = await loadGoogleMapsPlaces(key);
+      if (!placesLibrary) return false;
+
+      forms.forEach((form) => attachAddressAutocomplete(form, placesLibrary));
+      return true;
+    })();
+  }
+
+  return addressAutocompleteInitPromise;
+}
+
+function initAddressAutocomplete() {
+  const forms = Array.from(document.querySelectorAll("[data-lead-form]")).filter((form) => form.elements.street_address);
+  if (!forms.length) return;
+
+  forms.forEach((form) => {
+    const streetInput = form.elements.street_address;
+    if (!streetInput || streetInput.dataset.addressAutocompleteReady === "pending") return;
+
+    streetInput.dataset.addressAutocompleteReady = "pending";
+    const loadAutocomplete = () => {
+      enableAddressAutocomplete(forms);
+    };
+
+    streetInput.addEventListener("focus", loadAutocomplete, { once: true });
+    streetInput.addEventListener("pointerdown", loadAutocomplete, { once: true });
+  });
+}
+
 document.querySelectorAll("[data-lead-form]").forEach((form) => {
   const projectOptions = [...form.querySelectorAll('input[name="project_type"]')];
+  const addressInputs = getAddressInputs(form);
 
   projectOptions.forEach((input) => {
     ["change", "input"].forEach((eventName) => {
@@ -530,14 +1316,28 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
     });
   });
 
+  addressInputs.forEach(({ input }) => {
+    ["change", "input"].forEach((eventName) => {
+      input.addEventListener(eventName, () => {
+        syncFullAddressValidity(form);
+      });
+    });
+  });
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const status = form.querySelector("[data-form-status]");
     const endpoint = form.dataset.ghlWebhook || "/api/leads";
     const submitButton = form.querySelector('button[type="submit"]');
+    let shouldShowThankYou = false;
 
     if (!syncProjectTypeValidity(projectOptions)) {
       projectOptions[0].reportValidity();
+      return;
+    }
+
+    if (!syncFullAddressValidity(form)) {
+      reportFirstInvalidAddressField(form);
       return;
     }
 
@@ -553,6 +1353,9 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
         const payload = Object.fromEntries(formData.entries());
         payload.project_type = formData.getAll("project_type");
         payload.project_type_label = payload.project_type.join(", ");
+        payload.full_address = buildFullAddress(payload);
+        addAttributionToPayload(payload);
+
         const response = await fetch(endpoint, {
           method: "POST",
           credentials: "same-origin",
@@ -574,6 +1377,8 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
         }
 
         if (status) status.textContent = "Thanks. Your quote request has been sent.";
+        trackLeadConversion(payload);
+        shouldShowThankYou = true;
       } catch (error) {
         if (status) status.textContent = "Something went wrong. Please call or text us and we will help right away.";
         if (submitButton) {
@@ -592,8 +1397,8 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
       submitButton.removeAttribute("aria-busy");
     }
     updateSourcePageFields();
-    if (modal && modal.classList.contains("is-open")) {
-      window.setTimeout(closeModal, 900);
-    }
+    if (shouldShowThankYou) openLeadThankYou();
   });
 });
+
+initAddressAutocomplete();
