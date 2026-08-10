@@ -7,7 +7,7 @@ authority. Fieldflow is not in the webhook, token, queue, resolver, or event
 delivery path.
 
 ```text
-Jobber Assessment webhook
+Jobber Request webhook
   -> Good Attic Pages HMAC receiver
   -> Cloudflare Queue (IDs only)
   -> tokenless publisher Worker + appointment-only D1
@@ -17,10 +17,12 @@ Jobber Assessment webhook
   -> existing GHL contact and Central Intake opportunity move
 ```
 
-Jobber sends only object IDs in a webhook. The resolver queries the current
-Assessment and publishes only when both `startAt` and `endAt` are populated.
-`ASSESSMENT_CREATE` and `ASSESSMENT_UPDATE` are both supported. `VISIT_*` is
-intentionally unsupported.
+Jobber does not expose Assessment webhook topics. It sends a Request object ID
+for the supported `REQUEST_CREATE` and `REQUEST_UPDATE` topics. The resolver
+queries that Request's attached Assessment and publishes only when the
+Assessment exists and both `startAt` and `endAt` are populated. The Request
+webhook is only a change notification; the Assessment remains the scheduling
+source of truth. `VISIT_*` is intentionally unsupported.
 
 The publisher does not call GHL, create records, or run another Jobber OAuth
 consumer. The downstream consumer owns the guarded GHL move.
@@ -30,7 +32,7 @@ consumer. The downstream consumer owns the guarded GHL move.
 - Jobber webhook URL: `https://goodattic.energy/api/jobber/webhooks/appointment-scheduled`
 - Private resolver URL: `https://goodattic.energy/api/jobber/appointment-resolve`
 - Consumer URL: `https://partners.goodattic.energy/api/jobber-appointment-scheduled`
-- Jobber topics: `ASSESSMENT_CREATE`, `ASSESSMENT_UPDATE`
+- Jobber topics: `REQUEST_CREATE`, `REQUEST_UPDATE`
 - Event name: `jobber.appointment_scheduled.v1`
 
 Jobber HMAC validation uses the website app secret associated with the signed,
@@ -43,6 +45,7 @@ Pages production:
 
 - `ANGI_ROUTER_DB` (existing authoritative Jobber token D1)
 - `JOBBER_CLIENT_SECRET` and/or the existing per-market app secrets
+- Jobber app read scopes for Requests and Scheduled Items
 - `JOBBER_APPOINTMENT_QUEUE` producer binding
 - `JOBBER_APPOINTMENT_BROKER_SECRET` (shared only with the publisher Worker)
 
@@ -91,8 +94,9 @@ jobber-assessment:<jobber_account_id>:<jobber_assessment_id>
 
 The same value is sent in `event_id` and `Idempotency-Key` on every attempt.
 The appointment-only D1 leases and checkpoints each Assessment. A delivered
-event is not published again. An unscheduled Assessment remains eligible for a
-later update after it receives start/end times. The downstream consumer also
+event is not published again. An unscheduled Request creates no ledger row and
+remains eligible for a later update after its Assessment receives start/end
+times. The downstream consumer also
 writes this ID into the existing opportunity's `Jobber Appointment Event ID`
 field, which protects the move when a successful HTTP response is lost.
 
@@ -117,7 +121,7 @@ root cause:
    lease fields, retain an operator/audit reason in `last_error_code`, and update
    `updated_at`. Use a compare-and-set condition requiring the current status to
    still be `manual_review`.
-3. Re-save/re-trigger that same Assessment in Jobber, or replay its captured
+3. Re-save/re-trigger that same Request/Assessment in Jobber, or replay its captured
    original ID-only queue message. The publisher recomputes the same
    `jobber-assessment:<account>:<assessment>` event ID.
 4. Verify the row reaches `delivered` before considering the incident closed.
@@ -174,8 +178,10 @@ Idempotency-Key: jobber-assessment:JOBBER_ACCOUNT_ID:JOBBER_ASSESSMENT_ID
    broker secret on Pages and the Worker.
 4. Deploy the publisher Worker, then deploy Pages with the queue producer
    binding from the clean branch.
-5. Register Jobber `ASSESSMENT_CREATE` and `ASSESSMENT_UPDATE` webhooks last.
-6. Test one scheduled Assessment in each market, one duplicate replay, and one
+5. Enable Scheduled Items read access on the existing website Jobber app and
+   reauthorize its Utah, St. Louis, and Kansas City connections.
+6. Register Jobber `REQUEST_CREATE` and `REQUEST_UPDATE` webhooks last.
+7. Test one scheduled Assessment in each market, one duplicate replay, and one
    controlled consumer outage.
 
 Do not build or publish a GHL inbound workflow for this move. Do not use the old

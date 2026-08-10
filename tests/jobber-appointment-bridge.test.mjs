@@ -47,9 +47,9 @@ async function hmacHeader(rawBody, secret) {
 }
 
 function webhookBody({
-  topic = "ASSESSMENT_UPDATE",
+  topic = "REQUEST_UPDATE",
   accountId = ACCOUNT_IDS.mo_kc,
-  itemId = "assessment-123",
+  itemId = "request-1",
 } = {}) {
   return JSON.stringify({
     data: {
@@ -74,7 +74,7 @@ class QueueCapture {
   }
 }
 
-test("verifies a Jobber Assessment webhook and enqueues a PII-free market-pinned event", async () => {
+test("verifies a Jobber Request webhook and enqueues a PII-free market-pinned event", async () => {
   const secret = "website-jobber-client-secret";
   const rawBody = webhookBody();
   const queue = new QueueCapture();
@@ -99,14 +99,14 @@ test("verifies a Jobber Assessment webhook and enqueues a PII-free market-pinned
     {
       topic: queue.messages[0].topic,
       account_id: queue.messages[0].account_id,
-      assessment_id: queue.messages[0].assessment_id,
+      request_id: queue.messages[0].request_id,
       market_key: queue.messages[0].market_key,
       market_name: queue.messages[0].market_name,
     },
     {
-      topic: "ASSESSMENT_UPDATE",
+      topic: "REQUEST_UPDATE",
       account_id: ACCOUNT_IDS.mo_kc,
-      assessment_id: "assessment-123",
+      request_id: "request-1",
       market_key: "mo_kc",
       market_name: "Kansas City",
     },
@@ -240,7 +240,7 @@ test("the protected resolver rejects missing authorization before reading token 
   assert.equal(databaseTouched, false);
 });
 
-test("resolver reads the current Jobber Assessment through the existing website token row", async () => {
+test("resolver reads the Request's current Assessment through the existing website token row", async () => {
   const brokerSecret = "internal-broker-secret";
   const database = {
     prepare(sql) {
@@ -270,31 +270,34 @@ test("resolver reads the current Jobber Assessment through the existing website 
     assert.equal(String(url), "https://api.getjobber.com/api/graphql");
     assert.equal(options.headers.Authorization, "bearer cached-website-access");
     const requestBody = JSON.parse(options.body);
-    assert.match(requestBody.query, /assessment\(id: \$id\)/);
-    assert.equal(requestBody.variables.id, "assessment-123");
+    assert.match(requestBody.query, /request\(id: \$id\)/);
+    assert.equal(requestBody.variables.id, "request-1");
     return Response.json({
       data: {
-        assessment: {
-          id: "assessment-123",
-          startAt: "2026-08-08T16:00:00Z",
-          endAt: "2026-08-08T17:00:00Z",
-          title: "Attic assessment",
-          client: {
-            id: "client-1",
-            name: "Customer Name",
-            email: "customer@example.com",
-            phone: "+18165550101",
-            defaultEmails: [],
-            defaultPhones: [],
+        request: {
+          id: "request-1",
+          assessment: {
+            id: "assessment-123",
+            startAt: "2026-08-08T16:00:00Z",
+            endAt: "2026-08-08T17:00:00Z",
+            title: "Attic assessment",
+            client: {
+              id: "client-1",
+              name: "Customer Name",
+              email: "customer@example.com",
+              phone: "+18165550101",
+              defaultEmails: [],
+              defaultPhones: [],
+            },
+            request: {
+              id: "request-1",
+              jobberWebUri: "https://secure.getjobber.com/requests/1",
+              contactName: "Customer Name",
+              email: "customer@example.com",
+              phone: "+18165550101",
+            },
+            property: { id: "property-1" },
           },
-          request: {
-            id: "request-1",
-            jobberWebUri: "https://secure.getjobber.com/requests/1",
-            contactName: "Customer Name",
-            email: "customer@example.com",
-            phone: "+18165550101",
-          },
-          property: { id: "property-1" },
         },
       },
     });
@@ -309,7 +312,7 @@ test("resolver reads the current Jobber Assessment through the existing website 
       },
       body: JSON.stringify({
         account_id: ACCOUNT_IDS.mo_kc,
-        assessment_id: "assessment-123",
+        request_id: "request-1",
         market_key: "mo_kc",
         occurred_at: "2026-08-05T16:30:00Z",
       }),
@@ -325,6 +328,68 @@ test("resolver reads the current Jobber Assessment through the existing website 
   assert.equal(body.signal.event_id, `jobber-assessment:${ACCOUNT_IDS.mo_kc}:assessment-123`);
   assert.equal(body.signal.market_key, "mo_kc");
   assert.equal(body.signal.jobber_client_id, "client-1");
+});
+
+test("resolver reports an unscheduled Request without emitting an appointment signal", async () => {
+  const brokerSecret = "internal-broker-secret";
+  const database = {
+    prepare(sql) {
+      assert.match(sql, /jobber_token_authority:select_auth/);
+      return {
+        bind() {
+          return {
+            async first() {
+              return {
+                access_token: "cached-website-access",
+                access_expires_at: Date.now() + 3_600_000,
+                refresh_token: "authoritative-refresh",
+                refresh_revision: 4,
+                refresh_status: "ready",
+                refresh_lease_token: null,
+                refresh_lease_expires_at: null,
+                last_error_code: null,
+              };
+            },
+          };
+        },
+      };
+    },
+  };
+  globalThis.fetch = async () => Response.json({
+    data: {
+      request: {
+        id: "request-1",
+        assessment: null,
+      },
+    },
+  });
+
+  const response = await handleJobberAppointmentResolve({
+    request: new Request("https://goodattic.energy/api/jobber/appointment-resolve", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${brokerSecret}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        account_id: ACCOUNT_IDS.mo_kc,
+        request_id: "request-1",
+        market_key: "mo_kc",
+      }),
+    }),
+    env: {
+      JOBBER_APPOINTMENT_BROKER_SECRET: brokerSecret,
+      ANGI_ROUTER_DB: database,
+    },
+  });
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    ok: true,
+    status: "not_scheduled",
+    jobber_request_id: "request-1",
+    jobber_assessment_id: "",
+  });
 });
 
 class AppointmentLedgerD1 {
@@ -468,9 +533,9 @@ function queuedAppointment(overrides = {}) {
   return {
     schema_version: 1,
     source: "jobber",
-    topic: "ASSESSMENT_UPDATE",
+    topic: "REQUEST_UPDATE",
     account_id: ACCOUNT_IDS.mo_kc,
-    assessment_id: "assessment-123",
+    request_id: "request-1",
     occurred_at: "2026-08-05T16:30:00Z",
     market_key: "mo_kc",
     market_name: "Kansas City",
@@ -481,9 +546,10 @@ function queuedAppointment(overrides = {}) {
 }
 
 function resolvedSignal(message) {
+  const assessmentId = "assessment-123";
   return {
     event_name: "jobber.appointment_scheduled.v1",
-    event_id: `jobber-assessment:${message.account_id}:${message.assessment_id}`,
+    event_id: `jobber-assessment:${message.account_id}:${assessmentId}`,
     event_occurred_at: message.occurred_at,
     route_to_sales_pipeline: true,
     market_key: message.market_key,
@@ -493,8 +559,8 @@ function resolvedSignal(message) {
     appointment_end_at: "2026-08-08T17:00:00Z",
     appointment_title: "Attic assessment",
     jobber_account_id: message.account_id,
-    jobber_assessment_id: message.assessment_id,
-    jobber_request_id: "request-1",
+    jobber_assessment_id: assessmentId,
+    jobber_request_id: message.request_id,
     jobber_client_id: "client-1",
     jobber_property_id: "property-1",
     jobber_request_url: "https://secure.getjobber.com/requests/1",
@@ -541,12 +607,13 @@ test("publishes one authenticated deterministic event to the Good Attic consumer
   const duplicate = queueMessage(body);
   await appointmentConsumer.queue({ messages: [duplicate] }, workerEnv(database));
   assert.deepEqual(duplicate.actions, [{ type: "ack" }]);
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 3);
+  assert.equal(calls.filter((call) => !call.url.includes("appointment-resolve")).length, 1);
 });
 
 test("treats a duplicate-safe 200 consumer response as delivered", async () => {
   const database = new AppointmentLedgerD1();
-  const body = queuedAppointment();
+  const body = queuedAppointment({ topic: "REQUEST_CREATE" });
   let consumerCalls = 0;
   globalThis.fetch = async (url) => {
     if (String(url).includes("appointment-resolve")) {
@@ -564,7 +631,7 @@ test("treats a duplicate-safe 200 consumer response as delivered", async () => {
   assert.equal(database.rows.get(resolvedSignal(body).event_id)?.status, "delivered");
 });
 
-test("an unscheduled Assessment remains eligible for its later scheduled update", async () => {
+test("an unscheduled Request remains eligible for its later scheduled update", async () => {
   const database = new AppointmentLedgerD1();
   const body = queuedAppointment();
   let resolverCalls = 0;
@@ -579,10 +646,10 @@ test("an unscheduled Assessment remains eligible for its later scheduled update"
     return Response.json({ ok: true });
   };
 
-  const createdUnscheduled = queueMessage({ ...body, topic: "ASSESSMENT_CREATE" });
+  const createdUnscheduled = queueMessage({ ...body, topic: "REQUEST_CREATE" });
   await appointmentConsumer.queue({ messages: [createdUnscheduled] }, workerEnv(database));
   assert.deepEqual(createdUnscheduled.actions, [{ type: "ack" }]);
-  assert.equal(database.rows.get(resolvedSignal(body).event_id)?.status, "not_scheduled");
+  assert.equal(database.rows.has(resolvedSignal(body).event_id), false);
 
   const scheduledUpdate = queueMessage(body);
   await appointmentConsumer.queue({ messages: [scheduledUpdate] }, workerEnv(database));

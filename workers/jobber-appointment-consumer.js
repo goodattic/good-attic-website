@@ -19,8 +19,8 @@ function changes(result) {
   return Number(result?.meta?.changes ?? result?.changes ?? 0);
 }
 
-function eventIdFor(message) {
-  return `jobber-assessment:${message.account_id}:${message.assessment_id}`;
+function eventIdFor(accountId, assessmentId) {
+  return `jobber-assessment:${accountId}:${assessmentId}`;
 }
 
 function retryDelaySeconds(message) {
@@ -37,12 +37,12 @@ function retryMessage(message) {
 
 function validQueueMessage(body) {
   const accountId = clean(body?.account_id, 500);
-  const assessmentId = clean(body?.assessment_id, 500);
+  const requestId = clean(body?.request_id, 500);
   const marketKey = clean(body?.market_key, 40);
   return body?.schema_version === 1
     && body?.source === "jobber"
-    && ["ASSESSMENT_CREATE", "ASSESSMENT_UPDATE"].includes(body?.topic)
-    && Boolean(accountId && assessmentId)
+    && ["REQUEST_CREATE", "REQUEST_UPDATE"].includes(body?.topic)
+    && Boolean(accountId && requestId)
     && MARKET_BY_ACCOUNT_ID.get(accountId) === marketKey;
 }
 
@@ -65,7 +65,7 @@ async function readLedger(database, eventId) {
     .first();
 }
 
-async function ensureLedger(database, message, eventId) {
+async function ensureLedger(database, message, eventId, assessmentId) {
   const now = new Date().toISOString();
   return database
     .prepare(`
@@ -88,7 +88,7 @@ async function ensureLedger(database, message, eventId) {
     .bind(
       eventId,
       message.account_id,
-      message.assessment_id,
+      assessmentId,
       message.market_key,
       now,
       now,
@@ -128,23 +128,6 @@ async function claimLedger(database, eventId) {
     )
     .run();
   return changes(result) === 1 ? leaseToken : null;
-}
-
-async function markNotScheduled(database, eventId, leaseToken) {
-  return database
-    .prepare(`
-      /* jobber_appointment_consumer:not_scheduled */
-      UPDATE jobber_appointment_signals
-      SET
-        status = 'not_scheduled',
-        lease_token = NULL,
-        lease_expires_at = NULL,
-        last_error_code = NULL,
-        updated_at = ?
-      WHERE event_id = ? AND status = 'processing' AND lease_token = ?
-    `)
-    .bind(new Date().toISOString(), eventId, leaseToken)
-    .run();
 }
 
 async function markRetryable(database, eventId, leaseToken, errorCode) {
@@ -222,15 +205,17 @@ async function safeJson(response) {
   }
 }
 
-function validResolvedSignal(signal, message, eventId) {
+function validResolvedSignal(signal, message) {
+  const assessmentId = clean(signal?.jobber_assessment_id, 500);
   return signal?.event_name === APPOINTMENT_EVENT_NAME
-    && signal?.event_id === eventId
+    && Boolean(assessmentId)
+    && signal?.event_id === eventIdFor(message.account_id, assessmentId)
     && signal?.route_to_sales_pipeline === true
     && signal?.appointment_type === "assessment"
     && Boolean(clean(signal?.appointment_start_at, 80))
     && Boolean(clean(signal?.appointment_end_at, 80))
     && signal?.jobber_account_id === message.account_id
-    && signal?.jobber_assessment_id === message.assessment_id
+    && signal?.jobber_request_id === message.request_id
     && signal?.market_key === message.market_key;
 }
 
@@ -251,7 +236,7 @@ async function resolveAppointment(env, message) {
       },
       body: JSON.stringify({
         account_id: message.account_id,
-        assessment_id: message.assessment_id,
+        request_id: message.request_id,
         market_key: message.market_key,
         occurred_at: message.occurred_at,
       }),
@@ -332,9 +317,26 @@ async function processMessage(message, env) {
   }
 
   const body = message.body;
-  const eventId = eventIdFor(body);
+  let resolved;
   try {
-    await ensureLedger(database, body, eventId);
+    resolved = await resolveAppointment(env, body);
+  } catch {
+    retryMessage(message);
+    return;
+  }
+  if (resolved.status === "not_scheduled") {
+    message.ack();
+    return;
+  }
+  if (resolved.status !== "scheduled" || !validResolvedSignal(resolved.signal, body)) {
+    retryMessage(message);
+    return;
+  }
+
+  const eventId = resolved.signal.event_id;
+  const assessmentId = resolved.signal.jobber_assessment_id;
+  try {
+    await ensureLedger(database, body, eventId, assessmentId);
   } catch {
     retryMessage(message);
     return;
@@ -361,16 +363,6 @@ async function processMessage(message, env) {
   }
 
   try {
-    const resolved = await resolveAppointment(env, body);
-    if (resolved.status === "not_scheduled") {
-      await markNotScheduled(database, eventId, leaseToken);
-      message.ack();
-      return;
-    }
-    if (resolved.status !== "scheduled" || !validResolvedSignal(resolved.signal, body, eventId)) {
-      throw new Error("resolver_signal_invalid");
-    }
-
     await deliverToAppointmentConsumer(env, resolved.signal);
     const delivered = await markDelivered(database, eventId, leaseToken);
     if (changes(delivered) !== 1) {
@@ -433,7 +425,6 @@ export const _private = {
   eventIdFor,
   markDelivered,
   markManualReview,
-  markNotScheduled,
   markRetryable,
   processMessage,
   readLedger,

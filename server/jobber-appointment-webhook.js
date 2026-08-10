@@ -1,6 +1,6 @@
 import { getJobberOAuthRoute } from "../functions/api/jobber/oauth/config.js";
 
-const SUPPORTED_TOPICS = new Set(["ASSESSMENT_CREATE", "ASSESSMENT_UPDATE"]);
+const SUPPORTED_TOPICS = new Set(["REQUEST_CREATE", "REQUEST_UPDATE"]);
 const MAX_WEBHOOK_BODY_BYTES = 64 * 1024;
 const RESOLVE_DELAY_SECONDS = 2;
 
@@ -99,7 +99,7 @@ export function parseJobberAppointmentWebhook(rawBody) {
       source: "jobber",
       topic,
       account_id: accountId,
-      assessment_id: itemId,
+      request_id: itemId,
       occurred_at: occurredAt || new Date().toISOString(),
       market_key: route.marketKey,
       market_name: route.accountLabel,
@@ -143,7 +143,7 @@ export async function handleJobberAppointmentWebhook({ request, env }) {
   const parsed = parseJobberAppointmentWebhook(rawBody);
   if (!parsed.ok) {
     if (parsed.code === "unknown_account") {
-      console.warn("Ignored a signed Jobber Assessment webhook from an unapproved account.");
+      console.warn("Ignored a signed Jobber Request webhook from an unapproved account.");
     }
     return jsonResponse(
       { ok: parsed.status === 202, accepted: false, code: parsed.code },

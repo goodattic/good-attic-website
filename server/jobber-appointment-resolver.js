@@ -4,31 +4,34 @@ import { _private as leadHelpers } from "../functions/api/leads.js";
 const MAX_RESOLVER_BODY_BYTES = 32 * 1024;
 const APPOINTMENT_EVENT_NAME = "jobber.appointment_scheduled.v1";
 
-const ASSESSMENT_QUERY = `
-  query GoodAtticAppointmentScheduled($id: EncodedId!) {
-    assessment(id: $id) {
+const REQUEST_ASSESSMENT_QUERY = `
+  query GoodAtticAppointmentScheduledFromRequest($id: EncodedId!) {
+    request(id: $id) {
       id
-      startAt
-      endAt
-      title
-      client {
+      assessment {
         id
-        name
-        email
-        phone
-        defaultEmails
-        defaultPhones
-      }
-      request {
-        id
-        jobberWebUri
-        contactName
-        email
-        phone
-      }
-      property {
-        id
-        jobberWebUri
+        startAt
+        endAt
+        title
+        client {
+          id
+          name
+          email
+          phone
+          defaultEmails
+          defaultPhones
+        }
+        request {
+          id
+          jobberWebUri
+          contactName
+          email
+          phone
+        }
+        property {
+          id
+          jobberWebUri
+        }
       }
     }
   }
@@ -160,9 +163,9 @@ export async function handleJobberAppointmentResolve({ request, env }) {
   }
 
   const accountId = clean(input?.account_id, 500);
-  const assessmentId = clean(input?.assessment_id, 500);
+  const requestId = clean(input?.request_id, 500);
   const route = ROUTES_BY_ACCOUNT_ID.get(accountId);
-  if (!route || !assessmentId) {
+  if (!route || !requestId) {
     return jsonResponse({ ok: false, code: "unknown_jobber_object" }, 400);
   }
   if (clean(input?.market_key, 40) && clean(input.market_key, 40) !== route.marketKey) {
@@ -174,18 +177,20 @@ export async function handleJobberAppointmentResolve({ request, env }) {
     const result = await leadHelpers.jobberGraphql(
       env,
       token.accessToken,
-      ASSESSMENT_QUERY,
-      { id: assessmentId },
+      REQUEST_ASSESSMENT_QUERY,
+      { id: requestId },
     );
-    const assessment = result?.data?.assessment;
-    if (!assessment?.id) {
-      return jsonResponse({ ok: false, code: "assessment_not_found" }, 404);
+    const jobberRequest = result?.data?.request;
+    if (!jobberRequest?.id) {
+      return jsonResponse({ ok: false, code: "request_not_found" }, 404);
     }
-    if (!assessment.startAt || !assessment.endAt) {
+    const assessment = jobberRequest.assessment;
+    if (!assessment?.id || !assessment.startAt || !assessment.endAt) {
       return jsonResponse({
         ok: true,
         status: "not_scheduled",
-        jobber_assessment_id: assessment.id,
+        jobber_request_id: jobberRequest.id,
+        jobber_assessment_id: clean(assessment?.id, 500),
       });
     }
 
@@ -207,8 +212,8 @@ export async function handleJobberAppointmentResolve({ request, env }) {
 
 export const _private = {
   APPOINTMENT_EVENT_NAME,
-  ASSESSMENT_QUERY,
   MAX_RESOLVER_BODY_BYTES,
+  REQUEST_ASSESSMENT_QUERY,
   ROUTES_BY_ACCOUNT_ID,
   bearerAuthorized,
   constantTimeEqualBytes,
