@@ -26,9 +26,30 @@ const legacyRedirects = new Map([
   ["/salt-lake-city/spray-foam-insulation", "https://goodattic.energy/salt-lake-city-ut/attic-insulation/"],
 ]);
 
+const previewSafeApiPaths = new Set([
+  "/api/site-config",
+]);
+
 export async function onRequest(context) {
   const url = new URL(context.request.url);
   const legacyTarget = legacyRedirects.get(url.pathname);
+
+  if (
+    url.pathname.startsWith("/api/")
+    && !previewSafeApiPaths.has(url.pathname)
+    && context.env?.EXTERNAL_API_WRITES_ENABLED !== "true"
+  ) {
+    return new Response(JSON.stringify({
+      ok: false,
+      status: "external_api_writes_disabled",
+    }), {
+      status: 503,
+      headers: {
+        "Cache-Control": "no-store",
+        "Content-Type": "application/json; charset=utf-8",
+      },
+    });
+  }
 
   if (legacyTarget) {
     return Response.redirect(legacyTarget, 301);

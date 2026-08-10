@@ -2880,6 +2880,19 @@ textarea {
   line-height: 1.45;
 }
 
+.form-disclosure {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.form-disclosure a {
+  color: var(--green);
+  font-weight: 850;
+}
+
 .form-status {
   min-height: 24px;
   margin: 0;
@@ -2917,6 +2930,56 @@ textarea {
 .footer-links a {
   color: var(--green);
   font-weight: 700;
+}
+
+.legal-section {
+  padding-top: 30px;
+}
+
+.legal-content {
+  max-width: 920px;
+  padding: 34px;
+  margin: 0 auto;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 16px 40px rgba(23, 33, 28, 0.06);
+}
+
+.legal-content h2 {
+  margin: 34px 0 10px;
+  color: var(--ink);
+  font-size: clamp(24px, 2.4vw, 34px);
+  line-height: 1.1;
+}
+
+.legal-content h2:first-of-type {
+  margin-top: 0;
+}
+
+.legal-content p {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.legal-content a {
+  color: var(--green);
+  font-weight: 850;
+}
+
+.legal-content strong {
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.legal-updated {
+  color: var(--green) !important;
+  font-size: 14px !important;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .modal {
@@ -3900,6 +3963,14 @@ textarea {
 
   .thank-you-modal__copy {
     font-size: 16px;
+  }
+
+  .legal-content {
+    padding: 26px 18px;
+  }
+
+  .legal-content p {
+    font-size: 15px;
   }
 
   .modal-form.contact-form {

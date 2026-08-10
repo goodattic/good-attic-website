@@ -19,12 +19,14 @@ This file separates the launch tasks Codex can handle in-repo from the steps tha
 
 ```bash
 node build-seo-wave1.mjs
+npm run build
 ```
 
-2. Run the launch check:
+2. Run the launch and deployment checks:
 
 ```bash
 node scripts/check-launch-readiness.mjs
+npm test
 ```
 
 3. Push `main` so Cloudflare Pages rebuilds production.
@@ -66,9 +68,9 @@ node scripts/submit-indexnow.mjs https://goodattic.energy
 
 ### 5. Confirm lead handling
 
-- Confirm `GHL_WEBHOOK_URL` is set in Cloudflare Pages production.
+- Confirm Jobber API credentials and market refresh tokens are set in Cloudflare Pages production.
 - Run one real production form test after launch.
-- Confirm the lead lands in the intended GHL workflow and opportunity path.
+- Confirm the lead lands in the intended Jobber account and intake path.
 
 ### 6. Strengthen local entity trust
 

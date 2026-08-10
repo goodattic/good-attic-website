@@ -1,0 +1,27 @@
+name = "good-attic-jobber-appointment-consumer"
+main = "jobber-appointment-consumer.js"
+compatibility_date = "2026-08-05"
+workers_dev = false
+preview_urls = false
+
+[observability]
+enabled = true
+
+[vars]
+JOBBER_APPOINTMENT_RESOLVER_URL = "https://goodattic.energy/api/jobber/appointment-resolve"
+JOBBER_APPOINTMENT_CONSUMER_URL = "https://partners.goodattic.energy/api/jobber-appointment-scheduled"
+
+[[d1_databases]]
+binding = "APPOINTMENT_DB"
+database_name = "good-attic-jobber-appointment-events"
+database_id = "8ae177b0-1957-45b6-866c-96c0466ae528"
+migrations_dir = "jobber-appointment-migrations"
+
+[[queues.consumers]]
+queue = "good-attic-jobber-appointment-events"
+max_batch_size = 1
+max_batch_timeout = 1
+max_retries = 10
+retry_delay = 60
+dead_letter_queue = "good-attic-jobber-appointment-events-dlq"
+max_concurrency = 1

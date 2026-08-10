@@ -492,6 +492,96 @@
     ]
   },
   {
+    "slug": "privacy-policy",
+    "url": "/privacy-policy/",
+    "page_type": "core",
+    "market": null,
+    "city": null,
+    "primary_keyword": "good attic privacy policy",
+    "secondary_keywords": [
+      "good attic text messaging privacy",
+      "good attic customer data"
+    ],
+    "seo_title": "Privacy Policy | Good Attic",
+    "meta_description": "Read the Good Attic privacy policy, including how customer information, service requests, and text messaging data are collected, used, and protected.",
+    "h1": "Privacy Policy",
+    "intro": "This policy explains how Good Attic collects, uses, protects, and shares customer information when homeowners use the website, request attic services, call, text, or communicate with the team.",
+    "page_purpose": "Privacy / SMS compliance",
+    "cta_primary": "Contact Good Attic",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Privacy Policy",
+        "url": "/privacy-policy/"
+      }
+    ],
+    "canonical_url": "https://goodattic.energy/privacy-policy/",
+    "related_links": [
+      {
+        "label": "Terms of Service",
+        "url": "/terms-of-service/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [],
+    "trust_elements": [
+      "Public privacy policy",
+      "SMS opt-out instructions",
+      "No mobile opt-in sharing for marketing"
+    ]
+  },
+  {
+    "slug": "terms-of-service",
+    "url": "/terms-of-service/",
+    "page_type": "core",
+    "market": null,
+    "city": null,
+    "primary_keyword": "good attic terms of service",
+    "secondary_keywords": [
+      "good attic sms terms",
+      "good attic text messaging terms"
+    ],
+    "seo_title": "Terms of Service | Good Attic",
+    "meta_description": "Read the Good Attic terms of service, including SMS/text messaging terms, opt-out instructions, message frequency, and customer support information.",
+    "h1": "Terms of Service",
+    "intro": "These terms explain how homeowners may use the Good Attic website and communication channels, including the Good Attic text messaging program used for attic service requests, scheduling, updates, and support.",
+    "page_purpose": "Terms / SMS compliance",
+    "cta_primary": "Contact Good Attic",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Terms of Service",
+        "url": "/terms-of-service/"
+      }
+    ],
+    "canonical_url": "https://goodattic.energy/terms-of-service/",
+    "related_links": [
+      {
+        "label": "Privacy Policy",
+        "url": "/privacy-policy/"
+      },
+      {
+        "label": "Contact Good Attic",
+        "url": "/contact/"
+      }
+    ],
+    "faq_items": [],
+    "trust_elements": [
+      "Good Attic messaging terms",
+      "STOP and HELP instructions",
+      "Message and data rates disclosure"
+    ]
+  },
+  {
     "slug": "attic-insulation",
     "url": "/services/attic-insulation/",
     "page_type": "core-service",

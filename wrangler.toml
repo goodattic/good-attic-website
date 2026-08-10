@@ -1,0 +1,32 @@
+name = "good-attic-website"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-07-27"
+
+[env.production.vars]
+EXTERNAL_API_WRITES_ENABLED = "true"
+ANGI_SOURCE_ROUTING_ENABLED = "true"
+JOBBER_GOOGLE_ROUTING_MARKETS = "ut,mo_stl,mo_kc"
+FIELDFLOW_ATTRIBUTION_BASE_URL = "https://fieldflow.goodattic.energy/api/integrations/highlevel/lead-attribution"
+
+[env.preview]
+kv_namespaces = []
+d1_databases = []
+
+[env.preview.vars]
+EXTERNAL_API_WRITES_ENABLED = "false"
+ANGI_SOURCE_ROUTING_ENABLED = "false"
+JOBBER_GOOGLE_ROUTING_MARKETS = ""
+FIELDFLOW_ATTRIBUTION_BASE_URL = ""
+
+[[env.production.kv_namespaces]]
+binding = "JOBBER_TOKEN_STORE"
+id = "874646076a5346689974284f5e8b1832"
+
+[[env.production.d1_databases]]
+binding = "ANGI_ROUTER_DB"
+database_name = "good-attic-angi-jobber-router"
+database_id = "934d7ad9-cba8-4cb4-9494-1e9980b7c403"
+
+[[env.production.queues.producers]]
+binding = "JOBBER_APPOINTMENT_QUEUE"
+queue = "good-attic-jobber-appointment-events"

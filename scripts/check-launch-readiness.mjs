@@ -185,7 +185,7 @@ async function main() {
   console.log("- Submit the sitemap in both webmaster tools.");
   console.log("- Confirm Cloudflare is not blocking Googlebot, Bingbot, or OAI-SearchBot.");
   console.log("- Load the first approved review excerpts and project evidence into data/proof/*.json.");
-  console.log("- Confirm GHL_WEBHOOK_URL is set in Cloudflare Pages production.");
+  console.log("- Confirm Jobber API credentials and market refresh tokens are set in Cloudflare Pages production.");
 
   console.log(failed ? "\nLaunch check finished with failures." : "\nLaunch check finished without blocking failures.");
   process.exitCode = failed ? 1 : 0;

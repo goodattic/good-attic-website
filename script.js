@@ -58,6 +58,9 @@ const attributionParamNames = [
   "utm_term",
   "utm_content"
 ];
+const attributionParamNameSet = new Set(attributionParamNames);
+let attributionCaptureEvaluated = false;
+let attributionForCurrentDocument = {};
 
 const pageContextRules = [
   {
@@ -176,52 +179,192 @@ function ensureGoogleTag() {
   }
 }
 
+function normalizeAttributionHost(hostname) {
+  return String(hostname || "").trim().toLowerCase().replace(/^www\./, "");
+}
+
+function getAttributionHost(urlValue) {
+  try {
+    return normalizeAttributionHost(new URL(urlValue).hostname);
+  } catch (error) {
+    return "";
+  }
+}
+
+function isSameAttributionSite(leftHost, rightHost) {
+  if (!leftHost || !rightHost) return false;
+  return leftHost === rightHost || leftHost.endsWith(`.${rightHost}`) || rightHost.endsWith(`.${leftHost}`);
+}
+
+function isExternalAttributionReferrer(referrer) {
+  const referrerHost = getAttributionHost(referrer);
+  const currentHost = getAttributionHost(window.location.href);
+  return Boolean(referrerHost && currentHost && !isSameAttributionSite(referrerHost, currentHost));
+}
+
+function isInternalAttributionReferrer(referrer) {
+  const referrerHost = getAttributionHost(referrer);
+  const currentHost = getAttributionHost(window.location.href);
+  return Boolean(referrerHost && currentHost && isSameAttributionSite(referrerHost, currentHost));
+}
+
+function getCurrentAttributionParams() {
+  const attribution = {};
+  const params = new URLSearchParams(window.location.search);
+
+  params.forEach((rawValue, rawName) => {
+    const name = rawName.toLowerCase();
+    if (!attributionParamNameSet.has(name) || attribution[name]) return;
+
+    const value = rawValue.trim();
+    if (value) attribution[name] = value.slice(0, 500);
+  });
+
+  return attribution;
+}
+
+function hasAttributionParams(attribution) {
+  return attributionParamNames.some((name) => Boolean(attribution[name]));
+}
+
+function attributionParamsMatch(left, right) {
+  return attributionParamNames.every((name) => (left[name] || "") === (right[name] || ""));
+}
+
+function sanitizeStoredAttribution(parsed, now = Date.now()) {
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+  if (typeof parsed.captured_at !== "string") return null;
+
+  const capturedAt = Date.parse(parsed.captured_at);
+  const age = now - capturedAt;
+  if (!Number.isFinite(capturedAt) || age < 0 || age > googleAdsTracking.attributionMaxAgeMs) return null;
+
+  if (
+    typeof parsed.landing_page !== "string" ||
+    typeof parsed.landing_page_path !== "string" ||
+    typeof parsed.referrer !== "string"
+  ) {
+    return null;
+  }
+
+  const attribution = {
+    captured_at: parsed.captured_at,
+    landing_page: parsed.landing_page.slice(0, 5000),
+    landing_page_path: parsed.landing_page_path.slice(0, 5000),
+    referrer: parsed.referrer.slice(0, 5000)
+  };
+
+  for (const name of attributionParamNames) {
+    if (parsed[name] === undefined) continue;
+    if (typeof parsed[name] !== "string") return null;
+
+    const value = parsed[name].trim();
+    if (value) attribution[name] = value.slice(0, 500);
+  }
+
+  if (!hasAttributionParams(attribution) && !isExternalAttributionReferrer(attribution.referrer)) return null;
+  return attribution;
+}
+
+function removeStoredAttribution() {
+  try {
+    window.localStorage.removeItem(googleAdsTracking.attributionStorageKey);
+  } catch (error) {
+    // Attribution is useful but should never block the form experience.
+  }
+}
+
 function readStoredAttribution() {
   try {
     const stored = window.localStorage.getItem(googleAdsTracking.attributionStorageKey);
     if (!stored) return {};
 
-    const parsed = JSON.parse(stored);
-    const capturedAt = Date.parse(parsed.captured_at || "");
+    const attribution = sanitizeStoredAttribution(JSON.parse(stored));
+    if (attribution) return attribution;
 
-    if (!capturedAt || Date.now() - capturedAt > googleAdsTracking.attributionMaxAgeMs) {
-      window.localStorage.removeItem(googleAdsTracking.attributionStorageKey);
-      return {};
-    }
-
-    return parsed;
+    removeStoredAttribution();
+    return {};
   } catch (error) {
+    removeStoredAttribution();
     return {};
   }
 }
 
+function isRepeatAttributionNavigation() {
+  try {
+    const navigationEntry = window.performance?.getEntriesByType?.("navigation")?.[0];
+    if (navigationEntry?.type === "reload" || navigationEntry?.type === "back_forward") return true;
+
+    const legacyType = window.performance?.navigation?.type;
+    return legacyType === 1 || legacyType === 2;
+  } catch (error) {
+    return false;
+  }
+}
+
+function shouldCaptureAttributionTouch(params, referrer, storedAttribution) {
+  const hasParams = hasAttributionParams(params);
+  const hasExternalReferrer = isExternalAttributionReferrer(referrer);
+  if (!hasParams && !hasExternalReferrer) return false;
+
+  // Reloading or restoring the same landing page is not another marketing touch.
+  if (isRepeatAttributionNavigation()) return false;
+
+  // A real external referral is a fresh organic, paid, or partner touch even when
+  // its campaign values happen to match the previous visit.
+  if (hasExternalReferrer) return true;
+
+  // Direct/internal navigation sometimes carries the original query string
+  // forward. Keep the original landing page and timestamp in that case.
+  if (isInternalAttributionReferrer(referrer) && attributionParamsMatch(params, storedAttribution)) return false;
+
+  // A normal direct entry carrying campaign or click parameters is itself a
+  // fresh touch. A same-page submit cannot reach this branch a second time.
+  return hasParams;
+}
+
+function buildAttributionSnapshot(params, referrer, now = Date.now()) {
+  return {
+    ...params,
+    captured_at: new Date(now).toISOString(),
+    landing_page: window.location.href.slice(0, 5000),
+    landing_page_path: `${window.location.pathname}${window.location.search}`.slice(0, 5000),
+    referrer: String(referrer || "").slice(0, 5000)
+  };
+}
+
 function captureAttribution() {
-  const params = new URLSearchParams(window.location.search);
-  const attribution = readStoredAttribution();
-  let hasNewAttribution = false;
+  if (attributionCaptureEvaluated) {
+    const current = sanitizeStoredAttribution(attributionForCurrentDocument);
+    if (current) return current;
 
-  attributionParamNames.forEach((name) => {
-    const value = params.get(name);
-    if (value) {
-      attribution[name] = value.slice(0, 500);
-      hasNewAttribution = true;
-    }
-  });
-
-  if (hasNewAttribution) {
-    attribution.captured_at = new Date().toISOString();
-    attribution.landing_page = window.location.href;
-    attribution.landing_page_path = `${window.location.pathname}${window.location.search}`;
-    attribution.referrer = document.referrer || attribution.referrer || "";
-
-    try {
-      window.localStorage.setItem(googleAdsTracking.attributionStorageKey, JSON.stringify(attribution));
-    } catch (error) {
-      // Attribution is useful but should never block the form experience.
-    }
+    attributionForCurrentDocument = {};
+    removeStoredAttribution();
+    return attributionForCurrentDocument;
   }
 
-  return attribution;
+  attributionCaptureEvaluated = true;
+  const storedAttribution = readStoredAttribution();
+  const params = getCurrentAttributionParams();
+  const referrer = document.referrer || "";
+
+  if (!shouldCaptureAttributionTouch(params, referrer, storedAttribution)) {
+    attributionForCurrentDocument = storedAttribution;
+    return attributionForCurrentDocument;
+  }
+
+  attributionForCurrentDocument = buildAttributionSnapshot(params, referrer);
+
+  try {
+    window.localStorage.setItem(
+      googleAdsTracking.attributionStorageKey,
+      JSON.stringify(attributionForCurrentDocument)
+    );
+  } catch (error) {
+    // Attribution is useful but should never block the form experience.
+  }
+
+  return attributionForCurrentDocument;
 }
 
 function addAttributionToPayload(payload) {
@@ -1327,7 +1470,7 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const status = form.querySelector("[data-form-status]");
-    const endpoint = form.dataset.ghlWebhook || "/api/leads";
+    const endpoint = form.dataset.leadEndpoint || form.dataset.ghlWebhook || "/api/leads";
     const submitButton = form.querySelector('button[type="submit"]');
     let shouldShowThankYou = false;
 
@@ -1388,7 +1531,7 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
         return;
       }
     } else if (status) {
-      status.textContent = "Thanks. Your request is ready for GoHighLevel wiring.";
+      status.textContent = "Thanks. Your request is ready for lead routing.";
     }
 
     form.reset();

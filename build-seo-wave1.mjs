@@ -2811,6 +2811,70 @@ const corePages = [
       "Dynamic lead form already used on the homepage",
       "Routing prepared for all three launch markets"
     ]
+  },
+  {
+    slug: "privacy-policy",
+    url: "/privacy-policy/",
+    page_type: "core",
+    market: null,
+    city: null,
+    primary_keyword: "good attic privacy policy",
+    secondary_keywords: ["good attic text messaging privacy", "good attic customer data"],
+    seo_title: "Privacy Policy | Good Attic",
+    meta_description:
+      "Read the Good Attic privacy policy, including how customer information, service requests, and text messaging data are collected, used, and protected.",
+    h1: "Privacy Policy",
+    intro:
+      "This policy explains how Good Attic collects, uses, protects, and shares customer information when homeowners use the website, request attic services, call, text, or communicate with the team.",
+    page_purpose: "Privacy / SMS compliance",
+    cta_primary: "Contact Good Attic",
+    breadcrumb_items: [
+      { label: "Home", url: "/" },
+      { label: "Privacy Policy", url: "/privacy-policy/" }
+    ],
+    canonical_url: `${site.baseUrl}/privacy-policy/`,
+    related_links: [
+      { label: "Terms of Service", url: "/terms-of-service/" },
+      { label: "Contact Good Attic", url: "/contact/" }
+    ],
+    faq_items: [],
+    trust_elements: [
+      "Public privacy policy",
+      "SMS opt-out instructions",
+      "No mobile opt-in sharing for marketing"
+    ]
+  },
+  {
+    slug: "terms-of-service",
+    url: "/terms-of-service/",
+    page_type: "core",
+    market: null,
+    city: null,
+    primary_keyword: "good attic terms of service",
+    secondary_keywords: ["good attic sms terms", "good attic text messaging terms"],
+    seo_title: "Terms of Service | Good Attic",
+    meta_description:
+      "Read the Good Attic terms of service, including SMS/text messaging terms, opt-out instructions, message frequency, and customer support information.",
+    h1: "Terms of Service",
+    intro:
+      "These terms explain how homeowners may use the Good Attic website and communication channels, including the Good Attic text messaging program used for attic service requests, scheduling, updates, and support.",
+    page_purpose: "Terms / SMS compliance",
+    cta_primary: "Contact Good Attic",
+    breadcrumb_items: [
+      { label: "Home", url: "/" },
+      { label: "Terms of Service", url: "/terms-of-service/" }
+    ],
+    canonical_url: `${site.baseUrl}/terms-of-service/`,
+    related_links: [
+      { label: "Privacy Policy", url: "/privacy-policy/" },
+      { label: "Contact Good Attic", url: "/contact/" }
+    ],
+    faq_items: [],
+    trust_elements: [
+      "Good Attic messaging terms",
+      "STOP and HELP instructions",
+      "Message and data rates disclosure"
+    ]
   }
 ];
 
@@ -3244,6 +3308,8 @@ function relatedLinkText(url, label) {
   if (url === "/contact/") return "Use the contact page when you are ready to turn the research path into a documented attic next step.";
   if (url === "/financing/") return "Open financing when the attic scope is becoming clearer and the homeowner needs payment-path context too.";
   if (url === "/locations/") return "Use the locations page to pick the right real market hub before drilling further into city or service pages.";
+  if (url === "/privacy-policy/") return "Review how Good Attic handles customer information, service requests, and text messaging data.";
+  if (url === "/terms-of-service/") return "Review the Good Attic website and SMS terms, including STOP, HELP, rates, and message-frequency details.";
   return `Open ${label} as the next relevant page in the attic planning path.`;
 }
 
@@ -3377,6 +3443,7 @@ function renderRelatedLinksSection(page, currentUrl) {
   const relatedCandidates = [...contextualRelatedLinks(page), ...(page.related_links || [])];
   const uniqueLinks = relatedCandidates.filter((item, index, list) => item.url !== page.url && list.findIndex((candidate) => candidate.url === item.url) === index);
   if (!uniqueLinks.length) return "";
+  const isLegalPage = page.slug === "privacy-policy" || page.slug === "terms-of-service";
 
   const cards = uniqueLinks.slice(0, 4).map((item) => ({
     url: item.url,
@@ -3391,9 +3458,13 @@ function renderRelatedLinksSection(page, currentUrl) {
   return `
     <section class="section">
       <div class="section-heading reveal">
-        <p class="eyebrow">Best next pages</p>
-        <h2>Keep moving through the site without hitting a dead end.</h2>
-        <p class="section-subcopy">These are the most relevant next pages from here based on the current attic topic, market, or support path.</p>
+        <p class="eyebrow">${isLegalPage ? "Related policies" : "Best next pages"}</p>
+        <h2>${isLegalPage ? "Review the connected customer communication pages." : "Keep moving through the site without hitting a dead end."}</h2>
+        <p class="section-subcopy">${
+          isLegalPage
+            ? "These links keep the privacy, terms, and customer contact paths easy to find."
+            : "These are the most relevant next pages from here based on the current attic topic, market, or support path."
+        }</p>
       </div>
       ${renderFeatureGrid(cards, currentUrl, true)}
     </section>
@@ -3466,10 +3537,23 @@ function renderFooter() {
         <a href="/resources/">Resources</a>
         <a href="/locations/">Locations</a>
         <a href="/contact/">Contact</a>
+        <a href="/privacy-policy/">Privacy Policy</a>
+        <a href="/terms-of-service/">Terms of Service</a>
       </p>
       <p>© <span data-year></span> ${escapeHtml(site.name)}. ${escapeHtml(site.footerSummary)}</p>
       <p>${escapeHtml(site.footerDisclaimer)}</p>
     </footer>
+  `;
+}
+
+function renderSmsDisclosure(currentUrl) {
+  return `
+    <p class="form-disclosure">
+      By submitting, you agree that Good Attic may call or text you about your request, including by automated technology.
+      Consent is not a condition of purchase. Message and data rates may apply. Reply STOP to opt out or HELP for help.
+      View our <a href="${hrefFrom(currentUrl, "/privacy-policy/")}">Privacy Policy</a> and
+      <a href="${hrefFrom(currentUrl, "/terms-of-service/")}">Terms of Service</a>.
+    </p>
   `;
 }
 
@@ -3545,7 +3629,7 @@ function renderModal(currentUrl) {
           <div class="modal-progress" data-modal-progress aria-hidden="true"><span></span></div>
           <h2 id="modal-title">Request your free attic quote.</h2>
           <p>Takes about 30 seconds to complete.</p>
-          <form class="contact-form modal-form" data-lead-form data-form-name="Quote modal form" data-ghl-webhook="/api/leads">
+          <form class="contact-form modal-form" data-lead-form data-form-name="Quote modal form" data-lead-endpoint="/api/leads">
             <input type="hidden" name="lead_source" value="Good Attic website">
             <input type="hidden" name="form_name" value="Quote modal form">
             <input type="hidden" name="source_page" data-source-page>
@@ -3614,6 +3698,7 @@ function renderModal(currentUrl) {
               <span>Additional notes</span>
               <textarea name="additional_notes" rows="3"></textarea>
             </label>
+            ${renderSmsDisclosure(currentUrl)}
             <button class="button primary" type="submit">Request My Free Quote</button>
             <p class="form-status" data-form-status aria-live="polite"></p>
           </form>
@@ -3625,7 +3710,7 @@ function renderModal(currentUrl) {
 
 function renderLeadForm(currentUrl) {
   return `
-    <form class="contact-form reveal lead-form" data-lead-form data-form-name="Contact page form" data-ghl-webhook="/api/leads">
+    <form class="contact-form reveal lead-form" data-lead-form data-form-name="Contact page form" data-lead-endpoint="/api/leads">
       <input type="hidden" name="lead_source" value="Good Attic website">
       <input type="hidden" name="form_name" value="Contact page form">
       <input type="hidden" name="source_page" data-source-page>
@@ -3702,6 +3787,7 @@ function renderLeadForm(currentUrl) {
         <textarea name="additional_notes" rows="4" placeholder="Tell us what you are seeing, what rooms feel uncomfortable, or anything else we should know."></textarea>
       </label>
 
+      ${renderSmsDisclosure(currentUrl)}
       <button class="button primary" type="submit">Request My Free Quote</button>
       <p class="form-status" data-form-status aria-live="polite"></p>
     </form>
@@ -3710,7 +3796,7 @@ function renderLeadForm(currentUrl) {
 
 function renderHomepageLeadForm(currentUrl, formName) {
   return `
-    <form class="contact-form reveal lead-form" data-lead-form data-form-name="${escapeHtml(formName)}" data-ghl-webhook="/api/leads">
+    <form class="contact-form reveal lead-form" data-lead-form data-form-name="${escapeHtml(formName)}" data-lead-endpoint="/api/leads">
       <input type="hidden" name="lead_source" value="Good Attic website">
       <input type="hidden" name="form_name" value="${escapeHtml(formName)}">
       <input type="hidden" name="source_page" data-source-page>
@@ -3787,6 +3873,7 @@ function renderHomepageLeadForm(currentUrl, formName) {
         <textarea name="additional_notes" rows="4" placeholder="Tell us what you are seeing, what rooms feel uncomfortable, or anything else we should know."></textarea>
       </label>
 
+      ${renderSmsDisclosure(currentUrl)}
       <button class="button primary" type="submit">Request My Free Quote</button>
       <p class="form-status" data-form-status aria-live="polite"></p>
     </form>
@@ -10890,6 +10977,112 @@ const resourcePages = [
 
 resourcePages.push(...buildMarketProblemResourcePages());
 
+function renderLegalPage(page, currentUrl) {
+  const isPrivacy = page.slug === "privacy-policy";
+  const counterpart = isPrivacy
+    ? { label: "Terms of Service", url: "/terms-of-service/" }
+    : { label: "Privacy Policy", url: "/privacy-policy/" };
+
+  return `
+    ${renderHero(currentUrl, page, {
+      eyebrow: isPrivacy ? "Privacy and customer data" : "Terms and text messaging",
+      cardKicker: "Good Attic customer communications",
+      cardTitle: isPrivacy
+        ? "Clear privacy language for website, service, and text-message requests."
+        : "Clear SMS terms for homeowners who call, text, or request attic help.",
+      cardText:
+        "These pages are written to be publicly accessible, easy to find in the footer, and aligned with common business text messaging review requirements.",
+      cardPoints: page.trust_elements,
+      actions: [
+        { label: counterpart.label, url: counterpart.url },
+        { label: "Contact Good Attic", url: "/contact/", secondary: true }
+      ]
+    })}
+
+    <section class="section legal-section">
+      <article class="legal-content reveal">
+        <p class="legal-updated">Last updated: July 13, 2026</p>
+        ${
+          isPrivacy
+            ? `
+              <h2>Who this policy covers</h2>
+              <p>Good Attic is a service-area home services business that helps homeowners with attic insulation, insulation removal, attic pest remediation, attic fans, attic air sealing, cleanup, and related attic comfort issues. This policy covers information collected through ${escapeHtml(
+                site.baseUrl
+              )}, website forms, phone calls, text messages, service requests, estimates, scheduling, and customer support communications.</p>
+              <p>Good Attic does not operate as a walk-in retail storefront for attic assessments. Customer assessments and service work take place at the property being reviewed. Customers can reach Good Attic through the <a href="${hrefFrom(
+                currentUrl,
+                "/contact/"
+              )}">contact page</a>, by calling or texting <a href="${site.phoneHref}">${escapeHtml(site.phoneDisplay)}</a>, or through the local market numbers listed on the site.</p>
+
+              <h2>Information we collect</h2>
+              <p>We may collect the information you provide when you request an attic assessment, quote, service, or support. This can include your name, phone number, email address, property address, city, state, ZIP code, project type, preferred appointment timing, notes about the attic, photos or service documentation, and other details you choose to share.</p>
+              <p>We may also collect website and attribution information, including the page you submitted from, referral source, advertising identifiers such as UTM parameters or click IDs, browser/device information, and interaction data used to understand website performance and route requests properly.</p>
+
+              <h2>How we use information</h2>
+              <p>Good Attic uses customer information to respond to requests, schedule attic assessments, prepare estimates, provide service updates, send appointment reminders, manage customer support, route requests to the right market team, process payments or financing requests where applicable, improve the website, measure advertising performance, and maintain records related to service work.</p>
+
+              <h2>Text messages and customer communications</h2>
+              <p>If you submit a form, call, text, request service, or otherwise provide your phone number to Good Attic, we may use that number to communicate with you about your request. Text messages may include estimate follow-up, appointment scheduling, reminders, technician or project updates, customer support, invoices, review requests, and occasional service-related offers where allowed by law.</p>
+              <p>Message frequency varies based on your request, appointment, and active service relationship. Message and data rates may apply. <strong>Reply STOP to opt out of text messages.</strong> Reply HELP for help. You can also contact Good Attic through the website or by calling <a href="${site.phoneHref}">${escapeHtml(
+                site.phoneDisplay
+              )}</a>.</p>
+
+              <h2>How we share information</h2>
+              <p>Good Attic may share information with service providers and operational partners that help us run the business, including scheduling and customer communication platforms such as Jobber, website hosting and security providers, payment or financing providers when applicable, advertising and analytics providers, and messaging carriers or aggregators needed to deliver text messages.</p>
+              <p>We may also share information when required by law, to protect our rights, to prevent fraud or abuse, or to complete a business transaction involving Good Attic.</p>
+              <p><strong>Good Attic does not sell customer personal information. Mobile phone numbers, text messaging opt-in data, and SMS consent are not shared with third parties or affiliates for their marketing or promotional purposes.</strong> Messaging data may be shared with vendors, carriers, and service providers only as needed to deliver and manage the messaging program.</p>
+
+              <h2>How we protect information</h2>
+              <p>We use reasonable administrative, technical, and organizational safeguards designed to protect customer information. Access is limited to people and service providers who need the information to respond to requests, provide services, operate systems, or support the customer relationship. No online or electronic system can be guaranteed to be perfectly secure.</p>
+
+              <h2>Retention and customer choices</h2>
+              <p>Good Attic keeps customer information for as long as reasonably needed to respond to requests, provide service, maintain records, comply with legal obligations, resolve disputes, and improve operations. You may ask us to update, correct, or delete information by contacting us through the <a href="${hrefFrom(
+                currentUrl,
+                "/contact/"
+              )}">contact page</a> or by calling <a href="${site.phoneHref}">${escapeHtml(site.phoneDisplay)}</a>. Some records may need to be retained for legal, security, accounting, or service-history reasons.</p>
+
+              <h2>Policy updates</h2>
+              <p>Good Attic may update this Privacy Policy from time to time. The updated version will be posted on this page with a new last updated date.</p>
+              <p>This policy is provided for transparency and should be reviewed against the laws and requirements that apply to your situation.</p>
+            `
+            : `
+              <h2>Program name and description</h2>
+              <p>The Good Attic customer communications program is used by Good Attic to communicate with homeowners and customers who request attic help, submit a website form, call or text the business, book an assessment, or otherwise ask to communicate with the team.</p>
+              <p>Messages may include estimate follow-up, appointment scheduling, appointment reminders, service updates, project coordination, customer support, invoices or account notices, review requests, and occasional service-related offers where allowed by law. Good Attic may use Jobber and other service providers to send, receive, and manage these communications.</p>
+
+              <h2>Consent to receive calls and texts</h2>
+              <p>By submitting a form, calling or texting Good Attic, booking an appointment, or otherwise providing your phone number, you agree that Good Attic may contact you by phone call or text message about your request, including through automated technology where permitted. Consent is not a condition of purchase.</p>
+
+              <h2>Message frequency and rates</h2>
+              <p>Message frequency varies depending on your request, appointment activity, service updates, and customer support needs. During an active estimate or service process, you may receive multiple messages related to scheduling, reminders, project coordination, or follow-up. Message and data rates may apply.</p>
+
+              <h2>Opt-out and help instructions</h2>
+              <p><strong>Reply STOP to opt out of text messages from Good Attic.</strong> After you opt out, you may receive a final confirmation message. You can reply HELP for help, call <a href="${site.phoneHref}">${escapeHtml(
+                site.phoneDisplay
+              )}</a>, or contact Good Attic through the <a href="${hrefFrom(currentUrl, "/contact/")}">contact page</a>.</p>
+              <p>Opting out of text messages does not prevent Good Attic from contacting you by other lawful methods when needed to complete a transaction, respond to a request, provide service, or comply with legal obligations.</p>
+
+              <h2>Customer support contact information</h2>
+              <p>For support, use the <a href="${hrefFrom(currentUrl, "/contact/")}">Good Attic contact page</a>, call or text <a href="${site.phoneHref}">${escapeHtml(
+                site.phoneDisplay
+              )}</a>, or reply HELP to a Good Attic text message. Local market phone and text options may also appear in the site header and market pages.</p>
+
+              <h2>Use of the website and service information</h2>
+              <p>Website content is provided for general attic service information and does not create a guarantee of service availability, pricing, eligibility, results, or specific project scope. Actual recommendations and pricing depend on inspection findings, property conditions, local conditions, and the final written scope.</p>
+
+              <h2>Privacy</h2>
+              <p>Good Attic handles customer information according to the <a href="${hrefFrom(currentUrl, "/privacy-policy/")}">Privacy Policy</a>. The Privacy Policy explains what information may be collected, how it may be used, how text messaging information is handled, and how customers may request updates or deletion.</p>
+
+              <h2>Changes to these terms</h2>
+              <p>Good Attic may update these Terms of Service from time to time. The updated version will be posted on this page with a new last updated date.</p>
+              <p>These terms are provided for transparency and should be reviewed against the laws and requirements that apply to your situation.</p>
+            `
+        }
+      </article>
+    </section>
+  `;
+}
+
 function buildAllPages() {
   const coreServicePages = serviceCatalog.map((service) => buildCoreServicePage(service));
   const marketPages = marketCatalog.map((market) => buildMarketPage(market));
@@ -10899,6 +11092,10 @@ function buildAllPages() {
 }
 
 function renderCorePage(page, currentUrl) {
+  if (page.slug === "privacy-policy" || page.slug === "terms-of-service") {
+    return renderLegalPage(page, currentUrl);
+  }
+
   if (page.slug === "about") {
     return `
       ${renderHero(currentUrl, page, {
@@ -11795,8 +11992,8 @@ function renderCorePage(page, currentUrl) {
 
 function renderPage(page) {
   const currentUrl = page.url;
-  const stylesHref = `${assetHref(currentUrl, "styles.css")}?v=thank-you-20260609b`;
-  const scriptHref = `${assetHref(currentUrl, "script.js")}?v=thank-you-20260609b`;
+  const stylesHref = `${assetHref(currentUrl, "styles.css")}?v=legal-20260713a`;
+  const scriptHref = `${assetHref(currentUrl, "script.js")}?v=legal-20260713a`;
   const mainOpenTag = page.page_type === "market" ? '<main id="top">' : '<main class="page-main">';
 
   let bodyContent = "";
