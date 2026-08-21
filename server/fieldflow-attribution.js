@@ -60,6 +60,15 @@ function compactRecord(record) {
 }
 
 export function buildWebsiteAttribution(payload, lead, jobber) {
+  // Source identity is server-classified in /api/leads; editable form labels
+  // never override the canonical Google Ads or Organic Online contract.
+  // Fieldflow receives paid markers only after that server classification has
+  // validated their freshness and shape. HighLevel still receives the raw
+  // attribution payload for audit; this prevents stale/future markers from
+  // reclassifying an Organic Online record downstream.
+  const verifiedGoogleAds =
+    cleanScalar(lead?.source_key, 50) === "google" &&
+    cleanScalar(lead?.source_detail, 100) === "google_ads";
   return compactRecord({
     schema_version: SCHEMA_VERSION,
     jobber_request_id: cleanScalar(jobber?.request_id, 255),
@@ -69,12 +78,12 @@ export function buildWebsiteAttribution(payload, lead, jobber) {
     source_key: cleanScalar(lead?.source_key, 50),
     source_detail: cleanScalar(lead?.source_detail, 100),
     source_reason: cleanScalar(lead?.source_reason, 2000) || "server_classified",
-    gclid: readAttributionSignal(payload, "gclid"),
-    gbraid: readAttributionSignal(payload, "gbraid"),
-    wbraid: readAttributionSignal(payload, "wbraid"),
-    gad_source: readAttributionSignal(payload, "gad_source"),
-    utm_source: readAttributionSignal(payload, "utm_source"),
-    utm_medium: readAttributionSignal(payload, "utm_medium"),
+    gclid: verifiedGoogleAds ? readAttributionSignal(payload, "gclid") : "",
+    gbraid: verifiedGoogleAds ? readAttributionSignal(payload, "gbraid") : "",
+    wbraid: verifiedGoogleAds ? readAttributionSignal(payload, "wbraid") : "",
+    gad_source: verifiedGoogleAds ? readAttributionSignal(payload, "gad_source") : "",
+    utm_source: verifiedGoogleAds ? readAttributionSignal(payload, "utm_source") : "",
+    utm_medium: verifiedGoogleAds ? readAttributionSignal(payload, "utm_medium") : "",
     utm_campaign: readAttributionSignal(payload, "utm_campaign"),
     referrer: safeReferrerOrigin(payload?.ad_referrer || payload?.referrer),
   });

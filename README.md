@@ -96,6 +96,29 @@ The function currently creates a Jobber client record through the direct GraphQL
 
 The `ANGI_ROUTER_DB` D1 binding is the sole runtime token authority. Each market must be connected through the OAuth helper before traffic is enabled. The lead router fails closed if D1 is absent, if an account has no authoritative row, if a rotating refresh has an unknown outcome, or if the inferred market is outside `ut`, `mo_stl`, and `mo_kc`. There is no general-account token fallback. `JOBBER_TOKEN_STORE` is compatibility-only and is never used as a production refresh fallback.
 
+### Canonical Website Attribution
+
+The lead endpoint classifies Good Attic website forms on the server and does not
+trust the editable `lead_source` form value. There are exactly two canonical
+website outcomes:
+
+- `Google Ads | google | google_ads` requires fresh, validated Google paid
+  evidence: a plausible `gclid`, `gbraid`, or `wbraid`; a numeric `gad_source`;
+  or `utm_source=google` with a supported paid-search medium.
+- `Organic Online | website | organic_online` is the default for every other
+  website submission, including missing or stale attribution, direct traffic,
+  referrals, social, email, and organic search.
+
+Only canonical Google Ads leads may use a market's enabled Google Jobber OAuth
+app. Organic Online and every other non-PPC website lead use that market's
+website Jobber app. HighLevel and the PII-minimized Fieldflow attribution record
+receive the same server-classified label, key, and detail. HighLevel receives
+the raw attribution payload. Fieldflow receives paid markers only after the
+server has validated them; stale or future paid markers are withheld so they
+cannot override the canonical Organic Online classification. The separate Angi
+webhook and routing pipeline are not part of this website classification
+contract.
+
 ### Jobber OAuth Setup Helper
 
 The protected setup helper starts a Jobber OAuth connection for one market at a time:

@@ -223,14 +223,20 @@ function hasFreshAttribution(payload, now = Date.now()) {
   return age >= -ATTRIBUTION_FUTURE_SKEW_MS && age <= ATTRIBUTION_MAX_AGE_MS;
 }
 
+function organicOnlineSource(reason) {
+  return {
+    key: "website",
+    detail: "organic_online",
+    label: "Organic Online",
+    reason,
+  };
+}
+
 function classifyWebsiteLeadSource(payload, now = Date.now()) {
+  // Only fresh, validated Google paid evidence can enter the paid pipeline.
+  // Every other Good Attic website form is canonical Organic Online traffic.
   if (!hasFreshAttribution(payload, now)) {
-    return {
-      key: "website",
-      detail: "website_other",
-      label: "Good Attic Website",
-      reason: "missing_or_stale_attribution",
-    };
+    return organicOnlineSource("missing_or_stale_attribution");
   }
 
   const clickSignals = ["gclid", "gbraid", "wbraid"];
@@ -254,20 +260,12 @@ function classifyWebsiteLeadSource(payload, now = Date.now()) {
   const referrer = parseAttributionUrl(payload.ad_referrer);
   const googleReferrer = Boolean(referrer && isGoogleSearchHost(referrer.hostname));
   if ((utmSource === "google" && utmMedium === "organic") || googleReferrer) {
-    return {
-      key: "google",
-      detail: "google_organic",
-      label: "Google Organic",
-      reason: googleReferrer ? "google_referrer" : "google_organic_utm",
-    };
+    return organicOnlineSource(
+      googleReferrer ? "google_referrer" : "google_organic_utm",
+    );
   }
 
-  return {
-    key: "website",
-    detail: "website_other",
-    label: "Good Attic Website",
-    reason: "non_google_attribution",
-  };
+  return organicOnlineSource("non_google_attribution");
 }
 
 function inferMarket(payload) {
@@ -1050,6 +1048,8 @@ function resolveLeadJobberRoute(env, lead) {
       },
     );
   }
+  // The classifier reserves the Google key for verified PPC; all canonical
+  // Organic Online submissions retain the website key and website app route.
   if (lead.source_key !== "google") {
     return { ...websiteRoute, attributionFallback: false };
   }

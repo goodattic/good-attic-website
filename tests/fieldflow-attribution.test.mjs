@@ -78,23 +78,62 @@ test("builds a canonical, PII-minimized website attribution record", () => {
   }
 });
 
-test("keeps the server-classified Website/Other source over editable form data", () => {
+test("sends canonical Organic Online attribution to Fieldflow over editable form data", () => {
   const lead = websiteLead({
     key: "website",
-    detail: "website_other",
-    label: "Good Attic Website",
-    reason: "website_other",
+    detail: "organic_online",
+    label: "Organic Online",
+    reason: "google_organic_utm",
   });
   const record = buildWebsiteAttribution(
-    { lead_source: "Google Ads" },
+    {
+      lead_source: "Google Ads",
+      utm_source: "google",
+      utm_medium: "organic",
+      utm_campaign: "attic-help",
+      ad_referrer: "https://www.google.com/search?q=private+query",
+    },
     lead,
     { request_id: "jobber-request-website" },
   );
 
-  assert.equal(record.lead_source, "Good Attic Website");
+  assert.equal(record.lead_source, "Organic Online");
   assert.equal(record.source_key, "website");
-  assert.equal(record.source_detail, "website_other");
+  assert.equal(record.source_detail, "organic_online");
+  assert.equal(record.source_reason, "google_organic_utm");
+  assert.equal(record.utm_campaign, "attic-help");
+  assert.equal(record.referrer, "https://www.google.com");
   assert.equal(record.gclid, undefined);
+  assert.equal(record.utm_source, undefined);
+  assert.equal(record.utm_medium, undefined);
+});
+
+test("does not forward stale paid markers that were classified Organic Online", () => {
+  const lead = websiteLead({
+    key: "website",
+    detail: "organic_online",
+    label: "Organic Online",
+    reason: "missing_or_stale_attribution",
+  });
+  const record = buildWebsiteAttribution(
+    {
+      gclid: "stale-click-id",
+      gad_source: "1",
+      utm_source: "google",
+      utm_medium: "cpc",
+      utm_campaign: "old-campaign",
+    },
+    lead,
+    { request_id: "jobber-request-stale" },
+  );
+
+  assert.equal(record.lead_source, "Organic Online");
+  assert.equal(record.source_detail, "organic_online");
+  assert.equal(record.gclid, undefined);
+  assert.equal(record.gad_source, undefined);
+  assert.equal(record.utm_source, undefined);
+  assert.equal(record.utm_medium, undefined);
+  assert.equal(record.utm_campaign, "old-campaign");
 });
 
 test("builds an Angi record with exact Jobber and provider identifiers", () => {
