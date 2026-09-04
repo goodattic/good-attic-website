@@ -15,6 +15,8 @@ const guides = [
     description:
       "Learn when attic insulation should be removed after mice, why covering contamination is not enough, and what full attic remediation involves.",
     h1: "Does Attic Insulation Need to Be Removed After Mice?",
+    faqHeading: "Frequently Asked Questions About Mice and Attic Insulation",
+    wordRange: [1450, 1650],
   },
   {
     slug: "bat-guano-attic-insulation-removal",
@@ -22,6 +24,8 @@ const guides = [
     description:
       "Learn when bat guano in attic insulation calls for removal, why properly timed exclusion comes first, and when specialized cleanup may be needed.",
     h1: "What Should Happen When Bat Guano Reaches Attic Insulation?",
+    faqHeading: "Frequently Asked Questions About Bat Guano and Attic Insulation",
+    wordRange: [1550, 1750],
   },
   {
     slug: "wet-attic-insulation-remove-or-dry",
@@ -29,6 +33,8 @@ const guides = [
     description:
       "Learn when wet attic insulation may dry, when removal makes sense, and why the moisture source and nearby attic materials should be checked first.",
     h1: "Wet Attic Insulation: Can It Dry, or Does It Need to Be Removed?",
+    faqHeading: "Frequently Asked Questions About Wet Attic Insulation",
+    wordRange: [1500, 1700],
   },
   {
     slug: "replace-attic-insulation-when-replacing-roof",
@@ -36,6 +42,8 @@ const guides = [
     description:
       "Learn when attic insulation should be replaced with a new roof, when it can stay, and how roofing and attic work should be coordinated.",
     h1: "Replacing Your Roof? Should You Replace the Attic Insulation Too?",
+    faqHeading: "Frequently Asked Questions About Roof Replacement and Attic Insulation",
+    wordRange: [1550, 1800],
   },
 ].map((guide) => ({
   ...guide,
@@ -79,6 +87,12 @@ function textContent(value) {
   return decodeHtml(value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
 }
 
+function publicWordCount(html) {
+  const main = extractBlock(html, '<main class="page-main">', "</main>");
+  const text = textContent(main).replace(/&[a-zA-Z0-9#]+;/g, " ").replace(/\s+/g, " ").trim();
+  return text ? text.split(" ").length : 0;
+}
+
 function schemaRecords(html) {
   return [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
     .map((match) => JSON.parse(match[1]))
@@ -110,6 +124,9 @@ test("the four guides expose the approved metadata and schema", async () => {
     assert.ok(html.includes(`<meta name="description" content="${guide.description}">`));
     assert.ok(html.includes(`<link rel="canonical" href="${guide.canonical}">`));
     assert.ok(html.includes(`<h1>${guide.h1}</h1>`));
+    assert.ok(html.includes(`<h2>${guide.faqHeading}</h2>`));
+    assert.ok(publicWordCount(html) >= guide.wordRange[0]);
+    assert.ok(publicWordCount(html) <= guide.wordRange[1]);
 
     const records = schemaRecords(html);
     const article = records.find((record) => record["@type"] === "Article");
@@ -156,6 +173,31 @@ test("the resource hub and sitemap contain each new route once", async () => {
   const hub = await readFile(path.join(projectDirectory, "resources", "index.html"), "utf8");
   const sitemap = await readFile(path.join(projectDirectory, "sitemap.xml"), "utf8");
 
+  const cardMatches = [...hub.matchAll(/<a class="feature-card page-card-link reveal" href="([^"]+)">[\s\S]*?<\/a>/g)];
+  const newCardHrefs = cardMatches
+    .map((match) => match[1])
+    .filter((href) => guides.some((guide) => href === `${guide.slug}/`));
+  assert.deepEqual(newCardHrefs, guides.map((guide) => `${guide.slug}/`));
+
+  const legacyCards = cardMatches.filter(
+    (match) => !guides.some((guide) => match[1] === `${guide.slug}/`),
+  );
+  assert.equal(legacyCards.length, 43);
+  assert.equal(
+    createHash("sha256").update(legacyCards.map((match) => match[0]).join("\n")).digest("hex"),
+    "6ce5aa58bb68c43150b17a488db5fd6635f31ad806853a3986ca9eb02c312914",
+  );
+  assert.equal(legacyCards[23][1], "blown-insulation-vs-rolled-insulation/");
+  assert.equal(
+    createHash("sha256").update(legacyCards[23][0]).digest("hex"),
+    "a85c3aad697b872e3cd1e2587e69f7c168e20a5f76e39c130b40f394c9536f9d",
+  );
+
+  const batCard = cardMatches.find((match) => match[1] === "bat-guano-attic-insulation-removal/");
+  assert.ok(batCard);
+  assert.ok(batCard[0].includes("../assets/dirty-old-attic-needing-restoration.webp"));
+  assert.equal(batCard[0].includes("animals-in-the-attic.webp"), false);
+
   for (const guide of guides) {
     assert.equal(hub.split(`href="${guide.slug}/"`).length - 1, 1);
     assert.equal(sitemap.split(`<loc>${guide.canonical}</loc>`).length - 1, 1);
@@ -195,6 +237,7 @@ test("new guides preserve the production header, footer, modal, tracking, and fo
 
 test("new guides keep promotional controls late and exclude prohibited editorial language", async () => {
   const prohibited = /approved scope|remediation pathway|specialist boundary|confirmed safely accessible work area|subject to|where included|cannot guarantee|does not promise|no claim is made|documented conditions across the accessible attic/i;
+  const regressionLanguage = /Best next pages|Keep moving through the site|current attic topic|market hub|support path|protected pages|sales decision|Open page|Open local service|local service path|local restoration path|local removal path|accepted scope|accepted attic work|The scope should|unverified batt|Questions about .*\?\./i;
 
   for (const guide of guides) {
     const html = await readFile(guide.file, "utf8");
@@ -204,5 +247,6 @@ test("new guides keep promotional controls late and exclude prohibited editorial
     assert.equal(main.includes("Financing Options"), false);
     assert.ok(main.includes("Request an Attic Assessment"));
     assert.doesNotMatch(textContent(main), prohibited);
+    assert.doesNotMatch(textContent(main), regressionLanguage);
   }
 });
