@@ -2552,6 +2552,10 @@ h3 {
   min-width: 0;
 }
 
+.contact-form [hidden] {
+  display: none !important;
+}
+
 .contact-form span {
   color: var(--ink);
   font-size: 13px;
@@ -4006,6 +4010,10 @@ textarea {
   .contact-form .form-two {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+  }
+
+  .contact-form .form-two--source {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .contact-form .form-three {

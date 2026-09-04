@@ -9,8 +9,36 @@ const GHL_MAX_ATTEMPTS = 3;
 const ATTRIBUTION_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 const ATTRIBUTION_FUTURE_SKEW_MS = 5 * 60 * 1000;
 const GOOGLE_PAID_MEDIA = new Set(["cpc", "ppc", "paidsearch", "paid-search", "sem"]);
+const SELF_REPORTED_SOURCES = new Set([
+  "google_search_maps",
+  "google_ads",
+  "ai_search",
+  "referral",
+  "social_media",
+  "returning_customer",
+  "other",
+]);
+const SELF_REPORTED_AI_DETAILS = new Set([
+  "google_ai",
+  "chatgpt",
+  "perplexity",
+  "gemini",
+  "copilot",
+  "claude",
+  "other_ai",
+]);
+const AI_REFERRER_HOSTS = new Map([
+  ["chatgpt.com", "chatgpt"],
+  ["chat.openai.com", "chatgpt"],
+  ["perplexity.ai", "perplexity"],
+  ["gemini.google.com", "gemini"],
+  ["copilot.microsoft.com", "copilot"],
+  ["claude.ai", "claude"],
+  ["poe.com", "poe"],
+  ["you.com", "you"],
+]);
 
-const ATTRIBUTION_FIELDS = [
+const ATTRIBUTION_PARAM_FIELDS = [
   "gclid",
   "gbraid",
   "wbraid",
@@ -21,6 +49,10 @@ const ATTRIBUTION_FIELDS = [
   "utm_id",
   "utm_term",
   "utm_content",
+];
+
+const ATTRIBUTION_FIELDS = [
+  ...ATTRIBUTION_PARAM_FIELDS,
   "ad_landing_page",
   "ad_landing_page_path",
   "ad_referrer",
@@ -30,6 +62,13 @@ const ATTRIBUTION_FIELDS = [
   "page_market_label",
   "page_service_context",
   "page_url",
+  ...["first_touch", "paid_touch"].flatMap((prefix) => [
+    ...ATTRIBUTION_PARAM_FIELDS.map((field) => `${prefix}_${field}`),
+    `${prefix}_landing_page`,
+    `${prefix}_landing_page_path`,
+    `${prefix}_referrer`,
+    `${prefix}_captured_at`,
+  ]),
 ];
 
 const MARKET_ROUTES = {
@@ -200,9 +239,11 @@ function parseAttributionUrl(value) {
   }
 }
 
-function readAttributionSignal(payload, field) {
-  const direct = cleanInline(payload[field], 500);
-  const landing = parseAttributionUrl(payload.ad_landing_page || payload.source_url || payload.page_url);
+function readAttributionSignal(payload, field, prefix = "") {
+  const fieldName = prefix ? `${prefix}_${field}` : field;
+  const landingField = prefix ? `${prefix}_landing_page` : "ad_landing_page";
+  const direct = cleanInline(payload[fieldName], 500);
+  const landing = parseAttributionUrl(payload[landingField] || (!prefix ? payload.source_url || payload.page_url : ""));
   const fromLanding = landing ? cleanInline(landing.searchParams.get(field), 500) : "";
   return fromLanding || direct;
 }
@@ -216,17 +257,36 @@ function isGoogleSearchHost(hostname) {
   return /^(?:www\.)?google\.(?:com|[a-z]{2,3}|com\.[a-z]{2}|co\.[a-z]{2})$/.test(host);
 }
 
-function hasFreshAttribution(payload, now = Date.now()) {
-  const capturedAt = Date.parse(clean(payload.attribution_captured_at, 80));
+function aiReferrerEngine(hostname) {
+  const host = clean(hostname, 300).toLowerCase().replace(/\.$/, "");
+  for (const [domain, engine] of AI_REFERRER_HOSTS) {
+    if (host === domain || host.endsWith(`.${domain}`)) return engine;
+  }
+  return "";
+}
+
+function normalizeSelfReportedSource(value) {
+  const normalized = normalizeAttributionValue(value, 80).replace(/[\s-]+/g, "_");
+  return SELF_REPORTED_SOURCES.has(normalized) ? normalized : "";
+}
+
+function normalizeSelfReportedSourceDetail(value) {
+  const normalized = normalizeAttributionValue(value, 80).replace(/[\s-]+/g, "_");
+  return SELF_REPORTED_AI_DETAILS.has(normalized) ? normalized : "";
+}
+
+function hasFreshAttribution(payload, now = Date.now(), prefix = "") {
+  const capturedAtField = prefix ? `${prefix}_captured_at` : "attribution_captured_at";
+  const capturedAt = Date.parse(clean(payload[capturedAtField], 80));
   if (!Number.isFinite(capturedAt)) return false;
   const age = now - capturedAt;
   return age >= -ATTRIBUTION_FUTURE_SKEW_MS && age <= ATTRIBUTION_MAX_AGE_MS;
 }
 
-function organicOnlineSource(reason) {
+function organicOnlineSource(reason, detail = "organic_online") {
   return {
     key: "website",
-    detail: "organic_online",
+    detail,
     label: "Organic Online",
     reason,
   };
@@ -235,34 +295,78 @@ function organicOnlineSource(reason) {
 function classifyWebsiteLeadSource(payload, now = Date.now()) {
   // Only fresh, validated Google paid evidence can enter the paid pipeline.
   // Every other Good Attic website form is canonical Organic Online traffic.
-  if (!hasFreshAttribution(payload, now)) {
-    return organicOnlineSource("missing_or_stale_attribution");
-  }
+  const attributionTouches = ["", "paid_touch", "first_touch"];
+  for (const prefix of attributionTouches) {
+    if (!hasFreshAttribution(payload, now, prefix)) continue;
 
-  const clickSignals = ["gclid", "gbraid", "wbraid"];
-  for (const field of clickSignals) {
-    if (isPlausibleGoogleClickId(readAttributionSignal(payload, field))) {
-      return { key: "google", detail: "google_ads", label: "Google Ads", reason: field };
+    for (const field of ["gclid", "gbraid", "wbraid"]) {
+      if (isPlausibleGoogleClickId(readAttributionSignal(payload, field, prefix))) {
+        return {
+          key: "google",
+          detail: "google_ads",
+          label: "Google Ads",
+          reason: prefix ? `${prefix}_${field}` : field,
+        };
+      }
+    }
+
+    const gadSource = readAttributionSignal(payload, "gad_source", prefix);
+    if (/^\d{1,12}$/.test(gadSource)) {
+      return {
+        key: "google",
+        detail: "google_ads",
+        label: "Google Ads",
+        reason: prefix ? `${prefix}_gad_source` : "gad_source",
+      };
+    }
+
+    const utmSource = normalizeAttributionValue(readAttributionSignal(payload, "utm_source", prefix), 80);
+    const utmMedium = normalizeAttributionMedium(readAttributionSignal(payload, "utm_medium", prefix));
+    if (utmSource === "google" && GOOGLE_PAID_MEDIA.has(utmMedium)) {
+      return {
+        key: "google",
+        detail: "google_ads",
+        label: "Google Ads",
+        reason: prefix ? `${prefix}_google_paid_utm` : "google_paid_utm",
+      };
     }
   }
 
-  const gadSource = readAttributionSignal(payload, "gad_source");
-  if (/^\d{1,12}$/.test(gadSource)) {
-    return { key: "google", detail: "google_ads", label: "Google Ads", reason: "gad_source" };
+  const latestIsFresh = hasFreshAttribution(payload, now);
+  const referrer = latestIsFresh ? parseAttributionUrl(payload.ad_referrer) : null;
+  const aiEngine = referrer ? aiReferrerEngine(referrer.hostname) : "";
+  if (aiEngine) {
+    return organicOnlineSource(`ai_referrer_${aiEngine}`, "ai_referral");
   }
 
-  const utmSource = normalizeAttributionValue(readAttributionSignal(payload, "utm_source"), 80);
-  const utmMedium = normalizeAttributionMedium(readAttributionSignal(payload, "utm_medium"));
-  if (utmSource === "google" && GOOGLE_PAID_MEDIA.has(utmMedium)) {
-    return { key: "google", detail: "google_ads", label: "Google Ads", reason: "google_paid_utm" };
+  const utmSource = latestIsFresh
+    ? normalizeAttributionValue(readAttributionSignal(payload, "utm_source"), 80)
+    : "";
+  const utmMedium = latestIsFresh
+    ? normalizeAttributionMedium(readAttributionSignal(payload, "utm_medium"))
+    : "";
+  const selfReportedSource = normalizeSelfReportedSource(payload.self_reported_source);
+  const selfReportedDetail = normalizeSelfReportedSourceDetail(payload.self_reported_source_detail);
+  if (selfReportedSource === "ai_search") {
+    return organicOnlineSource(
+      selfReportedDetail ? `self_reported_ai_${selfReportedDetail}` : "self_reported_ai",
+      "ai_referral",
+    );
   }
 
-  const referrer = parseAttributionUrl(payload.ad_referrer);
   const googleReferrer = Boolean(referrer && isGoogleSearchHost(referrer.hostname));
   if ((utmSource === "google" && utmMedium === "organic") || googleReferrer) {
     return organicOnlineSource(
       googleReferrer ? "google_referrer" : "google_organic_utm",
     );
+  }
+
+  if (selfReportedSource === "google_ads") {
+    return organicOnlineSource("self_reported_google_ads_unverified");
+  }
+
+  if (!latestIsFresh) {
+    return organicOnlineSource("missing_or_stale_attribution");
   }
 
   return organicOnlineSource("non_google_attribution");
@@ -349,6 +453,8 @@ function buildLead(payload, submissionId = crypto.randomUUID(), source = null) {
     source_detail: leadSource.detail,
     source_label: leadSource.label,
     source_reason: leadSource.reason,
+    self_reported_source: normalizeSelfReportedSource(payload.self_reported_source),
+    self_reported_source_detail: normalizeSelfReportedSourceDetail(payload.self_reported_source_detail),
   };
 }
 
@@ -357,6 +463,35 @@ function buildAttribution(payload) {
     attribution[field] = cleanInline(payload[field], 500);
     return attribution;
   }, {});
+}
+
+function promoteCanonicalPaidTouch(attribution, lead) {
+  if (lead.source_key !== "google") return attribution;
+
+  const prefix = lead.source_reason.startsWith("paid_touch_")
+    ? "paid_touch"
+    : lead.source_reason.startsWith("first_touch_")
+      ? "first_touch"
+      : "";
+  if (!prefix) return attribution;
+
+  const promoted = { ...attribution };
+  for (const field of ATTRIBUTION_PARAM_FIELDS) {
+    const value = attribution[`${prefix}_${field}`];
+    if (value) promoted[field] = value;
+  }
+
+  for (const [touchField, canonicalField] of [
+    ["landing_page", "ad_landing_page"],
+    ["landing_page_path", "ad_landing_page_path"],
+    ["referrer", "ad_referrer"],
+    ["captured_at", "attribution_captured_at"],
+  ]) {
+    const value = attribution[`${prefix}_${touchField}`];
+    if (value) promoted[canonicalField] = value;
+  }
+
+  return promoted;
 }
 
 function normalizeProjectTypes(payload, lead) {
@@ -370,7 +505,7 @@ function normalizeProjectTypes(payload, lead) {
 
 function buildGhlLead(payload, lead, jobber) {
   const projectTypes = normalizeProjectTypes(payload, lead);
-  const attribution = buildAttribution(payload);
+  const attribution = promoteCanonicalPaidTouch(buildAttribution(payload), lead);
   const fullAddress = [lead.address, lead.city, lead.state, lead.zip].filter(Boolean).join(", ");
 
   return {
@@ -404,6 +539,8 @@ function buildGhlLead(payload, lead, jobber) {
     source_key: lead.source_key,
     source_detail: lead.source_detail,
     source_reason: lead.source_reason,
+    self_reported_source: lead.self_reported_source,
+    self_reported_source_detail: lead.self_reported_source_detail,
     form_name: cleanInline(payload.form_name, 120),
     source_page: cleanInline(payload.source_page, 500) || lead.source_url,
     source_url: lead.source_url,
@@ -419,7 +556,11 @@ function buildGhlLead(payload, lead, jobber) {
     jobber_request_id: jobber.request_id,
     jobber_request_url: jobber.request_url,
     ...attribution,
-    attribution,
+    attribution: {
+      ...attribution,
+      self_reported_source: lead.self_reported_source,
+      self_reported_source_detail: lead.self_reported_source_detail,
+    },
   };
 }
 
@@ -930,6 +1071,8 @@ function buildRequestInstructions(lead) {
     "Good Attic website form submission",
     `Lead source: ${lead.source_label}`,
     `Attribution reason: ${lead.source_reason}`,
+    lead.self_reported_source ? `Customer-reported source: ${lead.self_reported_source}` : "",
+    lead.self_reported_source_detail ? `Customer-reported source detail: ${lead.self_reported_source_detail}` : "",
     `Service requested: ${lead.service}`,
     `Service address: ${address}`,
     `Market route: ${lead.market_label}`,
@@ -1249,6 +1392,9 @@ export const _private = {
   classifyWebsiteLeadSource,
   hasFreshAttribution,
   isGoogleSearchHost,
+  aiReferrerEngine,
+  normalizeSelfReportedSource,
+  normalizeSelfReportedSourceDetail,
   inferMarket,
   validateLead,
   buildClientInput,

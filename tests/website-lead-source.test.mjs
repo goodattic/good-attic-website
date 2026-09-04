@@ -14,6 +14,11 @@ const ORGANIC_ONLINE = {
   detail: "organic_online",
   label: "Organic Online",
 };
+const AI_REFERRAL = {
+  key: "website",
+  detail: "ai_referral",
+  label: "Organic Online",
+};
 
 function fresh(overrides = {}) {
   return {
@@ -172,6 +177,62 @@ test("uses a valid landing-page query as coherent Google paid evidence", () => {
   );
 });
 
+test("keeps a fresh paid touch attributable after a later organic visit", () => {
+  assertCanonical(
+    leads.classifyWebsiteLeadSource(fresh({
+      ad_referrer: "https://www.google.com/search?q=attic+insulation",
+      paid_touch_gclid: "PaidTouch_123456",
+      paid_touch_landing_page: "https://goodattic.energy/st-louis-mo/?gclid=PaidTouch_123456",
+      paid_touch_captured_at: new Date(NOW - (2 * 24 * 60 * 60 * 1000)).toISOString(),
+    }), NOW),
+    GOOGLE_ADS,
+    "paid_touch_gclid",
+  );
+});
+
+test("classifies external AI referrers and self-reported AI as Organic Online AI referrals", () => {
+  for (const [referrer, reason] of [
+    ["https://chatgpt.com/c/attic-help", "ai_referrer_chatgpt"],
+    ["https://www.perplexity.ai/search/attic-help", "ai_referrer_perplexity"],
+    ["https://gemini.google.com/app/example", "ai_referrer_gemini"],
+    ["https://copilot.microsoft.com/chats/example", "ai_referrer_copilot"],
+    ["https://claude.ai/new", "ai_referrer_claude"],
+  ]) {
+    assertCanonical(
+      leads.classifyWebsiteLeadSource(fresh({ ad_referrer: referrer }), NOW),
+      AI_REFERRAL,
+      reason,
+    );
+  }
+
+  assertCanonical(
+    leads.classifyWebsiteLeadSource({
+      self_reported_source: "ai_search",
+      self_reported_source_detail: "google_ai",
+    }, NOW),
+    AI_REFERRAL,
+    "self_reported_ai_google_ai",
+  );
+  assertCanonical(
+    leads.classifyWebsiteLeadSource(fresh({
+      ad_referrer: "https://www.google.com/search?q=attic+insulation",
+      self_reported_source: "ai_search",
+      self_reported_source_detail: "google_ai",
+    }), NOW),
+    AI_REFERRAL,
+    "self_reported_ai_google_ai",
+  );
+  assert.equal(leads.aiReferrerEngine("chatgpt.com.evil.test"), "");
+});
+
+test("never upgrades an unverified self-reported Google ad to the paid pipeline", () => {
+  assertCanonical(
+    leads.classifyWebsiteLeadSource({ self_reported_source: "google_ads" }, NOW),
+    ORGANIC_ONLINE,
+    "self_reported_google_ads_unverified",
+  );
+});
+
 test("routes verified Google Ads through enabled Google apps and all non-PPC through website apps", () => {
   const googleLead = leads.buildLead({
     name: "Source Test",
@@ -270,4 +331,69 @@ test("keeps canonical Google Ads fields in the HighLevel payload", () => {
   assert.equal(ghl.source_reason, "gbraid");
   assert.equal(ghl.gbraid, "GbR_123456-xyz");
   assert.equal(ghl.attribution.gbraid, "GbR_123456-xyz");
+});
+
+test("promotes a validated paid touch into HighLevel after a later organic visit", () => {
+  const paidCapturedAt = new Date(NOW - 3 * 24 * 60 * 60 * 1000).toISOString();
+  const payload = fresh({
+    utm_source: "google",
+    utm_medium: "organic",
+    utm_campaign: "later-organic-visit",
+    ad_landing_page: "https://goodattic.energy/resources/what-r-value-means-for-an-attic/",
+    paid_touch_gclid: "Paid_123456-xyz",
+    paid_touch_utm_source: "google",
+    paid_touch_utm_medium: "cpc",
+    paid_touch_utm_campaign: "slc-attic-insulation",
+    paid_touch_utm_content: "attic-insulation",
+    paid_touch_utm_term: "attic insulation",
+    paid_touch_landing_page: "https://goodattic.energy/salt-lake-city-ut/",
+    paid_touch_landing_page_path: "/salt-lake-city-ut/",
+    paid_touch_captured_at: paidCapturedAt,
+  });
+  const source = leads.classifyWebsiteLeadSource(payload, NOW);
+  const lead = leads.buildLead({
+    ...payload,
+    name: "Returning Paid Visitor",
+    state: "UT",
+    page_market: "ut",
+  }, "returning-paid-visitor", source);
+  const ghl = leads.buildGhlLead(payload, lead, {
+    account: "Salt Lake City",
+    client_id: "client",
+    request_id: "request",
+  });
+
+  assert.equal(source.reason, "paid_touch_gclid");
+  assert.equal(ghl.gclid, "Paid_123456-xyz");
+  assert.equal(ghl.utm_medium, "cpc");
+  assert.equal(ghl.utm_campaign, "slc-attic-insulation");
+  assert.equal(ghl.utm_content, "attic-insulation");
+  assert.equal(ghl.utm_term, "attic insulation");
+  assert.equal(ghl.ad_landing_page, "https://goodattic.energy/salt-lake-city-ut/");
+  assert.equal(ghl.attribution_captured_at, paidCapturedAt);
+  assert.equal(ghl.attribution.paid_touch_gclid, "Paid_123456-xyz");
+});
+
+test("keeps normalized self-reported source detail in HighLevel without changing canonical attribution", () => {
+  const payload = {
+    self_reported_source: "AI Search",
+    self_reported_source_detail: "ChatGPT",
+    name: "AI Source Test",
+    state: "MO",
+    page_market: "mo_stl",
+  };
+  const source = leads.classifyWebsiteLeadSource(payload, NOW);
+  const lead = leads.buildLead(payload, "ai-source-test", source);
+  const ghl = leads.buildGhlLead(payload, lead, {
+    account: "St. Louis",
+    client_id: "client",
+    request_id: "request",
+  });
+
+  assert.equal(ghl.lead_source, "Organic Online");
+  assert.equal(ghl.source_detail, "ai_referral");
+  assert.equal(ghl.self_reported_source, "ai_search");
+  assert.equal(ghl.self_reported_source_detail, "chatgpt");
+  assert.equal(ghl.attribution.self_reported_source, "ai_search");
+  assert.equal(ghl.attribution.self_reported_source_detail, "chatgpt");
 });

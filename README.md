@@ -105,9 +105,17 @@ website outcomes:
 - `Google Ads | google | google_ads` requires fresh, validated Google paid
   evidence: a plausible `gclid`, `gbraid`, or `wbraid`; a numeric `gad_source`;
   or `utm_source=google` with a supported paid-search medium.
-- `Organic Online | website | organic_online` is the default for every other
-  website submission, including missing or stale attribution, direct traffic,
-  referrals, social, email, and organic search.
+- `Organic Online | website` is the default pipeline for every other website
+  submission, including missing or stale attribution, direct traffic,
+  referrals, social, email, and organic search. Its detail remains
+  `organic_online` unless a recognized AI referrer or an optional customer
+  selection identifies it more specifically as `ai_referral`.
+
+The browser preserves latest-touch, first-touch, and most-recent paid-touch
+records for 90 days. That keeps a validated Google paid visit attributable when
+the homeowner returns through organic search before submitting. The optional
+"How did you hear about us?" fields add audit context but never promote a lead
+into the paid pipeline without validated Google evidence.
 
 Only canonical Google Ads leads may use a market's enabled Google Jobber OAuth
 app. Organic Online and every other non-PPC website lead use that market's

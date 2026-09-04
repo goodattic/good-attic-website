@@ -24,11 +24,13 @@ const googleAdsTrackingSnippet = `  <!-- Google tag (gtag.js) -->
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'AW-10789892066');
+    gtag('config', 'G-P7T219JFV6');
     gtag('config', 'AW-11103039262/_4E-CN313tIaEJ7eq64p', { 'phone_conversion_number': '385-336-0062' });
     gtag('config', 'AW-11103039262/-7syCOa6-e0aEJ7eq64p', { 'phone_conversion_number': '314-916-1220' });
     gtag('config', 'AW-11103039262/35RYCNWL7bgcEJ7eq64p', { 'phone_conversion_number': '816-207-9488' });
     window.goodAtticPhoneConversionNumbersConfigured = true;
     window.goodAtticGoogleTagConfigured = true;
+    window.goodAtticGa4Configured = true;
   </script>`;
 
 const proofAssets = {
@@ -3095,7 +3097,7 @@ function renderSiteJsonLd(page) {
         url: `${site.baseUrl}/`,
         logo: `${site.baseUrl}/assets/good-attic-mark-gradient.png`,
         description: site.description,
-        telephone: pagePhone.phoneSchema || pagePhone.phoneDisplay,
+        telephone: site.phoneSchema,
         areaServed,
         contactPoint
       },
@@ -3612,6 +3614,40 @@ function renderProjectPicker(currentUrl, compact = false) {
   `;
 }
 
+function renderSourceDiscoveryFields() {
+  return `
+    <h3 class="form-section-title">How You Found Us</h3>
+    <div class="form-two form-two--source">
+      <label>
+        <span>How did you hear about Good Attic? (optional)</span>
+        <select name="self_reported_source">
+          <option value="">Select one</option>
+          <option value="google_search_maps">Google Search or Maps</option>
+          <option value="google_ads">Google ad</option>
+          <option value="ai_search">AI search or assistant</option>
+          <option value="referral">Friend or referral</option>
+          <option value="social_media">Social media</option>
+          <option value="returning_customer">Returning customer</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+      <label data-ai-source-detail hidden>
+        <span>Which AI search or assistant? (optional)</span>
+        <select name="self_reported_source_detail" disabled>
+          <option value="">Select one</option>
+          <option value="google_ai">Google AI Overview or AI Mode</option>
+          <option value="chatgpt">ChatGPT</option>
+          <option value="perplexity">Perplexity</option>
+          <option value="gemini">Gemini</option>
+          <option value="copilot">Microsoft Copilot</option>
+          <option value="claude">Claude</option>
+          <option value="other_ai">Other AI assistant</option>
+        </select>
+      </label>
+    </div>
+  `;
+}
+
 function renderModal(currentUrl) {
   return `
     <div class="modal" aria-hidden="true" data-modal>
@@ -3694,6 +3730,7 @@ function renderModal(currentUrl) {
                 </select>
               </label>
             </div>
+            ${renderSourceDiscoveryFields()}
             <label>
               <span>Additional notes</span>
               <textarea name="additional_notes" rows="3"></textarea>
@@ -3782,6 +3819,8 @@ function renderLeadForm(currentUrl) {
         </label>
       </div>
 
+      ${renderSourceDiscoveryFields()}
+
       <label>
         <span>Additional notes for the team</span>
         <textarea name="additional_notes" rows="4" placeholder="Tell us what you are seeing, what rooms feel uncomfortable, or anything else we should know."></textarea>
@@ -3867,6 +3906,8 @@ function renderHomepageLeadForm(currentUrl, formName) {
           </select>
         </label>
       </div>
+
+      ${renderSourceDiscoveryFields()}
 
       <label>
         <span>Additional notes for the team</span>
@@ -5764,17 +5805,15 @@ function buildSupportCityLinks(currentUrl, market) {
   }));
 }
 
-function renderHeroReviewBanner(includeReviewCount = false) {
+function renderHeroReviewBanner(reviewCount = 0) {
+  if (!reviewCount) return "";
+
   return `
     <div class="hero-review-banner" aria-label="Google review rating">
       <span class="hero-review-banner__google">G</span>
       <strong>5.0</strong>
       <span class="hero-review-banner__stars" aria-label="Five star rating">★★★★★</span>
-      ${
-        includeReviewCount
-          ? '<span class="hero-review-banner__volume"><span class="hero-review-banner__count">100+</span><span>Google Reviews</span></span>'
-          : "<span>Google Reviews</span>"
-      }
+      <span class="hero-review-banner__volume"><span class="hero-review-banner__count">${reviewCount}</span><span>Google Reviews</span></span>
     </div>
   `;
 }
@@ -5784,6 +5823,8 @@ function renderSharedAtticHealthLead() {
 }
 
 function renderSharedReviewBand(widgetMarkup) {
+  if (!widgetMarkup) return "";
+
   return `
     <section class="media-band reveal">
       ${widgetMarkup}
@@ -5859,7 +5900,7 @@ function renderExpandableReviewText(text, className) {
   `;
 }
 
-function renderReviewWidgetHeader(title, kicker = "Google Reviews") {
+function renderReviewWidgetHeader(title, kicker = "Google Reviews", reviewCountLabel = "Verified customer reviews") {
   return `
     <div class="review-widget__header">
       <div class="google-mark" aria-hidden="true">
@@ -5871,7 +5912,7 @@ function renderReviewWidgetHeader(title, kicker = "Google Reviews") {
         <div class="review-widget__rating" aria-label="5 out of 5 stars on Google Reviews">
           <strong>5.0</strong>
           <span class="stars" aria-hidden="true">★★★★★</span>
-          <span>100+ Google Reviews</span>
+          <span>${escapeHtml(reviewCountLabel)}</span>
         </div>
       </div>
     </div>
@@ -5941,26 +5982,7 @@ function renderReviewHubCarouselCard(currentUrl, heading, text) {
 }
 
 function marketHubReviewEntries(marketSlug) {
-  return approvedReviewEntries({ marketSlug }).filter((entry) => !entry.city);
-}
-
-function sharedTeamReviewEntries(targetMarketSlug, limit = 6) {
-  const sourcePools = marketCatalog
-    .filter((market) => market.slug !== targetMarketSlug)
-    .map((market) => approvedReviewEntries({ marketSlug: market.slug }))
-    .filter((entries) => entries.length > 0);
-
-  const balancedEntries = [];
-  let poolIndex = 0;
-
-  while (balancedEntries.length < limit && sourcePools.some((entries) => entries.length > 0)) {
-    const activePool = sourcePools[poolIndex % sourcePools.length];
-    const nextEntry = activePool.shift();
-    if (nextEntry) balancedEntries.push(nextEntry);
-    poolIndex += 1;
-  }
-
-  return balancedEntries;
+  return approvedReviewEntries({ marketSlug }).filter((entry) => !entry.city).slice(0, 6);
 }
 
 function reviewSummaryByMarket() {
@@ -5978,20 +6000,17 @@ function cityReviewAssignments() {
   if (cityReviewAssignmentCache) return cityReviewAssignmentCache;
 
   const assignmentMap = new Map();
-  const fallbackPool = approvedReviewEntries({}).filter((entry) => !entry.city);
-  let fallbackCursor = 0;
 
   marketCatalog.forEach((market) => {
+    const marketFallback = approvedReviewEntries({ marketSlug: market.slug })
+      .filter((entry) => !entry.city)
+      .slice(0, 3);
+
     market.supportCities.forEach((city) => {
       const exactEntries = approvedReviewEntries({ marketSlug: market.slug })
         .filter((entry) => entry.city === city.slug)
         .slice(0, 3);
-      const selectedEntries = [...exactEntries];
-
-      while (selectedEntries.length < 3 && fallbackCursor < fallbackPool.length) {
-        selectedEntries.push(fallbackPool[fallbackCursor]);
-        fallbackCursor += 1;
-      }
+      const selectedEntries = exactEntries.length ? exactEntries : marketFallback;
 
       assignmentMap.set(city.slug, selectedEntries);
     });
@@ -6006,26 +6025,25 @@ function cityReviewEntries(citySlug) {
 }
 
 function renderMarketReviewWidget(currentUrl, market) {
-  const marketSpecificEntries = marketHubReviewEntries(market.slug);
-  const sharedTeamEntries = market.slug === "kansas-city-mo" ? sharedTeamReviewEntries(market.slug) : [];
-  const reviewEntries = marketSpecificEntries.length ? marketSpecificEntries : sharedTeamEntries;
-  const isSharedTeamWidget = market.slug === "kansas-city-mo" && !marketSpecificEntries.length && sharedTeamEntries.length > 0;
+  const reviewEntries = marketHubReviewEntries(market.slug);
+  if (!reviewEntries.length) return "";
+
   const desktopReviewCards = reviewEntries.map((entry) => renderCarouselReviewCard(entry)).join("");
   const mobileCarouselCards = [
     ...reviewEntries.map((entry) => renderCarouselReviewCard(entry)),
     renderReviewHubCarouselCard(
       currentUrl,
       `${market.shortName} review library`,
-      isSharedTeamWidget
-        ? `Browse the full Good Attic review hub for more verified customer feedback.`
-        : `Browse the broader Good Attic review hub for more homeowner feedback connected to ${market.shortName}.`
+      `Browse the broader Good Attic review hub for more homeowner feedback connected to ${market.shortName}.`
     )
   ].join("");
 
   return `
     <aside class="review-widget review-widget--market" aria-label="${escapeHtml(market.shortName)} Google review widget">
       ${renderReviewWidgetHeader(
-        isSharedTeamWidget ? `${market.shortName} trust built by the same team` : `${market.shortName} homeowner feedback`
+        `${market.shortName} homeowner feedback`,
+        "Google Reviews",
+        `${approvedReviewEntries({ marketSlug: market.slug }).length} verified reviews`
       )}
       <div class="review-widget__stack review-widget__stack--desktop">
         ${
@@ -6051,6 +6069,8 @@ function renderMarketReviewWidget(currentUrl, market) {
 
 function renderCityReviewWidget(currentUrl, market, city) {
   const reviewEntries = cityReviewEntries(city.slug).slice(0, 3);
+  if (!reviewEntries.length) return "";
+
   const mobileCarouselCards = [
     ...reviewEntries.map((entry) => renderCarouselReviewCard(entry)),
     renderReviewHubCarouselCard(
@@ -6064,19 +6084,12 @@ function renderCityReviewWidget(currentUrl, market, city) {
     <aside class="review-widget review-widget--city" aria-label="${escapeHtml(city.shortName)} homeowner reviews">
       ${renderReviewWidgetHeader(
         "Verified Good Attic customer reviews",
-        "Customer reviews"
+        "Customer reviews",
+        `${approvedReviewEntries({ marketSlug: market.slug }).length} reviews across ${market.shortName}`
       )}
-      ${
-        reviewEntries.length
-          ? `<div class="review-excerpt-list review-excerpt-list--desktop">
-               ${reviewEntries.map((entry) => renderMiniReviewCard(entry, currentUrl)).join("")}
-             </div>`
-          : `<div class="review-widget__shell review-widget__shell--desktop-city">
-             <strong>Verified Good Attic customer reviews</strong>
-               <p>The full Good Attic review hub keeps every approved customer review together while this page highlights a small set of customer feedback.</p>
-               <a class="page-card-link__cta" href="${hrefFrom(currentUrl, "/reviews/")}">Open review library</a>
-             </div>`
-      }
+      <div class="review-excerpt-list review-excerpt-list--desktop">
+        ${reviewEntries.map((entry) => renderMiniReviewCard(entry, currentUrl)).join("")}
+      </div>
       <div class="review-carousel review-carousel--mobile" aria-label="${escapeHtml(city.shortName)} homeowner review carousel">
         <div class="review-carousel__track">
           ${mobileCarouselCards}
@@ -6610,7 +6623,7 @@ function buildMarketPage(market) {
     ${renderHiddenBreadcrumbs(page, currentUrl)}
     <section class="hero section-pin hero--market">
       <div class="hero-copy reveal">
-        ${renderHeroReviewBanner(true)}
+        ${renderHeroReviewBanner(approvedReviewEntries({ marketSlug: market.slug }).length)}
         <p class="eyebrow">Premium Attic Services in ${escapeHtml(market.shortName)}</p>
         <h1 class="hero-display">Attic Services in ${escapeHtml(marketDisplayName(market))}</h1>
         <p class="hero-text">${escapeHtml(page.intro)}</p>
@@ -6897,16 +6910,7 @@ function buildMarketPage(market) {
       ${renderEvidenceGrid(evidenceGallery, currentUrl)}
     </section>
 
-    <section class="section">
-      <div class="section-heading reveal">
-        <p class="eyebrow">Proof ready for this market</p>
-        <h2>The evidence and review inputs that should strengthen ${escapeHtml(market.shortName)} first.</h2>
-        <p class="section-subcopy">${escapeHtml(
-          "This section is designed to accept real approved review excerpts and project evidence later without changing the page structure again."
-        )}</p>
-      </div>
-      ${renderProofQueueGrid(buildDocumentedProofCards({ marketSlug: market.slug }), currentUrl)}
-    </section>
+    ${renderMarketProjectProofSection(currentUrl, market)}
 
     <section class="section">
       <div class="section-heading reveal">
@@ -6991,7 +6995,7 @@ function buildMarketPage(market) {
         <p class="eyebrow">Get a quote</p>
         <h2>Tell us what is happening in your attic in ${escapeHtml(market.shortName)}.</h2>
         <p>Share the project type, contact details, preferred quote timing, and any helpful notes. Your request goes straight to the team so we can follow up with the right next step.</p>
-        <p class="contact-note">Lead source, page URL, and project type are captured so every request can route into the right local follow-up path.</p>
+        <p class="contact-note">Your request goes to the local team serving your address so follow-up stays connected to the right market.</p>
       </div>
 
       ${renderHomepageLeadForm(currentUrl, `${market.shortName} market contact form`)}
@@ -7005,7 +7009,6 @@ function buildServicePage(market, service) {
   const marketShort = market.shortName.toLowerCase();
   const insights = buildMarketServiceInsights(market, service);
   const evidenceGallery = buildServiceEvidenceGallery(market, service);
-  const serviceReviewCount = approvedReviewEntries({ marketSlug: market.slug, serviceSlug: service.slug }).length;
   const faqItems = [...service.faq, ...insights.extraFaq];
   const secondaryKeywords = {
     "attic-insulation": [
@@ -7273,17 +7276,7 @@ function buildServicePage(market, service) {
         )}
       </section>
 
-      <section class="section">
-        <div class="section-heading reveal">
-          <p class="eyebrow">Approved review excerpts</p>
-          <h2>${escapeHtml(
-            serviceReviewCount
-              ? `Homeowner feedback already reinforcing ${service.name.toLowerCase()} in ${market.shortName}.`
-              : `The homeowner feedback themes that should reinforce ${service.name.toLowerCase()} in ${market.shortName}.`
-          )}</h2>
-        </div>
-        ${renderProofQueueGrid(buildReviewExcerptCards({ marketSlug: market.slug, serviceSlug: service.slug, limit: 3 }), currentUrl)}
-      </section>
+      ${renderServiceReviewSection(currentUrl, market, service)}
 
       <section class="section">
         <div class="section-heading reveal">
@@ -7420,7 +7413,7 @@ function buildCityPage(market, city) {
       ${renderHiddenBreadcrumbs(page, currentUrl)}
       <section class="hero section-pin hero--city">
         <div class="hero-copy reveal">
-          ${renderHeroReviewBanner(true)}
+          ${renderHeroReviewBanner(cityReviewEntries(city.slug).length)}
           <p class="eyebrow">Service Area</p>
           <h1 class="hero-display">Attic Services in ${escapeHtml(city.shortName)}</h1>
           <p class="hero-text">${escapeHtml(page.intro)}</p>
@@ -8478,17 +8471,17 @@ function approvedReviewEntries(scope = {}) {
 function documentedProofEntries(scope = {}) {
   return documentedProjectProof.filter((entry) => {
     if (!matchesProofScope(entry, scope)) return false;
-    if (!scope.citySlug && entry.city) return false;
+    if (!scope.citySlug && entry.city && !scope.includeCities) return false;
     return true;
   });
 }
 
 function serviceProjectProofEntries(scope = {}) {
   const limit = typeof scope.limit === "number" ? scope.limit : 3;
-  const exactServiceEntries = documentedProjectProof.filter((entry) => {
+  const exactServiceEntries = scope.serviceSlug ? documentedProjectProof.filter((entry) => {
     if (scope.marketSlug && entry.market !== scope.marketSlug) return false;
-    return scope.serviceSlug ? entry.serviceSlug === scope.serviceSlug : true;
-  });
+    return entry.serviceSlug === scope.serviceSlug;
+  }) : [];
   const marketEntries = documentedProjectProof.filter((entry) => {
     if (scope.marketSlug && entry.market !== scope.marketSlug) return false;
     return Boolean(entry.beforeImage && entry.afterImage);
@@ -8545,25 +8538,41 @@ function buildServiceProjectProofCards(market, service, limit = 3) {
 
 function renderServiceProjectProofSection(currentUrl, market, service) {
   const projectProof = buildServiceProjectProofCards(market, service);
-  const hasProjectProof = projectProof.length > 0;
+  if (!projectProof.length) return "";
 
   return `
       <section class="section">
         <div class="section-heading reveal">
-          <p class="eyebrow">${hasProjectProof ? "Real project proof" : "Proof path for this service"}</p>
-          <h2>${escapeHtml(
-            hasProjectProof
-              ? `Documented attic project proof supporting ${service.name.toLowerCase()} decisions in ${market.shortName}.`
-              : `The real project evidence that should eventually support ${service.name.toLowerCase()} in ${market.shortName}.`
-          )}</h2>
-          <p class="section-subcopy">${escapeHtml(
-            hasProjectProof
-              ? "These are real approved before-and-after attic photo sets from this market. The captions keep the claim honest: they document Good Attic's photo-first project standard, while service-specific pages explain how that proof supports the decision process."
-              : "These proof slots are set up so approved project photos and documented findings can drop into the right page later without redesigning the service architecture."
-          )}</p>
+          <p class="eyebrow">Real project proof</p>
+          <h2>${escapeHtml(`Documented attic projects supporting ${service.name.toLowerCase()} decisions in ${market.shortName}.`)}</h2>
+          <p class="section-subcopy">These approved before-and-after photo sets show real Good Attic projects from this market and the attic conditions our team documented along the way.</p>
         </div>
-        ${hasProjectProof ? renderBeforeAfterProofGrid(projectProof, currentUrl) : renderProofQueueGrid(buildDocumentedProofCards({ marketSlug: market.slug, serviceSlug: service.slug }), currentUrl)}
+        ${renderBeforeAfterProofGrid(projectProof, currentUrl)}
       </section>
+  `;
+}
+
+function buildMarketProjectProofCards(market, limit = 3) {
+  return serviceProjectProofEntries({ marketSlug: market.slug, limit }).map((entry) => ({
+    ...entry,
+    title: entry.title || `${cityLabelForProofEntry(entry, market)} documented attic project`,
+    status: "Real before/after attic proof"
+  }));
+}
+
+function renderMarketProjectProofSection(currentUrl, market) {
+  const projectProof = buildMarketProjectProofCards(market);
+  if (!projectProof.length) return "";
+
+  return `
+    <section class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Projects from this market</p>
+        <h2>Before-and-after attic projects completed across ${escapeHtml(market.shortName)}.</h2>
+        <p class="section-subcopy">These approved project photos show real starting conditions and finished attic work from homes served by the local Good Attic team.</p>
+      </div>
+      ${renderBeforeAfterProofGrid(projectProof, currentUrl)}
+    </section>
   `;
 }
 
@@ -8599,51 +8608,44 @@ function buildReviewExcerptCards(scope = {}) {
     }));
   }
 
-  const scopeLabel = service && market ? `${service.name} in ${market.name}` : market ? market.name : service ? service.name : "Good Attic";
-  const serviceImage = service?.image || proofAssets.sales;
+  return [];
+}
 
-  return [
-    {
-      kicker: "Ready for approved excerpt",
-      title: `Communication review for ${scopeLabel}`,
-      text: `Add a real approved homeowner excerpt that mentions how clearly the attic findings, scope, and next steps were explained.`,
-      image: serviceImage,
-      alt: `Review excerpt shell for ${scopeLabel}`,
-      status: "Waiting on approved quote",
-      meta: ["Theme: clarity and communication", market ? `Primary landing page: ${market.name}` : "Primary landing page: reviews"],
-      url: "/reviews/",
-      cta: "Proof page destination"
-    },
-    {
-      kicker: "Ready for approved excerpt",
-      title: `Cleanliness and homeowner respect review for ${scopeLabel}`,
-      text: "This slot is for a real review excerpt that speaks to cleanliness, respectful crews, and how the home was treated during the project.",
-      image: proofAssets.grossAttic,
-      alt: `Cleanliness review shell for ${scopeLabel}`,
-      status: "Waiting on approved quote",
-      meta: ["Theme: cleanliness and care", service ? `Best fit: ${service.name}` : "Best fit: reviews and market pages"],
-      url: "/reviews/",
-      cta: "Proof page destination"
-    },
-    {
-      kicker: "Ready for approved excerpt",
-      title: `Result-focused review for ${scopeLabel}`,
-      text: "Use a real approved excerpt that mentions the finished attic, the comfort improvement, or why the homeowner felt better about the house afterward.",
-      image: proofAssets.insulation,
-      alt: `Outcome review shell for ${scopeLabel}`,
-      status: "Waiting on approved quote",
-      meta: ["Theme: visible result", market ? `Best secondary target: ${market.name} market page` : "Best secondary target: top service pages"],
-      url: market ? `/${market.slug}/` : "/services/",
-      cta: "Open target page"
-    }
-  ];
+function renderServiceReviewSection(currentUrl, market, service) {
+  const reviewCards = buildReviewExcerptCards({
+    marketSlug: market.slug,
+    serviceSlug: service.slug,
+    limit: 3
+  });
+  if (!reviewCards.length) return "";
+
+  return `
+    <section class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Verified customer reviews</p>
+        <h2>Homeowner feedback about ${escapeHtml(service.name.toLowerCase())} in ${escapeHtml(market.shortName)}.</h2>
+      </div>
+      ${renderProofQueueGrid(reviewCards, currentUrl)}
+    </section>
+  `;
 }
 
 function buildDocumentedProofCards(scope = {}) {
-  const market = scope.marketSlug ? marketBySlug(scope.marketSlug) : null;
-  const service = scope.serviceSlug ? serviceBySlug(scope.serviceSlug) : null;
-  const city = scope.citySlug && market ? market.supportCities.find((item) => item.slug === scope.citySlug) : null;
-  const actualEntries = documentedProofEntries(scope);
+  const entries = documentedProofEntries(scope);
+  const balancedEntries = scope.includeCities
+    ? [
+        ...entries.filter(
+          (entry, index, allEntries) => allEntries.findIndex((candidate) => candidate.city === entry.city) === index
+        ),
+        ...entries
+      ].filter(
+        (entry, index, allEntries) => allEntries.findIndex((candidate) => candidate.title === entry.title) === index
+      )
+    : entries;
+  const actualEntries = balancedEntries.slice(
+    0,
+    typeof scope.limit === "number" ? scope.limit : undefined
+  );
 
   if (actualEntries.length) {
     return actualEntries.map((entry) => ({
@@ -8655,53 +8657,11 @@ function buildDocumentedProofCards(scope = {}) {
       status: entry.status || "Approved asset",
       meta: [entry.assetType ? `Asset: ${entry.assetType}` : null, entry.targetLabel || null].filter(Boolean),
       url: entry.targetUrl || "/reviews/",
-      cta: entry.targetLabel || "Open target page"
+      cta: entry.targetLabel || "View related page"
     }));
   }
 
-  const scopeLabel =
-    service && market
-      ? `${service.name} in ${marketDisplayName(market)}`
-      : city && market
-        ? `${cityDisplayName(city)} through ${marketDisplayName(market)}`
-        : market
-          ? marketDisplayName(market)
-          : service
-            ? service.name
-            : "Good Attic";
-
-  return [
-    {
-      title: `Before-condition photos for ${scopeLabel}`,
-      text: "Add real attic photos that show why the attic needed the work before the project started, especially when the final recommendation was more than a simple top-off.",
-      image: proofAssets.dirtyReset,
-      alt: `Before-condition proof shell for ${scopeLabel}`,
-      status: "Waiting on real photos",
-      meta: ["Needed: before-condition set", service ? `Best page target: ${service.name}` : "Best page target: reviews and market pages"],
-      url: service && market ? `/${market.slug}/${service.slug}/` : market ? `/${market.slug}/` : "/reviews/",
-      cta: "Open target page"
-    },
-    {
-      title: `Inspection findings and scope notes for ${scopeLabel}`,
-      text: "This slot is for real documented findings that show what the attic inspection uncovered and why the scope was sequenced the way it was.",
-      image: proofAssets.sales,
-      alt: `Inspection findings proof shell for ${scopeLabel}`,
-      status: "Waiting on documented findings",
-      meta: ["Needed: findings summary + photo set", market ? `Market path: ${market.name}` : "Market path: reviews"],
-      url: market ? `/${market.slug}/` : "/reviews/",
-      cta: "Open target page"
-    },
-    {
-      title: `Finished-attic outcome for ${scopeLabel}`,
-      text: "Use real after photos that show the attic looked cleaner, more intentional, and more complete after the work was finished.",
-      image: service?.image || proofAssets.insulation,
-      alt: `Finished-attic proof shell for ${scopeLabel}`,
-      status: "Waiting on after photos",
-      meta: ["Needed: after-condition set", city ? `Support page: ${city.name}` : "Support page: top market and service pages"],
-      url: city && market ? `/${market.slug}/service-areas/${city.slug}/` : service && market ? `/${market.slug}/${service.slug}/` : "/reviews/",
-      cta: "Open target page"
-    }
-  ];
+  return [];
 }
 
 const resourcePages = [
@@ -11621,16 +11581,16 @@ function renderCorePage(page, currentUrl) {
         </div>
         ${renderAudiencePanels([
           {
-            title: "Markets first",
-            text: "The market hub is the main local authority page for each metro, which keeps internal linking cleaner and gives each area one central destination."
+            title: "Start with your nearest market",
+            text: "Each market page brings the local phone number, services, nearby cities, and quote path together in one place."
           },
           {
-            title: "City pages support the market page",
-            text: "Support-city pages should help with local relevance and homeowner orientation, then feed back upward into the correct market and market-service pages."
+            title: "Check nearby service areas",
+            text: "City pages help homeowners confirm local coverage and move directly to the relevant market service."
           },
           {
-            title: "No unsupported storefront signals",
-            text: "Good Attic can build strong local SEO by showing real service-area coverage, local phone paths, and home-based assessments without inventing branches or office-level markup where those things do not actually exist."
+            title: "Real service-area coverage",
+            text: "Good Attic lists the markets and nearby cities our teams actually serve, with direct local contact information for each area."
           }
         ])}
       </section>
@@ -11658,9 +11618,9 @@ function renderCorePage(page, currentUrl) {
       ${renderHero(currentUrl, page, {
         eyebrow: "Reviews & Proof",
         cardKicker: "Trust signal",
-        cardTitle: "Every approved Good Attic customer review belongs in one central library.",
+        cardTitle: "Read verified feedback from Good Attic customers.",
         cardText:
-          "Good Attic keeps approved customer feedback together here so market pages, service pages, and city pages can all point back to one clear review hub as the library grows.",
+          "Customer feedback from our active markets shows how homeowners describe the communication, care, and finished work they received.",
         cardPoints: page.trust_elements
       })}
 
@@ -11670,12 +11630,12 @@ function renderCorePage(page, currentUrl) {
           <h2>${escapeHtml(
             reviewLibraryHasEntries
               ? `All ${approvedReviewCount} approved Good Attic customer reviews in one place.`
-              : "The homeowner review themes this site is prepared to ingest once you approve real excerpts."
+              : "Verified Good Attic customer reviews."
           )}</h2>
           <p class="section-subcopy">${escapeHtml(
             reviewLibraryHasEntries
-              ? "These are real customer excerpts loaded from the shared proof data layer. Add more approved reviews to that data file and this hub will continue to grow automatically."
-              : "These are shells for real homeowner feedback, not fabricated quotes. Once approved excerpts exist, they can be dropped into the shared data layer and flow to the correct proof and market pages."
+              ? "These excerpts come from real Good Attic customer reviews and link back to the relevant local market or service page."
+              : "Customer reviews will appear here after they have been verified for publication."
           )}</p>
         </div>
         ${renderProofQueueGrid(buildReviewExcerptCards({}), currentUrl)}
@@ -11683,12 +11643,12 @@ function renderCorePage(page, currentUrl) {
 
       <section class="section review-proof-section">
         <div class="review-widget review-widget--page reveal" aria-label="Google review preview">
-          ${renderReviewWidgetHeader("Trusted by Good Attic customers")}
+          ${renderReviewWidgetHeader("Trusted by Good Attic customers", "Google Reviews", `${approvedReviewCount} verified reviews`)}
           <div class="review-widget__shell">
             <p>${
               reviewLibraryHasEntries
-                ? `This is the central Good Attic review hub. It currently includes ${approvedReviewCount} approved customer reviews and is designed so more reviews can be added through the shared proof data file.`
-                : "Approved review excerpts or a synced review feed can live here as review sources are connected."
+                ? `Browse ${approvedReviewCount} verified Good Attic customer reviews from the markets we serve.`
+                : "Verified Good Attic customer reviews will appear here."
             }</p>
           </div>
         </div>
@@ -11697,9 +11657,9 @@ function renderCorePage(page, currentUrl) {
       <section class="section">
         <div class="section-heading reveal">
           <p class="eyebrow">Proof library</p>
-          <h2>The kinds of visual proof this page is designed to hold as real approved assets are added.</h2>
+          <h2>What our attic documentation focuses on before and after a project.</h2>
           <p class="section-subcopy">${escapeHtml(
-            "Good Attic should be able to show what the attic looked like, what changed, and why homeowners felt better about the scope afterward."
+              "Clear photos help homeowners understand the starting condition, the work being recommended, and the finished attic."
           )}</p>
         </div>
         ${renderEvidenceGrid(
@@ -11707,26 +11667,26 @@ function renderCorePage(page, currentUrl) {
             {
               kicker: "Documented findings",
               title: "Dirty or compromised attic conditions",
-              text: "This proof slot is designed for real attic photos that show why a top-off was not enough and why cleanup, removal, or a reset belonged in the scope.",
+              text: "Starting-condition photos can show why a top-off is not enough and why cleanup, removal, or a reset belongs in the scope.",
               image: proofAssets.dirtyReset,
-              alt: "Dirty attic conditions proof slot",
-              caption: "Use real approved photos that explain why the scope changed."
+              alt: "Dirty attic conditions documented during an assessment",
+              caption: "Document the condition that changed the recommended scope."
             },
             {
               kicker: "Documented findings",
               title: "Insulation depth and finish quality",
-              text: "This slot is for before-and-after images that show coverage, finish quality, and what a cleaner attic floor looked like after the right install.",
+              text: "Before-and-after images can show coverage, finish quality, and what a cleaner attic floor looks like after the right install.",
               image: proofAssets.hotColdInsulation,
-              alt: "Attic insulation finish proof slot",
-              caption: "Show the difference between thin coverage and a cleaner finished install."
+              alt: "Attic insulation coverage and finish quality",
+              caption: "Compare thin coverage with a cleaner finished install."
             },
             {
               kicker: "Documented findings",
               title: "Air sealing, cleanup, and restoration details",
-              text: "The strongest proof often lives in the details homeowners never see until they are documented clearly during the project.",
+              text: "Important project details often live in areas homeowners cannot see until the attic is documented clearly.",
               image: proofAssets.airSealing,
-              alt: "Air sealing and attic detail proof slot",
-              caption: "Use real detail photos that make the hidden work easier to trust."
+              alt: "Air sealing and attic project details",
+              caption: "Detail photos make hidden attic work easier to understand."
             }
           ],
           currentUrl
@@ -11735,10 +11695,10 @@ function renderCorePage(page, currentUrl) {
 
       <section class="section">
         <div class="section-heading reveal">
-          <p class="eyebrow">Incoming project evidence</p>
-          <h2>The real attic documentation this proof system is designed to absorb next.</h2>
+          <p class="eyebrow">Documented projects</p>
+          <h2>Real before-and-after attic work from Good Attic projects.</h2>
         </div>
-        ${renderProofQueueGrid(buildDocumentedProofCards({}), currentUrl)}
+        ${renderProofQueueGrid(buildDocumentedProofCards({ includeCities: true, limit: 6 }), currentUrl)}
       </section>
 
       <section class="section">
@@ -11765,9 +11725,9 @@ function renderCorePage(page, currentUrl) {
       <section class="section">
         <div class="section-heading reveal">
           <p class="eyebrow">Where proof connects</p>
-          <h2>The pages that should receive the strongest approved review excerpts and project evidence first.</h2>
+          <h2>Browse customer feedback and local service information by market.</h2>
           <p class="section-subcopy">${escapeHtml(
-            "As real review excerpts and documented findings become available, these are the highest-value pages to support first."
+            "Choose a market to see its local services, phone number, nearby cities, and available customer feedback."
           )}</p>
         </div>
         ${renderFeatureGrid(
@@ -11992,8 +11952,8 @@ function renderCorePage(page, currentUrl) {
 
 function renderPage(page) {
   const currentUrl = page.url;
-  const stylesHref = `${assetHref(currentUrl, "styles.css")}?v=legal-20260713a`;
-  const scriptHref = `${assetHref(currentUrl, "script.js")}?v=legal-20260713a`;
+  const stylesHref = `${assetHref(currentUrl, "styles.css")}?v=measurement-20260901a`;
+  const scriptHref = `${assetHref(currentUrl, "script.js")}?v=measurement-20260901a`;
   const mainOpenTag = page.page_type === "market" ? '<main id="top">' : '<main class="page-main">';
 
   let bodyContent = "";

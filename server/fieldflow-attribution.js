@@ -1,4 +1,4 @@
-const SCHEMA_VERSION = "2026-07-31";
+const SCHEMA_VERSION = "2026-09-01";
 const MAX_ATTEMPTS = 3;
 
 const MARKET_ROUTES = {
@@ -78,6 +78,8 @@ export function buildWebsiteAttribution(payload, lead, jobber) {
     source_key: cleanScalar(lead?.source_key, 50),
     source_detail: cleanScalar(lead?.source_detail, 100),
     source_reason: cleanScalar(lead?.source_reason, 2000) || "server_classified",
+    self_reported_source: cleanScalar(lead?.self_reported_source, 80),
+    self_reported_source_detail: cleanScalar(lead?.self_reported_source_detail, 80),
     gclid: verifiedGoogleAds ? readAttributionSignal(payload, "gclid") : "",
     gbraid: verifiedGoogleAds ? readAttributionSignal(payload, "gbraid") : "",
     wbraid: verifiedGoogleAds ? readAttributionSignal(payload, "wbraid") : "",

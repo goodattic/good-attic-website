@@ -31,13 +31,15 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'AW-10789892066');
+    gtag('config', 'G-P7T219JFV6');
     gtag('config', 'AW-11103039262/_4E-CN313tIaEJ7eq64p', { 'phone_conversion_number': '385-336-0062' });
     gtag('config', 'AW-11103039262/-7syCOa6-e0aEJ7eq64p', { 'phone_conversion_number': '314-916-1220' });
     gtag('config', 'AW-11103039262/35RYCNWL7bgcEJ7eq64p', { 'phone_conversion_number': '816-207-9488' });
     window.goodAtticPhoneConversionNumbersConfigured = true;
     window.goodAtticGoogleTagConfigured = true;
+    window.goodAtticGa4Configured = true;
   </script>
-  <link rel="stylesheet" href="styles.css?v=legal-20260713a">
+  <link rel="stylesheet" href="styles.css?v=measurement-20260901a">
 </head>
 <body>
   <header class="site-header" data-header>
@@ -749,6 +751,36 @@
           </label>
         </div>
 
+        <h3 class="form-section-title">How You Found Us</h3>
+        <div class="form-two form-two--source">
+          <label>
+            <span>How did you hear about Good Attic? (optional)</span>
+            <select name="self_reported_source">
+              <option value="">Select one</option>
+              <option value="google_search_maps">Google Search or Maps</option>
+              <option value="google_ads">Google ad</option>
+              <option value="ai_search">AI search or assistant</option>
+              <option value="referral">Friend or referral</option>
+              <option value="social_media">Social media</option>
+              <option value="returning_customer">Returning customer</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label data-ai-source-detail hidden>
+            <span>Which AI search or assistant? (optional)</span>
+            <select name="self_reported_source_detail" disabled>
+              <option value="">Select one</option>
+              <option value="google_ai">Google AI Overview or AI Mode</option>
+              <option value="chatgpt">ChatGPT</option>
+              <option value="perplexity">Perplexity</option>
+              <option value="gemini">Gemini</option>
+              <option value="copilot">Microsoft Copilot</option>
+              <option value="claude">Claude</option>
+              <option value="other_ai">Other AI assistant</option>
+            </select>
+          </label>
+        </div>
+
         <label>
           <span>Additional notes for the team</span>
           <textarea name="additional_notes" rows="4" placeholder="Tell us what you are seeing, what rooms feel uncomfortable, or anything else we should know."></textarea>
@@ -946,6 +978,35 @@
               </select>
             </label>
           </div>
+          <h3 class="form-section-title">How You Found Us</h3>
+          <div class="form-two form-two--source">
+            <label>
+              <span>How did you hear about Good Attic? (optional)</span>
+              <select name="self_reported_source">
+                <option value="">Select one</option>
+                <option value="google_search_maps">Google Search or Maps</option>
+                <option value="google_ads">Google ad</option>
+                <option value="ai_search">AI search or assistant</option>
+                <option value="referral">Friend or referral</option>
+                <option value="social_media">Social media</option>
+                <option value="returning_customer">Returning customer</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label data-ai-source-detail hidden>
+              <span>Which AI search or assistant? (optional)</span>
+              <select name="self_reported_source_detail" disabled>
+                <option value="">Select one</option>
+                <option value="google_ai">Google AI Overview or AI Mode</option>
+                <option value="chatgpt">ChatGPT</option>
+                <option value="perplexity">Perplexity</option>
+                <option value="gemini">Gemini</option>
+                <option value="copilot">Microsoft Copilot</option>
+                <option value="claude">Claude</option>
+                <option value="other_ai">Other AI assistant</option>
+              </select>
+            </label>
+          </div>
             <label>
               <span>Additional notes</span>
               <textarea name="additional_notes" rows="3"></textarea>
@@ -962,6 +1023,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=legal-20260713a" defer></script>
+  <script src="script.js?v=measurement-20260901a" defer></script>
 </body>
 </html>

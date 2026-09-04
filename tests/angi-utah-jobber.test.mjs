@@ -1407,7 +1407,7 @@ test("enqueues and sends PII-free Angi attribution only after the Jobber request
   const summary = (await drained.json()).summary;
 
   assert.deepEqual(deliveredPayload, {
-    schema_version: "2026-07-31",
+    schema_version: "2026-09-01",
     jobber_request_id: "request-1",
     provider_lead_id: "635435743",
     provider_name: "Angi",

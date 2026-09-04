@@ -48,7 +48,7 @@ test("builds a canonical, PII-minimized website attribution record", () => {
   });
 
   assert.deepEqual(record, {
-    schema_version: "2026-07-31",
+    schema_version: "2026-09-01",
     jobber_request_id: "jobber-request-123",
     submission_id: "submission-123",
     occurred_at: lead.submitted_at,
@@ -144,7 +144,7 @@ test("builds an Angi record with exact Jobber and provider identifiers", () => {
       sourceEventAt: "2026-07-31T18:00:00.000Z",
     }, "jobber-request-angi"),
     {
-      schema_version: "2026-07-31",
+      schema_version: "2026-09-01",
       jobber_request_id: "jobber-request-angi",
       provider_lead_id: "635435743",
       provider_name: "Angi",
@@ -170,7 +170,7 @@ test("selects the exact Fieldflow endpoint and secret for each market", async ()
     FIELDFLOW_ATTRIBUTION_TOKEN_KC: "kc-secret",
   };
   const record = {
-    schema_version: "2026-07-31",
+    schema_version: "2026-09-01",
     jobber_request_id: "request",
     occurred_at: "2026-07-31T18:00:00.000Z",
     source_reason: "test",
