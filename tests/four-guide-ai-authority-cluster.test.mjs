@@ -46,21 +46,23 @@ const guides = [
 
 const protectedHashes = {
   "resources/blown-insulation-vs-rolled-insulation/index.html":
-    "c9058348700a5cea915f64be7fd4a5f854fcc1c94c98b6d9ace1df677dad36f3",
+    "334ecb46a85203bd0af707fc015cd28cd7838f976a49bf14cbddf197ce763c85",
   "resources/attic-air-sealing-vs-more-insulation/index.html":
-    "d521de9dbc9fd5e4127b4f0df4d23bb9d44095afd79c1b0ea4f24b9678f8e4b6",
+    "89ff74c234c7dc4d4e588ee61ceebc5a5f0b83f6660ee229b3558523a8fcddf1",
   "resources/insulation-removal-vs-top-off/index.html":
-    "93183ee1fdd10eca6640dd383b74aab7dcec505a7f4d480ad9f7eb2825b4c837",
+    "b2bd2d2a1a237259a5210ac4db59a6bf1ecc0f7c395cd40d441c7ecd247a6012",
   "resources/spray-foam-vs-blown-in-attic-insulation/index.html":
-    "a7564079b4196566039d20d93a6fe0f5c0fd4f3a73eed20fa1de70ebc4ffed33",
+    "53abfe020bfb0766ee6cff9b63f5d860fc69aaf7f2fcd38e0a17f4b5f6d2befa",
   "resources/signs-of-attic-pest-contamination/index.html":
-    "f9ec6ad9fc411ce5b90b4b3265d917673f6c2555dfe7eff596c80b65eef76345",
-  "styles.css": "cc591cb9e147c9d203887467bbea11ffe79064190509604e7fa127062d2b3fa7",
-  "script.js": "f286af88aa58394f2bcfa9c6487c8cee86cbead3ea15f1f819355f990ba895aa",
+    "ecc914d742082bf41495d70b071e13dc92fe127aae40d14f157365a4b5da70f0",
+  "styles.css": "21a116f422beacd8692747b6e979f5b369f28d2de69ef1bd87123198ab929139",
+  "script.js": "fadc8c1a7b66718e923370a6d37b126cc56b04a2ba1952322d7f4507240d3c83",
   "functions/_middleware.js":
     "0da797087cc6bacfca6b9c1a863df2a489290628380bfdc242e7cf89b537f720",
   "functions/api/leads.js":
-    "a54a672701aa40df93d476143ba608d768c2cc78b3758ecaa46141c68b77cd54",
+    "25b191ad3e9d7252ed517da0f4641a32c093345b28f665954e9e6a7bc40be4d6",
+  "server/fieldflow-attribution.js":
+    "b537f7f91198856f252cb91b1262b27f8d5ba8ee40c7777d94a55c3e9f46c13a",
 };
 
 function decodeHtml(value) {
@@ -160,7 +162,7 @@ test("the resource hub and sitemap contain each new route once", async () => {
   }
 });
 
-test("protected pages and operational assets remain byte-identical to production baseline 64ee206", async () => {
+test("protected pages and operational assets remain byte-identical to live baseline 78ae22f", async () => {
   for (const [relativePath, expectedHash] of Object.entries(protectedHashes)) {
     const contents = await readFile(path.join(projectDirectory, relativePath));
     const actualHash = createHash("sha256").update(contents).digest("hex");
@@ -177,7 +179,7 @@ test("new guides preserve the production header, footer, modal, tracking, and fo
     ["<header class=\"site-header\"", "</header>"],
     ["<footer class=\"footer\">", "</footer>"],
     ["<div class=\"modal\"", "</div>\n  \n  <script src=\"../../script.js"],
-    ["<!-- Google tag (gtag.js) -->", "<link rel=\"stylesheet\" href=\"../../styles.css?v=legal-20260713a\">"],
+    ["<!-- Google tag (gtag.js) -->", "<link rel=\"stylesheet\" href=\"../../styles.css?v=measurement-20260901a\">"],
   ];
 
   for (const guide of guides) {
