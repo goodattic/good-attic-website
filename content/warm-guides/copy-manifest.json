@@ -1,0 +1,56 @@
+{
+  "package_name": "Good Attic Warm Four-Guide Exact Copy Package",
+  "package_version": "2026-09-04-v1",
+  "implementation_mode": "exact-copy-only",
+  "authoritative_rule": "Use the supplied copy verbatim. Do not paraphrase, expand, shorten, qualify, or add public copy.",
+  "pages": [
+    {
+      "route": "/resources/attic-insulation-removal-after-mice/",
+      "copy_file": "01-mice-attic-insulation-exact-copy.md",
+      "faq_json_file": "faq-jsonld/mice-faq.json",
+      "resource_card_order": 1
+    },
+    {
+      "route": "/resources/bat-guano-attic-insulation-removal/",
+      "copy_file": "02-bat-guano-attic-insulation-exact-copy.md",
+      "faq_json_file": "faq-jsonld/bats-faq.json",
+      "resource_card_order": 2
+    },
+    {
+      "route": "/resources/wet-attic-insulation-remove-or-dry/",
+      "copy_file": "03-wet-attic-insulation-exact-copy.md",
+      "faq_json_file": "faq-jsonld/wet-faq.json",
+      "resource_card_order": 3
+    },
+    {
+      "route": "/resources/replace-attic-insulation-when-replacing-roof/",
+      "copy_file": "04-roof-replacement-attic-insulation-exact-copy.md",
+      "faq_json_file": "faq-jsonld/roof-faq.json",
+      "resource_card_order": 4
+    }
+  ],
+  "resource_hub_card_copy_file": "05-resource-hub-card-copy.md",
+  "private_source_notes": "SOURCE-AND-CLAIM-NOTES.md",
+  "protected_pages": [
+    "/resources/blown-insulation-vs-rolled-insulation/",
+    "/resources/attic-air-sealing-vs-more-insulation/",
+    "/resources/insulation-removal-vs-top-off/",
+    "/resources/spray-foam-vs-blown-in-attic-insulation/",
+    "/resources/signs-of-attic-pest-contamination/"
+  ],
+  "forbidden_generated_modules": [
+    "Best next pages",
+    "Keep moving through the site without hitting a dead end",
+    "Local service path",
+    "Open local service",
+    "Market Hub",
+    "support path"
+  ],
+  "public_copy_constraints": {
+    "no_public_owner_verification_markers": true,
+    "no_internal_claim_notes": true,
+    "no_additional_good_attic_promotion_before_designated_section": true,
+    "no_unapproved_copy": true,
+    "delete_final_generic_navigation_module": true
+  }
+}

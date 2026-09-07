@@ -9616,6 +9616,306 @@
     "city": null
   },
   {
+    "slug": "attic-insulation-removal-after-mice",
+    "url": "/resources/attic-insulation-removal-after-mice/",
+    "market": null,
+    "include_on_services_hub": false,
+    "primary_keyword": "attic insulation removal after mice",
+    "secondary_keywords": [
+      "mouse contaminated attic insulation",
+      "remove insulation after mice",
+      "mouse attic remediation",
+      "mouse exclusion and attic cleanup"
+    ],
+    "seo_title": "Remove Attic Insulation After Mice? | Good Attic",
+    "meta_description": "Learn when attic insulation should be removed after mice, why covering contamination is not enough, and what full attic remediation involves.",
+    "h1": "Does Attic Insulation Need to Be Removed After Mice?",
+    "intro": "Finding signs of mice in the attic is unsettling. Most homeowners immediately wonder whether the insulation is ruined, how far the problem has spread, and what it will take to make the space feel clean and under control again.",
+    "faq_heading": "Frequently Asked Questions About Mice and Attic Insulation",
+    "suppress_related_links": true,
+    "page_purpose": "Homeowner guide",
+    "cta_primary": "Request an Attic Assessment",
+    "breadcrumb_items": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Resources",
+        "url": "/resources/"
+      },
+      {
+        "label": "Does Attic Insulation Need to Be Removed After Mice?",
+        "url": "/resources/attic-insulation-removal-after-mice/"
+      }
+    ],
+    "canonical_url": "https://goodattic.energy/resources/attic-insulation-removal-after-mice/",
+    "related_links": [
+      {
+        "label": "Signs of Attic Pest Contamination",
+        "url": "/resources/signs-of-attic-pest-contamination/"
+      },
+      {
+        "label": "Insulation Removal vs. Top-Off",
+        "url": "/resources/insulation-removal-vs-top-off/"
+      },
+      {
+        "label": "Attic Air Sealing vs. More Insulation",
+        "url": "/resources/attic-air-sealing-vs-more-insulation/"
+      }
+    ],
+    "faq_items": [
+      {
+        "question": "Does one mouse mean the attic insulation is contaminated?",
+        "answer": "No. A sighting or scratching sound is a reason to inspect, but it does not prove that droppings, urine, nesting material, or animal remains reached the insulation."
+      },
+      {
+        "question": "Can mouse-contaminated insulation be covered with new insulation?",
+        "answer": "Covering it does not remove the contamination, debris, odor, or damaged material underneath. Once contamination is confirmed, Good Attic recommends removal and full remediation."
+      },
+      {
+        "question": "Should active mice be handled before attic restoration?",
+        "answer": "Yes. A pest professional should address active mice before the attic is cleaned and rebuilt. Good Attic can coordinate that work when needed."
+      },
+      {
+        "question": "Can mice return after attic remediation?",
+        "answer": "They can. Closing entry points and restoring the attic can reduce the chance of another problem, but mice may find a new opening later. Continued maintenance and pest monitoring still matter."
+      },
+      {
+        "question": "What happens if the attic contains vermiculite?",
+        "answer": "Do not disturb suspected vermiculite like ordinary insulation. EPA advises homeowners to assume it may contain asbestos and involve a qualified asbestos professional when removal is necessary."
+      }
+    ],
+    "trust_elements": [],
+    "sections": [],
+    "source_groups": [
+      {
+        "heading": "Source cards",
+        "sources": [
+          {
+            "title": "CDC: How to Clean Up After Rodents",
+            "url": "https://www.cdc.gov/healthy-pets/rodent-control/clean-up.html",
+            "text": "Safe handling of rodent waste and contaminated exposed insulation."
+          },
+          {
+            "title": "CDC: How to Seal Up to Prevent Rodents",
+            "url": "https://www.cdc.gov/healthy-pets/rodent-control/seal-up.html",
+            "text": "Common entry points around roofs, eaves, soffits, vents, and utility lines."
+          },
+          {
+            "title": "EPA: Vermiculite Insulation in the Attic",
+            "url": "https://www.epa.gov/asbestos/my-attic-has-vermiculite-insulation-it-am-i-risk-should-i-take-it-out",
+            "text": "Why suspected vermiculite should be left undisturbed and handled by a qualified asbestos professional."
+          },
+          {
+            "title": "ENERGY STAR: Well-Insulated and Sealed Attic",
+            "url": "https://www.energystar.gov/products/energy_star_home_upgrade/attic_insulation",
+            "text": "Guidance on air sealing, baffles, attic preparation, and existing insulation."
+          }
+        ]
+      }
+    ],
+    "cta": {
+      "title": "Concerned That Mice Have Contaminated Your Attic Insulation?",
+      "text": "An in-home attic assessment can show what is happening, whether the insulation needs to come out, and what it will take to clean, seal, and rebuild the space.",
+      "primary": {
+        "label": "Request an Attic Assessment",
+        "url": "/contact/",
+        "kicker": "WHEN YOU ARE READY",
+        "hideSecondary": true
+      }
+    },
+    "hub_card": {
+      "category": "Pest-damaged attics",
+      "title": "Does Attic Insulation Need to Be Removed After Mice?",
+      "text": "Learn what mouse contamination looks like, why covering it does not solve the problem, and how cleanup, exclusion, and fresh insulation fit together.",
+      "cta": "Read the mice guide",
+      "url": "/resources/attic-insulation-removal-after-mice/",
+      "imageDirection": "Use an existing accurate mouse/attic or neutral attic image. Do not imply that a stock image is a Good Attic project."
+    },
+    "exact_copy": {
+      "sourceFile": "01-mice-attic-insulation-exact-copy.md",
+      "faqJsonFile": "faq-jsonld/mice-faq.json",
+      "hero": {
+        "eyebrow": "Resources • Mice in attic insulation",
+        "paragraphs": [
+          "Finding signs of mice in the attic is unsettling. Most homeowners immediately wonder whether the insulation is ruined, how far the problem has spread, and what it will take to make the space feel clean and under control again.",
+          "Seeing one mouse does not automatically mean the attic insulation needs to be removed. A sighting or scratching sound is a reason to inspect—not proof that droppings, urine, nesting material, or animal remains reached the insulation.",
+          "When mouse contamination has reached the insulation, however, adding more material or cleaning only one visible area does not solve the bigger problem. The complete approach is to handle the active mice first, remove the old insulation, clear out what they left behind, close the openings they used, and prepare the attic for fresh insulation."
+        ]
+      },
+      "sections": [
+        {
+          "number": 1,
+          "eyebrow": "START WITH THE EVIDENCE",
+          "heading": "One Mouse Does Not Automatically Mean the Insulation Is Contaminated",
+          "markdown": "The decision should be based on what is actually found in and around the insulation.\n\n### Card 1 — Signs the insulation has been affected\n\nDroppings in or through the insulation, urine staining, nesting material, mouse remains, persistent pest odor, and insulation that has been shredded, tunneled, flattened, or displaced all point toward contamination or damage within the attic material.\n\n### Card 2 — Signs that need a closer look\n\nChewed wiring, damaged ducts, gnawed storage boxes, or an opening along the roofline can show that mice have been present. Those clues matter, but they do not prove by themselves that the insulation has been contaminated.\n\n### Card 3 — Dark insulation may mean something else\n\nInsulation can turn dark or gray where household air has been leaking through gaps in the attic floor and carrying dust with it. That may point to an air-sealing problem rather than mice.\n\n**Safety note:** Do not stir up dry droppings or nesting material for a closer look. CDC guidance recommends wetting and disinfecting rodent waste before it is handled rather than sweeping or vacuuming it while dry.\n\n---"
+        },
+        {
+          "number": 2,
+          "eyebrow": "LOOK BEYOND THE FIRST SPOT",
+          "heading": "Why One Visible Area May Not Tell the Whole Story",
+          "markdown": "The attic hatch is usually the easiest place to see. It is not necessarily the only place mice traveled.\n\nMice can move along framing, wiring, plumbing, and ductwork. They may tunnel through loose-fill insulation or build nests in low, protected areas that are difficult to see from the opening.\n\nOne clue does not prove the entire attic is contaminated. It does mean the rest of the space should be inspected before anyone adds insulation or treats only that one spot. The goal is not to make the problem sound larger than it is. The goal is to understand it well enough to solve it once.\n\n---"
+        },
+        {
+          "number": 3,
+          "eyebrow": "DO NOT COVER THE PROBLEM",
+          "heading": "Why New Insulation or Spot Cleaning Is Not a Complete Fix",
+          "markdown": "Fresh insulation can improve depth, but it cannot remove droppings, urine, nests, odor, or damaged material underneath it. It may also make the attic floor harder to inspect and clean later.\n\nSpot cleaning has the same limitation. It can make one easy-to-reach area look better while leaving contaminated insulation elsewhere.\n\nOnce contamination is confirmed in the insulation, a full remediation gives the attic a true reset: the old material comes out, the attic floor is exposed, the space can be cleaned and prepared, and fresh insulation goes back over a better starting point.\n\nFor the broader keep-or-remove question, see [Insulation Removal vs. Top-Off](https://goodattic.energy/resources/insulation-removal-vs-top-off/).\n\n---"
+        },
+        {
+          "number": 4,
+          "eyebrow": "TWO DIFFERENT JOBS",
+          "heading": "Mouse Control Comes First; Attic Remediation Handles What Was Left Behind",
+          "markdown": "A pest professional should address active mice before attic restoration begins. That work deals with the animals that are still present.\n\nAttic remediation deals with the insulation, droppings, nests, odor, damaged areas, and entry points left behind. The order matters: active mice can disturb new insulation and reuse openings before the attic has a chance to be restored.\n\n---"
+        },
+        {
+          "number": 5,
+          "eyebrow": "A CLEAR PATH FORWARD",
+          "heading": "What Full Attic Remediation Usually Involves",
+          "markdown": "### Step 1 — Handle the active mouse problem\n\nA pest professional addresses the mice that are currently present.\n\n### Step 2 — Protect the home and removal path\n\nThe attic access and the hose route leading outside are covered and prepared before old insulation comes out.\n\n### Step 3 — Remove the existing insulation and pest debris\n\nThe old insulation, droppings, nests, and other debris come out instead of being covered. Commercial insulation-removal equipment moves loose material through a hose to exterior removal bags.\n\n### Step 4 — Expose, clean, and inspect the attic floor\n\nWith the insulation out, the crew can see what was hidden, remove remaining debris, and complete the sanitation and odor treatment needed for the project.\n\n### Step 5 — Close entry points and prepare the attic\n\nThis can include pest exclusion, attic-floor air sealing, baffles, attic dams, hatch improvements, weatherstripping, and protective covers around applicable recessed lights.\n\n### Step 6 — Install fresh insulation and document the work\n\nFresh borate-treated blown-in cellulose can be installed after the attic is clean and prepared. Progress and completion photos show how the space changed from start to finish.\n\n---"
+        },
+        {
+          "number": 6,
+          "eyebrow": "CLEANUP AND PREVENTION",
+          "heading": "Cleaning the Attic and Closing Mouse Entry Points",
+          "markdown": "Removing contaminated insulation handles what the mice left behind. Exclusion work addresses how they entered.\n\nAttic-related openings can appear around rooflines, soffits, vents, siding transitions, and utility penetrations. Closing those openings can reduce the chance of another problem.\n\nPest exclusion and attic air sealing solve different problems. Exclusion closes openings mice use to enter from outside. Air sealing closes gaps between the living space and the attic around wiring, pipes, top plates, chases, fixtures, and the attic hatch. Both may be part of a full remediation.\n\nFresh borate-treated cellulose can add a pest-deterrent benefit after cleanup. It does not make the attic permanently pest-proof, so exterior maintenance and continued pest monitoring still matter.\n\n---"
+        },
+        {
+          "number": 7,
+          "eyebrow": "WHEN ANOTHER PROFESSIONAL IS NEEDED",
+          "heading": "Some Attics Need a Different Expert Before Restoration Can Continue",
+          "markdown": "Suspected vermiculite, unsafe framing, fire damage, electrical damage, or contamination involving HVAC equipment may require another qualified professional.\n\nIf the attic may contain vermiculite, do not disturb it like ordinary insulation. EPA advises homeowners to assume it may contain asbestos and to use a qualified asbestos professional when removal is necessary.\n\n---"
+        },
+        {
+          "number": 8,
+          "eyebrow": "PROJECT COST",
+          "heading": "What Changes the Cost of Mouse-Damaged Attic Remediation?",
+          "markdown": "The price depends on how much material needs to come out, how difficult the attic is to access, what the mice left behind, and what it will take to clean, seal, and rebuild the space.\n\nCommon cost factors include attic size, insulation depth, access, the amount of pest debris, home and hose-path protection, cleanup and odor treatment, entry-point work, air sealing, attic preparation, replacement-insulation depth, and any specialist work the attic requires.\n\nA useful quote should make the sequence clear so the homeowner understands what is coming out, what is being cleaned or sealed, and what is going back into the attic.\n\n---"
+        },
+        {
+          "number": 9,
+          "eyebrow": "THE GOOD ATTIC STANDARD",
+          "heading": "When Mouse Contamination Is Confirmed, We Believe in Starting Fresh",
+          "markdown": "Once mouse contamination is confirmed in the insulation, Good Attic recommends removing the existing insulation and completing a full attic remediation. We do not believe in covering contaminated material with new insulation or treating only one visible area as the finished solution.\n\nGood Attic can coordinate active pest control when needed, protect the access and hose path, remove loose-fill insulation through commercial equipment into exterior bags, complete the cleanup and attic preparation, address attic-related entry points, and rebuild the space with borate-treated cellulose.\n\nGovernment guidance helps explain how rodent waste should be handled safely. The recommendation to complete full remediation is Good Attic’s professional standard for restoring a mouse-contaminated attic.\n\n---"
+        }
+      ],
+      "sourceGroups": [
+        {
+          "heading": "Source cards",
+          "sources": [
+            {
+              "title": "CDC: How to Clean Up After Rodents",
+              "url": "https://www.cdc.gov/healthy-pets/rodent-control/clean-up.html",
+              "text": "Safe handling of rodent waste and contaminated exposed insulation."
+            },
+            {
+              "title": "CDC: How to Seal Up to Prevent Rodents",
+              "url": "https://www.cdc.gov/healthy-pets/rodent-control/seal-up.html",
+              "text": "Common entry points around roofs, eaves, soffits, vents, and utility lines."
+            },
+            {
+              "title": "EPA: Vermiculite Insulation in the Attic",
+              "url": "https://www.epa.gov/asbestos/my-attic-has-vermiculite-insulation-it-am-i-risk-should-i-take-it-out",
+              "text": "Why suspected vermiculite should be left undisturbed and handled by a qualified asbestos professional."
+            },
+            {
+              "title": "ENERGY STAR: Well-Insulated and Sealed Attic",
+              "url": "https://www.energystar.gov/products/energy_star_home_upgrade/attic_insulation",
+              "text": "Guidance on air sealing, baffles, attic preparation, and existing insulation."
+            }
+          ]
+        }
+      ],
+      "faq": {
+        "eyebrow": "FREQUENTLY ASKED QUESTIONS",
+        "heading": "Frequently Asked Questions About Mice and Attic Insulation",
+        "items": [
+          {
+            "question": "Does one mouse mean the attic insulation is contaminated?",
+            "answer": "No. A sighting or scratching sound is a reason to inspect, but it does not prove that droppings, urine, nesting material, or animal remains reached the insulation."
+          },
+          {
+            "question": "Can mouse-contaminated insulation be covered with new insulation?",
+            "answer": "Covering it does not remove the contamination, debris, odor, or damaged material underneath. Once contamination is confirmed, Good Attic recommends removal and full remediation."
+          },
+          {
+            "question": "Should active mice be handled before attic restoration?",
+            "answer": "Yes. A pest professional should address active mice before the attic is cleaned and rebuilt. Good Attic can coordinate that work when needed."
+          },
+          {
+            "question": "Can mice return after attic remediation?",
+            "answer": "They can. Closing entry points and restoring the attic can reduce the chance of another problem, but mice may find a new opening later. Continued maintenance and pest monitoring still matter."
+          },
+          {
+            "question": "What happens if the attic contains vermiculite?",
+            "answer": "Do not disturb suspected vermiculite like ordinary insulation. EPA advises homeowners to assume it may contain asbestos and involve a qualified asbestos professional when removal is necessary."
+          }
+        ]
+      },
+      "related": {
+        "eyebrow": "RELATED ATTIC GUIDES",
+        "heading": "Related Guides for Mouse-Damaged Attics",
+        "intro": "Learn how to recognize pest contamination, decide whether existing insulation can remain, and prepare the attic before fresh insulation goes in.",
+        "items": [
+          {
+            "title": "Signs of Attic Pest Contamination",
+            "text": "",
+            "cta": "Review the warning signs",
+            "url": "/resources/signs-of-attic-pest-contamination/"
+          },
+          {
+            "title": "Insulation Removal vs. Top-Off",
+            "text": "",
+            "cta": "Compare removal and top-off",
+            "url": "/resources/insulation-removal-vs-top-off/"
+          },
+          {
+            "title": "Attic Air Sealing vs. More Insulation",
+            "text": "",
+            "cta": "Learn about attic preparation",
+            "url": "/resources/attic-air-sealing-vs-more-insulation/"
+          }
+        ]
+      },
+      "local": {
+        "eyebrow": "LOCAL ATTIC HELP",
+        "heading": "Find Pest-Damaged Attic Help Near You",
+        "intro": "Choose your market to learn about mouse-contaminated insulation removal, attic cleanup, entry-point work, and full attic remediation.",
+        "items": [
+          {
+            "title": "Salt Lake City",
+            "text": "",
+            "cta": "View Salt Lake City services",
+            "url": "/salt-lake-city-ut/attic-pest-remediation/"
+          },
+          {
+            "title": "St. Louis",
+            "text": "",
+            "cta": "View St. Louis services",
+            "url": "/st-louis-mo/attic-pest-remediation/"
+          },
+          {
+            "title": "Kansas City",
+            "text": "",
+            "cta": "View Kansas City services",
+            "url": "/kansas-city-mo/attic-pest-remediation/"
+          }
+        ]
+      },
+      "closingCta": {
+        "eyebrow": "WHEN YOU ARE READY",
+        "heading": "Concerned That Mice Have Contaminated Your Attic Insulation?",
+        "body": "An in-home attic assessment can show what is happening, whether the insulation needs to come out, and what it will take to clean, seal, and rebuild the space.",
+        "label": "Request an Attic Assessment",
+        "url": "/contact/"
+      },
+      "imageDirection": ""
+    },
+    "page_type": "resource",
+    "city": null
+  },
+  {
     "slug": "bat-guano-attic-insulation-removal",
     "url": "/resources/bat-guano-attic-insulation-removal/",
     "market": null,
@@ -9630,10 +9930,10 @@
     "seo_title": "Bat Guano in Attic Insulation: Should It Be Removed? | Good Attic",
     "meta_description": "Learn when bat guano in attic insulation calls for removal, why properly timed exclusion comes first, and when specialized cleanup may be needed.",
     "h1": "What Should Happen When Bat Guano Reaches Attic Insulation?",
-    "intro": "When bats have left guano, urine, odor, or other contamination in attic insulation, covering it with more insulation does not solve the problem. Active bats should first be excluded at the proper time by an appropriate wildlife professional. The attic can then be evaluated for insulation removal, cleanup, entry-point work, and fresh insulation.",
+    "intro": "Discovering a bat in the house or finding guano in the attic can be alarming. It does not automatically mean the entire attic is ruined, and it does not mean the first step is tearing everything out. There is a clear order that protects the people in the home, respects the bats, and keeps the attic work from being done twice.",
     "faq_heading": "Frequently Asked Questions About Bat Guano and Attic Insulation",
     "suppress_related_links": true,
-    "page_purpose": "Homeowner guide for bat exclusion, guano-affected insulation, and coordinated attic restoration",
+    "page_purpose": "Homeowner guide",
     "cta_primary": "Request an Attic Assessment",
     "breadcrumb_items": [
       {
@@ -9645,7 +9945,7 @@
         "url": "/resources/"
       },
       {
-        "label": "Bat Guano in Attic Insulation",
+        "label": "What Should Happen When Bat Guano Reaches Attic Insulation?",
         "url": "/resources/bat-guano-attic-insulation-removal/"
       }
     ],
@@ -9656,302 +9956,275 @@
         "url": "/resources/signs-of-attic-pest-contamination/"
       },
       {
-        "label": "Insulation Removal vs Top-Off",
-        "url": "/resources/insulation-removal-vs-top-off/"
+        "label": "Wet Attic Insulation: Can It Dry, or Does It Need to Be Removed?",
+        "url": "/resources/wet-attic-insulation-remove-or-dry/"
       },
       {
-        "label": "What Happens During an Attic Inspection",
-        "url": "/resources/what-happens-during-an-attic-inspection/"
-      },
-      {
-        "label": "Replace Attic Insulation When Replacing a Roof",
+        "label": "Replacing Your Roof? Should You Replace the Attic Insulation Too?",
         "url": "/resources/replace-attic-insulation-when-replacing-roof/"
       }
     ],
     "faq_items": [
       {
         "question": "Does one bat mean the attic insulation should be removed?",
-        "answer": "No. One bat is a reason to inspect the attic and exterior, not proof that guano or urine has contaminated the insulation."
+        "answer": "No. A single bat does not prove that a colony is living in the attic or that guano or urine reached the insulation. Repeated activity, an established roost, or contamination within the insulation changes the question."
       },
       {
-        "question": "Can bat guano be cleaned without removing insulation?",
-        "answer": "Sometimes guano limited to an accessible hard surface presents a different cleanup question. When guano or urine has reached or mixed into insulation, covering it or cleaning only the visible surface is not a complete solution."
+        "question": "Can bat guano be cleaned without removing the insulation?",
+        "answer": "Guano limited to a separate hard surface may have a different cleanup answer. When guano or urine has reached or mixed into the insulation, Good Attic recommends removal and full remediation rather than covering it or cleaning only one visible area."
       },
       {
         "question": "Who should remove active bats from an attic?",
-        "answer": "A qualified wildlife professional should evaluate the colony, current local rules, entry points, and exclusion plan before attic restoration begins."
+        "answer": "A qualified wildlife professional should evaluate the colony, local rules, the season, and the proper exclusion method. Good Attic can coordinate the insulation-restoration work with that plan."
       },
       {
         "question": "Why does bat-exclusion timing matter?",
-        "answer": "Young bats may be unable to fly during part of the year. Poorly timed exclusion can trap them inside, so the wildlife professional should choose the approach for the location and season."
+        "answer": "Young bats may not yet be able to fly. Closing adults out too early can trap young bats inside and create new problems. The wildlife professional should determine the right timing for the location and season."
       },
       {
         "question": "Can bats return after the attic is restored?",
-        "answer": "Yes. Exclusion and coordinated entry-point work can reduce future risk, but new openings can develop and no attic restoration makes a building permanently bat-proof."
+        "answer": "They can. Closing the openings used by the colony can reduce the chance of another problem, but new gaps may develop as exterior materials age. Continued maintenance still matters."
       }
     ],
-    "trust_elements": [
-      "One bat does not prove insulation contamination",
-      "Wildlife exclusion comes before attic restoration",
-      "Large or dusty guano conditions may need specialized cleanup"
-    ],
-    "hero": {
-      "eyebrow": "Resources • Bats and attic insulation",
-      "cardKicker": "Wildlife timing comes first",
-      "cardTitle": "The cleanup plan starts with the active colony and where the guano reached.",
-      "cardText": "A qualified wildlife professional should control the exclusion sequence. After that, the insulation and guano conditions determine whether Good Attic can restore the attic or a specialized cleanup provider should lead.",
-      "cardPoints": [
-        "Separate a sighting from contamination",
-        "Protect flightless young",
-        "Match cleanup to the guano conditions",
-        "Coordinate entry-point closure"
-      ],
-      "hideActions": true
-    },
-    "sections": [
-      {
-        "eyebrow": "What changes the answer",
-        "heading": "A bat sighting is not the same as contaminated attic insulation.",
-        "subcopy": "One bat does not automatically mean the attic insulation needs to be removed. The question changes when guano or urine has reached the insulation, contamination has accumulated beneath an active roost, or the insulation itself carries odor or damage tied to bat activity.",
-        "paragraphs": [
-          "Insulation contamination means guano, urine, or roosting debris has reached or mixed into the insulation—or the insulation itself carries odor or visible damage tied to the roost. Guano limited to a separate hard surface may present a different cleanup question and does not automatically mean all of the insulation needs to be removed.",
-          "Bat guano often appears as dark pellet-like droppings below a roost, along travel paths, or near an opening. Urine can stain materials, and a long-used roost can create odor. Do not handle or crush droppings to identify them."
-        ],
-        "layout": "tiles",
-        "items": [
-          {
-            "title": "A single bat",
-            "text": "Seeing a bat outdoors does not suggest an attic problem by itself. A bat found inside, repeated activity around the roofline, guano near an opening, or evidence of an attic roost is a reason to inspect further."
-          },
-          {
-            "title": "A used roost",
-            "text": "Accumulated guano, urine staining, odor, travel paths, and debris beneath a roost are stronger evidence that the attic needs a coordinated plan."
-          },
-          {
-            "title": "Contamination in insulation",
-            "text": "Guano or urine mixed through loose fill, or insulation carrying roost-related odor or damage, changes the keep-or-remove decision."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Exclusion before restoration",
-        "heading": "Active bats and the exclusion schedule belong with a wildlife professional.",
-        "subcopy": "Bat colonies may include young that cannot yet fly. Closing an active exit at the wrong time can trap young bats, separate them from adults, or push adults toward another route into the building.",
-        "paragraphs": [
-          "Utah, Missouri, and Kansas all warn against exclusion when flightless young may be present, but their current guidance is not identical. The wildlife professional should apply the rules, species information, season, roost conditions, and any immediate health concern for the actual property rather than relying on one national calendar."
-        ],
-        "layout": "tiles",
-        "items": [
-          {
-            "title": "1. Evaluate the active colony",
-            "text": "A wildlife professional identifies the roost, entry points, local requirements, and appropriate timing."
-          },
-          {
-            "title": "2. Let the bats leave",
-            "text": "One-way exclusion or another appropriate method allows the bats to exit without turning the attic work into the wildlife plan."
-          },
-          {
-            "title": "3. Confirm the sequence is complete",
-            "text": "Active exits are not permanently sealed until the wildlife professional confirms the exclusion sequence is ready."
-          },
-          {
-            "title": "4. Begin insulation and guano cleanup",
-            "text": "The amount, location, dust potential, and specialist needs are evaluated before material is disturbed."
-          },
-          {
-            "title": "5. Close entry points in coordination",
-            "text": "Roofline and attic openings are addressed without interfering with the active wildlife plan."
-          },
-          {
-            "title": "6. Install fresh insulation",
-            "text": "Replacement insulation is installed only after exclusion, cleanup, and attic preparation are complete."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Guano cleanup and insulation removal",
-        "heading": "The amount, location, and dust potential determine who should lead the cleanup.",
-        "subcopy": "Guano on an accessible hard surface is different from droppings or urine mixed through insulation. Cleaning only the top pellets does not reach material below, and adding insulation leaves the condition in place.",
-        "paragraphs": [
-          "CDC and NIOSH advise against dry sweeping or shoveling and explain that removal decisions should consider the amount and location of material, the structure, conditions around the work, and people nearby. Large, dusty, difficult-to-contain, or otherwise specialized accumulations may need a company equipped for that level of cleanup.",
-          "If physical contact with a bat may have occurred—or a bat was found in a room with someone who may not have noticed contact—contact the local health department and do not handle or release the bat until you receive guidance."
-        ],
-        "layout": "panels",
-        "items": [
-          {
-            "title": "Insulation-restoration conditions",
-            "text": "Some projects can proceed as coordinated insulation removal and attic preparation after the wildlife and cleanup responsibilities are clear."
-          },
-          {
-            "title": "Specialized guano conditions",
-            "text": "Large accumulations, significant dust, difficult containment, or other elevated cleanup concerns should be evaluated by a specialized provider."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Entry points and future risk",
-        "heading": "Permanent closure follows the wildlife plan, not the other way around.",
-        "subcopy": "Bats can use small openings around rooflines, vents, chimneys, soffits, fascia, siding, and utility penetrations. The wildlife professional identifies active exits and proper closure timing. Roofing and attic crews can then repair the openings assigned to them without disrupting the wildlife plan.",
-        "paragraphs": [
-          "Coordinated entry-point work can reduce the chance that another colony uses the same openings. It cannot prevent every future gap as buildings move, materials age, and new damage develops."
-        ]
-      },
-      {
-        "eyebrow": "Good Attic's role",
-        "heading": "Good Attic restores the insulation side of a bat-affected attic.",
-        "subcopy": "Good Attic handles insulation restoration after the wildlife and cleanup plan is clear. A wildlife professional handles active bats and exclusion timing, while specialized guano conditions may need a cleanup provider.",
-        "paragraphs": [
-          "Once bat contamination is confirmed in attic insulation, Good Attic recommends removing the old insulation and completing a full attic remediation. We do not recommend covering contaminated material or cleaning only the easiest visible accumulation as the finished solution.",
-          "Once contamination in the insulation is established and the wildlife sequence is ready, the existing insulation and guano-related debris can be removed so the attic can be cleaned and prepared."
-        ],
-        "layout": "tiles",
-        "items": [
-          {
-            "title": "Wildlife professional",
-            "text": "Evaluates the active colony, exclusion method, timing, protected-wildlife requirements, and confirmation that exits can be closed."
-          },
-          {
-            "title": "Specialized cleanup provider",
-            "text": "Leads when the guano amount, dust, containment, or other conditions require specialized equipment and cleanup controls."
-          },
-          {
-            "title": "Good Attic",
-            "text": "Removes affected insulation, prepares the attic, and installs fresh insulation after the wildlife and cleanup steps are ready."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Cost and specialist conditions",
-        "heading": "Several parts of a bat-affected attic determine the final cost.",
-        "subcopy": "Attic size, access, insulation depth, guano amount and location, protection, disposal, preparation, replacement depth, wildlife work, roof repairs, and specialized cleanup all affect cost.",
-        "paragraphs": [
-          "Suspected vermiculite should be left undisturbed pending guidance from a trained, accredited asbestos professional. Electrical damage, unsafe framing, HVAC contamination, structural concerns, and other conditions may also change the order and the professionals involved."
-        ]
-      },
-      {
-        "eyebrow": "RELATED ATTIC GUIDES",
-        "heading": "Related Guides for Bat-Affected Attics",
-        "layout": "features",
-        "withImages": true,
-        "items": [
-          {
-            "url": "/resources/signs-of-attic-pest-contamination/",
-            "title": "Signs of Attic Pest Contamination",
-            "kicker": "Pest evidence",
-            "text": "Separate a single sighting from evidence that the attic or insulation has been affected.",
-            "image": "assets/pest-issues-in-attic.webp",
-            "alt": "Signs of attic pest contamination",
-            "cta": "Identify contamination signs"
-          },
-          {
-            "url": "/resources/insulation-removal-vs-top-off/",
-            "title": "Insulation Removal vs Top-Off",
-            "kicker": "Insulation options",
-            "text": "Use the broader framework when deciding whether existing insulation is still worth keeping.",
-            "image": "assets/dirty-old-attic-needing-restoration.webp",
-            "alt": "Insulation removal versus top-off",
-            "cta": "Compare insulation options"
-          },
-          {
-            "url": "/resources/replace-attic-insulation-when-replacing-roof/",
-            "title": "Replace Attic Insulation With a New Roof?",
-            "kicker": "Coordination guide",
-            "text": "Coordinate roofline repairs, wildlife entry points, attic preparation, and the final insulation layer.",
-            "image": "assets/attic-insulation.webp",
-            "alt": "Roof replacement and attic insulation guide",
-            "cta": "Plan the sequence"
-          }
-        ]
-      },
-      {
-        "eyebrow": "LOCAL ATTIC HELP",
-        "heading": "Find Bat-Affected Attic Help Near You",
-        "subcopy": "Choose your market to learn how Good Attic can handle the insulation-restoration portion of a bat-affected attic alongside the appropriate wildlife professional.",
-        "layout": "features",
-        "withImages": true,
-        "items": [
-          {
-            "url": "/salt-lake-city-ut/attic-pest-remediation/",
-            "title": "Bat-Affected Attic Insulation Help in Salt Lake City",
-            "kicker": "Salt Lake City",
-            "text": "Explore attic insulation restoration coordinated with a qualified wildlife professional in the Salt Lake City service area.",
-            "image": "assets/dirty-old-attic-needing-restoration.webp",
-            "alt": "Attic insulation restoration in Salt Lake City",
-            "cta": "View Salt Lake City services"
-          },
-          {
-            "url": "/st-louis-mo/attic-pest-remediation/",
-            "title": "Bat-Affected Attic Insulation Help in St. Louis",
-            "kicker": "St. Louis",
-            "text": "Explore attic insulation restoration coordinated with a qualified wildlife professional in the St. Louis service area.",
-            "image": "assets/dirty-old-attic-needing-restoration.webp",
-            "alt": "Attic insulation restoration in St. Louis",
-            "cta": "View St. Louis services"
-          },
-          {
-            "url": "/kansas-city-mo/attic-pest-remediation/",
-            "title": "Bat-Affected Attic Insulation Help in Kansas City",
-            "kicker": "Kansas City",
-            "text": "Explore attic insulation restoration coordinated with a qualified wildlife professional in the Kansas City service area.",
-            "image": "assets/dirty-old-attic-needing-restoration.webp",
-            "alt": "Attic insulation restoration in Kansas City",
-            "cta": "View Kansas City services"
-          }
-        ]
-      }
-    ],
+    "trust_elements": [],
+    "sections": [],
     "source_groups": [
       {
-        "heading": "Current wildlife and guano-cleanup guidance",
-        "intro": "The state sources remain separate because exclusion timing and wildlife requirements differ by location.",
+        "heading": "Source cards",
         "sources": [
           {
-            "title": "Utah Division of Wildlife Resources: Bats in Utah Homes",
-            "text": "Current Utah guidance on protected bats, maternity colonies, permitted wildlife nuisance control, and properly timed exclusion.",
-            "url": "https://wildlife.utah.gov/news/2026/07/14/what-to-know-about-bats-in-utah-and-how-to-prevent-conflicts-with-them"
+            "title": "Utah Division of Wildlife Resources: What to Know About Bats in Utah",
+            "url": "https://wildlife.utah.gov/news/2026/07/14/what-to-know-about-bats-in-utah-and-how-to-prevent-conflicts-with-them",
+            "text": "Utah guidance on maternity colonies, timing, permitted wildlife professionals, and attic exclusion."
           },
           {
             "title": "Missouri Department of Conservation: Bat Control",
-            "text": "Current Missouri guidance on protected bats, common building entries, one-way exclusion, and delaying action while young cannot exit.",
-            "url": "https://mdc.mo.gov/wildlife/nuisance-problem-species/bat-control"
+            "url": "https://mdc.mo.gov/wildlife/nuisance-problem-species/bat-control",
+            "text": "Missouri guidance on protected bats, building entry points, exclusion, and repairs."
           },
           {
             "title": "Kansas Department of Wildlife and Parks: Wildlife Damage Control",
-            "text": "Current Kansas guidance for bats in houses, seasonal activity, one-way exclusion, and permitted nuisance-wildlife professionals.",
-            "url": "https://www.ksoutdoors.gov/programs-services/wildlife-damage-control"
-          },
-          {
-            "title": "CDC/NIOSH: Histoplasmosis Elimination and Engineering Controls",
-            "text": "Guidance for assessing guano accumulations, avoiding dry disturbance, controlling dust, and using industrial high-efficiency vacuum methods when removal is needed.",
-            "url": "https://www.cdc.gov/niosh/histoplasmosis/prevention/elimination-and-engineering-controls.html"
-          },
-          {
-            "title": "CDC: Reducing Risk for Histoplasmosis",
-            "text": "Public-health guidance on exposure from disturbing material containing bat droppings and specialized cleanup for large accumulations.",
-            "url": "https://www.cdc.gov/histoplasmosis/prevention/index.html"
+            "url": "https://www.ksoutdoors.gov/programs-services/wildlife-damage-control",
+            "text": "Kansas guidance on bat activity, young bats, one-way exits, timing, and entry points."
           },
           {
             "title": "CDC: Preventing Rabies From Bats",
-            "text": "Current public-health guidance on possible bat contact, situations in which contact may not have been noticed, and getting local health-department guidance before releasing the bat.",
-            "url": "https://www.cdc.gov/rabies/prevention/bats.html"
+            "url": "https://www.cdc.gov/rabies/prevention/bats.html",
+            "text": "Guidance on bat contact, public-health involvement, and keeping bats out of a home."
+          },
+          {
+            "title": "CDC/NIOSH: Histoplasmosis Controls",
+            "url": "https://www.cdc.gov/niosh/histoplasmosis/prevention/elimination-and-engineering-controls.html",
+            "text": "Guidance on avoiding dry disturbance of bat droppings and when professional dust-control methods may be needed."
           },
           {
             "title": "EPA: Vermiculite Insulation in the Attic",
-            "text": "Guidance to leave suspected vermiculite undisturbed and use a trained, accredited asbestos professional if removal is considered.",
-            "url": "https://www.epa.gov/asbestos/my-attic-has-vermiculite-insulation-it-am-i-risk-should-i-take-it-out"
+            "url": "https://www.epa.gov/asbestos/my-attic-has-vermiculite-insulation-it-am-i-risk-should-i-take-it-out",
+            "text": "Why suspected vermiculite should be left undisturbed and handled by a qualified asbestos professional."
           }
         ]
       }
     ],
     "cta": {
-      "title": "Concerned about bat guano in your attic insulation?",
-      "text": "An attic assessment can document the insulation and cleanup needs, while the appropriate wildlife professional determines how and when the active bats should be excluded.",
+      "title": "Concerned About Bat Guano in Your Attic Insulation?",
+      "text": "An attic assessment can document the insulation and cleanup needs, while the appropriate wildlife professional determines how and when active bats should be excluded.",
       "primary": {
         "label": "Request an Attic Assessment",
         "url": "/contact/",
-        "kicker": "Next step",
+        "kicker": "WHEN YOU ARE READY",
         "hideSecondary": true
       }
+    },
+    "hub_card": {
+      "category": "Bat-affected attics",
+      "title": "What Should Happen When Bat Guano Reaches Attic Insulation?",
+      "text": "Understand when properly timed bat exclusion comes first, when contaminated insulation should be removed, and how the attic can be restored afterward.",
+      "cta": "Read the bat guide",
+      "url": "/resources/bat-guano-attic-insulation-removal/",
+      "imageDirection": "Use an accurate bat, attic roofline, vent, or wildlife-entry image. Do not use a visible mouse, rat, squirrel, or other animal as the bat card image."
+    },
+    "exact_copy": {
+      "sourceFile": "02-bat-guano-attic-insulation-exact-copy.md",
+      "faqJsonFile": "faq-jsonld/bats-faq.json",
+      "hero": {
+        "eyebrow": "Resources • Bat-affected attics",
+        "paragraphs": [
+          "Discovering a bat in the house or finding guano in the attic can be alarming. It does not automatically mean the entire attic is ruined, and it does not mean the first step is tearing everything out. There is a clear order that protects the people in the home, respects the bats, and keeps the attic work from being done twice.",
+          "First, determine whether bats are still using the structure and let a qualified wildlife professional plan the exclusion at the right time. Then inspect where the guano, urine, and roosting debris actually reached.",
+          "One bat does not automatically mean the insulation needs to be removed. The question changes when guano or urine has reached the insulation, contamination has collected beneath an active roost, or the insulation itself carries odor or visible damage tied to bat activity."
+        ]
+      },
+      "sections": [
+        {
+          "number": 1,
+          "eyebrow": "START WITH WHAT HAPPENED",
+          "heading": "A Bat Sighting Is Not the Same as Contaminated Insulation",
+          "markdown": "Seeing a bat outdoors does not suggest an attic problem by itself. A bat found inside, repeated activity around the roofline at dusk, guano below an opening, or evidence of an attic roost is a reason to look more closely.\n\n### Card 1 — A single bat\n\nA lone bat can enter through an open door, window, chimney, or small gap. One indoor bat does not automatically mean a colony is living in the attic.\n\n### Card 2 — An established roost\n\nRepeated evening activity, regular sounds from the same area, staining around an opening, or guano collecting beneath a roofline gap can suggest that bats are using the structure more consistently.\n\n### Card 3 — Contamination in the insulation\n\nInsulation contamination means guano, urine, or roosting debris has reached or mixed into the insulation—or the insulation itself carries odor or visible damage tied to the roost. Guano limited to a separate hard surface may present a different cleanup question and does not automatically mean all of the insulation needs to be removed.\n\n**Health and safety note:** Do not handle a bat with bare hands. If physical contact may have occurred—or a bat was found in a room with someone who may not have noticed contact—contact the local health department and do not release the bat until you receive guidance.\n\n---"
+        },
+        {
+          "number": 2,
+          "eyebrow": "HANDLE THE ACTIVE BATS FIRST",
+          "heading": "Bat Exclusion Comes Before Attic Restoration",
+          "markdown": "When bats are still using an attic, the first job is getting them out safely and at the proper time.\n\nA wildlife professional should identify the active exits and determine when exclusion can happen. One-way devices or another appropriate method can allow bats to leave without letting them back in. The openings should not be permanently sealed too early.\n\nTiming matters because young bats may not yet be able to fly. Excluding adults while pups remain inside can create an animal-welfare problem and may push bats toward other openings into the home. Utah, Missouri, and Kansas each provide their own guidance, so the wildlife professional should set the plan for the location and season.\n\n---"
+        },
+        {
+          "number": 3,
+          "eyebrow": "THE ORDER MATTERS",
+          "heading": "A Clear Sequence for a Bat-Affected Attic",
+          "markdown": "### Step 1 — Evaluate the active colony\n\nA qualified wildlife professional identifies the exits and determines whether young bats or seasonal rules affect the timing.\n\n### Step 2 — Let the bats leave\n\nOne-way exclusion or another appropriate method allows the bats to leave. Active exits remain available until the wildlife professional confirms the sequence is complete.\n\n### Step 3 — Coordinate permanent closure\n\nOnce the bats are out, the openings they used can be sealed in the right order. Other gaps around the roofline, vents, soffits, siding, chimneys, and penetrations can also be reviewed.\n\n### Step 4 — Evaluate the guano and insulation\n\nThe attic is inspected to determine whether guano or urine reached the insulation, whether odor remains, and whether the cleanup needs a specialized provider.\n\n### Step 5 — Remove contaminated insulation and clean the attic\n\nWhen contamination has reached the insulation, the existing material and guano-related debris can be removed so the attic can be cleaned and prepared instead of covered.\n\n### Step 6 — Rebuild the insulation layer\n\nAfter the wildlife and cleanup work is complete, the attic can be air sealed, prepared, and insulated with fresh material.\n\n---"
+        },
+        {
+          "number": 4,
+          "eyebrow": "GUANO CLEANUP",
+          "heading": "The Amount and Condition of the Guano Help Determine Who Should Lead the Cleanup",
+          "markdown": "A small amount of guano on an open hard surface is different from years of dry accumulation mixed into loose-fill insulation.\n\nBat droppings can create dust when disturbed. NIOSH advises against dry sweeping or shoveling and describes dust-control and high-efficiency vacuum methods for professional cleanup. Large, dusty, difficult-to-contain, or otherwise specialized conditions may need a company equipped to lead that level of work.\n\nA homeowner should not climb into a dusty roost and begin sweeping, shoveling, or moving insulation. The attic should be evaluated before the material is disturbed.\n\n---"
+        },
+        {
+          "number": 5,
+          "eyebrow": "INSULATION REMOVAL AND ATTIC PREPARATION",
+          "heading": "When Guano Reaches the Insulation, Covering It Is Not a Reset",
+          "markdown": "New insulation can add depth, but it cannot remove guano, urine, odor, roosting debris, or damaged material underneath it.\n\nOnce contamination in the insulation is established and the wildlife sequence is ready, the existing insulation and guano-related debris can be removed so the attic can be cleaned and prepared.\n\nA full remediation may include home protection, insulation removal, guano-related cleanup, odor or sanitation treatment, attic-floor inspection, coordinated entry-point closure, air sealing, ventilation preparation, fresh insulation, and completion photos.\n\nThe goal is not simply to make one visible pile disappear. It is to give the attic a clean starting point after the active bat problem has been handled.\n\n---"
+        },
+        {
+          "number": 6,
+          "eyebrow": "CLOSING THE OPENINGS",
+          "heading": "Bat Entry Points Must Be Closed in the Right Sequence",
+          "markdown": "Bat exclusion and attic restoration overlap, but they are not the same job.\n\nThe wildlife professional manages the active colony and determines when one-way exclusion and permanent closure can happen. The attic-restoration team can then coordinate insulation removal, cleanup, preparation, and entry-point work around that plan.\n\nCommon access points may include roofline gaps, unscreened vents, openings under eaves, loose siding or trim, chimney transitions, and spaces around pipes or wiring.\n\nClosing those openings can reduce the chance of bats returning, but new gaps may develop as exterior materials age. Continued maintenance still matters.\n\n---"
+        },
+        {
+          "number": 7,
+          "eyebrow": "PROJECT COST",
+          "heading": "What Changes the Cost of a Bat-Affected Attic Project?",
+          "markdown": "The price depends on the attic size, the amount and location of the guano, whether the insulation has been contaminated, how difficult the cleanup is, and what the attic needs before fresh insulation can be installed.\n\nOther factors may include wildlife exclusion, entry-point repairs, access and headroom, odor or sanitation treatment, air sealing, baffles, replacement-insulation depth, and work led by a specialized cleanup provider.\n\nThe clearest proposal separates the wildlife work, specialized cleanup, attic restoration, and replacement insulation so the homeowner knows who is handling each part.\n\n---"
+        },
+        {
+          "number": 8,
+          "eyebrow": "HOW GOOD ATTIC FITS INTO THE PLAN",
+          "heading": "Good Attic Handles the Insulation-Restoration Side of the Project",
+          "markdown": "Good Attic can work hand in hand with the appropriate wildlife and cleanup professionals on a bat-affected attic. Active bats and exclusion timing belong with a qualified wildlife professional. Large, dusty, difficult-to-contain, or otherwise specialized guano conditions may need to be led by a company equipped for that level of cleanup.\n\nOnce the wildlife and cleanup plan is established, Good Attic can remove contaminated insulation, prepare the attic, coordinate attic-related entry-point work, complete air sealing or ventilation preparation, and install fresh borate-treated cellulose when the space is ready.\n\nOnce bat contamination is confirmed in attic insulation, Good Attic recommends removing the old insulation and completing a full attic remediation. We do not recommend covering contaminated material or cleaning only the easiest visible accumulation as the finished solution.\n\n---"
+        }
+      ],
+      "sourceGroups": [
+        {
+          "heading": "Source cards",
+          "sources": [
+            {
+              "title": "Utah Division of Wildlife Resources: What to Know About Bats in Utah",
+              "url": "https://wildlife.utah.gov/news/2026/07/14/what-to-know-about-bats-in-utah-and-how-to-prevent-conflicts-with-them",
+              "text": "Utah guidance on maternity colonies, timing, permitted wildlife professionals, and attic exclusion."
+            },
+            {
+              "title": "Missouri Department of Conservation: Bat Control",
+              "url": "https://mdc.mo.gov/wildlife/nuisance-problem-species/bat-control",
+              "text": "Missouri guidance on protected bats, building entry points, exclusion, and repairs."
+            },
+            {
+              "title": "Kansas Department of Wildlife and Parks: Wildlife Damage Control",
+              "url": "https://www.ksoutdoors.gov/programs-services/wildlife-damage-control",
+              "text": "Kansas guidance on bat activity, young bats, one-way exits, timing, and entry points."
+            },
+            {
+              "title": "CDC: Preventing Rabies From Bats",
+              "url": "https://www.cdc.gov/rabies/prevention/bats.html",
+              "text": "Guidance on bat contact, public-health involvement, and keeping bats out of a home."
+            },
+            {
+              "title": "CDC/NIOSH: Histoplasmosis Controls",
+              "url": "https://www.cdc.gov/niosh/histoplasmosis/prevention/elimination-and-engineering-controls.html",
+              "text": "Guidance on avoiding dry disturbance of bat droppings and when professional dust-control methods may be needed."
+            },
+            {
+              "title": "EPA: Vermiculite Insulation in the Attic",
+              "url": "https://www.epa.gov/asbestos/my-attic-has-vermiculite-insulation-it-am-i-risk-should-i-take-it-out",
+              "text": "Why suspected vermiculite should be left undisturbed and handled by a qualified asbestos professional."
+            }
+          ]
+        }
+      ],
+      "faq": {
+        "eyebrow": "FREQUENTLY ASKED QUESTIONS",
+        "heading": "Frequently Asked Questions About Bat Guano and Attic Insulation",
+        "items": [
+          {
+            "question": "Does one bat mean the attic insulation should be removed?",
+            "answer": "No. A single bat does not prove that a colony is living in the attic or that guano or urine reached the insulation. Repeated activity, an established roost, or contamination within the insulation changes the question."
+          },
+          {
+            "question": "Can bat guano be cleaned without removing the insulation?",
+            "answer": "Guano limited to a separate hard surface may have a different cleanup answer. When guano or urine has reached or mixed into the insulation, Good Attic recommends removal and full remediation rather than covering it or cleaning only one visible area."
+          },
+          {
+            "question": "Who should remove active bats from an attic?",
+            "answer": "A qualified wildlife professional should evaluate the colony, local rules, the season, and the proper exclusion method. Good Attic can coordinate the insulation-restoration work with that plan."
+          },
+          {
+            "question": "Why does bat-exclusion timing matter?",
+            "answer": "Young bats may not yet be able to fly. Closing adults out too early can trap young bats inside and create new problems. The wildlife professional should determine the right timing for the location and season."
+          },
+          {
+            "question": "Can bats return after the attic is restored?",
+            "answer": "They can. Closing the openings used by the colony can reduce the chance of another problem, but new gaps may develop as exterior materials age. Continued maintenance still matters."
+          }
+        ]
+      },
+      "related": {
+        "eyebrow": "RELATED ATTIC GUIDES",
+        "heading": "Related Guides for Bat-Affected Attics",
+        "intro": "Learn how pest contamination, wet insulation, roof work, and old insulation can affect the next decision.",
+        "items": [
+          {
+            "title": "Signs of Attic Pest Contamination",
+            "text": "",
+            "cta": "Review the warning signs",
+            "url": "/resources/signs-of-attic-pest-contamination/"
+          },
+          {
+            "title": "Wet Attic Insulation: Can It Dry, or Does It Need to Be Removed?",
+            "text": "",
+            "cta": "Read the wet-insulation guide",
+            "url": "/resources/wet-attic-insulation-remove-or-dry/"
+          },
+          {
+            "title": "Replacing Your Roof? Should You Replace the Attic Insulation Too?",
+            "text": "",
+            "cta": "Plan the roof and attic work",
+            "url": "/resources/replace-attic-insulation-when-replacing-roof/"
+          }
+        ]
+      },
+      "local": {
+        "eyebrow": "LOCAL ATTIC HELP",
+        "heading": "Find Bat-Affected Attic Help Near You",
+        "intro": "Choose your market to learn how Good Attic can handle the insulation-restoration portion of a bat-affected attic alongside the appropriate wildlife professional.",
+        "items": [
+          {
+            "title": "Salt Lake City",
+            "text": "",
+            "cta": "View Salt Lake City services",
+            "url": "/salt-lake-city-ut/attic-pest-remediation/"
+          },
+          {
+            "title": "St. Louis",
+            "text": "",
+            "cta": "View St. Louis services",
+            "url": "/st-louis-mo/attic-pest-remediation/"
+          },
+          {
+            "title": "Kansas City",
+            "text": "",
+            "cta": "View Kansas City services",
+            "url": "/kansas-city-mo/attic-pest-remediation/"
+          }
+        ]
+      },
+      "closingCta": {
+        "eyebrow": "WHEN YOU ARE READY",
+        "heading": "Concerned About Bat Guano in Your Attic Insulation?",
+        "body": "An attic assessment can document the insulation and cleanup needs, while the appropriate wildlife professional determines how and when active bats should be excluded.",
+        "label": "Request an Attic Assessment",
+        "url": "/contact/"
+      },
+      "imageDirection": "Use an accurate bat, attic-roofline, vent, or wildlife-entry image. Do not use an image that visibly depicts mice, rats, squirrels, or another animal as the bat guide’s primary card or hero image. Do not imply that a stock or generic image is a Good Attic project."
     },
     "page_type": "resource",
     "city": null
@@ -9963,18 +10236,18 @@
     "include_on_services_hub": false,
     "primary_keyword": "wet attic insulation remove or dry",
     "secondary_keywords": [
-      "can wet attic insulation dry",
-      "wet cellulose insulation attic",
-      "wet fiberglass insulation attic",
-      "remove insulation after roof leak"
+      "wet cellulose insulation",
+      "wet fiberglass attic insulation",
+      "roof leak attic insulation",
+      "remove water damaged insulation"
     ],
     "seo_title": "Wet Attic Insulation: Remove It or Let It Dry? | Good Attic",
     "meta_description": "Learn when wet attic insulation may dry, when removal makes sense, and why the moisture source and nearby attic materials should be checked first.",
     "h1": "Wet Attic Insulation: Can It Dry, or Does It Need to Be Removed?",
-    "intro": "Fix the source of the moisture first. A small damp area discovered quickly may have a different answer than insulation that is soaked, matted, smelly, or damaged. The insulation and the materials around it should be inspected before deciding what can remain and what should be removed.",
+    "intro": "Water in the attic can make every decision feel urgent. Is the roof still leaking? Is the insulation ruined? Is there mold? Can the material dry, or does it need to come out?",
     "faq_heading": "Frequently Asked Questions About Wet Attic Insulation",
     "suppress_related_links": true,
-    "page_purpose": "Homeowner guide for evaluating wet attic insulation and sequencing source correction, removal, and replacement",
+    "page_purpose": "Homeowner guide",
     "cta_primary": "Request an Attic Assessment",
     "breadcrumb_items": [
       {
@@ -9986,291 +10259,92 @@
         "url": "/resources/"
       },
       {
-        "label": "Wet Attic Insulation",
+        "label": "Wet Attic Insulation: Can It Dry, or Does It Need to Be Removed?",
         "url": "/resources/wet-attic-insulation-remove-or-dry/"
       }
     ],
     "canonical_url": "https://goodattic.energy/resources/wet-attic-insulation-remove-or-dry/",
     "related_links": [
       {
-        "label": "Insulation Removal vs Top-Off",
+        "label": "Insulation Removal vs. Top-Off",
         "url": "/resources/insulation-removal-vs-top-off/"
       },
       {
-        "label": "Attic Air Sealing vs More Insulation",
-        "url": "/resources/attic-air-sealing-vs-more-insulation/"
-      },
-      {
-        "label": "Attic Insulation Removal After Mice",
-        "url": "/resources/attic-insulation-removal-after-mice/"
-      },
-      {
-        "label": "Replace Attic Insulation When Replacing a Roof",
+        "label": "Replacing Your Roof? Should You Replace the Attic Insulation Too?",
         "url": "/resources/replace-attic-insulation-when-replacing-roof/"
+      },
+      {
+        "label": "Attic Air Sealing vs. More Insulation",
+        "url": "/resources/attic-air-sealing-vs-more-insulation/"
       }
     ],
     "faq_items": [
       {
         "question": "Can wet attic insulation be left to dry?",
-        "answer": "Sometimes a small area found quickly may be evaluated after the source is corrected. Saturated, matted, smelly, contaminated, visibly damaged, or uneven material is more likely to need removal."
+        "answer": "Sometimes a small area found quickly may be evaluated after the source is corrected. Insulation that is soaked, matted, smelly, contaminated, visibly damaged, or uneven is more likely to need removal."
       },
       {
         "question": "Should new insulation be added over a wet area?",
-        "answer": "No. Correct the source, inspect the insulation and nearby materials, remove what cannot remain, and make sure the space is ready before installing new insulation."
+        "answer": "No. Correct the moisture source and make sure the attic is ready before new insulation is installed. Covering wet material can hide the problem and make future inspection harder."
       },
       {
-        "question": "Does wet fiberglass always have to be replaced?",
-        "answer": "Not every minor damp spot has the same answer. Fiberglass may need to be lifted or removed so nearby materials can be inspected, and it should be replaced when it remains dirty, compressed, smelly, contaminated, or unable to return to its intended shape."
+        "question": "Does wet fiberglass always need to be removed?",
+        "answer": "Not automatically. The source, duration, cleanliness of the water, condition of the insulation, and the materials around it all matter. Fiberglass that is dirty, matted, smelly, contaminated, or no longer holding its shape is a poor candidate to remain."
       },
       {
         "question": "Can Good Attic diagnose mold or certify that the attic is dry?",
-        "answer": "Good Attic does not provide mold diagnoses or formal moisture clearance. We can document what is visible in the attic and coordinate the insulation work with the appropriate professional."
+        "answer": "Good Attic does not provide mold diagnoses or formal moisture clearance. We can document what is visible and coordinate the insulation work with the appropriate professional."
       },
       {
-        "question": "Who should repair the source of the moisture?",
-        "answer": "It depends on the cause. A roofer, plumber, HVAC contractor, electrician, mold professional, structural professional, or another specialist may need to complete that work before the insulation project continues."
+        "question": "What happens if the wet insulation is vermiculite?",
+        "answer": "Do not disturb suspected vermiculite like ordinary insulation. EPA advises homeowners to assume it may contain asbestos and involve a qualified asbestos professional when removal is necessary."
       }
     ],
-    "trust_elements": [
-      "Correct the moisture source first",
-      "Inspect the materials above and below the insulation",
-      "Keep specialist work with the appropriate trade"
-    ],
-    "hero": {
-      "eyebrow": "Resources • Wet attic insulation",
-      "cardKicker": "Start with the moisture source",
-      "cardTitle": "Drying the surface is not the same as proving the attic is ready.",
-      "cardText": "The decision depends on how wet the insulation became, how long it stayed wet, what the water touched, and whether the material remains clean, even, and useful after the source is fixed.",
-      "cardPoints": [
-        "Source and duration",
-        "Damp versus saturated",
-        "Cellulose versus fiberglass",
-        "Nearby attic materials"
-      ],
-      "hideActions": true
-    },
-    "sections": [
-      {
-        "eyebrow": "The first decision",
-        "heading": "Find and repair the moisture source before deciding what insulation can stay.",
-        "subcopy": "Insulation is often where a moisture problem becomes visible, not where it begins. The question is whether the insulation remains clean, evenly distributed, and useful after the water problem is corrected, not only whether its surface feels dry.",
-        "paragraphs": [
-          "A roofer may need to repair a leak or failed flashing. A plumber may need to stop a pipe leak. An HVAC contractor may need to correct a condensate pan, cold-surface condensation, or an exhaust duct ending in the attic. Warm indoor air leaking through the ceiling can also contribute to condensation.",
-          "Adding insulation before finding the source can hide the evidence and repeat the problem. Water can travel along framing before reaching the insulation, so the responsible trade should evaluate the pattern rather than treating the first damp spot as the whole diagnosis."
-        ]
-      },
-      {
-        "eyebrow": "Condition of the material",
-        "heading": "Damp insulation is different from insulation that is soaked, matted, smelly, or contaminated.",
-        "subcopy": "A small clean-water area discovered quickly may have a different answer than material that stayed wet, lost its shape, carries odor, or was exposed to dirty water. Source, duration, reach, and present condition all matter.",
-        "paragraphs": [
-          "Removal is more likely when the insulation is soaked, matted, smelly, contaminated, visibly damaged, or keeping the materials underneath from being inspected.",
-          "If the water may contain sewage, animal waste, or another biological or chemical contaminant, the cleanup question changes. The material should not be disturbed until the appropriate professional has evaluated the source and conditions."
-        ],
-        "layout": "panels",
-        "items": [
-          {
-            "title": "A small damp area found quickly",
-            "text": "After the source is corrected, the material and surrounding attic may be evaluated for cleanliness, shape, even coverage, and complete drying."
-          },
-          {
-            "title": "Saturated or contaminated material",
-            "text": "Soaked, odorous, dirty, matted, damaged, or contaminated insulation is a poor base for another layer and is more likely to need removal."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Material differences",
-        "heading": "Wet cellulose and wet fiberglass do not always behave the same way.",
-        "subcopy": "Loose-fill cellulose may remain clumped, settled, or uneven after a leak. Saturated, smelly, contaminated, or badly matted cellulose is not a sound base for fresh insulation.",
-        "paragraphs": [
-          "Fiberglass should not be kept simply because its surface feels dry. Its shape, cleanliness, odor, and the condition of the wood or drywall around it still matter.",
-          "Manufacturer guidance says a fiberglass decision depends on water cleanliness, the duration and extent of wetting, and whether the material can dry and regain its original thickness. Trade-association guidance for cellulose also puts source correction first and distinguishes dampness from saturation."
-        ]
-      },
-      {
-        "eyebrow": "Look beyond the insulation",
-        "heading": "Nearby decking, framing, drywall, ducts, wiring, and equipment may also be wet.",
-        "subcopy": "Water can move beyond the first damp spot, and surface dryness does not show whether the materials underneath are ready to cover.",
-        "paragraphs": [
-          "Insulation may need to be lifted or removed so the roof deck, framing, ceiling, ductwork, drain pans, wiring, fixtures, and visible equipment can be evaluated. A roofer, plumber, HVAC contractor, electrician, mold professional, water-restoration company, structural professional, or another specialist may need to inspect or repair those materials before insulation work continues."
-        ]
-      },
-      {
-        "eyebrow": "Correct order of work",
-        "heading": "The moisture source and specialist work come before fresh insulation.",
-        "subcopy": "This sequence keeps new insulation from becoming a cover for an unfinished leak, damaged material, or another trade's work.",
-        "layout": "tiles",
-        "items": [
-          {
-            "title": "1. Stop the moisture source",
-            "text": "Repair the roof, plumbing, HVAC, exhaust, condensation, or other condition that allowed the attic to become wet."
-          },
-          {
-            "title": "2. Document what became wet",
-            "text": "Review the insulation and the visible roof, framing, ceiling, ducts, wiring, and equipment around it."
-          },
-          {
-            "title": "3. Bring in the right specialist",
-            "text": "Complete roofing, plumbing, HVAC, electrical, mold, structural, or water-restoration work that belongs before insulation."
-          },
-          {
-            "title": "4. Remove material that cannot remain",
-            "text": "Take out saturated, contaminated, smelly, matted, or damaged insulation, including material that prevents the attic below it from being checked."
-          },
-          {
-            "title": "5. Prepare the exposed attic",
-            "text": "Complete relevant cleanup, attic-floor air sealing, baffles, and ventilation preparation in the right sequence."
-          },
-          {
-            "title": "6. Install fresh insulation",
-            "text": "Restore an even insulation layer only when the source is fixed and the space is ready."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Pests and specialist conditions",
-        "heading": "Moisture combined with pest waste or vermiculite requires a different decision.",
-        "subcopy": "Drying does not remove droppings, urine, nesting material, odor, or pest damage. Once pest contamination is confirmed in insulation, Good Attic recommends full attic remediation after the active pest issue is handled.",
-        "paragraphs": [
-          "Suspected vermiculite should not be disturbed. EPA advises treating it as though it may contain asbestos and involving a trained, accredited asbestos professional if removal is considered.",
-          "Visible growth, strong odor, contaminated water, major water damage, unsafe framing, or water around electrical components can also require a specialist before ordinary insulation work continues."
-        ],
-        "layout": "panels",
-        "items": [
-          {
-            "title": "Wet and pest-contaminated",
-            "text": "The attic needs the pest-specific sequence as well as source correction; drying alone does not resolve the contamination."
-          },
-          {
-            "title": "Wet and hazardous or unsafe",
-            "text": "Asbestos, electrical, structural, mold, HVAC, or contaminated-water concerns stay with the appropriate professional."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Good Attic's role",
-        "heading": "Some wet-attic projects need several professionals working in the right order.",
-        "subcopy": "Some wet-attic projects involve more than insulation. A roofer, plumber, HVAC contractor, mold professional, or another specialist may need to address the source or related damage first. Good Attic can work alongside the right professional so each part is handled correctly, then remove the damaged insulation, prepare the attic, and install fresh insulation when the space is ready.",
-        "paragraphs": [
-          "Good Attic handles the attic-insulation side of the project. That may include inspecting visible conditions, removing damaged material, preparing the attic, completing relevant air sealing or ventilation work, and installing replacement insulation."
-        ]
-      },
-      {
-        "eyebrow": "RELATED ATTIC GUIDES",
-        "heading": "Related Guides for Wet or Damaged Insulation",
-        "layout": "features",
-        "withImages": true,
-        "items": [
-          {
-            "url": "/resources/attic-insulation-removal-after-mice/",
-            "title": "Attic Insulation Removal After Mice",
-            "kicker": "Mouse contamination",
-            "text": "Use the mouse-remediation sequence when moisture is combined with confirmed mouse contamination.",
-            "image": "assets/pest-issues-in-attic.webp",
-            "alt": "Attic insulation removal after mice",
-            "cta": "Learn about mouse remediation"
-          },
-          {
-            "url": "/resources/replace-attic-insulation-when-replacing-roof/",
-            "title": "Replace Attic Insulation With a New Roof?",
-            "kicker": "Roof coordination",
-            "text": "Coordinate roof-leak correction, attic preparation, and the final insulation layer before either crew begins.",
-            "image": "assets/attic-insulation.webp",
-            "alt": "Roof replacement and attic insulation",
-            "cta": "Plan the sequence"
-          },
-          {
-            "url": "/resources/insulation-removal-vs-top-off/",
-            "title": "Insulation Removal vs Top-Off",
-            "kicker": "Insulation options",
-            "text": "Compare the broader decision about whether existing attic insulation is still worth building on.",
-            "image": "assets/dirty-old-attic-needing-restoration.webp",
-            "alt": "Insulation removal versus top-off",
-            "cta": "Compare insulation options"
-          }
-        ]
-      },
-      {
-        "eyebrow": "LOCAL ATTIC HELP",
-        "heading": "Find Attic Insulation Removal Near You",
-        "subcopy": "Choose your market to learn about insulation removal and attic restoration after the source of the moisture has been addressed.",
-        "layout": "features",
-        "withImages": true,
-        "items": [
-          {
-            "url": "/salt-lake-city-ut/insulation-removal/",
-            "title": "Wet Attic Insulation Removal in Salt Lake City",
-            "kicker": "Salt Lake City",
-            "text": "See how damaged insulation can be removed, leaving a cleaner, properly prepared attic.",
-            "image": "assets/attic-insulation-removal.webp",
-            "alt": "Attic insulation removal in Salt Lake City",
-            "cta": "View Salt Lake City services"
-          },
-          {
-            "url": "/st-louis-mo/insulation-removal/",
-            "title": "Wet Attic Insulation Removal in St. Louis",
-            "kicker": "St. Louis",
-            "text": "See how damaged insulation can be removed after the moisture source and related repairs are addressed.",
-            "image": "assets/attic-insulation-removal.webp",
-            "alt": "Attic insulation removal in St. Louis",
-            "cta": "View St. Louis services"
-          },
-          {
-            "url": "/kansas-city-mo/insulation-removal/",
-            "title": "Wet Attic Insulation Removal in Kansas City",
-            "kicker": "Kansas City",
-            "text": "See how damaged insulation can be removed after the moisture source and related repairs are addressed.",
-            "image": "assets/attic-insulation-removal.webp",
-            "alt": "Attic insulation removal in Kansas City",
-            "cta": "View Kansas City services"
-          }
-        ]
-      }
-    ],
+    "trust_elements": [],
+    "sections": [],
     "source_groups": [
       {
-        "heading": "Official Guidance",
+        "heading": "Source cards — Official guidance",
         "sources": [
           {
             "title": "EPA: A Brief Guide to Mold, Moisture and Your Home",
-            "text": "Homeowner guidance on fixing water problems, drying wet materials promptly, and involving experienced professionals when conditions are larger or specialized.",
-            "url": "https://www.epa.gov/mold/brief-guide-mold-moisture-and-your-home"
+            "url": "https://www.epa.gov/mold/brief-guide-mold-moisture-and-your-home",
+            "text": "Moisture-source correction, prompt drying, and when professional help may be needed."
           },
           {
-            "title": "EPA: Mold Remediation Guide, Chapter 4",
-            "text": "Guidance on water-damaged materials, including evaluation and replacement considerations for cellulose and fiberglass insulation.",
-            "url": "https://www.epa.gov/mold/mold-remediation-schools-and-commercial-buildings-guide-chapter-4"
+            "title": "EPA: Mold Course, Chapter 4",
+            "url": "https://www.epa.gov/mold/mold-course-chapter-4",
+            "text": "Water-damaged materials, including situations in which cellulose and fiberglass may need to be discarded."
           },
           {
-            "title": "ENERGY STAR: Well-Insulated and Sealed Attic",
-            "text": "Guidance on wet or smelly insulation, roof leaks, air sealing, baffles, and preparation before adding insulation.",
-            "url": "https://www.energystar.gov/products/energy_star_home_upgrade/attic_insulation"
+            "title": "ENERGY STAR: Attic Insulation Project",
+            "url": "https://www.energystar.gov/saveathome/seal_insulate/attic-insulation-project",
+            "text": "Wet insulation, roof leaks, exhaust, ventilation, wiring, and other conditions to address before insulating."
           },
           {
             "title": "DOE Building America: Pre-Retrofit Attic Assessment",
-            "text": "Technical guidance for checking roof leaks, wet materials, pests, wiring, framing, ventilation, equipment, and other conditions that should be addressed before attic work.",
-            "url": "https://basc.pnnl.gov/information/pre-retrofit-assessment-attics-ceilings-and-roofs"
+            "url": "https://basc.pnnl.gov/information/pre-retrofit-assessment-attics-ceilings-and-roofs",
+            "text": "Roof leaks, exhaust ducts, wiring, vermiculite, and mechanical systems to check before retrofit work."
           },
           {
             "title": "EPA: Vermiculite Insulation in the Attic",
-            "text": "Guidance to leave suspected vermiculite undisturbed and involve a trained, accredited asbestos professional if removal is considered.",
-            "url": "https://www.epa.gov/asbestos/my-attic-has-vermiculite-insulation-it-am-i-risk-should-i-take-it-out"
+            "url": "https://www.epa.gov/asbestos/my-attic-has-vermiculite-insulation-it-am-i-risk-should-i-take-it-out",
+            "text": "Why suspected vermiculite should be left undisturbed."
           }
         ]
       },
       {
-        "heading": "Material-Specific Guidance",
+        "heading": "Source cards — Material-specific guidance",
         "sources": [
           {
             "title": "Johns Manville: TechConnect",
-            "text": "Manufacturer guidance that wet-fiberglass decisions depend on water cleanliness, duration and extent of wetting, and recovery of the material's intended thickness.",
-            "url": "https://www.jm.com/en/building-insulation/techconnect/"
+            "url": "https://www.jm.com/en/building-insulation/techconnect/",
+            "text": "Factors that affect whether wet fiberglass can dry and recover."
           },
           {
             "title": "Cellulose Insulation Manufacturers Association: Damp Cellulose in an Attic",
-            "text": "Trade-association guidance on moisture sources, source correction, and the difference between limited dampness and saturated cellulose.",
-            "url": "https://cellulose.org/causes-of-damp-cellulose-insulation-in-attic/"
+            "url": "https://cellulose.org/causes-of-damp-cellulose-insulation-in-attic/",
+            "text": "Limited dampness versus saturation and the importance of fixing the water source."
           }
         ]
       }
@@ -10281,9 +10355,216 @@
       "primary": {
         "label": "Request an Attic Assessment",
         "url": "/contact/",
-        "kicker": "Next step",
+        "kicker": "WHEN YOU ARE READY",
         "hideSecondary": true
       }
+    },
+    "hub_card": {
+      "category": "Wet or damaged insulation",
+      "title": "Wet Attic Insulation: Can It Dry, or Does It Need to Be Removed?",
+      "text": "Learn why the water source comes first, what makes insulation worth removing, and how the attic should be prepared before fresh material goes in.",
+      "cta": "Read the wet-insulation guide",
+      "url": "/resources/wet-attic-insulation-remove-or-dry/",
+      "imageDirection": "Use an existing accurate roof-leak, water-staining, wet-insulation, or neutral attic image."
+    },
+    "exact_copy": {
+      "sourceFile": "03-wet-attic-insulation-exact-copy.md",
+      "faqJsonFile": "faq-jsonld/wet-faq.json",
+      "hero": {
+        "eyebrow": "Resources • Wet or damaged insulation",
+        "paragraphs": [
+          "Water in the attic can make every decision feel urgent. Is the roof still leaking? Is the insulation ruined? Is there mold? Can the material dry, or does it need to come out?",
+          "Start with the source of the moisture. Fix that problem, then inspect the insulation and the materials around it. A small damp area discovered quickly may have a different answer than insulation that is soaked, matted, smelly, contaminated, or visibly damaged.",
+          "Wet insulation should not be covered with fresh material while the source is still active or the attic is still holding moisture. Once the cause and the extent are understood, the next step becomes much clearer."
+        ]
+      },
+      "sections": [
+        {
+          "number": 1,
+          "eyebrow": "START WITH THE SOURCE",
+          "heading": "Fix the Water Problem Before Deciding What Insulation Can Stay",
+          "markdown": "Insulation is often where a moisture problem becomes visible, but it is rarely where the problem begins.\n\n### Card 1 — Roof or flashing leaks\n\nWater can enter around shingles, flashing, valleys, vents, chimneys, skylights, or roof penetrations. It may travel along framing before it reaches the insulation.\n\n### Card 2 — Plumbing, HVAC, or condensate problems\n\nA plumbing leak, sweating duct, clogged condensate line, overflowing drain pan, or problem around attic equipment can wet insulation from inside the attic.\n\n### Card 3 — Condensation or exhaust air\n\nWarm, moist household air can reach cold attic surfaces through air leaks. Bathroom or dryer exhaust that ends in the attic can also add moisture where it does not belong.\n\nAdding insulation before the source is corrected can hide the evidence and set up the same problem again. Depending on the cause, a roofer, plumber, HVAC contractor, or another specialist may need to make the repair first.\n\n---"
+        },
+        {
+          "number": 2,
+          "eyebrow": "HOW WET IS IT?",
+          "heading": "A Damp Corner Is Different From a Soaked or Contaminated Attic",
+          "markdown": "A small area that became damp recently from a clean-water leak may be evaluated after the source is repaired and the surrounding materials are checked. Insulation that is saturated, matted, smelly, contaminated, visibly damaged, or left wet for an extended period is much more likely to need removal.\n\n| What the inspection finds | Likely direction |\n|---|---|\n| A small, recently damp area with the source corrected | Inspect the insulation and nearby materials before deciding what can remain |\n| Insulation that is soaked, matted, clumped, compressed, or uneven | Removal and replacement are more likely |\n| Strong odor, visible growth, dirty water, or pest contamination | Bring in the appropriate professional and plan for removal of damaged materials |\n| Wet decking, framing, drywall, ducts, wiring, or equipment | Correct and evaluate those materials before rebuilding the attic |\n| Suspected vermiculite | Stop ordinary disturbance and involve a qualified asbestos professional |\n\nThe goal is not to save insulation at any cost or remove more than necessary. It is to leave the attic dry, clean, and ready for whatever comes next.\n\n---"
+        },
+        {
+          "number": 3,
+          "eyebrow": "MATERIAL MATTERS",
+          "heading": "Wet Cellulose and Wet Fiberglass Can Behave Differently",
+          "markdown": "### Cellulose\n\nLoose-fill cellulose can absorb water, clump, settle, and lose the even coverage it had before the leak. Saturated, smelly, contaminated, or badly matted cellulose is a poor base for another layer.\n\n### Fiberglass\n\nFiberglass does not absorb water in exactly the same way, but wet material can still hold moisture against wood, drywall, paper facing, dust, and debris. It should not be kept simply because the surface feels dry. Its shape, cleanliness, odor, and the condition of the materials around it still matter.\n\n### The label is not the whole answer\n\nHow long the insulation was wet, whether the water was clean, how far it traveled, and what happened to the roof deck or ceiling below matter more than a simple material rule.\n\n---"
+        },
+        {
+          "number": 4,
+          "eyebrow": "LOOK BEYOND THE INSULATION",
+          "heading": "The Materials Around It May Need Attention Too",
+          "markdown": "Water may affect roof decking, framing, ceiling drywall, ducts, HVAC equipment, wiring, fixtures, baffles, and soffit areas. A ceiling stain may be the first clue, but it does not always show the full water path.\n\nLooking at the insulation alone cannot tell you whether another part of the attic also needs attention. An inspection helps follow the moisture and identify which professional should handle each part.\n\n---"
+        },
+        {
+          "number": 5,
+          "eyebrow": "WHEN REMOVAL MAKES SENSE",
+          "heading": "Some Insulation Can Be Evaluated; Some Is Better Removed",
+          "markdown": "Removal is more likely when the insulation is soaked, matted, smelly, contaminated, visibly damaged, or preventing the materials underneath from being inspected.\n\nIt may also make sense when the material has lost its shape, water traveled through a large area, pest waste is mixed into it, the attic floor needs to be exposed for cleanup or air sealing, or nearby decking, ceiling, ducts, or wiring need attention.\n\nA limited damp area found quickly may have a different answer. The important thing is not to close the attic back up before the source, the insulation, and the nearby materials have been properly evaluated.\n\n---"
+        },
+        {
+          "number": 6,
+          "eyebrow": "THE RIGHT ORDER",
+          "heading": "Repair First, Then Remove, Prepare, and Rebuild",
+          "markdown": "1. **Stop the moisture source.** Repair the roof leak, plumbing issue, condensate problem, exhaust problem, or other cause.\n2. **See how far the water traveled.** Inspect the insulation and the roof deck, framing, ceiling, ducts, wiring, and equipment that can be seen.\n3. **Bring in the right professional.** Roofing, plumbing, HVAC, electrical, mold, structural, or water-restoration work may need to happen first.\n4. **Remove material that should not remain.** Take out insulation that is saturated, matted, smelly, contaminated, or too damaged to provide a good starting point.\n5. **Prepare the exposed attic.** Complete the cleanup, air sealing, baffles, ventilation preparation, and other attic work needed before insulation goes back in.\n6. **Install fresh insulation when the attic is ready.** The new material should be the final layer over a dry, repaired, properly prepared space.\n\n---"
+        },
+        {
+          "number": 7,
+          "eyebrow": "WHEN MOISTURE AND PESTS OVERLAP",
+          "heading": "Wet Insulation With Pest Contamination Needs a More Complete Reset",
+          "markdown": "Moisture does not wash away droppings, urine, nesting material, guano, animal remains, or pest odor. Drying does not make contaminated insulation clean again.\n\nWhen pest contamination is confirmed, the active pest or wildlife issue should be handled first. The old insulation can then be removed, the attic can be cleaned and prepared, entry points can be addressed, and fresh insulation can be installed when the space is ready.\n\nRelated guides: [Attic Insulation Removal After Mice](https://goodattic.energy/resources/attic-insulation-removal-after-mice/) and [Bat Guano in Attic Insulation](https://goodattic.energy/resources/bat-guano-attic-insulation-removal/).\n\n---"
+        },
+        {
+          "number": 8,
+          "eyebrow": "WHEN ANOTHER PROFESSIONAL IS NEEDED",
+          "heading": "Some Wet-Attic Conditions Need Specialized Help",
+          "markdown": "If the attic may contain vermiculite, do not disturb it like ordinary insulation. EPA advises homeowners to assume vermiculite may contain asbestos and to use a qualified asbestos professional when removal is necessary.\n\nVisible growth, widespread water damage, unsafe framing, damaged electrical components, contaminated water, or moisture inside HVAC equipment may also require another specialist.\n\nThe homeowner does not have to solve the sequence alone. One professional can correct the source or specialized condition, and the attic-insulation work can follow when the space is ready.\n\n---"
+        },
+        {
+          "number": 9,
+          "eyebrow": "HOW GOOD ATTIC CAN HELP",
+          "heading": "Good Attic Can Coordinate the Insulation Side of a Wet-Attic Project",
+          "markdown": "Some wet-attic projects involve more than insulation. A roofer, plumber, HVAC contractor, mold professional, or another specialist may need to address the source or related damage first. Good Attic can work alongside the right professional so each part is handled correctly, then remove the damaged insulation, prepare the attic, and install fresh insulation when the space is ready.\n\nGood Attic handles the attic-insulation side of the project. That may include inspecting visible conditions, removing damaged material, preparing the attic, completing relevant air sealing or ventilation work, and installing replacement insulation.\n\nGood Attic does not provide mold diagnoses or formal moisture clearance. We can document what is visible and coordinate the insulation work with the appropriate professional.\n\n---"
+        }
+      ],
+      "sourceGroups": [
+        {
+          "heading": "Source cards — Official guidance",
+          "sources": [
+            {
+              "title": "EPA: A Brief Guide to Mold, Moisture and Your Home",
+              "url": "https://www.epa.gov/mold/brief-guide-mold-moisture-and-your-home",
+              "text": "Moisture-source correction, prompt drying, and when professional help may be needed."
+            },
+            {
+              "title": "EPA: Mold Course, Chapter 4",
+              "url": "https://www.epa.gov/mold/mold-course-chapter-4",
+              "text": "Water-damaged materials, including situations in which cellulose and fiberglass may need to be discarded."
+            },
+            {
+              "title": "ENERGY STAR: Attic Insulation Project",
+              "url": "https://www.energystar.gov/saveathome/seal_insulate/attic-insulation-project",
+              "text": "Wet insulation, roof leaks, exhaust, ventilation, wiring, and other conditions to address before insulating."
+            },
+            {
+              "title": "DOE Building America: Pre-Retrofit Attic Assessment",
+              "url": "https://basc.pnnl.gov/information/pre-retrofit-assessment-attics-ceilings-and-roofs",
+              "text": "Roof leaks, exhaust ducts, wiring, vermiculite, and mechanical systems to check before retrofit work."
+            },
+            {
+              "title": "EPA: Vermiculite Insulation in the Attic",
+              "url": "https://www.epa.gov/asbestos/my-attic-has-vermiculite-insulation-it-am-i-risk-should-i-take-it-out",
+              "text": "Why suspected vermiculite should be left undisturbed."
+            }
+          ]
+        },
+        {
+          "heading": "Source cards — Material-specific guidance",
+          "sources": [
+            {
+              "title": "Johns Manville: TechConnect",
+              "url": "https://www.jm.com/en/building-insulation/techconnect/",
+              "text": "Factors that affect whether wet fiberglass can dry and recover."
+            },
+            {
+              "title": "Cellulose Insulation Manufacturers Association: Damp Cellulose in an Attic",
+              "url": "https://cellulose.org/causes-of-damp-cellulose-insulation-in-attic/",
+              "text": "Limited dampness versus saturation and the importance of fixing the water source."
+            }
+          ]
+        }
+      ],
+      "faq": {
+        "eyebrow": "FREQUENTLY ASKED QUESTIONS",
+        "heading": "Frequently Asked Questions About Wet Attic Insulation",
+        "items": [
+          {
+            "question": "Can wet attic insulation be left to dry?",
+            "answer": "Sometimes a small area found quickly may be evaluated after the source is corrected. Insulation that is soaked, matted, smelly, contaminated, visibly damaged, or uneven is more likely to need removal."
+          },
+          {
+            "question": "Should new insulation be added over a wet area?",
+            "answer": "No. Correct the moisture source and make sure the attic is ready before new insulation is installed. Covering wet material can hide the problem and make future inspection harder."
+          },
+          {
+            "question": "Does wet fiberglass always need to be removed?",
+            "answer": "Not automatically. The source, duration, cleanliness of the water, condition of the insulation, and the materials around it all matter. Fiberglass that is dirty, matted, smelly, contaminated, or no longer holding its shape is a poor candidate to remain."
+          },
+          {
+            "question": "Can Good Attic diagnose mold or certify that the attic is dry?",
+            "answer": "Good Attic does not provide mold diagnoses or formal moisture clearance. We can document what is visible and coordinate the insulation work with the appropriate professional."
+          },
+          {
+            "question": "What happens if the wet insulation is vermiculite?",
+            "answer": "Do not disturb suspected vermiculite like ordinary insulation. EPA advises homeowners to assume it may contain asbestos and involve a qualified asbestos professional when removal is necessary."
+          }
+        ]
+      },
+      "related": {
+        "eyebrow": "RELATED ATTIC GUIDES",
+        "heading": "Related Guides for Wet or Damaged Insulation",
+        "intro": "Learn whether old insulation can remain, how roof work affects the attic, and what to do when moisture and pest contamination overlap.",
+        "items": [
+          {
+            "title": "Insulation Removal vs. Top-Off",
+            "text": "",
+            "cta": "Compare removal and top-off",
+            "url": "/resources/insulation-removal-vs-top-off/"
+          },
+          {
+            "title": "Replacing Your Roof? Should You Replace the Attic Insulation Too?",
+            "text": "",
+            "cta": "Plan the roof and attic work",
+            "url": "/resources/replace-attic-insulation-when-replacing-roof/"
+          },
+          {
+            "title": "Attic Air Sealing vs. More Insulation",
+            "text": "",
+            "cta": "Learn about attic preparation",
+            "url": "/resources/attic-air-sealing-vs-more-insulation/"
+          }
+        ]
+      },
+      "local": {
+        "eyebrow": "LOCAL ATTIC HELP",
+        "heading": "Find Attic Insulation Removal Near You",
+        "intro": "Choose your market to learn about insulation removal and attic restoration after the source of the moisture has been addressed.",
+        "items": [
+          {
+            "title": "Salt Lake City",
+            "text": "",
+            "cta": "View Salt Lake City services",
+            "url": "/salt-lake-city-ut/insulation-removal/"
+          },
+          {
+            "title": "St. Louis",
+            "text": "",
+            "cta": "View St. Louis services",
+            "url": "/st-louis-mo/insulation-removal/"
+          },
+          {
+            "title": "Kansas City",
+            "text": "",
+            "cta": "View Kansas City services",
+            "url": "/kansas-city-mo/insulation-removal/"
+          }
+        ]
+      },
+      "closingCta": {
+        "eyebrow": "WHEN YOU ARE READY",
+        "heading": "Need Help With Wet Attic Insulation?",
+        "body": "An in-home attic assessment can document the affected insulation and help determine what Good Attic can handle, what another professional should address, and when the attic is ready for fresh insulation.",
+        "label": "Request an Attic Assessment",
+        "url": "/contact/"
+      },
+      "imageDirection": ""
     },
     "page_type": "resource",
     "city": null
@@ -10295,18 +10576,18 @@
     "include_on_services_hub": false,
     "primary_keyword": "replace attic insulation when replacing roof",
     "secondary_keywords": [
-      "new roof replace attic insulation",
-      "roof replacement wet attic insulation",
-      "coordinate roof and attic insulation",
-      "attic insulation after roof leak"
+      "new roof attic insulation",
+      "roof replacement insulation removal",
+      "coordinate roofing and attic insulation",
+      "roof leak insulation replacement"
     ],
     "seo_title": "Should You Replace Attic Insulation With a New Roof? | Good Attic",
     "meta_description": "Learn when attic insulation should be replaced with a new roof, when it can stay, and how roofing and attic work should be coordinated.",
     "h1": "Replacing Your Roof? Should You Replace the Attic Insulation Too?",
-    "intro": "A roof replacement is one of the best times to inspect the attic and decide whether the insulation should be replaced too. New roofing does not automatically mean every attic needs new insulation. But when the old roof leaked, pests entered around the roofline, the insulation is wet or contaminated, or the attic needs air sealing and ventilation work, coordinating both projects can prevent a second major disruption later.",
+    "intro": "Replacing a roof is already a major project, so it is understandable not to want another surprise waiting underneath it. The good news is that new roofing does not automatically mean the attic insulation has to be replaced.",
     "faq_heading": "Frequently Asked Questions About Roof Replacement and Attic Insulation",
     "suppress_related_links": true,
-    "page_purpose": "Homeowner guide for coordinating roof replacement with attic-insulation inspection, removal, and preparation",
+    "page_purpose": "Homeowner guide",
     "cta_primary": "Request an Attic Assessment",
     "breadcrumb_items": [
       {
@@ -10318,683 +10599,276 @@
         "url": "/resources/"
       },
       {
-        "label": "Roof Replacement and Attic Insulation",
+        "label": "Replacing Your Roof? Should You Replace the Attic Insulation Too?",
         "url": "/resources/replace-attic-insulation-when-replacing-roof/"
       }
     ],
     "canonical_url": "https://goodattic.energy/resources/replace-attic-insulation-when-replacing-roof/",
     "related_links": [
       {
-        "label": "Attic Insulation Removal After Mice",
-        "url": "/resources/attic-insulation-removal-after-mice/"
-      },
-      {
-        "label": "Bat Guano in Attic Insulation",
-        "url": "/resources/bat-guano-attic-insulation-removal/"
-      },
-      {
-        "label": "Wet Attic Insulation",
+        "label": "Wet Attic Insulation: Can It Dry, or Does It Need to Be Removed?",
         "url": "/resources/wet-attic-insulation-remove-or-dry/"
       },
       {
-        "label": "Insulation Removal vs Top-Off",
-        "url": "/resources/insulation-removal-vs-top-off/"
+        "label": "Does Attic Insulation Need to Be Removed After Mice?",
+        "url": "/resources/attic-insulation-removal-after-mice/"
+      },
+      {
+        "label": "What Should Happen When Bat Guano Reaches Attic Insulation?",
+        "url": "/resources/bat-guano-attic-insulation-removal/"
       }
     ],
     "faq_items": [
       {
         "question": "Does a new roof mean the attic insulation should be replaced?",
-        "answer": "No. Existing insulation may remain when it is dry, clean, pest-free, evenly distributed, and not blocking needed inspection or preparation."
+        "answer": "No. Clean, dry, pest-free insulation may be able to remain. Replacement is more likely when the insulation is wet, damaged, contaminated, badly compressed, or blocking access to work that needs to happen underneath it."
       },
       {
-        "question": "Should wet insulation be removed before roof replacement?",
-        "answer": "Sometimes. Damaged insulation may need early removal for inspection or cleanup, but the roof source must be corrected before fresh insulation is installed. The roofer and attic contractor should agree on the sequence."
-      },
-      {
-        "question": "Can a roofer replace attic insulation?",
-        "answer": "Some roofing companies may offer adjacent services, but roofing and attic restoration are different kinds of work. Make sure the quotes explain who is responsible for removal, cleanup, air sealing, baffles, and final insulation."
+        "question": "Should wet insulation be removed before the roof is replaced?",
+        "answer": "The roof leak should be identified and the contractors should agree on the sequence first. In some projects, early insulation removal helps expose the water path or damaged decking. In others, the roof repair happens first. The decision should be coordinated before either crew begins."
       },
       {
         "question": "Should attic air sealing happen before new insulation?",
-        "answer": "Yes, when air sealing is part of the plan. The attic floor and relevant penetrations are easier to reach before the final insulation layer is installed."
+        "answer": "Usually, yes. Attic-floor gaps are easier to reach before the final insulation layer is installed. Air sealing should be coordinated with any roof, ventilation, electrical, or combustion-safety work that affects the attic."
       },
       {
         "question": "Can roof replacement help address mouse or bat entry points?",
-        "answer": "Yes. It can expose or repair some roofline, vent, soffit, fascia, and penetration problems, but active wildlife and other entry routes still need their own coordinated plan."
+        "answer": "It can create a useful opportunity to find and repair some roofline openings, but active mice or bats should be handled by the appropriate pest or wildlife professional. Entry-point closure should be coordinated with the roofing and attic-restoration plans."
+      },
+      {
+        "question": "Should insulation removal happen before or after the roof is replaced?",
+        "answer": "Either sequence can be correct. It depends on the leak, decking work, pest activity, attic access, weather, and which areas each crew needs to reach. The roofer and attic contractor should agree on the sequence before the work starts."
       }
     ],
-    "trust_elements": [
-      "A new roof does not automatically require new insulation",
-      "Inspect leaks, pests, air sealing, and ventilation together",
-      "Agree on the contractor sequence before either project begins"
-    ],
-    "hero": {
-      "eyebrow": "Resources • Roof and attic coordination",
-      "cardKicker": "Inspect before the roofing plan is final",
-      "cardTitle": "The attic condition—not the age of the shingles—should decide what happens to the insulation.",
-      "cardText": "Roofing and attic work meet at the deck, eaves, vents, penetrations, and insulation layer. A shared plan can prevent one crew from covering an area the other still needs.",
-      "cardPoints": [
-        "Keep clean, dry insulation when appropriate",
-        "Remove wet or contaminated material",
-        "Coordinate roofline pest openings",
-        "Finish attic preparation before insulation"
-      ],
-      "hideActions": true
-    },
-    "sections": [
-      {
-        "eyebrow": "Decision table",
-        "heading": "What the attic inspection finds should determine the likely direction.",
-        "subcopy": "Use this as an orientation tool, then confirm the actual sequence with the roofer, attic contractor, and any specialist the home needs.",
-        "layout": "decision-table",
-        "columns": [
-          "What the inspection finds",
-          "Likely direction"
-        ],
-        "rows": [
-          [
-            "Insulation is clean, dry, pest-free, and evenly distributed",
-            "It may be able to remain"
-          ],
-          [
-            "Insulation is thin but otherwise usable",
-            "Prepare the attic and consider a top-off"
-          ],
-          [
-            "Insulation is wet, matted, smelly, or damaged by a roof leak",
-            "Correct the leak and evaluate removal and replacement"
-          ],
-          [
-            "Mice or bats contaminated the insulation",
-            "Handle the active pest issue, then complete full attic remediation"
-          ],
-          [
-            "Broad air sealing, decking, baffle, or ventilation work is needed",
-            "Coordinate the roofing and attic projects before either crew begins"
-          ],
-          [
-            "Suspected vermiculite is present",
-            "Stop ordinary disturbance and involve a qualified asbestos professional"
-          ]
-        ]
-      },
-      {
-        "eyebrow": "Core decision",
-        "heading": "A new roof and new attic insulation are related projects, not an automatic package.",
-        "subcopy": "A roof replacement does not automatically mean the insulation must be replaced. But when the attic already needs removal, cleanup, air sealing, pest exclusion, or ventilation preparation, coordinating the work with the roof project is usually smarter than finishing one project and reopening the same areas later.",
-        "paragraphs": [
-          "Existing insulation may remain when it is clean, dry, pest-free, evenly distributed, and not blocking inspection or preparation. Thin but usable insulation may need targeted attic preparation and a top-off instead of removal.",
-          "Removal becomes more likely when insulation is wet, matted, smelly, pest-contaminated, badly damaged, or preventing the roof deck, framing, ceiling, or attic floor from being inspected and prepared."
-        ]
-      },
-      {
-        "eyebrow": "A valuable inspection window",
-        "heading": "Inspect the attic before the roofing plan is finalized.",
-        "subcopy": "Roofing and attic work meet at the roof deck, eaves, soffits, vents, chimneys, fascia, and penetrations. Finding problems early lets both contractors agree on access, responsibilities, and order of work.",
-        "paragraphs": [
-          "Look for water staining, damp wood, wet insulation, damaged decking visible from below, pest evidence, roofline gaps, exhausts ending in the attic, missing baffles, blocked airflow, attic-floor air leaks, and specialist conditions such as unsafe wiring or suspected vermiculite."
-        ],
-        "layout": "tiles",
-        "items": [
-          {
-            "title": "Leaks and damaged materials",
-            "text": "Check the visible roof deck, framing, insulation, drywall, ducts, wiring, and equipment for the path and reach of water."
-          },
-          {
-            "title": "Ventilation and baffles",
-            "text": "Confirm the intended soffit intake, baffle path, roof exhaust, and insulation placement before either crew changes the system."
-          },
-          {
-            "title": "Attic-floor preparation",
-            "text": "Broad air sealing, hatch work, fixture protection, and other preparation are easier before the final insulation layer is installed."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Roof leaks and wet insulation",
-        "heading": "Correct the roof source, then decide what affected attic material can remain.",
-        "subcopy": "If the old roof leaked, inspect how far the water traveled through the insulation, deck, framing, ceiling, ducts, wiring, and equipment. Fiberglass should not be kept simply because the surface feels dry, and matted or smelly cellulose may no longer provide a clean, even layer.",
-        "paragraphs": [
-          "The roofer handles roofing, flashing, decking, and other work that corrects the roof source. Another specialist may need to address mold, electrical, structural, HVAC, plumbing, or drying concerns. Good Attic can remove damaged insulation and prepare the attic after the source and related work are addressed."
-        ],
-        "layout": "tiles",
-        "items": [
-          {
-            "title": "Trace the water path",
-            "text": "A stain near one penetration may not show every material the leak reached before it became visible."
-          },
-          {
-            "title": "Do not cover unfinished work",
-            "text": "Fresh insulation belongs after the source is fixed, damaged material is addressed, and the attic is ready."
-          },
-          {
-            "title": "Keep the trade boundaries clear",
-            "text": "Make sure each contractor's quote clearly explains who is responsible for every part of the project."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Pest entry around the roofline",
-        "heading": "Roof replacement can reveal entry problems, but it does not solve the entire pest issue by itself.",
-        "subcopy": "Handle active mice or wildlife first. If the insulation has been contaminated, Good Attic recommends removing it and completing full attic remediation rather than covering the problem during the roof project.",
-        "paragraphs": [
-          "Roofline gaps, damaged vents, soffit and fascia problems, utility penetrations, chimneys, siding joints, and wildlife-related damage may all need attention. Mice and bats can use more than one route, so replacing shingles alone does not make the attic permanently pest-proof.",
-          "Active bats require a qualified wildlife professional and properly timed exclusion before active exits are permanently closed. The roofer, wildlife professional, and attic contractor should coordinate any overlapping opening."
-        ],
-        "layout": "panels",
-        "items": [
-          {
-            "title": "Mouse entry",
-            "text": "Handle the active mouse problem first, then coordinate which contractor will close each roofline or attic opening."
-          },
-          {
-            "title": "Bat entry",
-            "text": "Protect the wildlife exclusion sequence and maternity timing before roofing or attic work closes an active exit."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Who handles what",
-        "heading": "The roofer and attic contractor should agree on the sequence before either project begins.",
-        "subcopy": "Make sure each contractor's quote clearly explains who is responsible for every part of the project.",
-        "layout": "tiles",
-        "items": [
-          {
-            "title": "The roofer",
-            "text": "May handle roofing materials, underlayment, flashing, roof penetrations, decking, active roof leaks, roof-mounted ventilation, and fascia or soffit work included in the roofing contract."
-          },
-          {
-            "title": "Good Attic",
-            "text": "Handles the attic side: inspecting existing insulation, removing damaged or contaminated material, cleaning and preparing the space, and installing fresh blown-in cellulose when ready."
-          },
-          {
-            "title": "Another appropriate professional",
-            "text": "May handle active wildlife exclusion, plumbing, HVAC, electrical, structural, mold, formal drying, asbestos, or another specialized condition."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Correct order of work",
-        "heading": "One shared sequence prevents crews from covering or disturbing each other's work.",
-        "subcopy": "The roofer and attic contractor should agree on the sequence before either crew closes an area the other still needs to reach.",
-        "layout": "tiles",
-        "items": [
-          {
-            "title": "1. Inspect the roof and attic",
-            "text": "Document insulation condition, leaks, pests, openings, ventilation, air sealing, access, and specialist concerns before work begins."
-          },
-          {
-            "title": "2. Handle active pests and safety issues",
-            "text": "Resolve wildlife timing, hazardous materials, and urgent electrical or structural concerns before related attic work continues."
-          },
-          {
-            "title": "3. Remove damaged insulation when needed",
-            "text": "Create access for cleanup or inspection when contaminated, wet, or damaged material cannot remain."
-          },
-          {
-            "title": "4. Complete the roof work",
-            "text": "Repair roofing, flashing, decking, vents, soffits, fascia, and moisture sources assigned to the roofer."
-          },
-          {
-            "title": "5. Prepare the attic",
-            "text": "Complete the removal, cleanup, air sealing, baffle, ventilation, and entry-point work in the agreed order."
-          },
-          {
-            "title": "6. Install the final insulation layer",
-            "text": "Finish with fresh insulation after work above and below it will no longer disturb the completed layer."
-          }
-        ]
-      },
-      {
-        "eyebrow": "RELATED ATTIC GUIDES",
-        "heading": "Related Guides for Roof and Attic Planning",
-        "layout": "features",
-        "withImages": true,
-        "items": [
-          {
-            "url": "/resources/attic-insulation-removal-after-mice/",
-            "title": "Attic Insulation Removal After Mice",
-            "kicker": "Mouse contamination",
-            "text": "Follow the mouse-specific sequence when roofline entry led to confirmed contamination in the insulation.",
-            "image": "assets/pest-issues-in-attic.webp",
-            "alt": "Attic insulation removal after mice",
-            "cta": "Review mouse remediation"
-          },
-          {
-            "url": "/resources/bat-guano-attic-insulation-removal/",
-            "title": "Bat Guano in Attic Insulation",
-            "kicker": "Bat exclusion",
-            "text": "Understand exclusion timing, guano cleanup, and roofline closure when bats have used the attic.",
-            "image": "assets/dirty-old-attic-needing-restoration.webp",
-            "alt": "Attic restoration planning after bat activity",
-            "cta": "Learn about bat-affected attics"
-          },
-          {
-            "url": "/resources/wet-attic-insulation-remove-or-dry/",
-            "title": "Wet Attic Insulation",
-            "kicker": "Moisture decision",
-            "text": "Decide what can dry, what should be removed, and which nearby attic materials need another professional.",
-            "image": "assets/gross-attic.webp",
-            "alt": "Wet attic insulation guide",
-            "cta": "Review wet insulation"
-          }
-        ]
-      },
-      {
-        "eyebrow": "LOCAL ATTIC HELP",
-        "heading": "Find Attic Insulation Help Near You",
-        "subcopy": "Choose your market to learn about attic insulation, removal, air sealing, and preparation that can be coordinated with a roofing project.",
-        "layout": "features",
-        "withImages": true,
-        "items": [
-          {
-            "url": "/salt-lake-city-ut/attic-insulation/",
-            "title": "Roof and Attic Insulation Planning in Salt Lake City",
-            "kicker": "Salt Lake City",
-            "text": "Learn about attic insulation, removal, air sealing, and preparation that can be coordinated with a Salt Lake City roofing project.",
-            "image": "assets/attic-insulation.webp",
-            "alt": "Attic insulation planning in Salt Lake City",
-            "cta": "View Salt Lake City services"
-          },
-          {
-            "url": "/st-louis-mo/attic-insulation/",
-            "title": "Roof and Attic Insulation Planning in St. Louis",
-            "kicker": "St. Louis",
-            "text": "Learn about attic insulation, removal, air sealing, and preparation that can be coordinated with a St. Louis roofing project.",
-            "image": "assets/attic-insulation.webp",
-            "alt": "Attic insulation planning in St. Louis",
-            "cta": "View St. Louis services"
-          },
-          {
-            "url": "/kansas-city-mo/attic-insulation/",
-            "title": "Roof and Attic Insulation Planning in Kansas City",
-            "kicker": "Kansas City",
-            "text": "Learn about attic insulation, removal, air sealing, and preparation that can be coordinated with a Kansas City roofing project.",
-            "image": "assets/attic-insulation.webp",
-            "alt": "Attic insulation planning in Kansas City",
-            "cta": "View Kansas City services"
-          }
-        ]
-      }
-    ],
+    "trust_elements": [],
+    "sections": [],
     "source_groups": [
       {
-        "heading": "Sources for roof and attic project coordination",
+        "heading": "Source cards",
         "sources": [
           {
-            "title": "DOE Building America: Pre-Retrofit Attic Assessment",
-            "text": "Technical guidance for checking roof leaks, wet materials, pests, wiring, framing, ventilation, penetrations, and other conditions before attic work.",
-            "url": "https://basc.pnnl.gov/information/pre-retrofit-assessment-attics-ceilings-and-roofs"
+            "title": "ENERGY STAR: Attic Insulation Project",
+            "url": "https://www.energystar.gov/saveathome/seal_insulate/attic-insulation-project",
+            "text": "Guidance explaining that a major home renovation can be a useful time to address attic insulation and that wet insulation, roof leaks, ventilation, and other attic problems should be handled first."
           },
           {
-            "title": "ENERGY STAR: Well-Insulated and Sealed Attic",
-            "text": "Homeowner guidance on when existing insulation may remain, which attic problems should be corrected first, and why air sealing and baffles matter.",
-            "url": "https://www.energystar.gov/products/energy_star_home_upgrade/attic_insulation"
+            "title": "DOE: Whole-House Weatherization",
+            "url": "https://www.energy.gov/cmei/scep/wap/whole-house-weatherization",
+            "text": "Guidance noting that attic insulation should not be installed beneath a leaking roof and that the roof should be repaired first."
           },
           {
-            "title": "DOE Building America: Air Sealing and Insulating Vented Attics",
-            "text": "Technical guidance on attic-floor air sealing, eaves, soffit vents, baffles, wind dams, and preparation before the insulation layer is finished.",
-            "url": "https://basc.pnnl.gov/resource-guides/air-sealing-and-insulating-ceilings-vented-attics"
+            "title": "DOE Building America: Pre-Retrofit Assessment of Attics, Ceilings, and Roofs",
+            "url": "https://basc.pnnl.gov/information/pre-retrofit-assessment-attics-ceilings-and-roofs",
+            "text": "Guidance on checking leaks, wiring, vents, equipment, vermiculite, and other conditions before attic retrofit work."
           },
           {
-            "title": "Building Science Education: Baffles",
-            "text": "Guidance on preserving airflow from soffit vents and keeping insulation from shifting into the eaves of a vented attic.",
-            "url": "https://bsesc.energy.gov/energy-basics/baffles"
-          },
-          {
-            "title": "EPA: Mold Remediation Guide, Chapter 4",
-            "text": "Guidance on moisture-source correction, prompt drying, and evaluation or replacement of water-damaged porous materials.",
-            "url": "https://www.epa.gov/mold/mold-remediation-schools-and-commercial-buildings-guide-chapter-4"
+            "title": "DOE Building America: Sealing and Insulating Existing Vented Attics",
+            "url": "https://basc.pnnl.gov/code-compliance/sealing-and-insulating-existing-vented-attics-code-compliance-brief",
+            "text": "Guidance on attic-floor air sealing, baffles, ventilation paths, recessed lights, and other details before insulation is installed."
           },
           {
             "title": "EPA: Vermiculite Insulation in the Attic",
-            "text": "Guidance to leave suspected vermiculite undisturbed and involve a trained, accredited asbestos professional if removal is considered.",
-            "url": "https://www.epa.gov/asbestos/my-attic-has-vermiculite-insulation-it-am-i-risk-should-i-take-it-out"
+            "url": "https://www.epa.gov/asbestos/my-attic-has-vermiculite-insulation-it-am-i-risk-should-i-take-it-out",
+            "text": "Why suspected vermiculite should be left undisturbed and handled through a qualified asbestos professional."
           }
         ]
       }
     ],
     "cta": {
-      "title": "Planning a roof replacement?",
+      "title": "Planning a Roof Replacement? Take a Look at the Attic Too.",
       "text": "An attic inspection can show whether the existing insulation is worth keeping, whether leaks or pests have affected it, and how the attic work should be coordinated with the roofing project.",
       "primary": {
         "label": "Request an Attic Assessment",
         "url": "/contact/",
-        "kicker": "Next step",
+        "kicker": "PLAN THE PROJECT BEFORE THE ROOF GOES ON",
         "hideSecondary": true
       }
     },
-    "page_type": "resource",
-    "city": null
-  },
-  {
-    "slug": "attic-insulation-removal-after-mice",
-    "url": "/resources/attic-insulation-removal-after-mice/",
-    "market": null,
-    "include_on_services_hub": false,
-    "primary_keyword": "attic insulation removal after mice",
-    "secondary_keywords": [
-      "mouse contaminated attic insulation",
-      "mice in attic insulation",
-      "attic remediation after mice",
-      "mouse droppings in attic insulation"
-    ],
-    "seo_title": "Remove Attic Insulation After Mice? | Good Attic",
-    "meta_description": "Learn when attic insulation should be removed after mice, why covering contamination is not enough, and what full attic remediation involves.",
-    "h1": "Does Attic Insulation Need to Be Removed After Mice?",
-    "intro": "When mice have contaminated attic insulation, adding more insulation or cleaning only one visible area does not solve the bigger problem. The better approach is to remove the old insulation, clear out what the mice left behind, address the entry points they used, and prepare the attic for fresh insulation. Active mice need to be handled first.",
-    "faq_heading": "Frequently Asked Questions About Mice and Attic Insulation",
-    "suppress_related_links": true,
-    "page_purpose": "Homeowner guide for mouse-contaminated attic insulation and remediation sequencing",
-    "cta_primary": "Request an Attic Assessment",
-    "breadcrumb_items": [
-      {
-        "label": "Home",
-        "url": "/"
+    "hub_card": {
+      "category": "Roof and attic planning",
+      "title": "Replacing Your Roof? Should You Replace the Attic Insulation Too?",
+      "text": "See when the existing insulation can stay, when removal makes sense, and how the roofer and attic contractor can coordinate the work.",
+      "cta": "Read the roof-and-attic guide",
+      "url": "/resources/replace-attic-insulation-when-replacing-roof/",
+      "imageDirection": "Use an existing accurate roofing, roof-deck, attic, or home-exterior image."
+    },
+    "exact_copy": {
+      "sourceFile": "04-roof-replacement-attic-insulation-exact-copy.md",
+      "faqJsonFile": "faq-jsonld/roof-faq.json",
+      "hero": {
+        "eyebrow": "Resources • Roof and attic planning",
+        "paragraphs": [
+          "Replacing a roof is already a major project, so it is understandable not to want another surprise waiting underneath it. The good news is that new roofing does not automatically mean the attic insulation has to be replaced.",
+          "A roof replacement is, however, one of the best times to look at the attic and make an informed decision. If the old roof leaked, pests entered around the roofline, the insulation is wet or contaminated, or the attic needs air sealing and ventilation work, coordinating the projects can prevent a second major disruption later.",
+          "The answer depends on the condition of the insulation and what the roofing work will expose—not simply on the age of the shingles."
+        ]
       },
-      {
-        "label": "Resources",
-        "url": "/resources/"
-      },
-      {
-        "label": "Attic Insulation Removal After Mice",
-        "url": "/resources/attic-insulation-removal-after-mice/"
-      }
-    ],
-    "canonical_url": "https://goodattic.energy/resources/attic-insulation-removal-after-mice/",
-    "related_links": [
-      {
-        "label": "Insulation Removal vs Top-Off",
-        "url": "/resources/insulation-removal-vs-top-off/"
-      },
-      {
-        "label": "Signs of Attic Pest Contamination",
-        "url": "/resources/signs-of-attic-pest-contamination/"
-      },
-      {
-        "label": "Attic Air Sealing vs More Insulation",
-        "url": "/resources/attic-air-sealing-vs-more-insulation/"
-      },
-      {
-        "label": "What Happens During an Attic Inspection",
-        "url": "/resources/what-happens-during-an-attic-inspection/"
-      }
-    ],
-    "faq_items": [
-      {
-        "question": "Does one mouse mean the attic insulation is contaminated?",
-        "answer": "No. A mouse sighting or scratching sound is a reason to inspect, not proof that droppings, urine, nesting material, or animal remains reached the insulation."
-      },
-      {
-        "question": "Can mouse-contaminated insulation be covered with new insulation?",
-        "answer": "Good Attic does not recommend it. New material adds depth, but it does not remove contamination, debris, odor, or damaged insulation underneath."
-      },
-      {
-        "question": "Should active mice be handled before attic restoration?",
-        "answer": "Yes. Active mouse control should come first so the restored attic and fresh insulation are not immediately exposed to the same activity."
-      },
-      {
-        "question": "Can mice return after attic remediation?",
-        "answer": "Yes. Addressing reachable openings and restoring the attic can reduce future risk, but mice may find a new opening later. Exterior maintenance and monitoring still matter."
-      },
-      {
-        "question": "What happens if the attic contains vermiculite?",
-        "answer": "Ordinary insulation work should stop. EPA advises treating vermiculite attic insulation as though it may contain asbestos and using a trained, accredited asbestos professional if removal is considered."
-      }
-    ],
-    "trust_elements": [
-      "A sighting is not automatic proof of contamination",
-      "Active mice are handled before restoration",
-      "Cleanup, exclusion, and air sealing solve different problems"
-    ],
-    "hero": {
-      "eyebrow": "Resources • Mice and attic insulation",
-      "cardKicker": "Start with what the inspection finds",
-      "cardTitle": "Confirmed contamination changes the insulation decision.",
-      "cardText": "A single sighting calls for an inspection. Droppings, urine, nesting material, remains, odor, or damage in the insulation call for a complete plan rather than another layer on top.",
-      "cardPoints": [
-        "Confirm the contamination",
-        "Handle active mice first",
-        "Expose and prepare the attic floor",
-        "Rebuild over a clean starting point"
+      "sections": [
+        {
+          "number": 1,
+          "eyebrow": "QUICK DECISION GUIDE",
+          "heading": "What the Attic Inspection Finds Should Guide the Next Step",
+          "markdown": "| What the inspection finds | Likely direction |\n|---|---|\n| Insulation is clean, dry, pest-free, and evenly distributed | It may be able to remain |\n| Insulation is thin but otherwise usable | Prepare the attic and consider a top-off |\n| Insulation is wet, matted, smelly, or damaged by a roof leak | Correct the leak and evaluate removal and replacement |\n| Mice or bats contaminated the insulation | Handle the active pest issue, then complete full attic remediation |\n| Broad air sealing, decking, baffle, or ventilation work is needed | Coordinate the roofing and attic projects before either crew begins |\n| Suspected vermiculite is present | Stop ordinary disturbance and involve a qualified asbestos professional |\n\nA roof replacement does not automatically mean the insulation must be replaced. But when the attic already needs removal, cleanup, air sealing, pest exclusion, or ventilation preparation, coordinating the work with the roof project is usually smarter than finishing one project and reopening the same areas later.\n\n---"
+        },
+        {
+          "number": 2,
+          "eyebrow": "WHEN INSULATION CAN STAY",
+          "heading": "Clean, Dry Insulation May Not Need to Be Replaced With the Roof",
+          "markdown": "If the attic insulation is dry, clean, pest-free, evenly distributed, and still providing useful coverage, there may be no reason to remove it simply because the roof is being replaced.\n\nThe attic may still benefit from smaller improvements, such as:\n\n- Adding insulation where the existing depth is low\n- Air sealing before a new top layer is installed\n- Installing or repairing baffles near soffit vents\n- Improving the attic hatch\n- Correcting insulation that has been disturbed or compressed\n\nKeeping usable insulation can be the right answer. The important thing is to inspect it before the roofing work hides clues about leaks, decking damage, or pest entry.\n\nFor a deeper comparison, see [Insulation Removal vs. Top-Off](https://goodattic.energy/resources/insulation-removal-vs-top-off/).\n\n---"
+        },
+        {
+          "number": 3,
+          "eyebrow": "WHEN REPLACEMENT MAKES SENSE",
+          "heading": "Old Insulation Should Come Out When It Is Part of the Problem",
+          "markdown": "Replacing the insulation becomes a stronger choice when the old material is wet, smelly, pest-contaminated, heavily compressed, badly disturbed, or blocking access to work that needs to happen underneath it.\n\nRemoval may make sense when:\n\n- A roof leak soaked or matted the insulation\n- Water traveled across a wider area than the ceiling stain suggests\n- Mice, bats, or other animals contaminated the material\n- Droppings, nesting debris, guano, or persistent odor remain\n- The attic floor needs to be exposed for air sealing or cleanup\n- Decking, wiring, ducts, or other materials beneath the insulation need attention\n- The existing insulation is no longer a good base for a top-off\n\nThe goal is not to add attic work to every roofing project. It is to avoid installing a new roof over an attic problem that will still need to be opened, cleaned, or rebuilt later.\n\n---"
+        },
+        {
+          "number": 4,
+          "eyebrow": "ROOF LEAKS AND WET INSULATION",
+          "heading": "Fix the Leak Before Fresh Insulation Goes In",
+          "markdown": "Water can enter around shingles, flashing, roof valleys, vents, chimneys, skylights, and other penetrations. Once inside, it may travel along decking or framing before reaching the insulation, so the stain below does not always show the full path.\n\nThe roofer should correct the source and address damaged roofing or decking. The attic should then be inspected to determine whether the insulation can remain or whether it needs to be removed.\n\nA small damp area discovered quickly may have a different answer than insulation that is soaked, matted, smelly, or damaged. Fresh insulation should not be installed until the leak is repaired and the attic is ready.\n\nFor a detailed moisture decision, see [Wet Attic Insulation: Can It Dry, or Does It Need to Be Removed?](https://goodattic.energy/resources/wet-attic-insulation-remove-or-dry/).\n\n---"
+        },
+        {
+          "number": 5,
+          "eyebrow": "PEST ENTRY AROUND THE ROOFLINE",
+          "heading": "A New Roof Is a Good Time to Look for the Openings Pests Used",
+          "markdown": "Mice, bats, squirrels, birds, and other animals often enter near the same parts of the home a roofing crew is already examining: vents, roofline gaps, soffits, fascia, chimneys, flashing transitions, and utility penetrations.\n\nReplacing the roof alone does not automatically close every pest opening. Some gaps may be part of the roof or trim work. Others may require wildlife exclusion, pest control, siding repair, screening, or attic-focused entry-point work.\n\nHandle active mice or wildlife first. If the insulation has been contaminated, covering the problem during the roof project will not solve it. The attic should be remediated before fresh insulation is installed.\n\nRelated guides:\n\n- [Does Attic Insulation Need to Be Removed After Mice?](https://goodattic.energy/resources/attic-insulation-removal-after-mice/)\n- [What Should Happen When Bat Guano Reaches Attic Insulation?](https://goodattic.energy/resources/bat-guano-attic-insulation-removal/)\n\n---"
+        },
+        {
+          "number": 6,
+          "eyebrow": "WHO HANDLES WHAT?",
+          "heading": "Roofing and Attic Restoration Are Connected, but They Are Not the Same Job",
+          "markdown": "### The roofer may handle\n\n- Shingles or other roofing material\n- Underlayment and flashing\n- Roof decking repairs\n- The roof leak itself\n- Roof-mounted vents and penetrations\n- Fascia or soffit repairs when included in the roofing project\n\n### The attic contractor may handle\n\n- Inspecting the existing insulation\n- Removing wet, damaged, or contaminated insulation\n- Cleaning and preparing the attic\n- Attic-floor air sealing\n- Baffles and ventilation preparation\n- Attic-focused pest entry work\n- Installing fresh blown-in insulation\n- Progress and completion photos\n\n### Another professional may handle\n\n- Active bat or wildlife exclusion\n- Plumbing or HVAC problems\n- Electrical or structural repairs\n- Mold evaluation or water-remediation work\n- Suspected asbestos or vermiculite\n\nMake sure each contractor’s quote clearly explains who is responsible for every part of the project. Clear responsibility keeps important work from being assumed, duplicated, or missed.\n\n---"
+        },
+        {
+          "number": 7,
+          "eyebrow": "COORDINATE THE SEQUENCE",
+          "heading": "The Roofer and Attic Contractor Should Agree on the Plan Before Either Project Begins",
+          "markdown": "The best order depends on what the inspection finds.\n\n### A practical sequence\n\n1. **Inspect the roof and attic.** Identify leaks, damaged decking, wet insulation, pest activity, air-sealing needs, and ventilation concerns.\n2. **Handle active pests and specialist issues.** Wildlife exclusion, electrical repairs, hazardous materials, or structural concerns may need to come first.\n3. **Remove damaged insulation when early access is helpful.** This can expose the attic floor, decking, and entry points before the roofing or attic work is completed.\n4. **Complete the roofing work.** Repair the leak, replace damaged decking, and finish the roof-related vents, flashing, soffit, or fascia work.\n5. **Prepare the attic.** Complete the cleanup, air sealing, baffles, ventilation preparation, and entry-point work in the agreed order.\n6. **Install the final insulation layer.** Fresh insulation goes in after the attic is dry, repaired, and ready.\n\nSome projects will use a different order. The important thing is that the roofer and attic contractor communicate before one crew covers an area the other still needs to reach.\n\n---\n\n### Why coordination helps\n\nA shared plan can prevent one crew from covering an area the other still needs to reach. It also creates a chance to trace leaks, address pest openings, protect soffit airflow, and complete air sealing before the final insulation layer goes in.\n\nThis does not mean every new roof needs a full attic project. It means the attic is worth looking at while the timing is especially useful.\n\n---"
+        },
+        {
+          "number": 9,
+          "eyebrow": "HOW GOOD ATTIC CAN HELP",
+          "heading": "Good Attic Handles the Attic Side of the Coordinated Project",
+          "markdown": "Good Attic can inspect the existing insulation, remove damaged or contaminated material, clean and prepare the space, complete the needed attic work, and install fresh blown-in cellulose when the attic is ready.\n\nWhen another trade is needed, Good Attic can work alongside the roofer, wildlife professional, plumber, HVAC contractor, electrician, mold professional, structural professional, or other specialist so the work happens in the right order.\n\nGood Attic builds the attic quote onsite and explains what can remain, what should come out, and which parts of the project belong to another professional. That helps the homeowner move forward with a coordinated plan rather than discovering the next problem after the roof is already finished.\n\n---"
+        }
       ],
-      "hideActions": true
-    },
-    "sections": [
-      {
-        "eyebrow": "What the evidence means",
-        "heading": "A mouse sighting and contaminated insulation are not the same thing.",
-        "subcopy": "Seeing one mouse does not automatically prove that the attic insulation is contaminated. A sighting or scratching sound is a reason to inspect—not automatic proof that droppings, urine, nesting material, or animal remains reached the insulation.",
-        "paragraphs": [
-          "An inspection should connect the evidence to the insulation. Droppings mixed through loose fill, urine staining, nests, remains, persistent pest odor, and material that has been shredded, tunneled, flattened, or displaced are stronger signs that mice reached the insulation.",
-          "Chewed wiring, damaged ducts, or shredded stored materials show mouse activity, but they do not by themselves prove insulation contamination. Dark insulation is not proof either; dust often collects where air moves through gaps in the attic floor."
-        ],
-        "layout": "tiles",
+      "sourceGroups": [
+        {
+          "heading": "Source cards",
+          "sources": [
+            {
+              "title": "ENERGY STAR: Attic Insulation Project",
+              "url": "https://www.energystar.gov/saveathome/seal_insulate/attic-insulation-project",
+              "text": "Guidance explaining that a major home renovation can be a useful time to address attic insulation and that wet insulation, roof leaks, ventilation, and other attic problems should be handled first."
+            },
+            {
+              "title": "DOE: Whole-House Weatherization",
+              "url": "https://www.energy.gov/cmei/scep/wap/whole-house-weatherization",
+              "text": "Guidance noting that attic insulation should not be installed beneath a leaking roof and that the roof should be repaired first."
+            },
+            {
+              "title": "DOE Building America: Pre-Retrofit Assessment of Attics, Ceilings, and Roofs",
+              "url": "https://basc.pnnl.gov/information/pre-retrofit-assessment-attics-ceilings-and-roofs",
+              "text": "Guidance on checking leaks, wiring, vents, equipment, vermiculite, and other conditions before attic retrofit work."
+            },
+            {
+              "title": "DOE Building America: Sealing and Insulating Existing Vented Attics",
+              "url": "https://basc.pnnl.gov/code-compliance/sealing-and-insulating-existing-vented-attics-code-compliance-brief",
+              "text": "Guidance on attic-floor air sealing, baffles, ventilation paths, recessed lights, and other details before insulation is installed."
+            },
+            {
+              "title": "EPA: Vermiculite Insulation in the Attic",
+              "url": "https://www.epa.gov/asbestos/my-attic-has-vermiculite-insulation-it-am-i-risk-should-i-take-it-out",
+              "text": "Why suspected vermiculite should be left undisturbed and handled through a qualified asbestos professional."
+            }
+          ]
+        }
+      ],
+      "faq": {
+        "eyebrow": "FREQUENTLY ASKED QUESTIONS",
+        "heading": "Frequently Asked Questions About Roof Replacement and Attic Insulation",
         "items": [
           {
-            "title": "Evidence in the insulation",
-            "text": "Look for droppings, urine, nests, remains, odor, tunnels, or damaged material that connects the mouse activity to the insulation itself."
+            "question": "Does a new roof mean the attic insulation should be replaced?",
+            "answer": "No. Clean, dry, pest-free insulation may be able to remain. Replacement is more likely when the insulation is wet, damaged, contaminated, badly compressed, or blocking access to work that needs to happen underneath it."
           },
           {
-            "title": "Evidence somewhere else",
-            "text": "A mouse seen in the house or one chewed item in the attic justifies a closer look, but it does not settle the removal decision."
+            "question": "Should wet insulation be removed before the roof is replaced?",
+            "answer": "The roof leak should be identified and the contractors should agree on the sequence first. In some projects, early insulation removal helps expose the water path or damaged decking. In others, the roof repair happens first. The decision should be coordinated before either crew begins."
           },
           {
-            "title": "The accessible attic matters",
-            "text": "The area beside the hatch is only the easiest place to see. Framing, wiring, plumbing paths, eaves, and low-clearance areas should be considered too."
+            "question": "Should attic air sealing happen before new insulation?",
+            "answer": "Usually, yes. Attic-floor gaps are easier to reach before the final insulation layer is installed. Air sealing should be coordinated with any roof, ventilation, electrical, or combustion-safety work that affects the attic."
+          },
+          {
+            "question": "Can roof replacement help address mouse or bat entry points?",
+            "answer": "It can create a useful opportunity to find and repair some roofline openings, but active mice or bats should be handled by the appropriate pest or wildlife professional. Entry-point closure should be coordinated with the roofing and attic-restoration plans."
+          },
+          {
+            "question": "Should insulation removal happen before or after the roof is replaced?",
+            "answer": "Either sequence can be correct. It depends on the leak, decking work, pest activity, attic access, weather, and which areas each crew needs to reach. The roofer and attic contractor should agree on the sequence before the work starts."
           }
         ]
       },
-      {
-        "eyebrow": "Why a top-off is not remediation",
-        "heading": "New insulation cannot remove what mice left underneath it.",
-        "subcopy": "Adding insulation can improve depth in a clean, dry, pest-free attic. It cannot remove droppings, urine, nesting material, odor, or damaged insulation. It also makes the attic floor and mouse travel paths harder to inspect and reach later.",
-        "paragraphs": [
-          "Cleaning only the first visible patch has the same limitation when mice have moved through insulation elsewhere. Good Attic does not treat spot cleaning as the finished solution once contamination is confirmed in the insulation."
-        ],
-        "layout": "panels",
-        "items": [
-          {
-            "title": "Covering changes the depth, not the condition",
-            "text": "Fresh insulation can hide contaminated material without removing the debris, odor, or damage that changed the attic in the first place."
-          },
-          {
-            "title": "One visible area may not show the full path",
-            "text": "Mouse activity can follow framing and utility routes beyond the easiest place to reach, so the cleanup decision should follow the inspected conditions."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Two different kinds of sealing",
-        "heading": "Cleaning the Attic and Closing Mouse Entry Points",
-        "subcopy": "Removing contaminated insulation handles what the mice left behind. Exclusion work addresses how they entered. Good Attic can address attic-related openings around the roofline, soffits, vents, siding, and utility penetrations as part of the remediation plan.",
-        "paragraphs": [
-          "Pest exclusion and attic air sealing solve different problems. Exclusion closes openings mice use to enter from outside. Air sealing closes gaps between the living space and the attic around wiring, pipes, top plates, chases, fixtures, and the attic hatch. Both may be part of a full attic remediation."
-        ],
-        "layout": "panels",
-        "items": [
-          {
-            "title": "Mouse control comes first",
-            "text": "A pest professional should address active mice before attic restoration begins. Good Attic can coordinate that work when needed."
-          },
-          {
-            "title": "Attic restoration follows",
-            "text": "Removal, cleanup, entry-point work, air sealing, preparation, and fresh insulation address the attic conditions left behind."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Correct order of work",
-        "heading": "A full mouse-remediation project follows a deliberate sequence.",
-        "subcopy": "The work should move from active mouse control and home protection to removal, cleanup, sealing, attic preparation, and fresh insulation.",
-        "layout": "tiles",
-        "items": [
-          {
-            "title": "1. Handle the active mouse problem",
-            "text": "Complete or coordinate the appropriate mouse-control work before attic restoration begins."
-          },
-          {
-            "title": "2. Protect the home and removal path",
-            "text": "Protect the attic access and the route between the attic and the exterior collection area."
-          },
-          {
-            "title": "3. Remove insulation and pest debris",
-            "text": "Remove the existing insulation and pest debris. The old insulation, droppings, nests, and other debris come out instead of being covered."
-          },
-          {
-            "title": "4. Expose, inspect, clean, and treat",
-            "text": "Remove what the mice left behind and prepare the accessible attic floor for the work that follows."
-          },
-          {
-            "title": "5. Close entry points and prepare the attic",
-            "text": "Coordinate exclusion, attic-floor air sealing, baffles, hatch details, and other needed preparation."
-          },
-          {
-            "title": "6. Install fresh insulation",
-            "text": "Install fresh borate-treated cellulose over the prepared attic and document the completed work."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Removal and safe handling",
-        "heading": "Commercial removal equipment is only one part of the cleanup plan.",
-        "subcopy": "Good Attic uses commercial insulation-removal vacuums with a protected hose path from the attic to exterior removal bags. Mouse droppings, nests, and other pest debris require the proper disinfecting and handling steps rather than being swept or vacuumed dry.",
-        "paragraphs": [
-          "CDC guidance explains that rodent waste should be wetted with an appropriate disinfectant before handling and that exposed insulation contaminated with urine and droppings should be bagged for removal. Heavy infestations can require additional precautions.",
-          "Some attics uncover electrical, structural, HVAC, or hazardous-material concerns that need another qualified professional before restoration can continue."
-        ],
-        "layout": "tiles",
-        "items": [
-          {
-            "title": "Vermiculite changes ordinary attic work",
-            "text": "EPA advises leaving suspected vermiculite undisturbed and using a trained, accredited asbestos professional if removal is considered."
-          },
-          {
-            "title": "Cost follows the actual attic",
-            "text": "Size, depth, access, contamination, protection, entry-point work, air sealing, preparation, replacement depth, and specialist needs all affect cost."
-          },
-          {
-            "title": "Future risk can be reduced, not erased",
-            "text": "Entry-point work and borate-treated cellulose can reduce risk, but no restoration makes an attic permanently mouse-proof."
-          }
-        ]
-      },
-      {
-        "eyebrow": "Good Attic's service position",
-        "heading": "The Good Attic standard starts fresh after confirmed contamination.",
-        "subcopy": "Once mouse contamination is confirmed in the insulation, Good Attic recommends removing the existing insulation and completing a full attic remediation. We do not believe in covering contaminated material with new insulation or treating only one visible area as the finished solution.",
-        "paragraphs": [
-          "Removing the old insulation exposes the attic floor so it can be cleaned, inspected, sealed, and prepared before fresh insulation is installed. The final plan should reflect what the inspection finds."
-        ]
-      },
-      {
+      "related": {
         "eyebrow": "RELATED ATTIC GUIDES",
-        "heading": "Related Guides for Mouse-Damaged Attics",
-        "layout": "features",
-        "withImages": true,
+        "heading": "Related Guides for Roof and Attic Planning",
+        "intro": "These guides can help when the attic inspection finds water damage, mouse contamination, bat guano, or old insulation that may not be worth keeping.",
         "items": [
           {
-            "url": "/resources/signs-of-attic-pest-contamination/",
-            "title": "Signs of Attic Pest Contamination",
-            "kicker": "Pest evidence",
-            "text": "Use this guide when you are still deciding whether the attic evidence points to contamination.",
-            "image": "assets/pest-issues-in-attic.webp",
-            "alt": "Signs of attic pest contamination",
-            "cta": "Identify contamination signs"
+            "title": "Wet Attic Insulation: Can It Dry, or Does It Need to Be Removed?",
+            "text": "Learn how the water source, insulation condition, and nearby materials affect the removal decision.",
+            "cta": "Read the wet-insulation guide",
+            "url": "/resources/wet-attic-insulation-remove-or-dry/"
           },
           {
-            "url": "/resources/insulation-removal-vs-top-off/",
-            "title": "Insulation Removal vs Top-Off",
-            "kicker": "Insulation options",
-            "text": "Compare the broader keep, top-off, or remove decision for existing attic insulation.",
-            "image": "assets/dirty-old-attic-needing-restoration.webp",
-            "alt": "Insulation removal versus top-off",
-            "cta": "Compare insulation options"
+            "title": "Does Attic Insulation Need to Be Removed After Mice?",
+            "text": "Understand what happens when mice contaminate the insulation and why full remediation may be needed.",
+            "cta": "Read the mice guide",
+            "url": "/resources/attic-insulation-removal-after-mice/"
           },
           {
-            "url": "/resources/attic-air-sealing-vs-more-insulation/",
-            "title": "Attic Air Sealing vs More Insulation",
-            "kicker": "Preparation guide",
-            "text": "See why sealing and insulation solve different problems before the attic is rebuilt.",
-            "image": "assets/attic-air-sealing.webp",
-            "alt": "Attic air sealing versus more insulation",
-            "cta": "Understand the difference"
+            "title": "What Should Happen When Bat Guano Reaches Attic Insulation?",
+            "text": "See how bat exclusion, guano cleanup, entry-point work, and insulation restoration fit together.",
+            "cta": "Read the bat guide",
+            "url": "/resources/bat-guano-attic-insulation-removal/"
           }
         ]
       },
-      {
+      "local": {
         "eyebrow": "LOCAL ATTIC HELP",
-        "heading": "Find Pest-Damaged Attic Help Near You",
-        "subcopy": "Choose your market to learn about mouse-contaminated insulation removal, attic cleanup, entry-point work, and full attic remediation.",
-        "layout": "features",
-        "withImages": true,
+        "heading": "Find Attic Insulation Help Near You",
+        "intro": "Choose your market to learn about attic insulation, removal, air sealing, and preparation that can be coordinated with a roofing project.",
         "items": [
           {
-            "url": "/salt-lake-city-ut/attic-pest-remediation/",
-            "title": "Mouse-Contaminated Attic Help in Salt Lake City",
-            "kicker": "Salt Lake City",
-            "text": "Learn about removing mouse-contaminated insulation, cleaning and preparing the attic, closing entry points, and installing fresh insulation in the Salt Lake City service area.",
-            "image": "assets/pest-issues-in-attic.webp",
-            "alt": "Mouse-damaged attic restoration in Salt Lake City",
-            "cta": "View Salt Lake City services"
+            "title": "Salt Lake City",
+            "text": "",
+            "cta": "View Salt Lake City services",
+            "url": "/salt-lake-city-ut/attic-insulation/"
           },
           {
-            "url": "/st-louis-mo/attic-pest-remediation/",
-            "title": "Mouse-Contaminated Attic Help in St. Louis",
-            "kicker": "St. Louis",
-            "text": "Learn about removing mouse-contaminated insulation, cleaning and preparing the attic, closing entry points, and installing fresh insulation in the St. Louis service area.",
-            "image": "assets/pest-issues-in-attic.webp",
-            "alt": "Mouse-damaged attic restoration in St. Louis",
-            "cta": "View St. Louis services"
+            "title": "St. Louis",
+            "text": "",
+            "cta": "View St. Louis services",
+            "url": "/st-louis-mo/attic-insulation/"
           },
           {
-            "url": "/kansas-city-mo/attic-pest-remediation/",
-            "title": "Mouse-Contaminated Attic Help in Kansas City",
-            "kicker": "Kansas City",
-            "text": "Learn about removing mouse-contaminated insulation, cleaning and preparing the attic, closing entry points, and installing fresh insulation in the Kansas City service area.",
-            "image": "assets/pest-issues-in-attic.webp",
-            "alt": "Mouse-damaged attic restoration in Kansas City",
-            "cta": "View Kansas City services"
+            "title": "Kansas City",
+            "text": "",
+            "cta": "View Kansas City services",
+            "url": "/kansas-city-mo/attic-insulation/"
           }
         ]
-      }
-    ],
-    "source_groups": [
-      {
-        "heading": "Sources for mouse cleanup, attic preparation, and specialist conditions",
-        "sources": [
-          {
-            "title": "CDC: How to Clean Up After Rodents",
-            "text": "Guidance for handling rodent urine, droppings, nests, contaminated insulation, and heavy infestations without dry sweeping or ordinary vacuuming.",
-            "url": "https://www.cdc.gov/healthy-pets/rodent-control/clean-up.html"
-          },
-          {
-            "title": "EPA: Vermiculite Insulation in the Attic",
-            "text": "Guidance to leave suspected vermiculite undisturbed and involve a trained, accredited asbestos professional if removal is considered.",
-            "url": "https://www.epa.gov/asbestos/my-attic-has-vermiculite-insulation-it-am-i-risk-should-i-take-it-out"
-          },
-          {
-            "title": "ENERGY STAR: Well-Insulated and Sealed Attic",
-            "text": "Homeowner guidance on animal-waste-contaminated insulation, air sealing, baffles, and preparation before adding insulation.",
-            "url": "https://www.energystar.gov/products/energy_star_home_upgrade/attic_insulation"
-          },
-          {
-            "title": "DOE Building America: Air Sealing and Insulating Vented Attics",
-            "text": "Technical guidance on attic-floor penetrations, baffles, soffit airflow, and preparation before the final insulation layer.",
-            "url": "https://basc.pnnl.gov/resource-guides/air-sealing-and-insulating-ceilings-vented-attics"
-          }
-        ]
-      }
-    ],
-    "cta": {
-      "title": "Concerned that mice have contaminated your attic insulation?",
-      "text": "An in-home attic assessment can show what is happening, whether the insulation needs to come out, and what it will take to clean, seal, and rebuild the space.",
-      "primary": {
+      },
+      "closingCta": {
+        "eyebrow": "PLAN THE PROJECT BEFORE THE ROOF GOES ON",
+        "heading": "Planning a Roof Replacement? Take a Look at the Attic Too.",
+        "body": "An attic inspection can show whether the existing insulation is worth keeping, whether leaks or pests have affected it, and how the attic work should be coordinated with the roofing project.",
         "label": "Request an Attic Assessment",
-        "url": "/contact/",
-        "kicker": "Next step",
-        "hideSecondary": true
-      }
+        "url": "/contact/"
+      },
+      "imageDirection": ""
     },
     "page_type": "resource",
     "city": null

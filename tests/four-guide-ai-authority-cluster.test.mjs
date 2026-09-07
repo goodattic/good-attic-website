@@ -4,52 +4,19 @@ import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { loadWarmGuidePackage } from "../scripts/load-warm-guide-copy.mjs";
 
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const siteOrigin = "https://goodattic.energy";
-
-const guides = [
-  {
-    slug: "attic-insulation-removal-after-mice",
-    title: "Remove Attic Insulation After Mice? | Good Attic",
-    description:
-      "Learn when attic insulation should be removed after mice, why covering contamination is not enough, and what full attic remediation involves.",
-    h1: "Does Attic Insulation Need to Be Removed After Mice?",
-    faqHeading: "Frequently Asked Questions About Mice and Attic Insulation",
-    wordRange: [1450, 1650],
-  },
-  {
-    slug: "bat-guano-attic-insulation-removal",
-    title: "Bat Guano in Attic Insulation: Should It Be Removed? | Good Attic",
-    description:
-      "Learn when bat guano in attic insulation calls for removal, why properly timed exclusion comes first, and when specialized cleanup may be needed.",
-    h1: "What Should Happen When Bat Guano Reaches Attic Insulation?",
-    faqHeading: "Frequently Asked Questions About Bat Guano and Attic Insulation",
-    wordRange: [1550, 1750],
-  },
-  {
-    slug: "wet-attic-insulation-remove-or-dry",
-    title: "Wet Attic Insulation: Remove It or Let It Dry? | Good Attic",
-    description:
-      "Learn when wet attic insulation may dry, when removal makes sense, and why the moisture source and nearby attic materials should be checked first.",
-    h1: "Wet Attic Insulation: Can It Dry, or Does It Need to Be Removed?",
-    faqHeading: "Frequently Asked Questions About Wet Attic Insulation",
-    wordRange: [1500, 1700],
-  },
-  {
-    slug: "replace-attic-insulation-when-replacing-roof",
-    title: "Should You Replace Attic Insulation With a New Roof? | Good Attic",
-    description:
-      "Learn when attic insulation should be replaced with a new roof, when it can stay, and how roofing and attic work should be coordinated.",
-    h1: "Replacing Your Roof? Should You Replace the Attic Insulation Too?",
-    faqHeading: "Frequently Asked Questions About Roof Replacement and Attic Insulation",
-    wordRange: [1550, 1800],
-  },
-].map((guide) => ({
-  ...guide,
-  route: `/resources/${guide.slug}/`,
-  canonical: `${siteOrigin}/resources/${guide.slug}/`,
-  file: path.join(projectDirectory, "resources", guide.slug, "index.html"),
+const exactPackage = await loadWarmGuidePackage(path.join(projectDirectory, "content", "warm-guides"));
+const guides = exactPackage.pages.map((page) => ({
+  ...page,
+  route: page.url,
+  title: page.seo_title,
+  description: page.meta_description,
+  canonical: page.canonical_url,
+  faqHeading: page.faq_heading,
+  file: path.join(projectDirectory, "resources", page.slug, "index.html"),
 }));
 
 const protectedHashes = {
@@ -84,12 +51,18 @@ function decodeHtml(value) {
 }
 
 function textContent(value) {
-  return decodeHtml(value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
+  return decodeHtml(
+    value
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .replace(/\s+([.,;:!?])/g, "$1")
+      .trim(),
+  );
 }
 
 function publicWordCount(html) {
-  const main = extractBlock(html, '<main class="page-main">', "</main>");
-  const text = textContent(main).replace(/&[a-zA-Z0-9#]+;/g, " ").replace(/\s+/g, " ").trim();
+  const guide = extractBlock(html, "<div data-exact-guide-content>", "<!-- exact-guide-content:end -->");
+  const text = textContent(guide).replace(/&[a-zA-Z0-9#]+;/g, " ").replace(/\s+/g, " ").trim();
   return text ? text.split(" ").length : 0;
 }
 
@@ -107,6 +80,64 @@ function extractBlock(html, start, end) {
   return html.slice(startIndex, endIndex + end.length);
 }
 
+function markdownVisibleText(markdown) {
+  return markdown
+    .split("\n")
+    .filter((line) => line.trim() !== "---" && !/^\|(?:\s*-+\s*\|)+$/.test(line.trim()))
+    .map((line) =>
+      line
+        .trim()
+        .replace(/^### /, "")
+        .replace(/^\d+\. /, "")
+        .replace(/^- /, "")
+        .replace(/^\|/, "")
+        .replace(/\|$/, "")
+        .replace(/\s*\|\s*/g, " ")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+        .replace(/\*\*([^*]+)\*\*/g, "$1")
+        .replace(/`([^`]+)`/g, "$1"),
+    )
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function expectedGuideText(guide) {
+  const copy = guide.exact_copy;
+  const units = [
+    "Home",
+    "/",
+    "Resources",
+    "/",
+    guide.h1,
+    copy.hero.eyebrow,
+    guide.h1,
+    ...copy.hero.paragraphs,
+  ];
+
+  for (const section of copy.sections) {
+    units.push(section.eyebrow, section.heading, markdownVisibleText(section.markdown));
+  }
+  for (const group of copy.sourceGroups) {
+    units.push(group.heading);
+    for (const source of group.sources) units.push(source.title, source.text);
+  }
+  units.push(copy.faq.eyebrow, copy.faq.heading);
+  for (const item of copy.faq.items) units.push(item.question, item.answer);
+  for (const linkSection of [copy.related, copy.local]) {
+    units.push(linkSection.eyebrow, linkSection.heading, linkSection.intro);
+    for (const item of linkSection.items) units.push(item.title, item.text, item.cta);
+  }
+  units.push(
+    copy.closingCta.eyebrow,
+    copy.closingCta.heading,
+    copy.closingCta.body,
+    copy.closingCta.label,
+  );
+  return units.filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+}
+
 function localFileFromUrl(url) {
   const parsed = new URL(url);
   const pathname = decodeURIComponent(parsed.pathname);
@@ -117,6 +148,16 @@ function localFileFromUrl(url) {
   return path.join(projectDirectory, pathname.slice(1));
 }
 
+function sectionContainingH2(html, heading) {
+  const headingIndex = html.indexOf(`<h2>${heading}</h2>`);
+  assert.notEqual(headingIndex, -1, `Missing H2: ${heading}`);
+  const startIndex = html.lastIndexOf('<section class="', headingIndex);
+  const endIndex = html.indexOf("</section>", headingIndex);
+  assert.notEqual(startIndex, -1, `Missing section start for ${heading}`);
+  assert.notEqual(endIndex, -1, `Missing section end for ${heading}`);
+  return html.slice(startIndex, endIndex + "</section>".length);
+}
+
 test("the four guides expose the approved metadata and schema", async () => {
   for (const guide of guides) {
     const html = await readFile(guide.file, "utf8");
@@ -125,8 +166,7 @@ test("the four guides expose the approved metadata and schema", async () => {
     assert.ok(html.includes(`<link rel="canonical" href="${guide.canonical}">`));
     assert.ok(html.includes(`<h1>${guide.h1}</h1>`));
     assert.ok(html.includes(`<h2>${guide.faqHeading}</h2>`));
-    assert.ok(publicWordCount(html) >= guide.wordRange[0]);
-    assert.ok(publicWordCount(html) <= guide.wordRange[1]);
+    assert.equal(publicWordCount(html), expectedGuideText(guide).split(" ").length);
 
     const records = schemaRecords(html);
     const article = records.find((record) => record["@type"] === "Article");
@@ -153,6 +193,25 @@ test("the four guides expose the approved metadata and schema", async () => {
   }
 });
 
+test("rendered guide content is an exact, ordered projection of the approved package", async () => {
+  for (const guide of guides) {
+    const html = await readFile(guide.file, "utf8");
+    const renderedGuide = extractBlock(
+      html,
+      "<div data-exact-guide-content>",
+      "<!-- exact-guide-content:end -->",
+    );
+    assert.equal(textContent(renderedGuide), expectedGuideText(guide));
+
+    const words = expectedGuideText(guide).split(" ");
+    const firstBrandWord = words.findIndex(
+      (word, index) => word === "Good" && words[index + 1]?.replace(/[^A-Za-z]/g, "") === "Attic",
+    );
+    assert.ok(firstBrandWord >= 0, `${guide.slug} is missing its approved Good Attic transition`);
+    assert.ok(firstBrandWord / words.length >= 0.6, `${guide.slug} introduces Good Attic too early`);
+  }
+});
+
 test("new-guide internal links and images resolve locally", async () => {
   for (const guide of guides) {
     const html = await readFile(guide.file, "utf8");
@@ -169,6 +228,30 @@ test("new-guide internal links and images resolve locally", async () => {
   }
 });
 
+test("source, related-guide, local-service, and CTA destinations match the package", async () => {
+  for (const guide of guides) {
+    const html = await readFile(guide.file, "utf8");
+    for (const sourceGroup of guide.exact_copy.sourceGroups) {
+      const section = sectionContainingH2(html, sourceGroup.heading);
+      const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+      assert.deepEqual(hrefs, sourceGroup.sources.map((source) => source.url));
+    }
+
+    for (const linkSection of [guide.exact_copy.related, guide.exact_copy.local]) {
+      const section = sectionContainingH2(html, linkSection.heading);
+      const destinations = [...section.matchAll(/href="([^"]+)"/g)].map(
+        (match) => new URL(match[1], guide.canonical).pathname,
+      );
+      assert.deepEqual(destinations, linkSection.items.map((item) => item.url));
+    }
+
+    const cta = sectionContainingH2(html, guide.exact_copy.closingCta.heading);
+    const ctaHref = cta.match(/<a class="button primary" href="([^"]+)">/);
+    assert.ok(ctaHref, `Missing primary CTA for ${guide.slug}`);
+    assert.equal(new URL(ctaHref[1], guide.canonical).pathname, guide.exact_copy.closingCta.url);
+  }
+});
+
 test("the resource hub and sitemap contain each new route once", async () => {
   const hub = await readFile(path.join(projectDirectory, "resources", "index.html"), "utf8");
   const sitemap = await readFile(path.join(projectDirectory, "sitemap.xml"), "utf8");
@@ -178,6 +261,15 @@ test("the resource hub and sitemap contain each new route once", async () => {
     .map((match) => match[1])
     .filter((href) => guides.some((guide) => href === `${guide.slug}/`));
   assert.deepEqual(newCardHrefs, guides.map((guide) => `${guide.slug}/`));
+
+  for (const guide of guides) {
+    const card = cardMatches.find((match) => match[1] === `${guide.slug}/`);
+    assert.ok(card, `Missing Resources card for ${guide.slug}`);
+    assert.equal(
+      textContent(card[0]),
+      [guide.hub_card.category, guide.hub_card.title, guide.hub_card.text, guide.hub_card.cta].join(" "),
+    );
+  }
 
   const legacyCards = cardMatches.filter(
     (match) => !guides.some((guide) => match[1] === `${guide.slug}/`),
@@ -248,5 +340,21 @@ test("new guides keep promotional controls late and exclude prohibited editorial
     assert.ok(main.includes("Request an Attic Assessment"));
     assert.doesNotMatch(textContent(main), prohibited);
     assert.doesNotMatch(textContent(main), regressionLanguage);
+  }
+});
+
+test("new guides match the winning guide's production-intended crawler eligibility", async () => {
+  const robots = await readFile(path.join(projectDirectory, "robots.txt"), "utf8");
+  for (const crawler of ["Googlebot", "Bingbot", "OAI-SearchBot", "GPTBot"]) {
+    assert.match(robots, new RegExp(`User-agent: ${crawler}\\nAllow: /`));
+  }
+
+  for (const guide of guides) {
+    const html = await readFile(guide.file, "utf8");
+    const main = extractBlock(html, '<main class="page-main">', "</main>");
+    assert.ok(main.includes("data-exact-guide-content"));
+    assert.doesNotMatch(html, /noindex|nosnippet|data-nosnippet/i);
+    assert.equal(html.match(/<link rel="canonical"/g)?.length, 1);
+    assert.ok(html.includes(`<link rel="canonical" href="${guide.canonical}">`));
   }
 });

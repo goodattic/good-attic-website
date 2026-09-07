@@ -1,0 +1,46 @@
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Does one mouse mean the attic insulation is contaminated?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. A sighting or scratching sound is a reason to inspect, but it does not prove that droppings, urine, nesting material, or animal remains reached the insulation."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can mouse-contaminated insulation be covered with new insulation?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Covering it does not remove the contamination, debris, odor, or damaged material underneath. Once contamination is confirmed, Good Attic recommends removal and full remediation."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Should active mice be handled before attic restoration?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. A pest professional should address active mice before the attic is cleaned and rebuilt. Good Attic can coordinate that work when needed."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can mice return after attic remediation?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "They can. Closing entry points and restoring the attic can reduce the chance of another problem, but mice may find a new opening later. Continued maintenance and pest monitoring still matter."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What happens if the attic contains vermiculite?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Do not disturb suspected vermiculite like ordinary insulation. EPA advises homeowners to assume it may contain asbestos and involve a qualified asbestos professional when removal is necessary."
+      }
+    }
+  ]
+}
