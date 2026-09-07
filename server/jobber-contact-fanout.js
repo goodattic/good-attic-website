@@ -115,8 +115,8 @@ export async function handleJobberContactFanout(context, dependencies = {}) {
   }
 
   const timers = {
-    setTimeout: dependencies.setTimeout || globalThis.setTimeout,
-    clearTimeout: dependencies.clearTimeout || globalThis.clearTimeout,
+    setTimeout: dependencies.setTimeout || ((...args) => globalThis.setTimeout(...args)),
+    clearTimeout: dependencies.clearTimeout || ((...args) => globalThis.clearTimeout(...args)),
   };
   // Neither branch depends on the other's success. A partial success triggers
   // Jobber's normal retry; both consumers retain their existing deduplication.
