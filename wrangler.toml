@@ -5,16 +5,19 @@ compatibility_date = "2026-07-27"
 [env.production.vars]
 EXTERNAL_API_WRITES_ENABLED = "true"
 ANGI_SOURCE_ROUTING_ENABLED = "true"
+CONTACT_SYNC_REQUEST_FANOUT_ENABLED = "true"
 JOBBER_GOOGLE_ROUTING_MARKETS = "ut,mo_stl,mo_kc"
 FIELDFLOW_ATTRIBUTION_BASE_URL = "https://fieldflow.goodattic.energy/api/integrations/highlevel/lead-attribution"
 
 [env.preview]
 kv_namespaces = []
 d1_databases = []
+services = []
 
 [env.preview.vars]
 EXTERNAL_API_WRITES_ENABLED = "false"
 ANGI_SOURCE_ROUTING_ENABLED = "false"
+CONTACT_SYNC_REQUEST_FANOUT_ENABLED = "false"
 JOBBER_GOOGLE_ROUTING_MARKETS = ""
 FIELDFLOW_ATTRIBUTION_BASE_URL = ""
 
@@ -30,3 +33,7 @@ database_id = "934d7ad9-cba8-4cb4-9494-1e9980b7c403"
 [[env.production.queues.producers]]
 binding = "JOBBER_APPOINTMENT_QUEUE"
 queue = "good-attic-jobber-appointment-events"
+
+[[env.production.services]]
+binding = "CONTACT_SYNC_SERVICE"
+service = "good-attic-contact-sync"

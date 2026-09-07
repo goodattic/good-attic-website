@@ -1,5 +1,5 @@
-import { handleJobberAppointmentWebhook } from "../../../../server/jobber-appointment-webhook.js";
+import { handleJobberContactFanout } from "../../../../server/jobber-contact-fanout.js";
 
 export async function onRequestPost(context) {
-  return handleJobberAppointmentWebhook(context);
+  return handleJobberContactFanout(context);
 }
