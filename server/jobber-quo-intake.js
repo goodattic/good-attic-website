@@ -1,5 +1,6 @@
 import { _private as leadHelpers } from '../functions/api/leads.js';
 import { _private as contacts } from './jobber-contact-resolver.js';
+import { QUO_UNKNOWN_CLIENT_NAME } from './quo-client-name.js';
 import { normalizeAcknowledgementPhone as normalizePhone, canonicalJobberId, sourceHash } from './acknowledgement-source.js';
 
 const MAX_BODY_BYTES = 64 * 1024;
@@ -237,12 +238,20 @@ function requestUrl(value,requestId) {
     ||!new RegExp(`^/(?:requests|work_requests)/${numericId}/?$`).test(url.pathname))throw new IntakeError('jobber_write_outcome_unknown',503,true);
   return url.href;
 }
+function newClientNames(source) {
+  const firstName=typeof source.first_name==='string'?source.first_name.trim():'';
+  const lastName=typeof source.last_name==='string'?source.last_name.trim():'';
+  if(firstName||lastName)return {...(firstName?{firstName}:{}),...(lastName?{lastName}:{})};
+  return {firstName:QUO_UNKNOWN_CLIENT_NAME};
+}
 function noteMessage(row,source) {
   const lines=[row.operation_kind==='note'?'Good Attic Quo call update':'Good Attic Quo incoming inquiry',
     `Source: Quo ${source.type==='message'?'text':'call'}`,`Operation ID: ${row.operation_id}`,
     `Market: ${row.market}`,`Customer phone: ${row.phone}`,`Market phone: ${source.to}`,`Quo phone number ID: ${row.phone_number_id}`,
     `Quo ${source.type} ID: ${source.id}`,`Quo event ID: ${source.event_id}`,`Quo conversation ID: ${source.conversation_id}`,
     `Received: ${source.occurred_at}`,`Status: ${source.status}`];
+  if(row.operation_kind==='intake'&&row.classification==='eligible_new_client'
+    &&!source.first_name?.trim()&&!source.last_name?.trim())lines.push('Name not yet collected; New lead is a system placeholder.');
   for(const [key,label] of [['answered_at','Answered'],['completed_at','Completed'],['duration','Duration (seconds)'],['quo_url','Open in Quo'],['text','Customer text'],['summary','Call summary'],['transcript','Call transcript'],['voicemail','Voicemail']]) {
     if(source[key]!=null)lines.push(`${label}: ${source[key]}`);
   }
@@ -268,27 +277,26 @@ async function processIntake(env,deps,token,route,identity,input,row,lease) {
   try{classification=await classify(env,deps,token,route,identity);}catch(error){throw new IntakeError(error instanceof IntakeError?error.code:'jobber_read_failed');}
   if(!classification.classification.startsWith('eligible_')) {
     await checkpoint(db,row,lease,classification.classification.startsWith('suppressed')?'suppressed':'held',
-      {classification:classification.classification,reason:classification.reason,...(!row.client_id&&classification.client_id?{client_id:classification.client_id}:{})},nowFor(deps));
+      {classification:row.classification||classification.classification,reason:classification.reason,...(!row.client_id&&classification.client_id?{client_id:classification.client_id}:{})},nowFor(deps));
     return row;
   }
   const expected=row.client_id||input.expected_client_id;
   if(classification.client_id!==expected) return hold(db,row,lease,'client_identity_changed_before_write',nowFor(deps));
-  await checkpoint(db,row,lease,row.operation_state,{classification:classification.classification},nowFor(deps));
+  await checkpoint(db,row,lease,row.operation_state,{classification:row.classification||classification.classification},nowFor(deps));
   if(!row.client_id) {
     if(classification.client_id) {
       await checkpoint(db,row,lease,'client_created',{client_id:classification.client_id},nowFor(deps));
     }else {
       await checkpoint(db,row,lease,'client_creating',{},nowFor(deps));
       try {
-        // Do not manufacture a name or claim texting consent. The phone-only
-        // business minimum must pass provider validation during acceptance.
+        // Jobber requires a name. Use a visibly generic system placeholder only
+        // for a new client whose canonical Quo contact has no actual name.
         const result=await deps.jobberGraphql(env,token.accessToken,MUTATIONS.client,{input:{
           phones:[{description:'MAIN',number:identity.phone,primary:true}],
           receivesReminders:false,receivesFollowUps:false,receivesQuoteFollowUps:false,
           receivesInvoiceFollowUps:false,receivesReviewRequests:false,
           sourceAttribution:{sourceText:'Quo'},
-          ...(input.source.first_name?{firstName:input.source.first_name.trim()}:{}),
-          ...(input.source.last_name?{lastName:input.source.last_name.trim()}:{}),
+          ...newClientNames(JSON.parse(row.source_json)),
         }});
         const client=mutationData(result,'clientCreate','client','Client');
         // Persist the returned ID before validating any optional response data.
@@ -404,4 +412,4 @@ async function handleWrite(context,deps,kind) {
 }
 export const handleJobberQuoIntakeWrite=(context,deps=leadHelpers)=>handleWrite(context,deps,'intake');
 export const handleJobberQuoIntakeNote=(context,deps=leadHelpers)=>handleWrite(context,deps,'note');
-export const _private={QUERIES,MUTATIONS,MAX_BODY_BYTES,MAX_PAGES,LEASE_MS,NUMBERS,cleanSource,routeInput,classify,publicOperation,noteMessage};
+export const _private={QUERIES,MUTATIONS,MAX_BODY_BYTES,MAX_PAGES,LEASE_MS,NUMBERS,cleanSource,routeInput,classify,publicOperation,noteMessage,newClientNames};

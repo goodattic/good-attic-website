@@ -1,3 +1,4 @@
+import { resolveQuoClientFirstName } from './quo-client-name.js';
 import { _private as leadHelpers } from '../functions/api/leads.js';
 import { _private as contactHelpers } from './jobber-contact-resolver.js';
 import {
@@ -8,7 +9,7 @@ const QUERY = `query GoodAtticAcknowledgementSource($id: EncodedId!) {
   account { id }
   request(id: $id) {
     id createdAt jobberWebUri source phone
-    client { id firstName phones { number normalizedPhoneNumber primary smsAllowed } }
+    client { id firstName lastName phones { number normalizedPhoneNumber primary smsAllowed } }
     notes(first: 100) {
       nodes {
         __typename
@@ -198,7 +199,7 @@ export async function handleJobberAcknowledgementResolve({ request, env }, depen
     if (record === null) return json({ ok: false, code: 'jobber_object_not_found' }, 404);
     if (!record || !contactHelpers.sameId(record.id, input.request_id, 'Request')) return json({ ok: false, code: 'jobber_object_mismatch' }, 409);
     if (!canonicalJobberId(record.client?.id, 'Client') || typeof record.source !== 'string'
-      || typeof record.client.firstName !== 'string' || typeof record.createdAt !== 'string'
+      || typeof record.client.firstName !== 'string' || typeof record.client.lastName !== 'string' || typeof record.createdAt !== 'string'
       || !Number.isFinite(Date.parse(record.createdAt))) return json({ ok: false, code: 'jobber_response_invalid' }, 502);
     let uri;
     try { uri = new URL(record.jobberWebUri); } catch { return json({ ok: false, code: 'jobber_url_invalid' }, 502); }
@@ -206,10 +207,11 @@ export async function handleJobberAcknowledgementResolve({ request, env }, depen
     if (uri.protocol !== 'https:' || uri.hostname !== 'secure.getjobber.com' || uri.username || uri.password
       || uri.port || uri.search || uri.hash || uri.pathname !== `/work_requests/${numericId}`) return json({ ok: false, code: 'jobber_url_invalid' }, 502);
     const eligibility = await resolveAcknowledgementEligibility(env, route, record, dependencies.now?.() ?? Date.now());
+    const firstName = await resolveQuoClientFirstName(env, route.expectedAccountId, record.client);
     return json({ ok: true, account_id: route.expectedAccountId, market: MARKETS[route.marketKey], request: {
       id: canonicalJobberId(record.id, 'Request'), createdAt: new Date(record.createdAt).toISOString(),
       jobberWebUri: uri.href, clientId: canonicalJobberId(record.client.id, 'Client'),
-      firstName: record.client.firstName.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 100),
+      firstName: firstName.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 100),
       ...eligibility,
     } });
   } catch { return json({ ok: false, code: 'jobber_resolve_failed' }, 503); }

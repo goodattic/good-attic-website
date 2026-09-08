@@ -234,3 +234,15 @@ test("the deployed Pages wrapper uses the existing cached token helper and only 
     globalThis.fetch = originalFetch;
   }
 });
+
+test('a proven new-client placeholder is returned as unknown so an existing Quo real name stays protected',async()=>{
+ const c=client({firstName:'New lead',lastName:''});
+ const proof={account_id:ACCOUNTS[0][0],client_id:CLIENT_ID,operation_kind:'intake',classification:'eligible_new_client',source_json:JSON.stringify({type:'call',id:'CAnew'})};
+ const proofEnv={...ENV,ANGI_ROUTER_DB:{prepare(sql){assert.match(sql,/classification = 'eligible_new_client'/);return {bind(account,id){assert.equal(account,ACCOUNTS[0][0]);assert.equal(id,CLIENT_ID);return {all:async()=>({success:true,results:[proof]})};}};}}};
+ const response=await handleJobberContactResolve(context(input(),{env:proofEnv}),fakeDependencies({account:{id:ACCOUNTS[0][0]},client:c}));
+ assert.equal(response.status,200);const returned=(await response.json()).client;
+ assert.equal(returned.firstName,'');assert.equal(returned.lastName,'');assert.deepEqual(returned.phones,c.phones);assert.deepEqual(returned.emails,c.emails);
+ const edited=client({firstName:'Susan',lastName:'Customer'});
+ const editedResponse=await handleJobberContactResolve(context(input(),{env:proofEnv}),fakeDependencies({account:{id:ACCOUNTS[0][0]},client:edited}));
+ assert.equal((await editedResponse.json()).client.firstName,'Susan');
+});

@@ -1,3 +1,4 @@
+import { resolveQuoClientFirstName } from './quo-client-name.js';
 import { getJobberOAuthRoute } from "../functions/api/jobber/oauth/config.js";
 import { _private as leadHelpers } from "../functions/api/leads.js";
 
@@ -163,6 +164,7 @@ export async function handleJobberContactResolve({ request, env }, dependencies 
     }
     const client = contactFromResponse(type === "Client" ? object : object.client);
     if (!client) return json({ ok: false, code: "jobber_response_invalid" }, 502);
+    client.firstName = await resolveQuoClientFirstName(env, route.expectedAccountId, client);
     return json({ ok: true, account_id: route.expectedAccountId, market_key: route.marketKey, client });
   } catch {
     // Provider, D1, and OAuth errors may contain credentials or customer data.
