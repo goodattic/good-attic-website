@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { applyCityMarketCopy } from "./scripts/load-city-market-copy.mjs";
 import { applyHubHotspotCopy } from "./scripts/load-hub-hotspot-copy.mjs";
+import { applyHubHotspotLayout } from "./scripts/hub-hotspot-layout.mjs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { loadWarmGuidePackage } from "./scripts/load-warm-guide-copy.mjs";
@@ -12395,7 +12396,7 @@ async function main() {
   for (const page of pagesToGenerate) {
     const outPath = path.join(__dirname, pageFilePath(page.url));
     await mkdir(path.dirname(outPath), { recursive: true });
-    await writeFile(outPath, applyHubHotspotCopy(applyCityMarketCopy(renderPage(page), page.url), page.url));
+    await writeFile(outPath, applyHubHotspotLayout(applyHubHotspotCopy(applyCityMarketCopy(renderPage(page), page.url), page.url), page.url));
   }
 
   await writeFile(path.join(__dirname, "seo-wave1-page-data.json"), JSON.stringify(pages, null, 2));

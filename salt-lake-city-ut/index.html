@@ -44,6 +44,32 @@
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Service","@id":"https://goodattic.energy/salt-lake-city-ut/#service-area","name":"Attic Services in Salt Lake City, UT","serviceType":"Attic insulation and attic services","description":"In Salt Lake City, attic problems usually show up as hot upstairs rooms in summer, expensive heating bills in winter, or old insulation that is dusty, dirty, or no longer doing its job. Good Attic helps homeowners solve those problems with attic insulation, insulation removal, attic pest remediation, attic fans, and attic air sealing.","provider":{"@id":"https://goodattic.energy/#organization"},"areaServed":{"@type":"AdministrativeArea","name":"Salt Lake City, UT"},"availableChannel":{"@type":"ServiceChannel","servicePhone":{"@type":"ContactPoint","telephone":"385-336-4442","contactType":"customer service","areaServed":"Salt Lake City, UT"}},"url":"https://goodattic.energy/salt-lake-city-ut/"}</script>
   
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://goodattic.energy/"},{"@type":"ListItem","position":2,"name":"Locations","item":"https://goodattic.energy/locations/"},{"@type":"ListItem","position":3,"name":"Salt Lake City, UT","item":"https://goodattic.energy/salt-lake-city-ut/"}]}</script>
+  <style id="hub-hotspot-positioning">
+    @media (max-width: 1120px) {
+      .attic-map .house-3d { container-type: inline-size; }
+      .attic-map .hotspot { --panel-width: 250px; }
+      .attic-map .hotspot-card {
+        left: clamp(calc(12px - var(--hotspot-offset)), calc(13px - var(--panel-width) / 2), calc(100cqw - 12px - var(--hotspot-offset) - var(--panel-width)));
+        right: auto;
+        --bubble-x: 0px;
+      }
+      .attic-map .hotspot--insulation { --hotspot-offset: 51cqw; }
+      .attic-map .hotspot--insulation-depth { --hotspot-offset: 57cqw; }
+      .attic-map .hotspot--insulation-edge { --hotspot-offset: 31cqw; }
+      .attic-map .hotspot--air { --hotspot-offset: 43cqw; }
+      .attic-map .hotspot--sanitize { --hotspot-offset: 62cqw; }
+      .attic-map .hotspot--ventilation { --hotspot-offset: 76cqw; }
+    }
+    @media (max-width: 640px) {
+      .attic-map .hotspot { --panel-width: min(226px, 74vw); }
+      .attic-map .hotspot--insulation { --hotspot-offset: 49cqw; }
+      .attic-map .hotspot--insulation-depth { --hotspot-offset: 50cqw; }
+      .attic-map .hotspot--insulation-edge { --hotspot-offset: 24cqw; }
+      .attic-map .hotspot--air { --hotspot-offset: 31cqw; }
+      .attic-map .hotspot--sanitize { --hotspot-offset: 61cqw; }
+      .attic-map .hotspot--ventilation { --hotspot-offset: 78cqw; }
+    }
+  </style>
 </head>
 <body>
   
