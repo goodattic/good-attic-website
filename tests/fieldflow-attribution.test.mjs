@@ -4,6 +4,7 @@ import { afterEach, test } from "node:test";
 import { _private as leads } from "../functions/api/leads.js";
 import {
   buildAngiAttribution,
+  buildFieldflowWireRecord,
   buildWebsiteAttribution,
   submitFieldflowAttribution,
 } from "../server/fieldflow-attribution.js";
@@ -136,6 +137,129 @@ test("does not forward stale paid markers that were classified Organic Online", 
   assert.equal(record.utm_campaign, "old-campaign");
 });
 
+const auditNow = Date.parse("2026-09-08T18:00:00Z");
+const auditJobber = { request_id: "request-local-audit" };
+
+function classifiedRecord(payload) {
+  const source = leads.classifyWebsiteLeadSource(payload, auditNow);
+  const lead = websiteLead(source);
+  return {
+    source,
+    record: buildWebsiteAttribution(payload, lead, auditJobber),
+    ghl: leads.buildGhlLead(payload, lead, auditJobber),
+  };
+}
+
+function returningPayload(prefix = "paid_touch") {
+  return {
+    attribution_captured_at: new Date(auditNow).toISOString(),
+    ad_landing_page: "https://goodattic.energy/?utm_source=google&utm_medium=organic&utm_campaign=unrelated-return",
+    ad_referrer: "https://www.google.com/search?q=private",
+    [`${prefix}_captured_at`]: new Date(auditNow - 86400000).toISOString(),
+    [`${prefix}_landing_page`]: "https://goodattic.energy/salt-lake-city-ut/",
+    [`${prefix}_referrer`]: "https://www.google.com/",
+  };
+}
+
+for (const prefix of ["paid_touch", "first_touch"]) {
+  for (const clickField of ["gclid", "gbraid", "wbraid"]) {
+    for (const inUrl of [false, true]) {
+      test(`preserves ${prefix} ${clickField} from ${inUrl ? "URL" : "field"} after an organic return`, () => {
+        const payload = returningPayload(prefix);
+        const click = `LOCAL_ONLY_${prefix}_${clickField}`;
+        if (inUrl) {
+          payload[`${prefix}_landing_page`] += `?${clickField}=${click}&utm_campaign=paid-original`;
+        } else {
+          payload[`${prefix}_${clickField}`] = click;
+          payload[`${prefix}_utm_campaign`] = "paid-original";
+        }
+        const original = structuredClone(payload);
+        const { source, record, ghl } = classifiedRecord(payload);
+        assert.equal(source.reason, `${prefix}_${clickField}`);
+        assert.equal(record[clickField], click);
+        assert.equal(record.utm_campaign, "paid-original");
+        assert.equal(record.utm_medium, undefined);
+        assert.equal(ghl[clickField], click);
+        assert.equal(ghl.utm_campaign, "paid-original");
+        assert.equal(ghl.utm_medium, "");
+        assert.equal(ghl.attribution_captured_at, payload[`${prefix}_captured_at`]);
+        assert.equal(ghl.ad_landing_page, payload[`${prefix}_landing_page`]);
+        assert.deepEqual(payload, original);
+      });
+    }
+  }
+}
+
+test("never fills missing saved-touch fields from the current or first visit", () => {
+  const payload = {
+    ...returningPayload(),
+    paid_touch_gclid: "LOCAL_ONLY_SAVED_CLICK",
+    first_touch_utm_campaign: "unrelated-first",
+    utm_id: "unrelated-id",
+    utm_term: "unrelated-keyword",
+    utm_content: "unrelated-ad",
+    wbraid: "LOCAL_ONLY_STALE_CURRENT",
+    attribution_captured_at: new Date(auditNow - 91 * 86400000).toISOString(),
+  };
+  delete payload.paid_touch_referrer;
+  const { record, ghl } = classifiedRecord(payload);
+  assert.equal(record.gclid, payload.paid_touch_gclid);
+  assert.equal(record.utm_campaign, undefined);
+  assert.equal(record.referrer, undefined);
+  assert.equal(record.wbraid, undefined);
+  for (const field of ["utm_campaign", "utm_id", "utm_term", "utm_content", "ad_referrer", "wbraid"]) {
+    assert.equal(ghl[field], "", field);
+  }
+});
+
+test("uses a newer fresh paid visit rather than the saved older paid visit", () => {
+  const payload = {
+    ...returningPayload(),
+    ad_landing_page: "https://goodattic.energy/?gclid=LOCAL_NEW_PAID&utm_campaign=new-paid",
+    paid_touch_gclid: "LOCAL_OLDER_PAID",
+    paid_touch_utm_campaign: "older-paid",
+  };
+  const { source, record } = classifiedRecord(payload);
+  assert.equal(source.reason, "gclid");
+  assert.equal(record.gclid, "LOCAL_NEW_PAID");
+  assert.equal(record.utm_campaign, "new-paid");
+});
+
+for (const ageDays of [91, -1]) {
+  test(`rejects saved paid evidence with invalid age ${ageDays} days`, () => {
+    const payload = {
+      ...returningPayload(),
+      paid_touch_gclid: "LOCAL_INVALID_AGE",
+      paid_touch_captured_at: new Date(auditNow - ageDays * 86400000).toISOString(),
+    };
+    const { source, record } = classifiedRecord(payload);
+    assert.equal(source.key, "website");
+    assert.equal(record.gclid, undefined);
+  });
+}
+
+test("retains saved paid UTMs without inventing a Google click ID", () => {
+  const { source, record } = classifiedRecord({
+    ...returningPayload(),
+    paid_touch_utm_source: "google",
+    paid_touch_utm_medium: "cpc",
+    paid_touch_utm_campaign: "paid-utm-only",
+  });
+  assert.equal(source.reason, "paid_touch_google_paid_utm");
+  assert.equal(record.utm_source, "google");
+  assert.equal(record.utm_medium, "cpc");
+  assert.equal(record.utm_campaign, "paid-utm-only");
+  assert.equal(record.gclid, undefined);
+});
+
+test("missing attribution does not acquire paid markers", () => {
+  const { source, record } = classifiedRecord({});
+  assert.equal(source.key, "website");
+  assert.equal(source.reason, "missing_or_stale_attribution");
+  assert.equal(record.gclid, undefined);
+  assert.equal(record.utm_source, undefined);
+});
+
 test("builds an Angi record with exact Jobber and provider identifiers", () => {
   assert.deepEqual(
     buildAngiAttribution({
@@ -187,6 +311,41 @@ test("selects the exact Fieldflow endpoint and secret for each market", async ()
       ["https://fieldflow.example.test/ingest/kc", "Bearer kc-secret"],
     ],
   );
+  assert.ok(calls.every(({ options }) => JSON.parse(options.body).schema_version === "2026-07-31"));
+  assert.equal(record.schema_version, "2026-09-01");
+});
+
+test("adapts the wire contract without erasing the richer audit record", () => {
+  const record = {
+    schema_version: "2026-09-01",
+    jobber_request_id: "local-only",
+    lead_source: "Organic Online",
+    source_key: "website",
+    source_detail: "ai_referral",
+    source_reason: "self_reported_ai_chatgpt",
+    self_reported_source: "ai_search",
+    self_reported_source_detail: "chatgpt",
+  };
+  const original = structuredClone(record);
+  const wire = buildFieldflowWireRecord(record);
+  assert.equal(wire.schema_version, "2026-07-31");
+  assert.equal(wire.source_detail, "organic_online");
+  assert.equal(wire.source_reason, record.source_reason);
+  assert.equal(wire.self_reported_source, undefined);
+  assert.equal(wire.self_reported_source_detail, undefined);
+  assert.deepEqual(record, original);
+});
+
+test("accepts existing July records and rejects unknown contract versions without transmission", async () => {
+  const record = { schema_version: "2026-07-31", source_reason: "test" };
+  assert.deepEqual(buildFieldflowWireRecord(record), record);
+  globalThis.fetch = async () => { throw Error("must not transmit"); };
+  const result = await submitFieldflowAttribution({
+    FIELDFLOW_ATTRIBUTION_BASE_URL: "https://fieldflow.example.test/ingest",
+    FIELDFLOW_ATTRIBUTION_TOKEN_SLC: "slc-secret",
+  }, "ut", { schema_version: "unknown" });
+  assert.equal(result.reason, "unsupported_attribution_schema");
+  assert.equal(result.attempts, 0);
 });
 
 test("fails open for unsupported markets, missing config, and receiver rejection", async () => {
@@ -200,7 +359,7 @@ test("fails open for unsupported markets, missing config, and receiver rejection
   const rejected = await submitFieldflowAttribution({
     FIELDFLOW_ATTRIBUTION_BASE_URL: "https://fieldflow.example.test/ingest",
     FIELDFLOW_ATTRIBUTION_TOKEN_SLC: "slc-secret",
-  }, "ut", {});
+  }, "ut", { schema_version: "2026-09-01" });
   assert.deepEqual(rejected, {
     ok: false,
     attempts: 1,

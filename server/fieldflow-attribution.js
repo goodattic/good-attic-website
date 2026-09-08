@@ -1,4 +1,5 @@
 const SCHEMA_VERSION = "2026-09-01";
+const FIELDFLOW_WIRE_VERSION = "2026-07-31";
 const MAX_ATTEMPTS = 3;
 
 const MARKET_ROUTES = {
@@ -29,16 +30,16 @@ function parseUrl(value) {
   }
 }
 
-function readAttributionSignal(payload, field) {
-  const landing = [
+function readAttributionSignal(payload, field, prefix = "") {
+  const landing = (prefix ? [payload?.[`${prefix}_landing_page`]] : [
     payload?.ad_landing_page,
     payload?.source_url,
     payload?.page_url,
-  ]
+  ])
     .map(parseUrl)
     .find(Boolean);
   return cleanScalar(landing?.searchParams.get(field), 500)
-    || cleanScalar(payload?.[field], 500);
+    || cleanScalar(payload?.[prefix ? `${prefix}_${field}` : field], 500);
 }
 
 function safeReferrerOrigin(value) {
@@ -69,6 +70,15 @@ export function buildWebsiteAttribution(payload, lead, jobber) {
   const verifiedGoogleAds =
     cleanScalar(lead?.source_key, 50) === "google" &&
     cleanScalar(lead?.source_detail, 100) === "google_ads";
+  // Use the whole visit selected by the server, never a saved click ID mixed
+  // with the returning visitor's unrelated campaign or referrer.
+  const reason = cleanScalar(lead?.source_reason, 2000);
+  const prefix = verifiedGoogleAds && reason.startsWith("paid_touch_")
+    ? "paid_touch"
+    : verifiedGoogleAds && reason.startsWith("first_touch_")
+      ? "first_touch"
+      : "";
+  const signal = (field) => readAttributionSignal(payload, field, prefix);
   return compactRecord({
     schema_version: SCHEMA_VERSION,
     jobber_request_id: cleanScalar(jobber?.request_id, 255),
@@ -80,14 +90,16 @@ export function buildWebsiteAttribution(payload, lead, jobber) {
     source_reason: cleanScalar(lead?.source_reason, 2000) || "server_classified",
     self_reported_source: cleanScalar(lead?.self_reported_source, 80),
     self_reported_source_detail: cleanScalar(lead?.self_reported_source_detail, 80),
-    gclid: verifiedGoogleAds ? readAttributionSignal(payload, "gclid") : "",
-    gbraid: verifiedGoogleAds ? readAttributionSignal(payload, "gbraid") : "",
-    wbraid: verifiedGoogleAds ? readAttributionSignal(payload, "wbraid") : "",
-    gad_source: verifiedGoogleAds ? readAttributionSignal(payload, "gad_source") : "",
-    utm_source: verifiedGoogleAds ? readAttributionSignal(payload, "utm_source") : "",
-    utm_medium: verifiedGoogleAds ? readAttributionSignal(payload, "utm_medium") : "",
-    utm_campaign: readAttributionSignal(payload, "utm_campaign"),
-    referrer: safeReferrerOrigin(payload?.ad_referrer || payload?.referrer),
+    gclid: verifiedGoogleAds ? signal("gclid") : "",
+    gbraid: verifiedGoogleAds ? signal("gbraid") : "",
+    wbraid: verifiedGoogleAds ? signal("wbraid") : "",
+    gad_source: verifiedGoogleAds ? signal("gad_source") : "",
+    utm_source: verifiedGoogleAds ? signal("utm_source") : "",
+    utm_medium: verifiedGoogleAds ? signal("utm_medium") : "",
+    utm_campaign: signal("utm_campaign"),
+    referrer: safeReferrerOrigin(prefix
+      ? payload?.[`${prefix}_referrer`]
+      : payload?.ad_referrer || payload?.referrer),
   });
 }
 
@@ -108,6 +120,24 @@ export function buildAngiAttribution(angi, requestId) {
     source_reason: "server_routed_angi_provider",
     request_title: providerLeadId ? `[Angi ${providerLeadId}]` : "",
   });
+}
+
+export function buildFieldflowWireRecord(record) {
+  if (![SCHEMA_VERSION, FIELDFLOW_WIRE_VERSION].includes(record?.schema_version)) {
+    throw new Error("unsupported_attribution_schema");
+  }
+  // The deployed receiver still speaks the July contract. Keep the richer
+  // source record intact for audit; send only fields that receiver accepts.
+  const {
+    self_reported_source,
+    self_reported_source_detail,
+    ...wire
+  } = record;
+  wire.schema_version = FIELDFLOW_WIRE_VERSION;
+  if (wire.source_key === "website" && wire.source_detail === "ai_referral") {
+    wire.source_detail = "organic_online";
+  }
+  return wire;
 }
 
 function wait(milliseconds) {
@@ -137,6 +167,13 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
     };
   }
 
+  let wireRecord;
+  try {
+    wireRecord = buildFieldflowWireRecord(record);
+  } catch {
+    return { ok: false, attempts: 0, status: 0, reason: "unsupported_attribution_schema" };
+  }
+
   let lastStatus = 0;
   let lastReason = "network_error";
   let attempts = 0;
@@ -149,7 +186,7 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(record),
+        body: JSON.stringify(wireRecord),
       });
       lastStatus = response.status;
       if (response.ok) {

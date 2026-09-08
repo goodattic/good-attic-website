@@ -477,8 +477,7 @@ function promoteCanonicalPaidTouch(attribution, lead) {
 
   const promoted = { ...attribution };
   for (const field of ATTRIBUTION_PARAM_FIELDS) {
-    const value = attribution[`${prefix}_${field}`];
-    if (value) promoted[field] = value;
+    promoted[field] = readAttributionSignal(attribution, field, prefix);
   }
 
   for (const [touchField, canonicalField] of [
@@ -487,8 +486,7 @@ function promoteCanonicalPaidTouch(attribution, lead) {
     ["referrer", "ad_referrer"],
     ["captured_at", "attribution_captured_at"],
   ]) {
-    const value = attribution[`${prefix}_${touchField}`];
-    if (value) promoted[canonicalField] = value;
+    promoted[canonicalField] = attribution[`${prefix}_${touchField}`] || "";
   }
 
   return promoted;
