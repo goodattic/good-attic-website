@@ -323,9 +323,11 @@ test("the resource hub and sitemap contain each new route once", async () => {
     (match) => !guides.some((guide) => match[1] === `${guide.slug}/`),
   );
   assert.equal(legacyCards.length, 43);
+  // Includes the approved in-place pest-guide card copy; order and all other
+  // card bytes are independently protected by pest-guide-exact-copy.test.mjs.
   assert.equal(
     createHash("sha256").update(legacyCards.map((match) => match[0]).join("\n")).digest("hex"),
-    "40bf31bff28fa0458202f5eb7a0ba69bd0b8544d0b42e28b4d85765d86f59feb",
+    "2ba22bf00c29e561ec353efd2291a4362c0639be493e66e1c883a9ee96fb23a5",
   );
   assert.equal(legacyCards[23][1], "blown-insulation-vs-rolled-insulation/");
   assert.equal(

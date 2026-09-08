@@ -1,0 +1,47 @@
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": "https://goodattic.energy/resources/when-attic-cleanup-becomes-restoration/#faq",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Does one pest sighting mean the attic needs full remediation?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. A sighting or sound is a reason to inspect, not proof that the insulation is contaminated. The inspection should show whether droppings, urine, nesting material, guano, or other pest debris reached the insulation."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between attic cleanup and full remediation?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Cleanup may address debris on exposed surfaces. Full remediation brings together insulation removal, cleaning, entry-point work, attic preparation, and replacement insulation when the attic needs more than surface cleanup."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does all the old insulation need to come out after pest contamination?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Once contamination is confirmed in attic insulation, Good Attic recommends removing the existing insulation and completing a full remediation—not just cleaning the visible spot. Suspected asbestos or areas that cannot be reached safely need a different plan before work continues."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I add new insulation over the contaminated material?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Adding insulation does not remove the waste, odor sources, or damaged material underneath. Good Attic recommends removing contaminated insulation and preparing the attic before fresh insulation is installed."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can pests return after attic remediation?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "They can. Repairing entry points reduces opportunities to get back in, but new gaps can develop over time. Exterior maintenance and continued pest monitoring still matter. Fresh insulation alone is not a pest barrier."
+      }
+    }
+  ]
+}

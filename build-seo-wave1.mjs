@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import { loadWarmGuidePackage } from "./scripts/load-warm-guide-copy.mjs";
+import { loadPestGuideCopy, pestGuideRoute } from "./scripts/load-pest-guide-copy.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -3253,7 +3254,7 @@ function renderMetaTags(page, currentUrl) {
   <meta property="og:type" content="${escapeHtml(ogType)}">
   <meta property="og:site_name" content="${escapeHtml(site.name)}">
   <meta property="og:image" content="${escapeHtml(absoluteImage)}">
-  <meta property="og:image:alt" content="${escapeHtml(page.h1)}">
+  <meta property="og:image:alt" content="${escapeHtml(page.social_image_alt || page.h1)}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(page.seo_title)}">
   <meta name="twitter:description" content="${escapeHtml(page.meta_description)}">
@@ -4481,9 +4482,9 @@ function renderExactLinkSection(section, currentUrl) {
   return `
     <section class="section">
       <div class="section-heading reveal">
-        <p class="eyebrow">${escapeHtml(section.eyebrow)}</p>
+        ${section.eyebrow ? `<p class="eyebrow">${escapeHtml(section.eyebrow)}</p>` : ""}
         <h2>${escapeHtml(section.heading)}</h2>
-        <p class="section-subcopy">${escapeHtml(section.intro)}</p>
+        ${section.intro ? `<p class="section-subcopy">${escapeHtml(section.intro)}</p>` : ""}
       </div>
       <div class="feature-grid">
         ${section.items
@@ -4497,7 +4498,7 @@ function renderExactLinkSection(section, currentUrl) {
             `,
           )
           .join("")}
-      </div>
+      </div>${section.links ? `\n      <p class="section-subcopy reveal">${renderExactInline(section.links, currentUrl)}</p>` : ""}
     </section>
   `;
 }
@@ -4520,7 +4521,7 @@ function renderExactGuidePage(page, currentUrl) {
         (section) => `
           <section class="section">
             <div class="section-heading reveal">
-              <p class="eyebrow">${escapeHtml(section.eyebrow)}</p>
+              ${section.eyebrow ? `<p class="eyebrow">${escapeHtml(section.eyebrow)}</p>` : ""}
               <h2>${escapeHtml(section.heading)}</h2>
             </div>
             ${renderExactGuideBody(section.markdown, currentUrl)}
@@ -4543,7 +4544,7 @@ function renderExactGuidePage(page, currentUrl) {
 
     <section class="section">
       <div class="section-heading reveal">
-        <p class="eyebrow">${escapeHtml(copy.faq.eyebrow)}</p>
+        ${copy.faq.eyebrow ? `<p class="eyebrow">${escapeHtml(copy.faq.eyebrow)}</p>` : ""}
         <h2>${escapeHtml(copy.faq.heading)}</h2>
       </div>
       ${renderFaq(copy.faq.items)}
@@ -11252,6 +11253,12 @@ const resourcePages = [
 // These owner-approved guides use first-party service standards alongside the
 // cited public guidance. The citations support safety and sequencing, not the
 // complete Good Attic remediation standard.
+const pestGuideIndex = resourcePages.findIndex((page) => page.url === pestGuideRoute);
+if (pestGuideIndex < 0) throw new Error("Missing existing pest-restoration guide");
+resourcePages[pestGuideIndex] = await loadPestGuideCopy(
+  path.join(__dirname, "content", "pest-guide"), resourcePages[pestGuideIndex],
+);
+
 const warmGuidePackage = await loadWarmGuidePackage(path.join(__dirname, "content", "warm-guides"));
 const fourGuideAuthorityClusterPages = warmGuidePackage.pages.map(buildResourcePage);
 
@@ -11606,9 +11613,9 @@ function renderCorePage(page, currentUrl) {
             .filter((resource) => !resource.market && resource.include_on_services_hub !== false)
             .map((resource) => ({
             url: resource.url,
-            title: resource.h1,
+            title: resource.services_hub_card?.title || resource.h1,
             kicker: resource.market ? marketBySlug(resource.market)?.shortName || "Resource" : "Resource guide",
-            text: resource.meta_description,
+            text: resource.services_hub_card?.text || resource.meta_description,
             image: resourceFeatureImage(resource),
             alt: resource.h1,
             cta: "Read guide"
@@ -11827,7 +11834,7 @@ function renderCorePage(page, currentUrl) {
               kicker: exactCard?.category || "Decision guide",
               text: exactCard?.text || resource.meta_description,
               image: resourceFeatureImage(resource),
-              alt: exactCard?.title || resource.h1,
+              alt: exactCard?.alt || exactCard?.title || resource.h1,
               cta: exactCard?.cta || "Read guide"
             };
           }),
