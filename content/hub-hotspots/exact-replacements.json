@@ -1,0 +1,341 @@
+{
+  "version": 1,
+  "created": "2026-09-08",
+  "base_commit": "4a4a40e4e76ba970ee97cda911a82ff508ef172f",
+  "base_preview": "https://217093b7.good-attic-website.pages.dev/",
+  "authorization": "Proposal for a non-production completion only; no production changes made.",
+  "scope": {
+    "routes": 3,
+    "hotspot_bodies": 18,
+    "text_nodes": 36,
+    "new_sections": 0,
+    "faq_changes": 0,
+    "global_css_or_js_changes": 0
+  },
+  "entries": [
+    {
+      "route": "/salt-lake-city-ut/",
+      "source_file": "salt-lake-city-ut/index.html",
+      "selector": "section.attic-map button.hotspot--insulation .hotspot-card small",
+      "unchanged_panel_title": "Attic Sanitation",
+      "expected_matches": 1,
+      "before_inner_html": "Attic spaces can be the perfect place to harbor mold, mildew, dust, as well as pest feces, urine, and remains (yuck).<br><br>Getting this stuff removed is only part 1. Good Attic ensures proper, full sanitation of the entire space to fully eliminate contaminants.",
+      "before_paragraphs": [
+        "Attic spaces can be the perfect place to harbor mold, mildew, dust, as well as pest feces, urine, and remains (yuck).",
+        "Getting this stuff removed is only part 1. Good Attic ensures proper, full sanitation of the entire space to fully eliminate contaminants."
+      ],
+      "after_paragraphs": [
+        "Cleaning the attic means dealing with what was left behind—not just covering it up.",
+        "We remove droppings, nests, and debris, then clean the exposed attic and address sanitation and odor before fresh insulation goes in."
+      ],
+      "after_inner_html": "Cleaning the attic means dealing with what was left behind—not just covering it up.<br><br>We remove droppings, nests, and debris, then clean the exposed attic and address sanitation and odor before fresh insulation goes in.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/salt-lake-city-ut/",
+      "source_file": "salt-lake-city-ut/index.html",
+      "selector": "section.attic-map button.hotspot--insulation-depth .hotspot-card small",
+      "unchanged_panel_title": "Insulation Depth",
+      "expected_matches": 1,
+      "before_inner_html": "Most homes have old, broken down, and/or low insulation. This leads to discomfort in the home and hundreds of wasted dollars on utility bills, as well as over-worked HVAC equipment.<br><br>Good Attic uses only the best insulation materials that don't settle, installed to modern ENERGY STAR recommended levels.",
+      "before_paragraphs": [
+        "Most homes have old, broken down, and/or low insulation. This leads to discomfort in the home and hundreds of wasted dollars on utility bills, as well as over-worked HVAC equipment.",
+        "Good Attic uses only the best insulation materials that don't settle, installed to modern ENERGY STAR recommended levels."
+      ],
+      "after_paragraphs": [
+        "More insulation helps most when the attic is ready for it.",
+        "We check the old material, air leaks, and coverage before installing blown-in insulation at the depth planned for your home."
+      ],
+      "after_inner_html": "More insulation helps most when the attic is ready for it.<br><br>We check the old material, air leaks, and coverage before installing blown-in insulation at the depth planned for your home.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/salt-lake-city-ut/",
+      "source_file": "salt-lake-city-ut/index.html",
+      "selector": "section.attic-map button.hotspot--insulation-edge .hotspot-card small",
+      "unchanged_panel_title": "Soffit Ventilation",
+      "expected_matches": 1,
+      "before_inner_html": "Old insulation often plugs up vital soffit airflow, leading to extreme attic temps, ice damming, and moisture issues.<br><br>Good Attic installs baffles to protect soffit airflow from present &amp; future blockage.",
+      "before_paragraphs": [
+        "Old insulation often plugs up vital soffit airflow, leading to extreme attic temps, ice damming, and moisture issues.",
+        "Good Attic installs baffles to protect soffit airflow from present & future blockage."
+      ],
+      "after_paragraphs": [
+        "Insulation should help keep your home comfortable without blocking the attic’s airflow.",
+        "Baffles keep insulation away from soffit intake paths so air can enter where it is meant to."
+      ],
+      "after_inner_html": "Insulation should help keep your home comfortable without blocking the attic’s airflow.<br><br>Baffles keep insulation away from soffit intake paths so air can enter where it is meant to.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/salt-lake-city-ut/",
+      "source_file": "salt-lake-city-ut/index.html",
+      "selector": "section.attic-map button.hotspot--air .hotspot-card small",
+      "unchanged_panel_title": "Air Sealing",
+      "expected_matches": 1,
+      "before_inner_html": "The attic floor has gaps where pipes, wires, light fixtures, and other openings can add up to a gaping hole, exchanging conditioned air with dust/contaminants from the attic space.<br><br>Good Attic air seals these gaps with foam to create a singular barrier between the living space and attic.",
+      "before_paragraphs": [
+        "The attic floor has gaps where pipes, wires, light fixtures, and other openings can add up to a gaping hole, exchanging conditioned air with dust/contaminants from the attic space.",
+        "Good Attic air seals these gaps with foam to create a singular barrier between the living space and attic."
+      ],
+      "after_paragraphs": [
+        "Gaps around pipes, wiring, wall tops, and the attic hatch can let indoor air escape.",
+        "We seal the gaps we can reach before new insulation goes in, helping your home hold onto heated or cooled air."
+      ],
+      "after_inner_html": "Gaps around pipes, wiring, wall tops, and the attic hatch can let indoor air escape.<br><br>We seal the gaps we can reach before new insulation goes in, helping your home hold onto heated or cooled air.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/salt-lake-city-ut/",
+      "source_file": "salt-lake-city-ut/index.html",
+      "selector": "section.attic-map button.hotspot--sanitize .hotspot-card small",
+      "unchanged_panel_title": "Insulation Removal",
+      "expected_matches": 1,
+      "before_inner_html": "Between deteriorating insulation, moisture issues, and pests making themselves at home, attics get pretty dusty and gross.<br><br>Good Attic specializes in professional, safe attic insulation removal &amp; disposal techniques using a HEPA vacuum setup, ensuring attic contaminants do not enter your living space.",
+      "before_paragraphs": [
+        "Between deteriorating insulation, moisture issues, and pests making themselves at home, attics get pretty dusty and gross.",
+        "Good Attic specializes in professional, safe attic insulation removal & disposal techniques using a HEPA vacuum setup, ensuring attic contaminants do not enter your living space."
+      ],
+      "after_paragraphs": [
+        "When old insulation needs to come out, we protect the attic access and hose route.",
+        "Commercial equipment moves loose insulation into bags outside, opening the attic floor for cleanup, inspection, and preparation."
+      ],
+      "after_inner_html": "When old insulation needs to come out, we protect the attic access and hose route.<br><br>Commercial equipment moves loose insulation into bags outside, opening the attic floor for cleanup, inspection, and preparation.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/salt-lake-city-ut/",
+      "source_file": "salt-lake-city-ut/index.html",
+      "selector": "section.attic-map button.hotspot--ventilation .hotspot-card small",
+      "unchanged_panel_title": "Attic Ventilation",
+      "expected_matches": 1,
+      "before_inner_html": "Under-ventilated attics can easily reach 160+ degrees. That reduces insulation effectiveness, roof life, and invites mold, as well as over-working your A/C unit to keep your top floor cool.<br><br>Good Attic's attic fan solutions address this issue directly, keeping air moving through the attic on autopilot.",
+      "before_paragraphs": [
+        "Under-ventilated attics can easily reach 160+ degrees. That reduces insulation effectiveness, roof life, and invites mold, as well as over-working your A/C unit to keep your top floor cool.",
+        "Good Attic's attic fan solutions address this issue directly, keeping air moving through the attic on autopilot."
+      ],
+      "after_paragraphs": [
+        "If upstairs rooms are uncomfortable, the attic is worth a closer look.",
+        "We check insulation, air leaks, and airflow before recommending whether a solar attic fan fits your home."
+      ],
+      "after_inner_html": "If upstairs rooms are uncomfortable, the attic is worth a closer look.<br><br>We check insulation, air leaks, and airflow before recommending whether a solar attic fan fits your home.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/st-louis-mo/",
+      "source_file": "st-louis-mo/index.html",
+      "selector": "section.attic-map button.hotspot--insulation .hotspot-card small",
+      "unchanged_panel_title": "Attic Sanitation",
+      "expected_matches": 1,
+      "before_inner_html": "Attic spaces can be the perfect place to harbor mold, mildew, dust, as well as pest feces, urine, and remains (yuck).<br><br>Getting this stuff removed is only part 1. Good Attic ensures proper, full sanitation of the entire space to fully eliminate contaminants.",
+      "before_paragraphs": [
+        "Attic spaces can be the perfect place to harbor mold, mildew, dust, as well as pest feces, urine, and remains (yuck).",
+        "Getting this stuff removed is only part 1. Good Attic ensures proper, full sanitation of the entire space to fully eliminate contaminants."
+      ],
+      "after_paragraphs": [
+        "Cleaning the attic means dealing with what was left behind—not just covering it up.",
+        "We remove droppings, nests, and debris, then clean the exposed attic and address sanitation and odor before fresh insulation goes in."
+      ],
+      "after_inner_html": "Cleaning the attic means dealing with what was left behind—not just covering it up.<br><br>We remove droppings, nests, and debris, then clean the exposed attic and address sanitation and odor before fresh insulation goes in.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/st-louis-mo/",
+      "source_file": "st-louis-mo/index.html",
+      "selector": "section.attic-map button.hotspot--insulation-depth .hotspot-card small",
+      "unchanged_panel_title": "Insulation Depth",
+      "expected_matches": 1,
+      "before_inner_html": "Most homes have old, broken down, and/or low insulation. This leads to discomfort in the home and hundreds of wasted dollars on utility bills, as well as over-worked HVAC equipment.<br><br>Good Attic uses only the best insulation materials that don't settle, installed to modern ENERGY STAR recommended levels.",
+      "before_paragraphs": [
+        "Most homes have old, broken down, and/or low insulation. This leads to discomfort in the home and hundreds of wasted dollars on utility bills, as well as over-worked HVAC equipment.",
+        "Good Attic uses only the best insulation materials that don't settle, installed to modern ENERGY STAR recommended levels."
+      ],
+      "after_paragraphs": [
+        "More insulation helps most when the attic is ready for it.",
+        "We check the old material, air leaks, and coverage before installing blown-in insulation at the depth planned for your home."
+      ],
+      "after_inner_html": "More insulation helps most when the attic is ready for it.<br><br>We check the old material, air leaks, and coverage before installing blown-in insulation at the depth planned for your home.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/st-louis-mo/",
+      "source_file": "st-louis-mo/index.html",
+      "selector": "section.attic-map button.hotspot--insulation-edge .hotspot-card small",
+      "unchanged_panel_title": "Soffit Ventilation",
+      "expected_matches": 1,
+      "before_inner_html": "Old insulation often plugs up vital soffit airflow, leading to extreme attic temps, ice damming, and moisture issues.<br><br>Good Attic installs baffles to protect soffit airflow from present &amp; future blockage.",
+      "before_paragraphs": [
+        "Old insulation often plugs up vital soffit airflow, leading to extreme attic temps, ice damming, and moisture issues.",
+        "Good Attic installs baffles to protect soffit airflow from present & future blockage."
+      ],
+      "after_paragraphs": [
+        "Insulation should help keep your home comfortable without blocking the attic’s airflow.",
+        "Baffles keep insulation away from soffit intake paths so air can enter where it is meant to."
+      ],
+      "after_inner_html": "Insulation should help keep your home comfortable without blocking the attic’s airflow.<br><br>Baffles keep insulation away from soffit intake paths so air can enter where it is meant to.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/st-louis-mo/",
+      "source_file": "st-louis-mo/index.html",
+      "selector": "section.attic-map button.hotspot--air .hotspot-card small",
+      "unchanged_panel_title": "Air Sealing",
+      "expected_matches": 1,
+      "before_inner_html": "The attic floor has gaps where pipes, wires, light fixtures, and other openings can add up to a gaping hole, exchanging conditioned air with dust/contaminants from the attic space.<br><br>Good Attic air seals these gaps with foam to create a singular barrier between the living space and attic.",
+      "before_paragraphs": [
+        "The attic floor has gaps where pipes, wires, light fixtures, and other openings can add up to a gaping hole, exchanging conditioned air with dust/contaminants from the attic space.",
+        "Good Attic air seals these gaps with foam to create a singular barrier between the living space and attic."
+      ],
+      "after_paragraphs": [
+        "Gaps around pipes, wiring, wall tops, and the attic hatch can let indoor air escape.",
+        "We seal the gaps we can reach before new insulation goes in, helping your home hold onto heated or cooled air."
+      ],
+      "after_inner_html": "Gaps around pipes, wiring, wall tops, and the attic hatch can let indoor air escape.<br><br>We seal the gaps we can reach before new insulation goes in, helping your home hold onto heated or cooled air.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/st-louis-mo/",
+      "source_file": "st-louis-mo/index.html",
+      "selector": "section.attic-map button.hotspot--sanitize .hotspot-card small",
+      "unchanged_panel_title": "Insulation Removal",
+      "expected_matches": 1,
+      "before_inner_html": "Between deteriorating insulation, moisture issues, and pests making themselves at home, attics get pretty dusty and gross.<br><br>Good Attic specializes in professional, safe attic insulation removal &amp; disposal techniques using a HEPA vacuum setup, ensuring attic contaminants do not enter your living space.",
+      "before_paragraphs": [
+        "Between deteriorating insulation, moisture issues, and pests making themselves at home, attics get pretty dusty and gross.",
+        "Good Attic specializes in professional, safe attic insulation removal & disposal techniques using a HEPA vacuum setup, ensuring attic contaminants do not enter your living space."
+      ],
+      "after_paragraphs": [
+        "When old insulation needs to come out, we protect the attic access and hose route.",
+        "Commercial equipment moves loose insulation into bags outside, opening the attic floor for cleanup, inspection, and preparation."
+      ],
+      "after_inner_html": "When old insulation needs to come out, we protect the attic access and hose route.<br><br>Commercial equipment moves loose insulation into bags outside, opening the attic floor for cleanup, inspection, and preparation.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/st-louis-mo/",
+      "source_file": "st-louis-mo/index.html",
+      "selector": "section.attic-map button.hotspot--ventilation .hotspot-card small",
+      "unchanged_panel_title": "Attic Ventilation",
+      "expected_matches": 1,
+      "before_inner_html": "Under-ventilated attics can easily reach 160+ degrees. That reduces insulation effectiveness, roof life, and invites mold, as well as over-working your A/C unit to keep your top floor cool.<br><br>Good Attic's attic fan solutions address this issue directly, keeping air moving through the attic on autopilot.",
+      "before_paragraphs": [
+        "Under-ventilated attics can easily reach 160+ degrees. That reduces insulation effectiveness, roof life, and invites mold, as well as over-working your A/C unit to keep your top floor cool.",
+        "Good Attic's attic fan solutions address this issue directly, keeping air moving through the attic on autopilot."
+      ],
+      "after_paragraphs": [
+        "If upstairs rooms are uncomfortable, the attic is worth a closer look.",
+        "We check insulation, air leaks, and airflow before recommending whether a solar attic fan fits your home."
+      ],
+      "after_inner_html": "If upstairs rooms are uncomfortable, the attic is worth a closer look.<br><br>We check insulation, air leaks, and airflow before recommending whether a solar attic fan fits your home.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/kansas-city-mo/",
+      "source_file": "kansas-city-mo/index.html",
+      "selector": "section.attic-map button.hotspot--insulation .hotspot-card small",
+      "unchanged_panel_title": "Attic Sanitation",
+      "expected_matches": 1,
+      "before_inner_html": "Attic spaces can be the perfect place to harbor mold, mildew, dust, as well as pest feces, urine, and remains (yuck).<br><br>Getting this stuff removed is only part 1. Good Attic ensures proper, full sanitation of the entire space to fully eliminate contaminants.",
+      "before_paragraphs": [
+        "Attic spaces can be the perfect place to harbor mold, mildew, dust, as well as pest feces, urine, and remains (yuck).",
+        "Getting this stuff removed is only part 1. Good Attic ensures proper, full sanitation of the entire space to fully eliminate contaminants."
+      ],
+      "after_paragraphs": [
+        "Cleaning the attic means dealing with what was left behind—not just covering it up.",
+        "We remove droppings, nests, and debris, then clean the exposed attic and address sanitation and odor before fresh insulation goes in."
+      ],
+      "after_inner_html": "Cleaning the attic means dealing with what was left behind—not just covering it up.<br><br>We remove droppings, nests, and debris, then clean the exposed attic and address sanitation and odor before fresh insulation goes in.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/kansas-city-mo/",
+      "source_file": "kansas-city-mo/index.html",
+      "selector": "section.attic-map button.hotspot--insulation-depth .hotspot-card small",
+      "unchanged_panel_title": "Insulation Depth",
+      "expected_matches": 1,
+      "before_inner_html": "Most homes have old, broken down, and/or low insulation. This leads to discomfort in the home and hundreds of wasted dollars on utility bills, as well as over-worked HVAC equipment.<br><br>Good Attic uses only the best insulation materials that don't settle, installed to modern ENERGY STAR recommended levels.",
+      "before_paragraphs": [
+        "Most homes have old, broken down, and/or low insulation. This leads to discomfort in the home and hundreds of wasted dollars on utility bills, as well as over-worked HVAC equipment.",
+        "Good Attic uses only the best insulation materials that don't settle, installed to modern ENERGY STAR recommended levels."
+      ],
+      "after_paragraphs": [
+        "More insulation helps most when the attic is ready for it.",
+        "We check the old material, air leaks, and coverage before installing blown-in insulation at the depth planned for your home."
+      ],
+      "after_inner_html": "More insulation helps most when the attic is ready for it.<br><br>We check the old material, air leaks, and coverage before installing blown-in insulation at the depth planned for your home.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/kansas-city-mo/",
+      "source_file": "kansas-city-mo/index.html",
+      "selector": "section.attic-map button.hotspot--insulation-edge .hotspot-card small",
+      "unchanged_panel_title": "Soffit Ventilation",
+      "expected_matches": 1,
+      "before_inner_html": "Old insulation often plugs up vital soffit airflow, leading to extreme attic temps, ice damming, and moisture issues.<br><br>Good Attic installs baffles to protect soffit airflow from present &amp; future blockage.",
+      "before_paragraphs": [
+        "Old insulation often plugs up vital soffit airflow, leading to extreme attic temps, ice damming, and moisture issues.",
+        "Good Attic installs baffles to protect soffit airflow from present & future blockage."
+      ],
+      "after_paragraphs": [
+        "Insulation should help keep your home comfortable without blocking the attic’s airflow.",
+        "Baffles keep insulation away from soffit intake paths so air can enter where it is meant to."
+      ],
+      "after_inner_html": "Insulation should help keep your home comfortable without blocking the attic’s airflow.<br><br>Baffles keep insulation away from soffit intake paths so air can enter where it is meant to.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/kansas-city-mo/",
+      "source_file": "kansas-city-mo/index.html",
+      "selector": "section.attic-map button.hotspot--air .hotspot-card small",
+      "unchanged_panel_title": "Air Sealing",
+      "expected_matches": 1,
+      "before_inner_html": "The attic floor has gaps where pipes, wires, light fixtures, and other openings can add up to a gaping hole, exchanging conditioned air with dust/contaminants from the attic space.<br><br>Good Attic air seals these gaps with foam to create a singular barrier between the living space and attic.",
+      "before_paragraphs": [
+        "The attic floor has gaps where pipes, wires, light fixtures, and other openings can add up to a gaping hole, exchanging conditioned air with dust/contaminants from the attic space.",
+        "Good Attic air seals these gaps with foam to create a singular barrier between the living space and attic."
+      ],
+      "after_paragraphs": [
+        "Gaps around pipes, wiring, wall tops, and the attic hatch can let indoor air escape.",
+        "We seal the gaps we can reach before new insulation goes in, helping your home hold onto heated or cooled air."
+      ],
+      "after_inner_html": "Gaps around pipes, wiring, wall tops, and the attic hatch can let indoor air escape.<br><br>We seal the gaps we can reach before new insulation goes in, helping your home hold onto heated or cooled air.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/kansas-city-mo/",
+      "source_file": "kansas-city-mo/index.html",
+      "selector": "section.attic-map button.hotspot--sanitize .hotspot-card small",
+      "unchanged_panel_title": "Insulation Removal",
+      "expected_matches": 1,
+      "before_inner_html": "Between deteriorating insulation, moisture issues, and pests making themselves at home, attics get pretty dusty and gross.<br><br>Good Attic specializes in professional, safe attic insulation removal &amp; disposal techniques using a HEPA vacuum setup, ensuring attic contaminants do not enter your living space.",
+      "before_paragraphs": [
+        "Between deteriorating insulation, moisture issues, and pests making themselves at home, attics get pretty dusty and gross.",
+        "Good Attic specializes in professional, safe attic insulation removal & disposal techniques using a HEPA vacuum setup, ensuring attic contaminants do not enter your living space."
+      ],
+      "after_paragraphs": [
+        "When old insulation needs to come out, we protect the attic access and hose route.",
+        "Commercial equipment moves loose insulation into bags outside, opening the attic floor for cleanup, inspection, and preparation."
+      ],
+      "after_inner_html": "When old insulation needs to come out, we protect the attic access and hose route.<br><br>Commercial equipment moves loose insulation into bags outside, opening the attic floor for cleanup, inspection, and preparation.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    },
+    {
+      "route": "/kansas-city-mo/",
+      "source_file": "kansas-city-mo/index.html",
+      "selector": "section.attic-map button.hotspot--ventilation .hotspot-card small",
+      "unchanged_panel_title": "Attic Ventilation",
+      "expected_matches": 1,
+      "before_inner_html": "Under-ventilated attics can easily reach 160+ degrees. That reduces insulation effectiveness, roof life, and invites mold, as well as over-working your A/C unit to keep your top floor cool.<br><br>Good Attic's attic fan solutions address this issue directly, keeping air moving through the attic on autopilot.",
+      "before_paragraphs": [
+        "Under-ventilated attics can easily reach 160+ degrees. That reduces insulation effectiveness, roof life, and invites mold, as well as over-working your A/C unit to keep your top floor cool.",
+        "Good Attic's attic fan solutions address this issue directly, keeping air moving through the attic on autopilot."
+      ],
+      "after_paragraphs": [
+        "If upstairs rooms are uncomfortable, the attic is worth a closer look.",
+        "We check insulation, air leaks, and airflow before recommending whether a solar attic fan fits your home."
+      ],
+      "after_inner_html": "If upstairs rooms are uncomfortable, the attic is worth a closer look.<br><br>We check insulation, air leaks, and airflow before recommending whether a solar attic fan fits your home.",
+      "preserve": "Change only the two text nodes; keep the existing two br tags, title, all button attributes, classes and behavior."
+    }
+  ]
+}

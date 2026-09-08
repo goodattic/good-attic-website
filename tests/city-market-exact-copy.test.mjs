@@ -7,6 +7,7 @@ import { parse } from "parse5";
 import { adapter } from "parse5-htmlparser2-tree-adapter";
 import { selectAll } from "css-select";
 import { applyCityMarketCopy, cityMarketCopy, cityMarketFaq } from "../scripts/load-city-market-copy.mjs";
+import { applyHubHotspotCopy } from "../scripts/load-hub-hotspot-copy.mjs";
 
 const root = new URL("../", import.meta.url);
 const base = cityMarketCopy.base_commit;
@@ -77,7 +78,8 @@ test("all exact after strings occupy their approved plain-text selectors", () =>
 
 test("every byte outside the supplied copy nodes and FAQ blocks is unchanged", () => {
   for (const page of pages) {
-    assert.equal(maskApprovedNodes(page.after, page.afterDom, page.changes), maskApprovedNodes(page.before, page.beforeDom, page.changes), page.route);
+    const before = applyHubHotspotCopy(page.before, page.route);
+    assert.equal(maskApprovedNodes(page.after, page.afterDom, page.changes), maskApprovedNodes(before, dom(before), page.changes), page.route);
   }
 });
 
@@ -134,7 +136,7 @@ test("the source transform preserves other routes and rejects a newer conflictin
   const location = node.sourceCodeLocation;
   const conflict = page.before.slice(0, location.startTag.endOffset) + "Newer intentional copy" + page.before.slice(location.endTag.startOffset);
   assert.throws(() => applyCityMarketCopy(conflict, page.route), /newer copy conflicts/);
-  assert.equal(applyCityMarketCopy(page.before, page.route), page.after);
+  assert.equal(applyHubHotspotCopy(applyCityMarketCopy(page.before, page.route), page.route), page.after);
 });
 
 test("only the scoped generator reads private manifests and published output excludes them", async () => {
