@@ -23,15 +23,15 @@ const googleAdsTracking = {
   phoneConversionConfigs: [
     {
       sendTo: "AW-11103039262/_4E-CN313tIaEJ7eq64p",
-      phoneNumber: "385-336-0062"
+      phoneNumber: "385-336-4442"
     },
     {
       sendTo: "AW-11103039262/-7syCOa6-e0aEJ7eq64p",
-      phoneNumber: "314-916-1220"
+      phoneNumber: "314-931-2620"
     },
     {
       sendTo: "AW-11103039262/35RYCNWL7bgcEJ7eq64p",
-      phoneNumber: "816-207-9488"
+      phoneNumber: "816-434-0308"
     }
   ],
   attributionStorageKey: "good_attic_ad_attribution",
@@ -89,16 +89,16 @@ const marketContactNumbers = {
     smsHref: "sms:+18555128842"
   },
   ut: {
-    phoneDisplay: "385-336-0062",
-    smsHref: "sms:+13853360062"
+    phoneDisplay: "385-336-4442",
+    smsHref: "sms:+13853364442"
   },
   mo_stl: {
-    phoneDisplay: "314-916-1220",
-    smsHref: "sms:+13149161220"
+    phoneDisplay: "314-931-2620",
+    smsHref: "sms:+13149312620"
   },
   mo_kc: {
-    phoneDisplay: "816-207-9488",
-    smsHref: "sms:+18162079488"
+    phoneDisplay: "816-434-0308",
+    smsHref: "sms:+18164340308"
   }
 };
 
