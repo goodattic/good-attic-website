@@ -34,6 +34,7 @@ function fixture(options={}) {
     else if(query===_private.MUTATIONS.request){state.requests.push(REQUEST);data.requestCreate={request:{id:REQUEST,client:{id:vars.input.clientId},jobberWebUri:'https://secure.getjobber.com/work_requests/222'},userErrors:[]};}
     else if(query===_private.MUTATIONS.note)data.requestCreateNote={requestNote:{id:NOTE},userErrors:[]};
     else if(query===_private.QUERIES.noteParent)data.request={id:vars.id,client:{id:CLIENT}};
+    else if(query===_private.QUERIES.messageNoteParent)data.request={id:vars.id,createdAt:new Date(NOW).toISOString(),requestStatus:'new',assessment:null,client:{id:CLIENT,isArchived:false}};
     else assert.equal(query,_private.QUERIES.account);
     return {data};
   }};
@@ -117,7 +118,7 @@ test('late call artifacts add one note to the exact parent Request; never create
   const f=fixture();await bodyOf(write,f,f.body);
   const input={...f.identity,operation_id:'artifact-operation',parent_operation_id:f.body.operation_id,request_id:REQUEST,source:{...f.source,event_id:'EVtranscript',transcript:'A delayed transcript.'}};
   const result=await bodyOf(note,f,input);assert.equal(result.operation_state,'completed');assert.equal(result.request_id,REQUEST);assert.deepEqual(f.counts(),{client:1,request:1,note:2});await bodyOf(note,f,input);assert.deepEqual(f.counts(),{client:1,request:1,note:2});
-  for(const patch of [{request_id:enc('Request',9)},{parent_operation_id:'missing'},{source:{...input.source,id:'CAdifferent'}},{source:{...input.source,conversation_id:'CNother'}},{source:{...input.source,type:'message'}}])assert.equal((await bodyOf(note,f,{...input,operation_id:'bad-artifact',...patch})).http,patch.source?.type==='message'?400:409);
+  for(const patch of [{request_id:enc('Request',9)},{parent_operation_id:'missing'},{source:{...input.source,id:'CAdifferent'}},{source:{...input.source,conversation_id:'CNother'}},{source:{...input.source,type:'message'}}])assert.equal((await bodyOf(note,f,{...input,operation_id:'bad-artifact',...patch})).http,409);
 });
 test('read-only status refuses unknown account and missing operations',async()=>{
   const f=fixture();assert.equal((await bodyOf(status,f,{account_id:ACCOUNTS.utah,operation_id:'missing'})).http,404);await bodyOf(write,f,f.body);assert.equal((await bodyOf(status,f,{account_id:ACCOUNTS.stl,operation_id:f.body.operation_id})).http,409);
@@ -261,4 +262,87 @@ test('source photos are real attachments on the same durable note and uncertain 
 test('long transcript remains intact in the note; oversized text is rejected explicitly',async()=>{
  const f=fixture(),transcript='x'.repeat(48000);f.body.source={...f.source,transcript};const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,'completed');assert.ok(f.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message.includes(transcript));
  const tooLong=fixture();assert.equal((await bodyOf(write,tooLong,{...tooLong.body,source:{...tooLong.source,transcript:transcript+'x'}})).http,400);assert.deepEqual(tooLong.counts(),{client:0,request:0,note:0});
+});
+
+function messageNote(f,overrides={}) {
+ return {...f.identity,operation_id:'message-note',parent_operation_id:f.body.operation_id,request_id:REQUEST,
+  source:{type:'message',id:'ACmessage-followup',event_id:'EVmessage-followup',occurred_at:new Date(NOW).toISOString(),conversation_id:f.source.conversation_id,from:PHONE,to:_private.NUMBERS[f.identity.market].number,status:'received',text:'Here are the attic photos.',media:['https://share.quo.com/fixture/followup-photo.jpg'],...overrides}};
+}
+test('fresh message and photo append once to the same original call or text Request with source and phone guards intact',async()=>{
+ for(const type of ['call','message']){
+  const f=fixture();if(type==='message')f.body.source={...f.source,type:'message',status:'received',text:'Initial inquiry'};
+  await bodyOf(write,f,f.body);const input=messageNote(f),result=await bodyOf(note,f,input);
+  assert.equal(result.operation_state,'completed');assert.equal(result.request_id,REQUEST);assert.equal(result.client_id,CLIENT);assert.deepEqual(f.counts(),{client:1,request:1,note:2});
+  const saved=f.calls.filter(c=>c.query===_private.MUTATIONS.note).at(-1);assert.match(saved.vars.input.message,/Good Attic Quo text update/);assert.deepEqual(saved.vars.input.attachments,[{url:input.source.media[0]}]);
+  assert.equal(f.db.raw.prepare('SELECT operation_id FROM quo_intake_source_guards WHERE source_id=?').get(input.source.id).operation_id,input.operation_id);
+  assert.equal(f.db.raw.prepare('SELECT operation_id FROM quo_intake_phone_guards').get().operation_id,f.body.operation_id);
+  await bodyOf(note,f,input);const duplicate=await bodyOf(note,f,{...input,operation_id:'different-note-event',source:{...input.source,event_id:'EVdifferent-delivery'}});assert.equal(duplicate.operation_state,'suppressed');assert.equal(duplicate.reason,'source_already_claimed');assert.deepEqual(f.counts(),{client:1,request:1,note:2});
+ }
+});
+test('a message already used for the original intake cannot become a second note',async()=>{
+ const f=fixture();f.body.source={...f.source,type:'message',status:'received',text:'Original inquiry'};await bodyOf(write,f,f.body);
+ const result=await bodyOf(note,f,{...messageNote(f),source:{...f.body.source,event_id:'EVretry-original'}});assert.equal(result.operation_state,'suppressed');assert.equal(result.reason,'source_already_claimed');assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+});
+test('a photo-only incoming message already read by staff still attaches to the fresh Request',async()=>{
+ const f=fixture();await bodyOf(write,f,f.body);const input=messageNote(f,{text:'',status:'read'});
+ const result=await bodyOf(note,f,input);assert.equal(result.operation_state,'completed');assert.equal(result.request_id,REQUEST);
+ assert.deepEqual(f.calls.filter(c=>c.query===_private.MUTATIONS.note).at(-1).vars.input.attachments,[{url:input.source.media[0]}]);assert.deepEqual(f.counts(),{client:1,request:1,note:2});
+});
+test('message-note source guards serialize concurrent alternate operation IDs without duplicating an MMS',async()=>{
+ const f=fixture();await bodyOf(write,f,f.body);const input=messageNote(f);
+ const results=await Promise.all([bodyOf(note,f,input),bodyOf(note,f,{...input,operation_id:'message-racing-note',source:{...input.source,event_id:'EVanother'}})]);
+ assert.equal(results.filter(r=>r.operation_state==='completed').length,1);assert.equal(results.filter(r=>r.operation_state==='suppressed').length,1);assert.deepEqual(f.counts(),{client:1,request:1,note:2});
+});
+test('message notes require the exact parent identity and a fixed 24-hour window from the original intake',async()=>{
+ for(const scenario of ['before','after','processing_after','conversation','market','request','phone','outbound','no_content','parent_note']){
+  const f=fixture();await bodyOf(write,f,f.body);let input=messageNote(f),time=Date.parse(f.source.occurred_at);
+  if(scenario==='before')input.source.occurred_at=new Date(time-1).toISOString();
+  if(scenario==='after'){f.state.now=time+_private.MESSAGE_NOTE_WINDOW_MS+1;input.source.occurred_at=new Date(f.state.now).toISOString();}
+  if(scenario==='processing_after')f.state.now=time+_private.MESSAGE_NOTE_WINDOW_MS+1;
+  if(scenario==='conversation')input.source.conversation_id='CNother';if(scenario==='market')input={...input,account_id:ACCOUNTS.kc,market:'kc',phone_number_id:_private.NUMBERS.kc.id,source:{...input.source,to:_private.NUMBERS.kc.number}};
+  if(scenario==='request')input.request_id=enc('Request',999);if(scenario==='phone')input.source.from='+18165550199';if(scenario==='outbound')input.source.status='sent';
+  if(scenario==='no_content'){input.source.text=' ';input.source.media=[];}if(scenario==='parent_note')f.db.raw.exec("UPDATE quo_intake_operations SET operation_kind='note'");
+  const result=await bodyOf(note,f,input);assert.ok([400,409].includes(result.http),scenario);assert.deepEqual(f.counts(),{client:1,request:1,note:1},scenario);
+ }
+ const boundary=fixture();await bodyOf(write,boundary,boundary.body);boundary.state.now=Date.parse(boundary.source.occurred_at)+_private.MESSAGE_NOTE_WINDOW_MS;
+ assert.equal((await bodyOf(note,boundary,messageNote(boundary,{occurred_at:new Date(boundary.state.now).toISOString()}))).operation_state,'completed');
+});
+test('message notes require complete fresh history containing only the owned Request and no Jobs, plus unchanged active client phone',async()=>{
+ for(const scenario of ['extra_request','job','shared','archived','phone','history_missing','history_later_page','wrong_account']){
+  const f=fixture({override({query,state,vars,account,connection}){
+   if(!state.followup)return;
+   if(scenario==='phone'&&query===_private.QUERIES.client)return {data:{account:{id:account},client:{id:CLIENT,isArchived:false,phones:[{number:'+18165550199',normalizedPhoneNumber:'+18165550199'}]}}};
+   if(scenario==='history_missing'&&query===_private.QUERIES.jobs)return {data:{account:{id:account},client:{id:CLIENT,isArchived:false}}};
+   if(scenario==='history_later_page'&&query===_private.QUERIES.requests)return {data:{account:{id:account},client:{id:CLIENT,isArchived:false,requests:vars.after?connection([{id:enc('Request',999)}]):{nodes:[{id:REQUEST}],pageInfo:{hasNextPage:true,endCursor:'later'}}}}};
+   if(query===_private.QUERIES.messageNoteParent&&(scenario==='archived'||scenario==='wrong_account'))return {data:{account:{id:scenario==='wrong_account'?ACCOUNTS.kc:account},request:{id:REQUEST,createdAt:new Date(NOW).toISOString(),requestStatus:'new',assessment:null,client:{id:CLIENT,isArchived:scenario==='archived'}}}};
+  }});await bodyOf(write,f,f.body);f.state.followup=true;
+  if(scenario==='extra_request')f.state.requests.push(enc('Request',999));if(scenario==='job')f.state.jobs.push(enc('Job',999));if(scenario==='shared')f.state.clients.push({id:enc('Client',999)});
+  const result=await bodyOf(note,f,messageNote(f));
+  if(['extra_request','job','history_later_page'].includes(scenario)){assert.equal(result.operation_state,'suppressed',scenario);assert.equal(result.reason,'existing_customer_or_request_progressed');}
+  else assert.ok(result.operation_state==='held'||result.http===503,scenario);
+  assert.deepEqual(f.counts(),{client:1,request:1,note:1},scenario);
+ }
+});
+test('message notes stop when the Request progresses, gets an assessment, changes client or disappears during the final recheck',async()=>{
+ for(const scenario of ['scheduled','assessment','client_changed','missing','unknown_assessment']){
+  const f=fixture({override({query,account}){if(query===_private.QUERIES.messageNoteParent)return {data:{account:{id:account},request:scenario==='missing'?null:{id:REQUEST,createdAt:new Date(NOW).toISOString(),requestStatus:scenario==='scheduled'?'assessment_completed':'new',...(scenario!=='unknown_assessment'?{assessment:scenario==='assessment'?{id:enc('Assessment',999)}:null}:{}),client:{id:scenario==='client_changed'?enc('Client',999):CLIENT,isArchived:false}}}};}});
+  await bodyOf(write,f,f.body);const input=messageNote(f),result=await bodyOf(note,f,input);
+  if(['scheduled','assessment'].includes(scenario)){assert.equal(result.operation_state,'suppressed',scenario);assert.equal(result.reason,'existing_customer_or_request_progressed');assert.equal(f.db.raw.prepare('SELECT operation_id FROM quo_intake_source_guards WHERE source_id=?').get(input.source.id).operation_id,input.operation_id);}
+  else {assert.equal(result.operation_state,'held',scenario);assert.equal(result.reason,'intake_message_request_not_new');}
+  assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+ }
+});
+test('uncertain message photo note never replays under the same or another event ID',async()=>{
+ const f=fixture({override({query,state}){if(state.followup&&query===_private.MUTATIONS.note)throw Error('lost photo note response');}});await bodyOf(write,f,f.body);f.state.followup=true;const input=messageNote(f);
+ const result=await bodyOf(note,f,input);assert.equal(result.operation_state,'held');assert.equal(result.uncertain,true);
+ await bodyOf(note,f,input);assert.equal((await bodyOf(note,f,{...input,operation_id:'another-message-note',source:{...input.source,event_id:'EVanother-message'}})).operation_state,'suppressed');assert.deepEqual(f.counts(),{client:1,request:1,note:2});
+});
+test('message notes cannot bypass held parent outcomes, original guard ownership or messaging control commands',async()=>{
+ for(const scenario of ['held_parent','uncertain_parent','source_guard','phone_guard','STOP','HELP','START']){
+  const f=fixture();await bodyOf(write,f,f.body);const input=messageNote(f);
+  if(scenario==='held_parent')f.db.raw.exec("UPDATE quo_intake_operations SET operation_state='held'");if(scenario==='uncertain_parent')f.db.raw.exec('UPDATE quo_intake_operations SET uncertain=1');
+  if(scenario==='source_guard')f.db.raw.exec("UPDATE quo_intake_source_guards SET operation_id='other-owner'");if(scenario==='phone_guard')f.db.raw.exec("UPDATE quo_intake_phone_guards SET operation_id='other-owner'");
+  if(['STOP','HELP','START'].includes(scenario))input.source.text=scenario;
+  const result=await bodyOf(note,f,input);assert.equal(result.http,409,scenario);assert.deepEqual(f.counts(),{client:1,request:1,note:1},scenario);
+ }
 });

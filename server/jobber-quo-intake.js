@@ -6,6 +6,7 @@ import { normalizeAcknowledgementPhone as normalizePhone, canonicalJobberId, sou
 const MAX_BODY_BYTES = 64 * 1024;
 const MAX_PAGES = 20;
 const LEASE_MS = 120_000;
+const MESSAGE_NOTE_WINDOW_MS = 24 * 60 * 60 * 1000;
 const MARKET_INPUT = {utah:'ut', stl:'mo_stl', kc:'mo_kc'};
 const NUMBERS = {
   utah: {id:'PNqw8amabk', number:'+13853364442'},
@@ -35,6 +36,7 @@ const QUERIES = {
   }`,
   account: 'query GoodAtticQuoIntakeAccount {account {id}}',
   noteParent: 'query GoodAtticQuoNoteParent($id:EncodedId!) {account {id} request(id:$id) {id client {id}}}',
+  messageNoteParent: 'query GoodAtticQuoMessageNoteParent($id:EncodedId!) {account {id} request(id:$id) {id createdAt requestStatus assessment {id} client {id isArchived}}}',
 };
 const MUTATIONS = {
   client: `mutation GoodAtticQuoIntakeClient($input:ClientCreateInput!) {
@@ -275,7 +277,7 @@ function newClientNames(source) {
   return {firstName:QUO_UNKNOWN_CLIENT_NAME};
 }
 function noteMessage(row,source) {
-  const lines=[row.operation_kind==='note'?'Good Attic Quo call update':'Good Attic Quo incoming inquiry',
+  const lines=[row.operation_kind==='note'?`Good Attic Quo ${source.type==='message'?'text':'call'} update`:'Good Attic Quo incoming inquiry',
     `Source: Quo ${source.type==='message'?'text':'call'}`,`Operation ID: ${row.operation_id}`,
     `Market: ${row.market}`,`Customer phone: ${row.phone}`,`Market phone: ${source.to}`,`Quo phone number ID: ${row.phone_number_id}`,
     `Quo ${source.type} ID: ${source.id}`,`Quo event ID: ${source.event_id}`,`Quo conversation ID: ${source.conversation_id}`,
@@ -301,6 +303,21 @@ async function createNote(env,deps,token,row,lease) {
     await hold(db,row,lease,error instanceof IntakeError?error.code:'jobber_note_outcome_unknown',nowFor(deps),!(error instanceof IntakeError)||error.uncertain);
   }
   return row;
+}
+async function verifyMessageNoteParent(env,deps,token,route,identity,row) {
+  // The original integration Request must remain the client's only inquiry.
+  // classify exhausts both phone indexes and both histories, then directly
+  // re-reads the client's current phone independently of the search index.
+  const current=await classify(env,deps,token,route,identity,row.client_id);
+  if(current.classification!=='suppressed_existing_customer'||current.client_id!==row.client_id
+    ||!current.request_ids.includes(row.request_id))throw new IntakeError('intake_message_parent_history_changed',409);
+  const data=await read(deps,env,token,route,QUERIES.messageNoteParent,{id:row.request_id});
+  const request=data.request;
+  if(!contacts.sameId(request?.id,row.request_id,'Request')||!contacts.sameId(request?.client?.id,row.client_id,'Client')
+    ||request.client.isArchived!==false||typeof request.requestStatus!=='string'||!request.requestStatus
+    ||(request.assessment!==null&&(!isObject(request.assessment)||typeof request.assessment.id!=='string'||!request.assessment.id))
+    ||!Number.isFinite(Date.parse(request.createdAt)))throw new IntakeError('intake_message_request_not_new',409);
+  return current.request_ids.length===1&&current.job_ids.length===0&&request.requestStatus==='new'&&request.assessment===null;
 }
 async function processIntake(env,deps,token,route,identity,input,row,lease) {
   const db=env.ANGI_ROUTER_DB;
@@ -374,7 +391,7 @@ async function handleWrite(context,deps,kind) {
     if(kind==='intake') {
       if(input.expected_client_id!==null&&!canonical(input.expected_client_id,'Client'))throw new IntakeError('invalid_input',400);
       input.expected_client_id=input.expected_client_id===null?null:canonical(input.expected_client_id,'Client');
-    }else if(!validOperation(input.parent_operation_id)||input.parent_operation_id===input.operation_id||!canonical(input.request_id,'Request')||source.type!=='call')throw new IntakeError('invalid_input',400);
+    }else if(!validOperation(input.parent_operation_id)||input.parent_operation_id===input.operation_id||!canonical(input.request_id,'Request'))throw new IntakeError('invalid_input',400);
     if(context.env.QUO_INTAKE_WRITE_ENABLED!=='true')throw new IntakeError('quo_intake_writes_disabled',503);
     const cutoff=Date.parse(context.env.QUO_INTAKE_LIVE_SINCE);
     if(!Number.isFinite(cutoff)||Date.parse(source.occurred_at)<cutoff)throw new IntakeError('quo_intake_before_cutover',409);
@@ -385,8 +402,18 @@ async function handleWrite(context,deps,kind) {
       const parentSource=parent?JSON.parse(parent.source_json):null;
       if(!parent||parent.operation_kind!=='intake'||!parent.request_id||!parent.jobber_web_uri||!['completed','request_created','held'].includes(parent.operation_state)
         ||IDENTITY_FIELDS.some(key=>parent[key]!==identity[key])||parent.request_id!==canonical(input.request_id,'Request')
-        ||parentSource.type!=='call'||parentSource.id!==source.id||parentSource.conversation_id!==source.conversation_id
-        ||parentSource.occurred_at!==source.occurred_at)throw new IntakeError('intake_note_parent_mismatch',409);
+        ||parentSource.conversation_id!==source.conversation_id)throw new IntakeError('intake_note_parent_mismatch',409);
+      if(source.type==='message') {
+        const parentTime=Date.parse(parentSource.occurred_at),messageTime=Date.parse(source.occurred_at);
+        if(parent.operation_state!=='completed'||parent.uncertain||!['call','message'].includes(parentSource.type)||!Number.isFinite(parentTime)||parentTime<cutoff
+          ||!['received','read'].includes(source.status)||(!source.text?.trim()&&!source.media?.length)
+          ||/^(STOP|STOPALL|UNSUBSCRIBE|CANCEL|END|QUIT|START|UNSTOP|HELP)$/iu.test((source.text||'').trim())
+          ||messageTime<parentTime||messageTime>parentTime+MESSAGE_NOTE_WINDOW_MS
+          ||nowFor(deps)-parentTime>MESSAGE_NOTE_WINDOW_MS)throw new IntakeError('intake_message_outside_new_inquiry',409);
+        const originalSourceGuard=await db.prepare('SELECT operation_id FROM quo_intake_source_guards WHERE account_id = ? AND source_type = ? AND source_id = ?').bind(identity.account_id,parentSource.type,parentSource.id).first();
+        const originalPhoneGuard=await db.prepare('SELECT operation_id FROM quo_intake_phone_guards WHERE account_id = ? AND phone_sha256 = ?').bind(identity.account_id,await sourceHash(identity.phone)).first();
+        if(originalSourceGuard?.operation_id!==parent.operation_id||originalPhoneGuard?.operation_id!==parent.operation_id)throw new IntakeError('intake_message_parent_guard_conflict',409);
+      }else if(parentSource.type!=='call'||parentSource.id!==source.id||parentSource.occurred_at!==source.occurred_at)throw new IntakeError('intake_note_parent_mismatch',409);
     }
     const intent={kind,...identity,source,expected_client_id:input.expected_client_id??null,parent_operation_id:input.parent_operation_id??null,request_id:input.request_id?canonical(input.request_id,'Request'):null};
     const hash=await sourceHash(JSON.stringify(intent)),timestamp=new Date(nowFor(deps)).toISOString();
@@ -397,7 +424,7 @@ async function handleWrite(context,deps,kind) {
     row=await getOperation(db,input.operation_id);
     if(!row||row.intent_sha256!==hash||row.account_id!==identity.account_id)throw new IntakeError('intake_operation_identity_conflict',409);
     if(FINAL_STATES.has(row.operation_state))return json(publicOperation(row,nowFor(deps)));
-    if(kind==='intake') {
+    if(kind==='intake'||source.type==='message') {
       await run(db,'INSERT OR IGNORE INTO quo_intake_source_guards (account_id,source_type,source_id,operation_id,created_at) VALUES (?,?,?,?,?)',[identity.account_id,source.type,source.id,row.operation_id,timestamp]);
       const sourceGuard=await db.prepare('SELECT operation_id FROM quo_intake_source_guards WHERE account_id = ? AND source_type = ? AND source_id = ?').bind(identity.account_id,source.type,source.id).first();
       if(!sourceGuard)throw new IntakeError('intake_checkpoint_failed');
@@ -405,6 +432,8 @@ async function handleWrite(context,deps,kind) {
         await run(db,"UPDATE quo_intake_operations SET operation_state = 'suppressed', reason = 'source_already_claimed', updated_at = ? WHERE operation_id = ? AND operation_state = 'pending'",[timestamp,row.operation_id]);
         return json(publicOperation(await getOperation(db,row.operation_id),nowFor(deps)));
       }
+    }
+    if(kind==='intake') {
       const phoneHash=await sourceHash(identity.phone);
       await run(db,'INSERT OR IGNORE INTO quo_intake_phone_guards (account_id,phone_sha256,operation_id,created_at) VALUES (?,?,?,?)',[identity.account_id,phoneHash,row.operation_id,timestamp]);
       const guard=await db.prepare('SELECT operation_id FROM quo_intake_phone_guards WHERE account_id = ? AND phone_sha256 = ?').bind(identity.account_id,phoneHash).first();
@@ -426,9 +455,20 @@ async function handleWrite(context,deps,kind) {
     const token=await deps.refreshJobberAccessToken(context.env,route);
     await read(deps,context.env,token,route,QUERIES.account);
     if(kind==='note') {
-      const verified=await read(deps,context.env,token,route,QUERIES.noteParent,{id:row.request_id});
-      if(!contacts.sameId(verified.request?.id,row.request_id,'Request')||!contacts.sameId(verified.request?.client?.id,row.client_id,'Client'))await hold(db,row,lease,'intake_note_request_identity_changed',nowFor(deps));
-      else await createNote(context.env,deps,token,row,lease);
+      if(source.type==='message') {
+        try{
+          if(!await verifyMessageNoteParent(context.env,deps,token,route,identity,row)){
+            await checkpoint(db,row,lease,'suppressed',{reason:'existing_customer_or_request_progressed'},nowFor(deps));
+            return json(publicOperation(row,nowFor(deps)));
+          }
+        }
+        catch(error){if(error instanceof IntakeError&&error.status===409){await hold(db,row,lease,error.code,nowFor(deps));return json(publicOperation(row,nowFor(deps)));}throw error;}
+        await createNote(context.env,deps,token,row,lease);
+      }else {
+        const verified=await read(deps,context.env,token,route,QUERIES.noteParent,{id:row.request_id});
+        if(!contacts.sameId(verified.request?.id,row.request_id,'Request')||!contacts.sameId(verified.request?.client?.id,row.client_id,'Client'))await hold(db,row,lease,'intake_note_request_identity_changed',nowFor(deps));
+        else await createNote(context.env,deps,token,row,lease);
+      }
     }
     else await processIntake(context.env,deps,token,route,identity,input,row,lease);
     return json(publicOperation(row,nowFor(deps)));
@@ -500,4 +540,4 @@ export async function handleJobberQuoIntakeResume(context,deps=leadHelpers) {
 }
 export const handleJobberQuoIntakeWrite=(context,deps=leadHelpers)=>handleWrite(context,deps,'intake');
 export const handleJobberQuoIntakeNote=(context,deps=leadHelpers)=>handleWrite(context,deps,'note');
-export const _private={QUERIES,MUTATIONS,MAX_BODY_BYTES,MAX_PAGES,LEASE_MS,NUMBERS,cleanSource,routeInput,classify,publicOperation,noteMessage,newClientNames};
+export const _private={QUERIES,MUTATIONS,MAX_BODY_BYTES,MAX_PAGES,LEASE_MS,MESSAGE_NOTE_WINDOW_MS,NUMBERS,cleanSource,routeInput,classify,publicOperation,noteMessage,newClientNames};
