@@ -4526,6 +4526,14 @@ function renderExactGuidePage(page, currentUrl) {
       )
       .join("")}
 
+    ${renderCtaStrip(currentUrl, copy.closingCta.heading, copy.closingCta.body, {
+      label: copy.closingCta.label,
+      url: copy.closingCta.url,
+      kicker: copy.closingCta.eyebrow,
+      hideSecondary: true,
+      alwaysVisible: true
+    })}
+
     ${renderExactSourceGroups(copy.sourceGroups)}
 
     <section class="section">
@@ -4538,14 +4546,6 @@ function renderExactGuidePage(page, currentUrl) {
 
     ${renderExactLinkSection(copy.related, currentUrl)}
     ${renderExactLinkSection(copy.local, currentUrl)}
-
-    ${renderCtaStrip(currentUrl, copy.closingCta.heading, copy.closingCta.body, {
-      label: copy.closingCta.label,
-      url: copy.closingCta.url,
-      kicker: copy.closingCta.eyebrow,
-      hideSecondary: true,
-      alwaysVisible: true
-    })}
     </div><!-- exact-guide-content:end -->
   `.replace(/[ \t]+$/gm, "");
 }

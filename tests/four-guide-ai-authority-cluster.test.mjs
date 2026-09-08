@@ -147,6 +147,12 @@ function expectedGuideText(guide) {
   for (const section of copy.sections) {
     units.push(section.eyebrow, section.heading, markdownVisibleText(section.markdown));
   }
+  units.push(
+    copy.closingCta.eyebrow,
+    copy.closingCta.heading,
+    copy.closingCta.body,
+    copy.closingCta.label,
+  );
   for (const group of copy.sourceGroups) {
     units.push(group.heading);
     for (const source of group.sources) units.push(source.title, source.text);
@@ -157,12 +163,6 @@ function expectedGuideText(guide) {
     units.push(linkSection.eyebrow, linkSection.heading, linkSection.intro);
     for (const item of linkSection.items) units.push(item.title, item.text, item.cta);
   }
-  units.push(
-    copy.closingCta.eyebrow,
-    copy.closingCta.heading,
-    copy.closingCta.body,
-    copy.closingCta.label,
-  );
   return units.filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
 }
 
@@ -280,7 +280,7 @@ test("source, related-guide, local-service, and CTA destinations match the packa
   }
 });
 
-test("the four final CTA components contain only the approved conversion copy", async () => {
+test("the four CTA components use the approved copy immediately before source cards", async () => {
   for (const guide of guides) {
     const expected = expectedClosingCtas[guide.slug];
     assert.deepEqual(guide.exact_copy.closingCta, expected);
@@ -291,6 +291,8 @@ test("the four final CTA components contain only the approved conversion copy", 
     assert.equal((html.match(/Book My Free Attic Assessment/g) || []).length, 1);
     assert.equal(textContent(cta), [expected.eyebrow, expected.heading, expected.body, expected.label].join(" "));
     assert.ok(cta.includes('<a class="button primary" href="../../contact/">'));
+    assert.ok(html.indexOf(`<h2>${guide.exact_copy.sections.at(-1).heading}</h2>`) < html.indexOf(`<h2>${expected.heading}</h2>`));
+    assert.ok(html.indexOf(`<h2>${expected.heading}</h2>`) < html.indexOf(`<h2>${guide.exact_copy.sourceGroups[0].heading}</h2>`));
   }
 });
 
