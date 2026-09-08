@@ -67,15 +67,35 @@ export async function recordWebsiteAcknowledgementSource(env, lead, jobber, now 
   return { ok: true, recorded: true };
 }
 
-export async function recordWebsiteAcknowledgementSourceSafely(env, lead, jobber, logger = console) {
-  try {
-    return await recordWebsiteAcknowledgementSource(env, lead, jobber);
-  } catch {
-    // Jobber already succeeded: do not turn a provenance failure into a form
-    // error that encourages another client and Request to be created.
-    logger.error('Website acknowledgement proof could not be recorded; acknowledgement remains held.', {
-      submissionId: lead?.submission_id, market: lead?.market_key, requestId: jobber?.request_id,
+export const ACKNOWLEDGEMENT_RECEIPT_WAIT_MS = 2000;
+
+export async function recordWebsiteAcknowledgementSourceSafely(env, lead, jobber, logger = console, waitUntil) {
+  let expired = false;
+  let timer;
+  const report = (reason) => {
+    // Never let logging or raw provider/customer details affect an accepted lead.
+    try { logger.error('Website acknowledgement proof unavailable; eligibility still requires verified proof.', { reason }); } catch {}
+  };
+  const failure = (reason) => ({ ok: false, recorded: false, reason });
+  const operation = Promise.resolve()
+    .then(() => recordWebsiteAcknowledgementSource(env, lead, jobber))
+    .catch(() => {
+      report(expired ? 'acknowledgement_receipt_late_failure' : 'acknowledgement_receipt_unavailable');
+      return failure('acknowledgement_receipt_unavailable');
     });
-    return { ok: false, recorded: false, reason: 'acknowledgement_receipt_unavailable' };
-  }
+  const deadline = new Promise((resolve) => {
+    timer = setTimeout(() => {
+      expired = true;
+      report('acknowledgement_receipt_timeout');
+      // The timer does not cancel D1. Retain and observe the original operation,
+      // without retrying or promising completion beyond the runtime lifetime.
+      try {
+        if (typeof waitUntil === 'function') waitUntil(operation);
+        else report('acknowledgement_receipt_lifetime_unavailable');
+      } catch { report('acknowledgement_receipt_lifetime_unavailable'); }
+      resolve(failure('acknowledgement_receipt_timeout'));
+    }, ACKNOWLEDGEMENT_RECEIPT_WAIT_MS);
+  });
+  try { return await Promise.race([operation, deadline]); }
+  finally { clearTimeout(timer); }
 }

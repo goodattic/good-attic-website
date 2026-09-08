@@ -1303,7 +1303,8 @@ async function submitLeadToGhl(env, ghlLead) {
   };
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
   let payload;
 
   try {
@@ -1330,11 +1331,9 @@ export async function onRequestPost({ request, env }) {
       // manually created Jobber record or its editable marketing source label.
       try {
         const { recordWebsiteAcknowledgementSourceSafely } = await import('../../server/acknowledgement-source.js');
-        await recordWebsiteAcknowledgementSourceSafely(env, lead, jobber);
+        await recordWebsiteAcknowledgementSourceSafely(env, lead, jobber, console, context.waitUntil?.bind(context));
       } catch {
-        console.error('Website acknowledgement proof hook unavailable after Jobber succeeded.', {
-          submissionId: lead.submission_id, market: lead.market_key, requestId: jobber.request_id,
-        });
+        console.error('Website acknowledgement proof hook unavailable after Jobber succeeded.');
       }
     }
     // Attribution is intentionally loaded only for website lead submission.
