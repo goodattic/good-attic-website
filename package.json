@@ -6,5 +6,10 @@
     "build": "node scripts/build-pages-output.mjs",
     "test": "node --test tests/*.test.mjs",
     "check": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "css-select": "7.0.0",
+    "parse5": "8.0.1",
+    "parse5-htmlparser2-tree-adapter": "8.0.1"
   }
 }

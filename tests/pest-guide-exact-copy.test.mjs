@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { cityMarketCopy } from "../scripts/load-city-market-copy.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const parent = "cb2fb2d83e4db12fbc787eda108bed66a08c16ab";
@@ -131,7 +132,7 @@ test("pest-guide chrome, forms, scripts, phones, and all unrelated tracked files
   for (const regex of [/<header[\s\S]*?<\/header>/, /<footer[\s\S]*?<\/footer>/, /<div class="modal"[\s\S]*$/]) assert.equal(html.match(regex)[0], original.match(regex)[0]);
   const scripts = (source) => [...source.matchAll(/<script(?! type="application\/ld\+json")[\s\S]*?<\/script>/g)].map((match) => match[0]);
   assert.deepEqual(scripts(html), scripts(original));
-  const allowed = new Set(["build-seo-wave1.mjs", "seo-wave1-page-data.json", "resources/index.html", file, "tests/four-guide-ai-authority-cluster.test.mjs"]);
+  const allowed = new Set(["build-seo-wave1.mjs", "seo-wave1-page-data.json", "resources/index.html", file, "tests/four-guide-ai-authority-cluster.test.mjs", "package.json", "tests/pest-guide-exact-copy.test.mjs", ...cityMarketCopy.pages.map((page) => page.source_file)]);
   const existing = new Set(git("ls-tree", "-r", "--name-only", parent).trim().split("\n"));
   const changed = git("diff", "--name-only", parent, "--").trim().split("\n").filter(Boolean);
   assert.deepEqual(changed.filter((name) => existing.has(name) && !allowed.has(name)), []);
@@ -158,7 +159,7 @@ test("pest-guide links and assets resolve without adding a second route", async 
 test("full generation remains reproducible and unrelated generated pages are byte-identical", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "good-attic-pest-generator-"));
   try {
-    for (const name of ["build-seo-wave1.mjs", "scripts", "content", "data"]) await cp(path.join(root, name), path.join(temporary, name), { recursive: true });
+    for (const name of ["build-seo-wave1.mjs", "scripts", "content", "data", "node_modules"]) await cp(path.join(root, name), path.join(temporary, name), { recursive: true });
     execFileSync(process.execPath, ["build-seo-wave1.mjs"], { cwd: temporary });
     const generated = git("ls-tree", "-r", "--name-only", parent).trim().split("\n").filter((name) => name.endsWith(".html") && !["index.html", "404.html"].includes(name));
     generated.push("seo-wave1-page-data.json", "sitemap.xml", "robots.txt");
