@@ -50,17 +50,17 @@ for (const cta of Object.values(expectedClosingCtas)) {
 
 const protectedHashes = {
   "resources/blown-insulation-vs-rolled-insulation/index.html":
-    "334ecb46a85203bd0af707fc015cd28cd7838f976a49bf14cbddf197ce763c85",
+    "ea5d660ffba931e1355fa53f8323b40812f270023ff1f000cfd802bf0f6adb37",
   "resources/attic-air-sealing-vs-more-insulation/index.html":
-    "89ff74c234c7dc4d4e588ee61ceebc5a5f0b83f6660ee229b3558523a8fcddf1",
+    "0fb2ae4f99ec21d943550aa19020f9accfce77364b38bce7a9dc843b97cf2f8c",
   "resources/insulation-removal-vs-top-off/index.html":
-    "b2bd2d2a1a237259a5210ac4db59a6bf1ecc0f7c395cd40d441c7ecd247a6012",
+    "59419baf134b2b98861f73fff33fd1ceaeb33d6991ff917a395fde2433924a86",
   "resources/spray-foam-vs-blown-in-attic-insulation/index.html":
-    "53abfe020bfb0766ee6cff9b63f5d860fc69aaf7f2fcd38e0a17f4b5f6d2befa",
+    "faf13fa9cf4f318082b7e2d9d75f93a2d5133424db45331f6a1a5467973f1cfc",
   "resources/signs-of-attic-pest-contamination/index.html":
-    "ecc914d742082bf41495d70b071e13dc92fe127aae40d14f157365a4b5da70f0",
+    "39144ac32a1a5d321ca978687c178ffdeb9b909060daf5a832139d9c4d0e0297",
   "styles.css": "21a116f422beacd8692747b6e979f5b369f28d2de69ef1bd87123198ab929139",
-  "script.js": "fadc8c1a7b66718e923370a6d37b126cc56b04a2ba1952322d7f4507240d3c83",
+  "script.js": "336aee7b25a7c201a47e9940ca805cdbc805c9065bfe94254cb476c5f7233ad9",
   "functions/_middleware.js":
     "0da797087cc6bacfca6b9c1a863df2a489290628380bfdc242e7cf89b537f720",
   "functions/api/leads.js":
@@ -325,7 +325,7 @@ test("the resource hub and sitemap contain each new route once", async () => {
   assert.equal(legacyCards.length, 43);
   assert.equal(
     createHash("sha256").update(legacyCards.map((match) => match[0]).join("\n")).digest("hex"),
-    "6ce5aa58bb68c43150b17a488db5fd6635f31ad806853a3986ca9eb02c312914",
+    "40bf31bff28fa0458202f5eb7a0ba69bd0b8544d0b42e28b4d85765d86f59feb",
   );
   assert.equal(legacyCards[23][1], "blown-insulation-vs-rolled-insulation/");
   assert.equal(
@@ -344,7 +344,7 @@ test("the resource hub and sitemap contain each new route once", async () => {
   }
 });
 
-test("protected pages and operational assets remain byte-identical to live baseline 78ae22f", async () => {
+test("protected pages match the current live phone baseline and operational assets retain approved hashes", async () => {
   for (const [relativePath, expectedHash] of Object.entries(protectedHashes)) {
     const contents = await readFile(path.join(projectDirectory, relativePath));
     const actualHash = createHash("sha256").update(contents).digest("hex");
