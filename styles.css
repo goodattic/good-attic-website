@@ -2462,7 +2462,7 @@ h3 {
     url("assets/backgrounds/market-ambient-2.webp");
 }
 
-:root:has(link[rel="canonical"][href^="https://goodattic.energy/resources/"]:not([href$="/resources/"])) .cta-strip :is(.eyebrow, h2, .section-subcopy) {
+:root:has(link[rel="canonical"][href^="https://goodattic.energy/resources/"]:not([href$="/resources/"])) .cta-strip :is(.eyebrow, h2, .section-subcopy, .button.secondary) {
   color: var(--white);
 }
 
