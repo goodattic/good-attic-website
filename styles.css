@@ -2455,6 +2455,35 @@ h3 {
   max-width: 760px;
 }
 
+/* Scope guide CTA contrast by canonical URL to preserve existing guide HTML. */
+:root:has(link[rel="canonical"][href^="https://goodattic.energy/resources/"]:not([href$="/resources/"])) .cta-strip {
+  background-image:
+    linear-gradient(90deg, rgba(23, 33, 28, 0.94), rgba(23, 33, 28, 0.72)),
+    url("assets/backgrounds/market-ambient-2.webp");
+}
+
+:root:has(link[rel="canonical"][href^="https://goodattic.energy/resources/"]:not([href$="/resources/"])) .cta-strip :is(.eyebrow, h2, .section-subcopy) {
+  color: var(--white);
+}
+
+:root:has(link[rel="canonical"][href^="https://goodattic.energy/resources/"]:not([href$="/resources/"])) .cta-strip .button.primary {
+  min-height: 52px;
+  padding: 12px 20px;
+  color: var(--white);
+  background: var(--green);
+  border: 2px solid var(--white);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+:root:has(link[rel="canonical"][href^="https://goodattic.energy/resources/"]:not([href$="/resources/"])) .cta-strip .button.primary:hover {
+  background: #1d5d49;
+}
+
+:root:has(link[rel="canonical"][href^="https://goodattic.energy/resources/"]:not([href$="/resources/"])) .cta-strip .button.primary:focus-visible {
+  outline: 3px solid var(--white);
+  outline-offset: 4px;
+}
+
 .creators {
   display: grid;
   grid-template-columns: 0.95fr 1fr;

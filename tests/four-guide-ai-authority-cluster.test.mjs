@@ -59,7 +59,7 @@ const protectedHashes = {
     "faf13fa9cf4f318082b7e2d9d75f93a2d5133424db45331f6a1a5467973f1cfc",
   "resources/signs-of-attic-pest-contamination/index.html":
     "39144ac32a1a5d321ca978687c178ffdeb9b909060daf5a832139d9c4d0e0297",
-  "styles.css": "21a116f422beacd8692747b6e979f5b369f28d2de69ef1bd87123198ab929139",
+  "styles.css": "4f0f783d8b91b9da7ce116f90f0a5d967bac6f2b03aa93f0e67039d42a55d900",
   "script.js": "336aee7b25a7c201a47e9940ca805cdbc805c9065bfe94254cb476c5f7233ad9",
   "functions/_middleware.js":
     "0da797087cc6bacfca6b9c1a863df2a489290628380bfdc242e7cf89b537f720",
