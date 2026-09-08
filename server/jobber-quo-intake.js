@@ -6,6 +6,7 @@ import { normalizeAcknowledgementPhone as normalizePhone, canonicalJobberId, sou
 const MAX_BODY_BYTES = 64 * 1024;
 const MAX_PAGES = 20;
 const LEASE_MS = 120_000;
+const MESSAGE_NOTE_WINDOW_MS = 24 * 60 * 60 * 1000;
 const MARKET_INPUT = {utah:'ut', stl:'mo_stl', kc:'mo_kc'};
 const NUMBERS = {
   utah: {id:'PNqw8amabk', number:'+13853364442'},
@@ -30,8 +31,12 @@ const QUERIES = {
       jobs(first:100,after:$after) {nodes {id} pageInfo {hasNextPage endCursor}}
     }
   }`,
+  client: `query GoodAtticQuoIntakeClient($id:EncodedId!) {
+    account {id} client(id:$id) {id isArchived phones {number normalizedPhoneNumber}}
+  }`,
   account: 'query GoodAtticQuoIntakeAccount {account {id}}',
   noteParent: 'query GoodAtticQuoNoteParent($id:EncodedId!) {account {id} request(id:$id) {id client {id}}}',
+  messageNoteParent: 'query GoodAtticQuoMessageNoteParent($id:EncodedId!) {account {id} request(id:$id) {id createdAt requestStatus assessment {id} client {id isArchived}}}',
 };
 const MUTATIONS = {
   client: `mutation GoodAtticQuoIntakeClient($input:ClientCreateInput!) {
@@ -128,7 +133,22 @@ function page(connection,seen) {
   if(next)seen.add(next);
   return next;
 }
-async function classify(env,deps,token,route,identity) {
+async function exactClient(env,deps,token,route,identity,clientId) {
+  const data=await read(deps,env,token,route,QUERIES.client,{id:clientId});
+  const client=data.client;
+  if(!contacts.sameId(client?.id,clientId,'Client')||typeof client.isArchived!=='boolean'
+    ||!Array.isArray(client.phones)||client.phones.length>1000)throw new IntakeError('known_client_unavailable');
+  let matches=false;
+  for(const phone of client.phones) {
+    if(!phone||typeof phone.number!=='string'||(phone.normalizedPhoneNumber!==null&&typeof phone.normalizedPhoneNumber!=='string'))throw new IntakeError('intake_phone_identity_conflict',409);
+    const raw=normalizePhone(phone.number),normalized=normalizePhone(phone.normalizedPhoneNumber);
+    if((phone.number.trim()&&!raw)||(phone.normalizedPhoneNumber&&!normalized)||(raw&&normalized&&raw!==normalized))throw new IntakeError('intake_phone_identity_conflict',409);
+    if((normalized||raw)===identity.phone)matches=true;
+  }
+  if(!matches)throw new IntakeError('known_client_phone_changed',409);
+  return client;
+}
+async function classify(env,deps,token,route,identity,knownClientId=null) {
   const matches=new Map();
   for(const searchTerm of [identity.phone,identity.phone.slice(2)]) {
     let after=null;const seen=new Set();let complete=false;
@@ -145,6 +165,14 @@ async function classify(env,deps,token,route,identity) {
       if(!next){complete=true;break;}after=next;
     }
     if(!complete)throw new IntakeError('intake_history_incomplete');
+  }
+  // A client returned by a completed create can be readable by ID before phone
+  // search indexes it. Only a saved selected/created ID may fill that one gap;
+  // all search pages still run and any other matching client remains a conflict.
+  if(knownClientId&&!matches.has(knownClientId)) {
+    if(!canonical(knownClientId,'Client'))throw new IntakeError('invalid_known_client',409);
+    const client=await exactClient(env,deps,token,route,identity,knownClientId);
+    matches.set(knownClientId,client.isArchived);
   }
   const base={...identity,client_id:null,request_ids:[],job_ids:[],history_complete:true,retryable:false};
   if(matches.size>1)return {...base,classification:'held_shared_phone',reason:'multiple_clients_share_phone'};
@@ -167,6 +195,10 @@ async function classify(env,deps,token,route,identity) {
     if(!complete)throw new IntakeError('intake_history_incomplete');
     base[kind==='requests'?'request_ids':'job_ids']=[...ids];
   }
+  // Reconfirm the actual saved phone after the complete history reads. A phone
+  // search hit alone must not authorize writing after staff change that client.
+  const current=await exactClient(env,deps,token,route,identity,clientId);
+  archived ||= current.isArchived;
   if(base.request_ids.length||base.job_ids.length)return {...base,classification:'suppressed_existing_customer',reason:'prior_request_or_job'};
   if(archived)return {...base,classification:'held_archived_client',reason:'archived_unused_client'};
   return {...base,classification:'eligible_unused_client',reason:'client_has_no_requests_or_jobs'};
@@ -245,13 +277,13 @@ function newClientNames(source) {
   return {firstName:QUO_UNKNOWN_CLIENT_NAME};
 }
 function noteMessage(row,source) {
-  const lines=[row.operation_kind==='note'?'Good Attic Quo call update':'Good Attic Quo incoming inquiry',
+  const lines=[row.operation_kind==='note'?`Good Attic Quo ${source.type==='message'?'text':'call'} update`:'Good Attic Quo incoming inquiry',
     `Source: Quo ${source.type==='message'?'text':'call'}`,`Operation ID: ${row.operation_id}`,
     `Market: ${row.market}`,`Customer phone: ${row.phone}`,`Market phone: ${source.to}`,`Quo phone number ID: ${row.phone_number_id}`,
     `Quo ${source.type} ID: ${source.id}`,`Quo event ID: ${source.event_id}`,`Quo conversation ID: ${source.conversation_id}`,
     `Received: ${source.occurred_at}`,`Status: ${source.status}`];
   if(row.operation_kind==='intake'&&row.classification==='eligible_new_client'
-    &&!source.first_name?.trim()&&!source.last_name?.trim())lines.push('Name not yet collected; New lead is a system placeholder.');
+    &&!source.first_name?.trim()&&!source.last_name?.trim())lines.push('At initial capture: Name not yet collected; New lead is a system placeholder.');
   for(const [key,label] of [['answered_at','Answered'],['completed_at','Completed'],['duration','Duration (seconds)'],['quo_url','Open in Quo'],['text','Customer text'],['summary','Call summary'],['transcript','Call transcript'],['voicemail','Voicemail']]) {
     if(source[key]!=null)lines.push(`${label}: ${source[key]}`);
   }
@@ -262,7 +294,9 @@ async function createNote(env,deps,token,row,lease) {
   const db=env.ANGI_ROUTER_DB;
   await checkpoint(db,row,lease,'note_creating',{},nowFor(deps));
   try {
-    const result=await deps.jobberGraphql(env,token.accessToken,MUTATIONS.note,{requestId:row.request_id,input:{message:noteMessage(row,JSON.parse(row.source_json))}});
+    const source=JSON.parse(row.source_json);
+    const input={message:noteMessage(row,source),...(source.media?.length?{attachments:[...new Set(source.media)].map(url=>({url:safeUrl(url,false)}))}:{})};
+    const result=await deps.jobberGraphql(env,token.accessToken,MUTATIONS.note,{requestId:row.request_id,input});
     const note=mutationData(result,'requestCreateNote','requestNote','RequestNote');
     await checkpoint(db,row,lease,'completed',{note_id:canonical(note.id,'RequestNote'),reason:'intake_recorded'},nowFor(deps));
   }catch(error) {
@@ -270,11 +304,29 @@ async function createNote(env,deps,token,row,lease) {
   }
   return row;
 }
+async function verifyMessageNoteParent(env,deps,token,route,identity,row) {
+  // The original integration Request must remain the client's only inquiry.
+  // classify exhausts both phone indexes and both histories, then directly
+  // re-reads the client's current phone independently of the search index.
+  const current=await classify(env,deps,token,route,identity,row.client_id);
+  if(current.classification!=='suppressed_existing_customer'||current.client_id!==row.client_id
+    ||!current.request_ids.includes(row.request_id))throw new IntakeError('intake_message_parent_history_changed',409);
+  const data=await read(deps,env,token,route,QUERIES.messageNoteParent,{id:row.request_id});
+  const request=data.request;
+  if(!contacts.sameId(request?.id,row.request_id,'Request')||!contacts.sameId(request?.client?.id,row.client_id,'Client')
+    ||request.client.isArchived!==false||typeof request.requestStatus!=='string'||!request.requestStatus
+    ||(request.assessment!==null&&(!isObject(request.assessment)||typeof request.assessment.id!=='string'||!request.assessment.id))
+    ||!Number.isFinite(Date.parse(request.createdAt)))throw new IntakeError('intake_message_request_not_new',409);
+  return current.request_ids.length===1&&current.job_ids.length===0&&request.requestStatus==='new'&&request.assessment===null;
+}
 async function processIntake(env,deps,token,route,identity,input,row,lease) {
   const db=env.ANGI_ROUTER_DB;
   if(row.operation_state==='request_created')return createNote(env,deps,token,row,lease);
   let classification;
-  try{classification=await classify(env,deps,token,route,identity);}catch(error){throw new IntakeError(error instanceof IntakeError?error.code:'jobber_read_failed');}
+  try{classification=await classify(env,deps,token,route,identity,row.client_id);}catch(error){
+    if(error instanceof IntakeError&&error.status===409)return hold(db,row,lease,error.code,nowFor(deps));
+    throw new IntakeError(error instanceof IntakeError?error.code:'jobber_read_failed');
+  }
   if(!classification.classification.startsWith('eligible_')) {
     await checkpoint(db,row,lease,classification.classification.startsWith('suppressed')?'suppressed':'held',
       {classification:row.classification||classification.classification,reason:classification.reason,...(!row.client_id&&classification.client_id?{client_id:classification.client_id}:{})},nowFor(deps));
@@ -309,7 +361,11 @@ async function processIntake(env,deps,token,route,identity,input,row,lease) {
   }
   // A native Angi/website/staff Request could appear while client creation was
   // underway. Recheck the full destination history immediately before creating.
-  const fresh=await classify(env,deps,token,route,identity);
+  let fresh;
+  try{fresh=await classify(env,deps,token,route,identity,row.client_id);}catch(error){
+    if(error instanceof IntakeError&&error.status===409)return hold(db,row,lease,error.code,nowFor(deps));
+    throw error;
+  }
   if(fresh.classification!=='eligible_unused_client'||fresh.client_id!==row.client_id) return hold(db,row,lease,'inquiry_or_identity_changed_before_request',nowFor(deps));
   await checkpoint(db,row,lease,'request_creating',{},nowFor(deps));
   try {
@@ -335,7 +391,7 @@ async function handleWrite(context,deps,kind) {
     if(kind==='intake') {
       if(input.expected_client_id!==null&&!canonical(input.expected_client_id,'Client'))throw new IntakeError('invalid_input',400);
       input.expected_client_id=input.expected_client_id===null?null:canonical(input.expected_client_id,'Client');
-    }else if(!validOperation(input.parent_operation_id)||input.parent_operation_id===input.operation_id||!canonical(input.request_id,'Request')||source.type!=='call')throw new IntakeError('invalid_input',400);
+    }else if(!validOperation(input.parent_operation_id)||input.parent_operation_id===input.operation_id||!canonical(input.request_id,'Request'))throw new IntakeError('invalid_input',400);
     if(context.env.QUO_INTAKE_WRITE_ENABLED!=='true')throw new IntakeError('quo_intake_writes_disabled',503);
     const cutoff=Date.parse(context.env.QUO_INTAKE_LIVE_SINCE);
     if(!Number.isFinite(cutoff)||Date.parse(source.occurred_at)<cutoff)throw new IntakeError('quo_intake_before_cutover',409);
@@ -346,8 +402,18 @@ async function handleWrite(context,deps,kind) {
       const parentSource=parent?JSON.parse(parent.source_json):null;
       if(!parent||parent.operation_kind!=='intake'||!parent.request_id||!parent.jobber_web_uri||!['completed','request_created','held'].includes(parent.operation_state)
         ||IDENTITY_FIELDS.some(key=>parent[key]!==identity[key])||parent.request_id!==canonical(input.request_id,'Request')
-        ||parentSource.type!=='call'||parentSource.id!==source.id||parentSource.conversation_id!==source.conversation_id
-        ||parentSource.occurred_at!==source.occurred_at)throw new IntakeError('intake_note_parent_mismatch',409);
+        ||parentSource.conversation_id!==source.conversation_id)throw new IntakeError('intake_note_parent_mismatch',409);
+      if(source.type==='message') {
+        const parentTime=Date.parse(parentSource.occurred_at),messageTime=Date.parse(source.occurred_at);
+        if(parent.operation_state!=='completed'||parent.uncertain||!['call','message'].includes(parentSource.type)||!Number.isFinite(parentTime)||parentTime<cutoff
+          ||!['received','read'].includes(source.status)||(!source.text?.trim()&&!source.media?.length)
+          ||/^(STOP|STOPALL|UNSUBSCRIBE|CANCEL|END|QUIT|START|UNSTOP|HELP)$/iu.test((source.text||'').trim())
+          ||messageTime<parentTime||messageTime>parentTime+MESSAGE_NOTE_WINDOW_MS
+          ||nowFor(deps)-parentTime>MESSAGE_NOTE_WINDOW_MS)throw new IntakeError('intake_message_outside_new_inquiry',409);
+        const originalSourceGuard=await db.prepare('SELECT operation_id FROM quo_intake_source_guards WHERE account_id = ? AND source_type = ? AND source_id = ?').bind(identity.account_id,parentSource.type,parentSource.id).first();
+        const originalPhoneGuard=await db.prepare('SELECT operation_id FROM quo_intake_phone_guards WHERE account_id = ? AND phone_sha256 = ?').bind(identity.account_id,await sourceHash(identity.phone)).first();
+        if(originalSourceGuard?.operation_id!==parent.operation_id||originalPhoneGuard?.operation_id!==parent.operation_id)throw new IntakeError('intake_message_parent_guard_conflict',409);
+      }else if(parentSource.type!=='call'||parentSource.id!==source.id||parentSource.occurred_at!==source.occurred_at)throw new IntakeError('intake_note_parent_mismatch',409);
     }
     const intent={kind,...identity,source,expected_client_id:input.expected_client_id??null,parent_operation_id:input.parent_operation_id??null,request_id:input.request_id?canonical(input.request_id,'Request'):null};
     const hash=await sourceHash(JSON.stringify(intent)),timestamp=new Date(nowFor(deps)).toISOString();
@@ -358,7 +424,7 @@ async function handleWrite(context,deps,kind) {
     row=await getOperation(db,input.operation_id);
     if(!row||row.intent_sha256!==hash||row.account_id!==identity.account_id)throw new IntakeError('intake_operation_identity_conflict',409);
     if(FINAL_STATES.has(row.operation_state))return json(publicOperation(row,nowFor(deps)));
-    if(kind==='intake') {
+    if(kind==='intake'||source.type==='message') {
       await run(db,'INSERT OR IGNORE INTO quo_intake_source_guards (account_id,source_type,source_id,operation_id,created_at) VALUES (?,?,?,?,?)',[identity.account_id,source.type,source.id,row.operation_id,timestamp]);
       const sourceGuard=await db.prepare('SELECT operation_id FROM quo_intake_source_guards WHERE account_id = ? AND source_type = ? AND source_id = ?').bind(identity.account_id,source.type,source.id).first();
       if(!sourceGuard)throw new IntakeError('intake_checkpoint_failed');
@@ -366,6 +432,8 @@ async function handleWrite(context,deps,kind) {
         await run(db,"UPDATE quo_intake_operations SET operation_state = 'suppressed', reason = 'source_already_claimed', updated_at = ? WHERE operation_id = ? AND operation_state = 'pending'",[timestamp,row.operation_id]);
         return json(publicOperation(await getOperation(db,row.operation_id),nowFor(deps)));
       }
+    }
+    if(kind==='intake') {
       const phoneHash=await sourceHash(identity.phone);
       await run(db,'INSERT OR IGNORE INTO quo_intake_phone_guards (account_id,phone_sha256,operation_id,created_at) VALUES (?,?,?,?)',[identity.account_id,phoneHash,row.operation_id,timestamp]);
       const guard=await db.prepare('SELECT operation_id FROM quo_intake_phone_guards WHERE account_id = ? AND phone_sha256 = ?').bind(identity.account_id,phoneHash).first();
@@ -387,9 +455,20 @@ async function handleWrite(context,deps,kind) {
     const token=await deps.refreshJobberAccessToken(context.env,route);
     await read(deps,context.env,token,route,QUERIES.account);
     if(kind==='note') {
-      const verified=await read(deps,context.env,token,route,QUERIES.noteParent,{id:row.request_id});
-      if(!contacts.sameId(verified.request?.id,row.request_id,'Request')||!contacts.sameId(verified.request?.client?.id,row.client_id,'Client'))await hold(db,row,lease,'intake_note_request_identity_changed',nowFor(deps));
-      else await createNote(context.env,deps,token,row,lease);
+      if(source.type==='message') {
+        try{
+          if(!await verifyMessageNoteParent(context.env,deps,token,route,identity,row)){
+            await checkpoint(db,row,lease,'suppressed',{reason:'existing_customer_or_request_progressed'},nowFor(deps));
+            return json(publicOperation(row,nowFor(deps)));
+          }
+        }
+        catch(error){if(error instanceof IntakeError&&error.status===409){await hold(db,row,lease,error.code,nowFor(deps));return json(publicOperation(row,nowFor(deps)));}throw error;}
+        await createNote(context.env,deps,token,row,lease);
+      }else {
+        const verified=await read(deps,context.env,token,route,QUERIES.noteParent,{id:row.request_id});
+        if(!contacts.sameId(verified.request?.id,row.request_id,'Request')||!contacts.sameId(verified.request?.client?.id,row.client_id,'Client'))await hold(db,row,lease,'intake_note_request_identity_changed',nowFor(deps));
+        else await createNote(context.env,deps,token,row,lease);
+      }
     }
     else await processIntake(context.env,deps,token,route,identity,input,row,lease);
     return json(publicOperation(row,nowFor(deps)));
@@ -410,6 +489,55 @@ async function handleWrite(context,deps,kind) {
     if(row&&lease)try{await run(context.env.ANGI_ROUTER_DB,'UPDATE quo_intake_operations SET lease_token = NULL,lease_expires_at = NULL WHERE operation_id = ? AND lease_token = ?',[row.operation_id,lease]);}catch{}
   }
 }
+/** Explicit operator recovery of a proven partial create, never a new intent. */
+export async function handleJobberQuoIntakeResume(context,deps=leadHelpers) {
+  let row,lease;
+  try {
+    const input=await inputFor(context,[...IDENTITY_FIELDS,'operation_id','expected_client_id']);
+    const {route,identity}=routeInput(input),clientId=canonical(input.expected_client_id,'Client');
+    if(!validOperation(input.operation_id)||!clientId)throw new IntakeError('invalid_input',400);
+    const db=context.env.ANGI_ROUTER_DB;
+    row=await getOperation(db,input.operation_id);
+    if(!row)throw new IntakeError('intake_operation_not_found',404);
+    if(row.operation_kind!=='intake'||IDENTITY_FIELDS.some(key=>row[key]!==identity[key])||row.client_id!==clientId)throw new IntakeError('intake_recovery_identity_conflict',409);
+    if(row.operation_state==='completed')return json(publicOperation(row,nowFor(deps)));
+    // A repeated request during active work is a status read, not another write.
+    if(!FINAL_STATES.has(row.operation_state))return json(publicOperation(row,nowFor(deps)));
+    if(row.operation_state!=='held'||row.reason!=='inquiry_or_identity_changed_before_request'
+      ||row.classification!=='eligible_new_client'||row.uncertain||row.request_id||row.note_id||row.jobber_web_uri)throw new IntakeError('intake_recovery_not_safe',409);
+    if(context.env.QUO_INTAKE_WRITE_ENABLED!=='true')throw new IntakeError('quo_intake_writes_disabled',503);
+    let source;try{source=cleanSource(JSON.parse(row.source_json),identity,nowFor(deps));}catch{throw new IntakeError('intake_recovery_source_invalid',409);}
+    const sourceTime=Date.parse(source.occurred_at),cutoff=Date.parse(context.env.QUO_INTAKE_LIVE_SINCE);
+    if(!Number.isFinite(cutoff)||sourceTime<cutoff||nowFor(deps)-sourceTime>24*60*60*1000)throw new IntakeError('intake_recovery_outside_cutover',409);
+    const original={kind:'intake',...identity,source,expected_client_id:null,parent_operation_id:null,request_id:null};
+    if(await sourceHash(JSON.stringify(original))!==row.intent_sha256)throw new IntakeError('intake_recovery_intent_conflict',409);
+    const sourceGuard=await db.prepare('SELECT operation_id FROM quo_intake_source_guards WHERE account_id = ? AND source_type = ? AND source_id = ?').bind(identity.account_id,source.type,source.id).first();
+    const phoneGuard=await db.prepare('SELECT operation_id FROM quo_intake_phone_guards WHERE account_id = ? AND phone_sha256 = ?').bind(identity.account_id,await sourceHash(identity.phone)).first();
+    if(sourceGuard?.operation_id!==row.operation_id||phoneGuard?.operation_id!==row.operation_id)throw new IntakeError('intake_recovery_guard_conflict',409);
+    lease=crypto.randomUUID();
+    const acquired=await run(db,`UPDATE quo_intake_operations SET lease_token = ?,lease_expires_at = ? WHERE operation_id = ?
+      AND operation_state = 'held' AND reason = 'inquiry_or_identity_changed_before_request' AND classification = 'eligible_new_client'
+      AND client_id = ? AND request_id IS NULL AND note_id IS NULL AND jobber_web_uri IS NULL AND uncertain = 0
+      AND (lease_token IS NULL OR lease_expires_at <= ?)`,[lease,nowFor(deps)+LEASE_MS,row.operation_id,clientId,nowFor(deps)]);
+    if(acquired!==1)return json(publicOperation(await getOperation(db,row.operation_id),nowFor(deps)));
+    row=await getOperation(db,row.operation_id);
+    await checkpoint(db,row,lease,'client_created',{reason:'operator_resume_requested'},nowFor(deps));
+    const token=await deps.refreshJobberAccessToken(context.env,route);
+    await processIntake(context.env,deps,token,route,identity,{expected_client_id:null},row,lease);
+    return json(publicOperation(row,nowFor(deps)));
+  }catch(error) {
+    if(row&&lease)try {
+      const current=await getOperation(context.env.ANGI_ROUTER_DB,row.operation_id);
+      if(current?.lease_token===lease&&WRITE_STATES.has(current.operation_state)) {
+        await hold(context.env.ANGI_ROUTER_DB,current,lease,'jobber_write_outcome_unknown',nowFor(deps),true);
+        return json(publicOperation(current,nowFor(deps)));
+      }
+    }catch{}
+    return errorResponse(error);
+  }finally {
+    if(row&&lease)try{await run(context.env.ANGI_ROUTER_DB,'UPDATE quo_intake_operations SET lease_token = NULL,lease_expires_at = NULL WHERE operation_id = ? AND lease_token = ?',[row.operation_id,lease]);}catch{}
+  }
+}
 export const handleJobberQuoIntakeWrite=(context,deps=leadHelpers)=>handleWrite(context,deps,'intake');
 export const handleJobberQuoIntakeNote=(context,deps=leadHelpers)=>handleWrite(context,deps,'note');
-export const _private={QUERIES,MUTATIONS,MAX_BODY_BYTES,MAX_PAGES,LEASE_MS,NUMBERS,cleanSource,routeInput,classify,publicOperation,noteMessage,newClientNames};
+export const _private={QUERIES,MUTATIONS,MAX_BODY_BYTES,MAX_PAGES,LEASE_MS,MESSAGE_NOTE_WINDOW_MS,NUMBERS,cleanSource,routeInput,classify,publicOperation,noteMessage,newClientNames};

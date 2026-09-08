@@ -4,7 +4,7 @@ import {DatabaseSync} from 'node:sqlite';
 import {resolveAcknowledgementEligibility} from '../server/jobber-acknowledgement-resolver.js';
 import {getJobberOAuthRoute} from '../functions/api/jobber/oauth/config.js';
 import {test} from 'node:test';
-import {handleJobberQuoIntakeResolve as resolve,handleJobberQuoIntakeWrite as write,handleJobberQuoIntakeStatus as status,handleJobberQuoIntakeNote as note,_private} from '../server/jobber-quo-intake.js';
+import {handleJobberQuoIntakeResolve as resolve,handleJobberQuoIntakeWrite as write,handleJobberQuoIntakeStatus as status,handleJobberQuoIntakeNote as note,handleJobberQuoIntakeResume as resume,_private} from '../server/jobber-quo-intake.js';
 const enc=(kind,id)=>btoa(`gid://Jobber/${kind}/${id}`);
 const SECRET='fixture-secret';
 const PHONE='+18165550105';
@@ -28,11 +28,13 @@ function fixture(options={}) {
     if(options.override){const result=await options.override({query,vars,state,calls,connection,account});if(result!==undefined)return result;}
     const data={account:{id:account}};
     if(query===_private.QUERIES.phones)data.clientPhones=connection(state.clients.map(c=>({id:enc('ClientPhoneNumber',1),number:PHONE,normalizedPhoneNumber:PHONE,client:{id:c.id,isArchived:!!c.isArchived},contact:c.contact||null})));
+    else if(query===_private.QUERIES.client){const c=state.clients.find(x=>x.id===vars.id);data.client=c?{id:c.id,isArchived:!!c.isArchived,phones:[{number:PHONE,normalizedPhoneNumber:PHONE}]}:null;}
     else if(query===_private.QUERIES.requests||query===_private.QUERIES.jobs){const kind=query===_private.QUERIES.requests?'requests':'jobs';data.client={id:vars.id,isArchived:false,[kind]:connection(state[kind].map(id=>({id}))) };}
     else if(query===_private.MUTATIONS.client){state.clients.push({id:CLIENT});data.clientCreate={client:{id:CLIENT,phones:[{number:PHONE,normalizedPhoneNumber:PHONE}]},userErrors:[]};}
     else if(query===_private.MUTATIONS.request){state.requests.push(REQUEST);data.requestCreate={request:{id:REQUEST,client:{id:vars.input.clientId},jobberWebUri:'https://secure.getjobber.com/work_requests/222'},userErrors:[]};}
     else if(query===_private.MUTATIONS.note)data.requestCreateNote={requestNote:{id:NOTE},userErrors:[]};
     else if(query===_private.QUERIES.noteParent)data.request={id:vars.id,client:{id:CLIENT}};
+    else if(query===_private.QUERIES.messageNoteParent)data.request={id:vars.id,createdAt:new Date(NOW).toISOString(),requestStatus:'new',assessment:null,client:{id:CLIENT,isArchived:false}};
     else assert.equal(query,_private.QUERIES.account);
     return {data};
   }};
@@ -116,7 +118,7 @@ test('late call artifacts add one note to the exact parent Request; never create
   const f=fixture();await bodyOf(write,f,f.body);
   const input={...f.identity,operation_id:'artifact-operation',parent_operation_id:f.body.operation_id,request_id:REQUEST,source:{...f.source,event_id:'EVtranscript',transcript:'A delayed transcript.'}};
   const result=await bodyOf(note,f,input);assert.equal(result.operation_state,'completed');assert.equal(result.request_id,REQUEST);assert.deepEqual(f.counts(),{client:1,request:1,note:2});await bodyOf(note,f,input);assert.deepEqual(f.counts(),{client:1,request:1,note:2});
-  for(const patch of [{request_id:enc('Request',9)},{parent_operation_id:'missing'},{source:{...input.source,id:'CAdifferent'}},{source:{...input.source,conversation_id:'CNother'}},{source:{...input.source,type:'message'}}])assert.equal((await bodyOf(note,f,{...input,operation_id:'bad-artifact',...patch})).http,patch.source?.type==='message'?400:409);
+  for(const patch of [{request_id:enc('Request',9)},{parent_operation_id:'missing'},{source:{...input.source,id:'CAdifferent'}},{source:{...input.source,conversation_id:'CNother'}},{source:{...input.source,type:'message'}}])assert.equal((await bodyOf(note,f,{...input,operation_id:'bad-artifact',...patch})).http,409);
 });
 test('read-only status refuses unknown account and missing operations',async()=>{
   const f=fixture();assert.equal((await bodyOf(status,f,{account_id:ACCOUNTS.utah,operation_id:'missing'})).http,404);await bodyOf(write,f,f.body);assert.equal((await bodyOf(status,f,{account_id:ACCOUNTS.stl,operation_id:f.body.operation_id})).http,409);
@@ -164,4 +166,183 @@ test('a later external inquiry does not erase placeholder creation provenance on
  const f=fixture({override({query,state}){if(query===_private.QUERIES.phones&&state.clients.length&&failOnce){failOnce=false;throw Error('temporary read failure');}}});
  await bodyOf(write,f,f.body);f.state.requests.push(REQUEST);
  const resumed=await bodyOf(write,f,f.body);assert.equal(resumed.operation_state,'suppressed');assert.equal(resumed.classification,'eligible_new_client');assert.equal(resumed.reason,'prior_request_or_job');assert.equal(resumed.client_id,CLIENT);assert.deepEqual(f.counts(),{client:1,request:0,note:0});
+});
+
+test('new client missing from both phone indexes uses its confirmed ID and complete fresh history once',async()=>{
+ const f=fixture({override({query,state,account,connection}){if(query===_private.QUERIES.phones&&state.clients.length)return {data:{account:{id:account},clientPhones:connection([])}};}});
+ const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,'completed');assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+ const created=f.calls.findIndex(c=>c.query===_private.MUTATIONS.client),after=f.calls.slice(created+1);
+ assert.deepEqual(after.filter(c=>c.query===_private.QUERIES.phones).map(c=>c.vars.searchTerm),[PHONE,PHONE.slice(2)]);
+ assert.ok(after.some(c=>c.query===_private.QUERIES.client&&c.vars.id===CLIENT));assert.ok(after.some(c=>c.query===_private.QUERIES.requests));assert.ok(after.some(c=>c.query===_private.QUERIES.jobs));
+ await bodyOf(write,f,f.body);assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+});
+
+test('known-ID index fallback never overrides another matching client, archived client, changed phone or account',async()=>{
+ for(const scenario of ['shared','archived','changed_phone','wrong_account','missing']){
+  const f=fixture({override({query,state,account,connection}){
+   if(!state.clients.length)return;
+   if(query===_private.QUERIES.phones)return {data:{account:{id:account},clientPhones:connection(scenario==='shared'?[{number:PHONE,normalizedPhoneNumber:PHONE,client:{id:enc('Client',444),isArchived:false}}]:[])}};
+   if(query===_private.QUERIES.client)return {data:{account:{id:scenario==='wrong_account'?ACCOUNTS.kc:account},client:scenario==='missing'?null:{id:CLIENT,isArchived:scenario==='archived',phones:[{number:scenario==='changed_phone'?'+18165550199':PHONE,normalizedPhoneNumber:scenario==='changed_phone'?'+18165550199':PHONE}]}}};
+  }});
+  const result=await bodyOf(write,f,f.body);assert.ok(result.operation_state==='held'||result.http===503,scenario);assert.deepEqual(f.counts(),{client:1,request:0,note:0},scenario);
+ }
+});
+
+test('fresh canonical phone read catches an edit during the Request/Job history scan',async()=>{
+ const f=fixture({override({query,account,state}){
+  if(query===_private.QUERIES.jobs)state.phoneChanged=true;
+  if(query===_private.QUERIES.client&&state.phoneChanged)return {data:{account:{id:account},client:{id:CLIENT,isArchived:false,phones:[{number:'+18165550199',normalizedPhoneNumber:'+18165550199'}]}}};
+ }});
+ const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,'held');assert.equal(result.reason,'known_client_phone_changed');assert.deepEqual(f.counts(),{client:1,request:0,note:0});
+});
+
+async function legacyHeldPartial(options={}) {
+ let failOnce=true;
+ const f=fixture({...options,override(args){
+  if(args.query===_private.QUERIES.phones&&args.state.clients.length&&failOnce){failOnce=false;throw Error('seed a confirmed client-created checkpoint');}
+  return options.override?.(args);
+ }});
+ const first=await bodyOf(write,f,f.body);assert.equal(first.http,503);assert.deepEqual(f.counts(),{client:1,request:0,note:0});
+ // Reproduce the old version's terminal post-create hold without fabricating or
+ // erasing a Request write. Original source/hash/guards come from real handling.
+ f.db.raw.prepare("UPDATE quo_intake_operations SET operation_state='held',reason='inquiry_or_identity_changed_before_request' WHERE operation_id=? AND operation_state='client_created' AND client_id=? AND request_id IS NULL").run(f.body.operation_id,CLIENT);
+ f.recovery={...f.identity,operation_id:f.body.operation_id,expected_client_id:CLIENT};return f;
+}
+
+test('operator recovery uses the original held client/source/guards and creates one Request despite concurrent repeats',async()=>{
+ const f=await legacyHeldPartial();
+ const before=f.db.raw.prepare('SELECT source_json,intent_sha256,client_id FROM quo_intake_operations').get();
+ const results=await Promise.all([bodyOf(resume,f,f.recovery),bodyOf(resume,f,f.recovery)]);assert.ok(results.some(r=>r.operation_state==='completed'));
+ const again=await bodyOf(resume,f,f.recovery);assert.equal(again.operation_state,'completed');assert.equal(again.client_id,CLIENT);assert.equal(again.request_id,REQUEST);assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+ assert.deepEqual(f.db.raw.prepare('SELECT source_json,intent_sha256,client_id FROM quo_intake_operations').get(),before);
+ assert.equal(f.db.raw.prepare('SELECT operation_id FROM quo_intake_phone_guards').get().operation_id,f.body.operation_id);
+ assert.equal(f.db.raw.prepare('SELECT operation_id FROM quo_intake_source_guards').get().operation_id,f.body.operation_id);
+});
+
+test('operator recovery rejects wrong identity, overrides, uncertain phases, altered intent and missing guards',async()=>{
+ for(const scenario of ['identity','client','source_override','auth','uncertain','request_id','note_id','reason','hash','source_guard','phone_guard','expired','disabled']){
+  const f=await legacyHeldPartial();let input={...f.recovery};
+  if(scenario==='identity')input.phone='+18165550199';if(scenario==='client')input.expected_client_id=enc('Client',444);if(scenario==='source_override')input.source=f.source;
+  if(scenario==='uncertain')f.db.raw.exec('UPDATE quo_intake_operations SET uncertain=1');
+  if(scenario==='request_id')f.db.raw.prepare('UPDATE quo_intake_operations SET request_id=?').run(REQUEST);
+  if(scenario==='note_id')f.db.raw.prepare('UPDATE quo_intake_operations SET note_id=?').run(NOTE);
+  if(scenario==='reason')f.db.raw.exec("UPDATE quo_intake_operations SET reason='jobber_request_outcome_unknown'");
+  if(scenario==='hash')f.db.raw.exec("UPDATE quo_intake_operations SET intent_sha256='changed'");
+  if(scenario==='source_guard')f.db.raw.exec('DELETE FROM quo_intake_source_guards');if(scenario==='phone_guard')f.db.raw.exec('DELETE FROM quo_intake_phone_guards');
+  if(scenario==='expired')f.state.now+=25*60*60*1000;if(scenario==='disabled')f.env.QUO_INTAKE_WRITE_ENABLED='false';
+  const context=f.ctx(input);if(scenario==='auth')context.request.headers.set('authorization','Bearer wrong');
+  const response=await resume(context,f.deps);assert.ok([400,401,409,503].includes(response.status),scenario);assert.deepEqual(f.counts(),{client:1,request:0,note:0},scenario);
+ }
+});
+
+test('recovery rechecks current histories, shared phones and current client phone before any Request',async()=>{
+ for(const scenario of ['request','job','shared','phone_changed']){
+  const f=await legacyHeldPartial({override({query,state,account}){if(scenario==='phone_changed'&&state.seedComplete&&query===_private.QUERIES.client)return {data:{account:{id:account},client:{id:CLIENT,isArchived:false,phones:[{number:'+18165550199',normalizedPhoneNumber:'+18165550199'}]}}};}});
+  f.state.seedComplete=true;if(scenario==='request')f.state.requests.push(REQUEST);if(scenario==='job')f.state.jobs.push(enc('Job',444));if(scenario==='shared')f.state.clients.push({id:enc('Client',444)});
+  const result=await bodyOf(resume,f,f.recovery);assert.ok(['held','suppressed'].includes(result.operation_state),scenario);assert.deepEqual(f.counts(),{client:1,request:0,note:0},scenario);
+ }
+});
+
+test('uncertain recovery Request write retains the guard and cannot be resumed a second time',async()=>{
+ const f=await legacyHeldPartial({override({query}){if(query===_private.MUTATIONS.request)throw Error('request response lost');}});
+ const result=await bodyOf(resume,f,f.recovery);assert.equal(result.operation_state,'held');assert.equal(result.uncertain,true);assert.equal(result.request_id,null);
+ assert.equal((await bodyOf(resume,f,f.recovery)).code,'intake_recovery_not_safe');assert.deepEqual(f.counts(),{client:1,request:1,note:0});
+});
+
+test('source photos are real attachments on the same durable note and uncertain uploads do not duplicate',async()=>{
+ for(const uncertain of [false,true]){
+  const f=fixture({override({query}){if(uncertain&&query===_private.MUTATIONS.note)throw Error('note result unknown');}});
+  const url='https://share.quo.com/fixture/attic-photo.jpg';f.body.source={...f.source,media:[url,url]};
+  const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,uncertain?'held':'completed');assert.equal(result.uncertain,uncertain);
+  const sent=f.calls.find(c=>c.query===_private.MUTATIONS.note);assert.deepEqual(sent.vars.input.attachments,[{url}]);assert.match(sent.vars.input.message,/Media:/);assert.equal(sent.vars.requestId,REQUEST);
+  await bodyOf(write,f,f.body);assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+ }
+});
+
+test('long transcript remains intact in the note; oversized text is rejected explicitly',async()=>{
+ const f=fixture(),transcript='x'.repeat(48000);f.body.source={...f.source,transcript};const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,'completed');assert.ok(f.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message.includes(transcript));
+ const tooLong=fixture();assert.equal((await bodyOf(write,tooLong,{...tooLong.body,source:{...tooLong.source,transcript:transcript+'x'}})).http,400);assert.deepEqual(tooLong.counts(),{client:0,request:0,note:0});
+});
+
+function messageNote(f,overrides={}) {
+ return {...f.identity,operation_id:'message-note',parent_operation_id:f.body.operation_id,request_id:REQUEST,
+  source:{type:'message',id:'ACmessage-followup',event_id:'EVmessage-followup',occurred_at:new Date(NOW).toISOString(),conversation_id:f.source.conversation_id,from:PHONE,to:_private.NUMBERS[f.identity.market].number,status:'received',text:'Here are the attic photos.',media:['https://share.quo.com/fixture/followup-photo.jpg'],...overrides}};
+}
+test('fresh message and photo append once to the same original call or text Request with source and phone guards intact',async()=>{
+ for(const type of ['call','message']){
+  const f=fixture();if(type==='message')f.body.source={...f.source,type:'message',status:'received',text:'Initial inquiry'};
+  await bodyOf(write,f,f.body);const input=messageNote(f),result=await bodyOf(note,f,input);
+  assert.equal(result.operation_state,'completed');assert.equal(result.request_id,REQUEST);assert.equal(result.client_id,CLIENT);assert.deepEqual(f.counts(),{client:1,request:1,note:2});
+  const saved=f.calls.filter(c=>c.query===_private.MUTATIONS.note).at(-1);assert.match(saved.vars.input.message,/Good Attic Quo text update/);assert.deepEqual(saved.vars.input.attachments,[{url:input.source.media[0]}]);
+  assert.equal(f.db.raw.prepare('SELECT operation_id FROM quo_intake_source_guards WHERE source_id=?').get(input.source.id).operation_id,input.operation_id);
+  assert.equal(f.db.raw.prepare('SELECT operation_id FROM quo_intake_phone_guards').get().operation_id,f.body.operation_id);
+  await bodyOf(note,f,input);const duplicate=await bodyOf(note,f,{...input,operation_id:'different-note-event',source:{...input.source,event_id:'EVdifferent-delivery'}});assert.equal(duplicate.operation_state,'suppressed');assert.equal(duplicate.reason,'source_already_claimed');assert.deepEqual(f.counts(),{client:1,request:1,note:2});
+ }
+});
+test('a message already used for the original intake cannot become a second note',async()=>{
+ const f=fixture();f.body.source={...f.source,type:'message',status:'received',text:'Original inquiry'};await bodyOf(write,f,f.body);
+ const result=await bodyOf(note,f,{...messageNote(f),source:{...f.body.source,event_id:'EVretry-original'}});assert.equal(result.operation_state,'suppressed');assert.equal(result.reason,'source_already_claimed');assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+});
+test('a photo-only incoming message already read by staff still attaches to the fresh Request',async()=>{
+ const f=fixture();await bodyOf(write,f,f.body);const input=messageNote(f,{text:'',status:'read'});
+ const result=await bodyOf(note,f,input);assert.equal(result.operation_state,'completed');assert.equal(result.request_id,REQUEST);
+ assert.deepEqual(f.calls.filter(c=>c.query===_private.MUTATIONS.note).at(-1).vars.input.attachments,[{url:input.source.media[0]}]);assert.deepEqual(f.counts(),{client:1,request:1,note:2});
+});
+test('message-note source guards serialize concurrent alternate operation IDs without duplicating an MMS',async()=>{
+ const f=fixture();await bodyOf(write,f,f.body);const input=messageNote(f);
+ const results=await Promise.all([bodyOf(note,f,input),bodyOf(note,f,{...input,operation_id:'message-racing-note',source:{...input.source,event_id:'EVanother'}})]);
+ assert.equal(results.filter(r=>r.operation_state==='completed').length,1);assert.equal(results.filter(r=>r.operation_state==='suppressed').length,1);assert.deepEqual(f.counts(),{client:1,request:1,note:2});
+});
+test('message notes require the exact parent identity and a fixed 24-hour window from the original intake',async()=>{
+ for(const scenario of ['before','after','processing_after','conversation','market','request','phone','outbound','no_content','parent_note']){
+  const f=fixture();await bodyOf(write,f,f.body);let input=messageNote(f),time=Date.parse(f.source.occurred_at);
+  if(scenario==='before')input.source.occurred_at=new Date(time-1).toISOString();
+  if(scenario==='after'){f.state.now=time+_private.MESSAGE_NOTE_WINDOW_MS+1;input.source.occurred_at=new Date(f.state.now).toISOString();}
+  if(scenario==='processing_after')f.state.now=time+_private.MESSAGE_NOTE_WINDOW_MS+1;
+  if(scenario==='conversation')input.source.conversation_id='CNother';if(scenario==='market')input={...input,account_id:ACCOUNTS.kc,market:'kc',phone_number_id:_private.NUMBERS.kc.id,source:{...input.source,to:_private.NUMBERS.kc.number}};
+  if(scenario==='request')input.request_id=enc('Request',999);if(scenario==='phone')input.source.from='+18165550199';if(scenario==='outbound')input.source.status='sent';
+  if(scenario==='no_content'){input.source.text=' ';input.source.media=[];}if(scenario==='parent_note')f.db.raw.exec("UPDATE quo_intake_operations SET operation_kind='note'");
+  const result=await bodyOf(note,f,input);assert.ok([400,409].includes(result.http),scenario);assert.deepEqual(f.counts(),{client:1,request:1,note:1},scenario);
+ }
+ const boundary=fixture();await bodyOf(write,boundary,boundary.body);boundary.state.now=Date.parse(boundary.source.occurred_at)+_private.MESSAGE_NOTE_WINDOW_MS;
+ assert.equal((await bodyOf(note,boundary,messageNote(boundary,{occurred_at:new Date(boundary.state.now).toISOString()}))).operation_state,'completed');
+});
+test('message notes require complete fresh history containing only the owned Request and no Jobs, plus unchanged active client phone',async()=>{
+ for(const scenario of ['extra_request','job','shared','archived','phone','history_missing','history_later_page','wrong_account']){
+  const f=fixture({override({query,state,vars,account,connection}){
+   if(!state.followup)return;
+   if(scenario==='phone'&&query===_private.QUERIES.client)return {data:{account:{id:account},client:{id:CLIENT,isArchived:false,phones:[{number:'+18165550199',normalizedPhoneNumber:'+18165550199'}]}}};
+   if(scenario==='history_missing'&&query===_private.QUERIES.jobs)return {data:{account:{id:account},client:{id:CLIENT,isArchived:false}}};
+   if(scenario==='history_later_page'&&query===_private.QUERIES.requests)return {data:{account:{id:account},client:{id:CLIENT,isArchived:false,requests:vars.after?connection([{id:enc('Request',999)}]):{nodes:[{id:REQUEST}],pageInfo:{hasNextPage:true,endCursor:'later'}}}}};
+   if(query===_private.QUERIES.messageNoteParent&&(scenario==='archived'||scenario==='wrong_account'))return {data:{account:{id:scenario==='wrong_account'?ACCOUNTS.kc:account},request:{id:REQUEST,createdAt:new Date(NOW).toISOString(),requestStatus:'new',assessment:null,client:{id:CLIENT,isArchived:scenario==='archived'}}}};
+  }});await bodyOf(write,f,f.body);f.state.followup=true;
+  if(scenario==='extra_request')f.state.requests.push(enc('Request',999));if(scenario==='job')f.state.jobs.push(enc('Job',999));if(scenario==='shared')f.state.clients.push({id:enc('Client',999)});
+  const result=await bodyOf(note,f,messageNote(f));
+  if(['extra_request','job','history_later_page'].includes(scenario)){assert.equal(result.operation_state,'suppressed',scenario);assert.equal(result.reason,'existing_customer_or_request_progressed');}
+  else assert.ok(result.operation_state==='held'||result.http===503,scenario);
+  assert.deepEqual(f.counts(),{client:1,request:1,note:1},scenario);
+ }
+});
+test('message notes stop when the Request progresses, gets an assessment, changes client or disappears during the final recheck',async()=>{
+ for(const scenario of ['scheduled','assessment','client_changed','missing','unknown_assessment']){
+  const f=fixture({override({query,account}){if(query===_private.QUERIES.messageNoteParent)return {data:{account:{id:account},request:scenario==='missing'?null:{id:REQUEST,createdAt:new Date(NOW).toISOString(),requestStatus:scenario==='scheduled'?'assessment_completed':'new',...(scenario!=='unknown_assessment'?{assessment:scenario==='assessment'?{id:enc('Assessment',999)}:null}:{}),client:{id:scenario==='client_changed'?enc('Client',999):CLIENT,isArchived:false}}}};}});
+  await bodyOf(write,f,f.body);const input=messageNote(f),result=await bodyOf(note,f,input);
+  if(['scheduled','assessment'].includes(scenario)){assert.equal(result.operation_state,'suppressed',scenario);assert.equal(result.reason,'existing_customer_or_request_progressed');assert.equal(f.db.raw.prepare('SELECT operation_id FROM quo_intake_source_guards WHERE source_id=?').get(input.source.id).operation_id,input.operation_id);}
+  else {assert.equal(result.operation_state,'held',scenario);assert.equal(result.reason,'intake_message_request_not_new');}
+  assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+ }
+});
+test('uncertain message photo note never replays under the same or another event ID',async()=>{
+ const f=fixture({override({query,state}){if(state.followup&&query===_private.MUTATIONS.note)throw Error('lost photo note response');}});await bodyOf(write,f,f.body);f.state.followup=true;const input=messageNote(f);
+ const result=await bodyOf(note,f,input);assert.equal(result.operation_state,'held');assert.equal(result.uncertain,true);
+ await bodyOf(note,f,input);assert.equal((await bodyOf(note,f,{...input,operation_id:'another-message-note',source:{...input.source,event_id:'EVanother-message'}})).operation_state,'suppressed');assert.deepEqual(f.counts(),{client:1,request:1,note:2});
+});
+test('message notes cannot bypass held parent outcomes, original guard ownership or messaging control commands',async()=>{
+ for(const scenario of ['held_parent','uncertain_parent','source_guard','phone_guard','STOP','HELP','START']){
+  const f=fixture();await bodyOf(write,f,f.body);const input=messageNote(f);
+  if(scenario==='held_parent')f.db.raw.exec("UPDATE quo_intake_operations SET operation_state='held'");if(scenario==='uncertain_parent')f.db.raw.exec('UPDATE quo_intake_operations SET uncertain=1');
+  if(scenario==='source_guard')f.db.raw.exec("UPDATE quo_intake_source_guards SET operation_id='other-owner'");if(scenario==='phone_guard')f.db.raw.exec("UPDATE quo_intake_phone_guards SET operation_id='other-owner'");
+  if(['STOP','HELP','START'].includes(scenario))input.source.text=scenario;
+  const result=await bodyOf(note,f,input);assert.equal(result.http,409,scenario);assert.deepEqual(f.counts(),{client:1,request:1,note:1},scenario);
+ }
 });
