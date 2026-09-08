@@ -171,4 +171,4 @@ export async function handleJobberContactResolve({ request, env }, dependencies 
   }
 }
 
-export const _private = { MAX_BODY_BYTES, QUERIES, ROUTES, TOPIC_TYPES, validId };
+export const _private = { MAX_BODY_BYTES, QUERIES, ROUTES, TOPIC_TYPES, validId, sameId, authorized };
