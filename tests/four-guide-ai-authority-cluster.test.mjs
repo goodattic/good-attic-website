@@ -19,6 +19,34 @@ const guides = exactPackage.pages.map((page) => ({
   file: path.join(projectDirectory, "resources", page.slug, "index.html"),
 }));
 
+const expectedClosingCtas = {
+  "attic-insulation-removal-after-mice": {
+    eyebrow: "FREE ATTIC ASSESSMENT",
+    heading: "Worried Mice Have Contaminated Your Attic?",
+    body: "Book a free attic assessment. We’ll inspect the insulation, show you what we find, and explain what it will take to clean, seal, and restore the space.",
+  },
+  "bat-guano-attic-insulation-removal": {
+    eyebrow: "FREE ATTIC ASSESSMENT",
+    heading: "Found Bat Guano in Your Attic?",
+    body: "Book a free attic assessment. We’ll inspect the attic, explain the insulation and cleanup work, and coordinate the restoration plan with the wildlife professional handling the bats.",
+  },
+  "wet-attic-insulation-remove-or-dry": {
+    eyebrow: "FREE ATTIC ASSESSMENT",
+    heading: "Worried Your Attic Insulation Got Wet?",
+    body: "Book a free attic assessment. We’ll inspect the affected insulation, explain what may be able to stay and what should come out, and help coordinate the next step with the right professional.",
+  },
+  "replace-attic-insulation-when-replacing-roof": {
+    eyebrow: "FREE ATTIC ASSESSMENT",
+    heading: "Replacing Your Roof? Check the Attic Before Work Begins.",
+    body: "Book a free attic assessment. We’ll show you whether the insulation can stay, whether leaks or pests have affected it, and how the attic work should be coordinated with your roofer.",
+  },
+};
+
+for (const cta of Object.values(expectedClosingCtas)) {
+  cta.label = "Book My Free Attic Assessment";
+  cta.url = "/contact/";
+}
+
 const protectedHashes = {
   "resources/blown-insulation-vs-rolled-insulation/index.html":
     "334ecb46a85203bd0af707fc015cd28cd7838f976a49bf14cbddf197ce763c85",
@@ -252,6 +280,20 @@ test("source, related-guide, local-service, and CTA destinations match the packa
   }
 });
 
+test("the four final CTA components contain only the approved conversion copy", async () => {
+  for (const guide of guides) {
+    const expected = expectedClosingCtas[guide.slug];
+    assert.deepEqual(guide.exact_copy.closingCta, expected);
+
+    const html = await readFile(guide.file, "utf8");
+    const cta = sectionContainingH2(html, expected.heading);
+    assert.equal((html.match(/<section class="cta-strip/g) || []).length, 1);
+    assert.equal((html.match(/Book My Free Attic Assessment/g) || []).length, 1);
+    assert.equal(textContent(cta), [expected.eyebrow, expected.heading, expected.body, expected.label].join(" "));
+    assert.ok(cta.includes('<a class="button primary" href="../../contact/">'));
+  }
+});
+
 test("the resource hub and sitemap contain each new route once", async () => {
   const hub = await readFile(path.join(projectDirectory, "resources", "index.html"), "utf8");
   const sitemap = await readFile(path.join(projectDirectory, "sitemap.xml"), "utf8");
@@ -337,7 +379,7 @@ test("new guides keep promotional controls late and exclude prohibited editorial
     const hero = extractBlock(main, '<section class="section page-hero">', "</section>");
     assert.equal(hero.includes("page-hero__actions"), false);
     assert.equal(main.includes("Financing Options"), false);
-    assert.ok(main.includes("Request an Attic Assessment"));
+    assert.ok(main.includes(expectedClosingCtas[guide.slug].label));
     assert.doesNotMatch(textContent(main), prohibited);
     assert.doesNotMatch(textContent(main), regressionLanguage);
   }

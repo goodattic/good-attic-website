@@ -278,8 +278,8 @@ Either sequence can be correct. It depends on the leak, decking work, pest activ
 
 ## Closing CTA
 
-- **Eyebrow:** `PLAN THE PROJECT BEFORE THE ROOF GOES ON`
-- **H2:** `Planning a Roof Replacement? Take a Look at the Attic Too.`
-- **Body:** `An attic inspection can show whether the existing insulation is worth keeping, whether leaks or pests have affected it, and how the attic work should be coordinated with the roofing project.`
-- **CTA label:** `Request an Attic Assessment`
+- **Eyebrow:** `FREE ATTIC ASSESSMENT`
+- **H2:** `Replacing Your Roof? Check the Attic Before Work Begins.`
+- **Body:** `Book a free attic assessment. We’ll show you whether the insulation can stay, whether leaks or pests have affected it, and how the attic work should be coordinated with your roofer.`
+- **CTA label:** `Book My Free Attic Assessment`
 - **CTA destination:** `/contact/`

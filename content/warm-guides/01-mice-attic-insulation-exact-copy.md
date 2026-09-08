@@ -233,8 +233,8 @@ Do not disturb suspected vermiculite like ordinary insulation. EPA advises homeo
 
 ## Closing CTA
 
-- **Eyebrow:** `WHEN YOU ARE READY`
-- **H2:** `Concerned That Mice Have Contaminated Your Attic Insulation?`
-- **Body:** `An in-home attic assessment can show what is happening, whether the insulation needs to come out, and what it will take to clean, seal, and rebuild the space.`
-- **CTA label:** `Request an Attic Assessment`
+- **Eyebrow:** `FREE ATTIC ASSESSMENT`
+- **H2:** `Worried Mice Have Contaminated Your Attic?`
+- **Body:** `Book a free attic assessment. We’ll inspect the insulation, show you what we find, and explain what it will take to clean, seal, and restore the space.`
+- **CTA label:** `Book My Free Attic Assessment`
 - **CTA destination:** `/contact/`

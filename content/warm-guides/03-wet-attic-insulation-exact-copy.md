@@ -237,8 +237,8 @@ Do not disturb suspected vermiculite like ordinary insulation. EPA advises homeo
 
 ## Closing CTA
 
-- **Eyebrow:** `WHEN YOU ARE READY`
-- **H2:** `Need Help With Wet Attic Insulation?`
-- **Body:** `An in-home attic assessment can document the affected insulation and help determine what Good Attic can handle, what another professional should address, and when the attic is ready for fresh insulation.`
-- **CTA label:** `Request an Attic Assessment`
+- **Eyebrow:** `FREE ATTIC ASSESSMENT`
+- **H2:** `Worried Your Attic Insulation Got Wet?`
+- **Body:** `Book a free attic assessment. We’ll inspect the affected insulation, explain what may be able to stay and what should come out, and help coordinate the next step with the right professional.`
+- **CTA label:** `Book My Free Attic Assessment`
 - **CTA destination:** `/contact/`
