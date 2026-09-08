@@ -176,12 +176,20 @@ function parseLinkCards(block) {
 }
 
 function parseClosingCta(block) {
+  const destination = fieldValue(block.body, "CTA destination");
+  const openModal = destination === "lead-form-modal";
+
+  if (!openModal && !destination.startsWith("/")) {
+    throw new Error(`Unsupported closing CTA destination: ${destination}`);
+  }
+
   return {
     eyebrow: fieldValue(block.body, "Eyebrow"),
     heading: fieldValue(block.body, "H2"),
     body: fieldValue(block.body, "Body"),
     label: fieldValue(block.body, "CTA label"),
-    url: fieldValue(block.body, "CTA destination"),
+    url: openModal ? null : destination,
+    openModal,
   };
 }
 
@@ -283,6 +291,7 @@ async function parseGuide(packageDirectory, manifestPage, hubCard) {
       primary: {
         label: closingCta.label,
         url: closingCta.url,
+        openModal: closingCta.openModal,
         kicker: closingCta.eyebrow,
         hideSecondary: true,
       },

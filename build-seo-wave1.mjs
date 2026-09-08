@@ -4107,9 +4107,12 @@ function renderFaq(items) {
 }
 
 function renderCtaStrip(currentUrl, title, text, primary) {
+  const buttonClass = ["button", "primary", primary.buttonClass].filter(Boolean).join(" ");
   const primaryAction = primary.phone
     ? renderPhoneDropdownButton(primary.label || "Contact our team", primary.phone)
-    : `<a class="button primary" href="${hrefFrom(currentUrl, primary.url)}">${escapeHtml(displayCopy(primary.label))}</a>`;
+    : primary.openModal
+      ? `<button class="${escapeHtml(buttonClass)}" type="button" data-open-modal>${escapeHtml(displayCopy(primary.label))}</button>`
+      : `<a class="${escapeHtml(buttonClass)}" href="${hrefFrom(currentUrl, primary.url)}">${escapeHtml(displayCopy(primary.label))}</a>`;
 
   return `
     <section class="cta-strip reveal${primary.alwaysVisible ? " is-visible" : ""}">
@@ -4531,7 +4534,9 @@ function renderExactGuidePage(page, currentUrl) {
       url: copy.closingCta.url,
       kicker: copy.closingCta.eyebrow,
       hideSecondary: true,
-      alwaysVisible: true
+      alwaysVisible: true,
+      openModal: copy.closingCta.openModal,
+      buttonClass: "light"
     })}
 
     ${renderExactSourceGroups(copy.sourceGroups)}

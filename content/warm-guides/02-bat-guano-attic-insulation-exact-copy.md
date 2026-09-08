@@ -234,7 +234,7 @@ They can. Closing the openings used by the colony can reduce the chance of anoth
 - **H2:** `Found Bat Guano in Your Attic?`
 - **Body:** `Book a free attic assessment. We’ll inspect the attic, explain the insulation and cleanup work, and coordinate the restoration plan with the wildlife professional handling the bats.`
 - **CTA label:** `Book My Free Attic Assessment`
-- **CTA destination:** `/contact/`
+- **CTA destination:** `lead-form-modal`
 
 ## Image direction
 

@@ -44,7 +44,8 @@ const expectedClosingCtas = {
 
 for (const cta of Object.values(expectedClosingCtas)) {
   cta.label = "Book My Free Attic Assessment";
-  cta.url = "/contact/";
+  cta.url = null;
+  cta.openModal = true;
 }
 
 const protectedHashes = {
@@ -256,7 +257,7 @@ test("new-guide internal links and images resolve locally", async () => {
   }
 });
 
-test("source, related-guide, local-service, and CTA destinations match the package", async () => {
+test("source and link destinations match the package while guide CTAs open the lead form", async () => {
   for (const guide of guides) {
     const html = await readFile(guide.file, "utf8");
     for (const sourceGroup of guide.exact_copy.sourceGroups) {
@@ -274,9 +275,11 @@ test("source, related-guide, local-service, and CTA destinations match the packa
     }
 
     const cta = sectionContainingH2(html, guide.exact_copy.closingCta.heading);
-    const ctaHref = cta.match(/<a class="button primary" href="([^"]+)">/);
-    assert.ok(ctaHref, `Missing primary CTA for ${guide.slug}`);
-    assert.equal(new URL(ctaHref[1], guide.canonical).pathname, guide.exact_copy.closingCta.url);
+    assert.ok(
+      cta.includes('<button class="button primary light" type="button" data-open-modal>'),
+      `Missing lead-form CTA for ${guide.slug}`,
+    );
+    assert.equal(cta.includes("/contact/"), false);
   }
 });
 
@@ -290,7 +293,8 @@ test("the four CTA components use the approved copy immediately before source ca
     assert.equal((html.match(/<section class="cta-strip/g) || []).length, 1);
     assert.equal((html.match(/Book My Free Attic Assessment/g) || []).length, 1);
     assert.equal(textContent(cta), [expected.eyebrow, expected.heading, expected.body, expected.label].join(" "));
-    assert.ok(cta.includes('<a class="button primary" href="../../contact/">'));
+    assert.ok(cta.includes('<button class="button primary light" type="button" data-open-modal>'));
+    assert.equal(cta.includes("href="), false);
     assert.ok(html.indexOf(`<h2>${guide.exact_copy.sections.at(-1).heading}</h2>`) < html.indexOf(`<h2>${expected.heading}</h2>`));
     assert.ok(html.indexOf(`<h2>${expected.heading}</h2>`) < html.indexOf(`<h2>${guide.exact_copy.sourceGroups[0].heading}</h2>`));
   }

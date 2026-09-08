@@ -282,4 +282,4 @@ Either sequence can be correct. It depends on the leak, decking work, pest activ
 - **H2:** `Replacing Your Roof? Check the Attic Before Work Begins.`
 - **Body:** `Book a free attic assessment. We’ll show you whether the insulation can stay, whether leaks or pests have affected it, and how the attic work should be coordinated with your roofer.`
 - **CTA label:** `Book My Free Attic Assessment`
-- **CTA destination:** `/contact/`
+- **CTA destination:** `lead-form-modal`

@@ -241,4 +241,4 @@ Do not disturb suspected vermiculite like ordinary insulation. EPA advises homeo
 - **H2:** `Worried Your Attic Insulation Got Wet?`
 - **Body:** `Book a free attic assessment. We’ll inspect the affected insulation, explain what may be able to stay and what should come out, and help coordinate the next step with the right professional.`
 - **CTA label:** `Book My Free Attic Assessment`
-- **CTA destination:** `/contact/`
+- **CTA destination:** `lead-form-modal`
