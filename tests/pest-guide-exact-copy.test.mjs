@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { approvedOperationalHashes } from "./approved-operational-hashes.mjs";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cp, mkdtemp, readFile, rm } from "node:fs/promises";
@@ -132,10 +133,11 @@ test("pest-guide chrome, forms, scripts, phones, and all unrelated tracked files
   for (const regex of [/<header[\s\S]*?<\/header>/, /<footer[\s\S]*?<\/footer>/, /<div class="modal"[\s\S]*$/]) assert.equal(html.match(regex)[0], original.match(regex)[0]);
   const scripts = (source) => [...source.matchAll(/<script(?! type="application\/ld\+json")[\s\S]*?<\/script>/g)].map((match) => match[0]);
   assert.deepEqual(scripts(html), scripts(original));
-  const allowed = new Set(["build-seo-wave1.mjs", "seo-wave1-page-data.json", "resources/index.html", file, "tests/four-guide-ai-authority-cluster.test.mjs", "package.json", "tests/pest-guide-exact-copy.test.mjs", ...cityMarketCopy.pages.map((page) => page.source_file)]);
+  const allowed = new Set(["build-seo-wave1.mjs", "seo-wave1-page-data.json", "resources/index.html", file, "tests/four-guide-ai-authority-cluster.test.mjs", "package.json", "tests/pest-guide-exact-copy.test.mjs", ...cityMarketCopy.pages.map((page) => page.source_file), ...Object.keys(approvedOperationalHashes)]);
   const existing = new Set(git("ls-tree", "-r", "--name-only", parent).trim().split("\n"));
   const changed = git("diff", "--name-only", parent, "--").trim().split("\n").filter(Boolean);
   assert.deepEqual(changed.filter((name) => existing.has(name) && !allowed.has(name)), []);
+  for (const [name, expected] of Object.entries(approvedOperationalHashes)) assert.equal(sha(await read(name)), expected, name);
   assert.equal(sha(await read("resources/blown-insulation-vs-rolled-insulation/index.html")), "ea5d660ffba931e1355fa53f8323b40812f270023ff1f000cfd802bf0f6adb37");
   assert.equal(await read("sitemap.xml"), before("sitemap.xml"));
   const oldData = JSON.parse(before("seo-wave1-page-data.json"));

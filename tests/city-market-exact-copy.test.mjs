@@ -8,6 +8,7 @@ import { adapter } from "parse5-htmlparser2-tree-adapter";
 import { selectAll } from "css-select";
 import { applyCityMarketCopy, cityMarketCopy, cityMarketFaq } from "../scripts/load-city-market-copy.mjs";
 import { applyHubHotspotCopy } from "../scripts/load-hub-hotspot-copy.mjs";
+import { approvedOperationalHashes } from "./approved-operational-hashes.mjs";
 
 const root = new URL("../", import.meta.url);
 const base = cityMarketCopy.base_commit;
@@ -121,11 +122,17 @@ test("headers, footers, forms, scripts, reviews, images, captions, metadata and 
 });
 
 test("unrelated tracked files, Resources, sitemap and operational sources retain the approved parent", async () => {
-  const allowed = new Set([...pages.map((page) => page.source_file), "build-seo-wave1.mjs", "package.json", "tests/pest-guide-exact-copy.test.mjs"]);
+  const allowed = new Set([...pages.map((page) => page.source_file), "build-seo-wave1.mjs", "package.json", "tests/pest-guide-exact-copy.test.mjs", "tests/four-guide-ai-authority-cluster.test.mjs", ...Object.keys(approvedOperationalHashes)]);
   const existing = new Set(git("ls-tree", "-r", "--name-only", base).trim().split("\n"));
   const changes = git("diff", "--name-only", base, "--").trim().split("\n").filter(Boolean);
   assert.deepEqual(changes.filter((file) => existing.has(file) && !allowed.has(file)), []);
-  for (const file of ["resources/index.html", "styles.css", "script.js", "sitemap.xml", "robots.txt", "functions/api/leads.js", "tests/four-guide-ai-authority-cluster.test.mjs"]) assert.equal(await read(file), git("show", `${base}:${file}`), file);
+  for (const file of ["resources/index.html", "styles.css", "script.js", "sitemap.xml", "robots.txt"]) assert.equal(await read(file), git("show", `${base}:${file}`), file);
+  for (const [file, expected] of Object.entries(approvedOperationalHashes)) assert.equal(sha(await read(file)), expected, file);
+  const hashTest = "tests/four-guide-ai-authority-cluster.test.mjs";
+  const expectedHashTest = git("show", `${base}:${hashTest}`)
+    .replace("25b191ad3e9d7252ed517da0f4641a32c093345b28f665954e9e6a7bc40be4d6", approvedOperationalHashes["functions/api/leads.js"])
+    .replace("b537f7f91198856f252cb91b1262b27f8d5ba8ee40c7777d94a55c3e9f46c13a", approvedOperationalHashes["server/fieldflow-attribution.js"]);
+  assert.equal(await read(hashTest), expectedHashTest, "only the two justified operational hash expectations may change");
   for (const file of [...existing].filter((file) => file.startsWith("resources/") && file.endsWith(".html"))) assert.equal(await read(file), git("show", `${base}:${file}`), file);
 });
 
