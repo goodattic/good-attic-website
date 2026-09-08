@@ -4,7 +4,7 @@ import {DatabaseSync} from 'node:sqlite';
 import {resolveAcknowledgementEligibility} from '../server/jobber-acknowledgement-resolver.js';
 import {getJobberOAuthRoute} from '../functions/api/jobber/oauth/config.js';
 import {test} from 'node:test';
-import {handleJobberQuoIntakeResolve as resolve,handleJobberQuoIntakeWrite as write,handleJobberQuoIntakeStatus as status,handleJobberQuoIntakeNote as note,_private} from '../server/jobber-quo-intake.js';
+import {handleJobberQuoIntakeResolve as resolve,handleJobberQuoIntakeWrite as write,handleJobberQuoIntakeStatus as status,handleJobberQuoIntakeNote as note,handleJobberQuoIntakeResume as resume,_private} from '../server/jobber-quo-intake.js';
 const enc=(kind,id)=>btoa(`gid://Jobber/${kind}/${id}`);
 const SECRET='fixture-secret';
 const PHONE='+18165550105';
@@ -28,6 +28,7 @@ function fixture(options={}) {
     if(options.override){const result=await options.override({query,vars,state,calls,connection,account});if(result!==undefined)return result;}
     const data={account:{id:account}};
     if(query===_private.QUERIES.phones)data.clientPhones=connection(state.clients.map(c=>({id:enc('ClientPhoneNumber',1),number:PHONE,normalizedPhoneNumber:PHONE,client:{id:c.id,isArchived:!!c.isArchived},contact:c.contact||null})));
+    else if(query===_private.QUERIES.client){const c=state.clients.find(x=>x.id===vars.id);data.client=c?{id:c.id,isArchived:!!c.isArchived,phones:[{number:PHONE,normalizedPhoneNumber:PHONE}]}:null;}
     else if(query===_private.QUERIES.requests||query===_private.QUERIES.jobs){const kind=query===_private.QUERIES.requests?'requests':'jobs';data.client={id:vars.id,isArchived:false,[kind]:connection(state[kind].map(id=>({id}))) };}
     else if(query===_private.MUTATIONS.client){state.clients.push({id:CLIENT});data.clientCreate={client:{id:CLIENT,phones:[{number:PHONE,normalizedPhoneNumber:PHONE}]},userErrors:[]};}
     else if(query===_private.MUTATIONS.request){state.requests.push(REQUEST);data.requestCreate={request:{id:REQUEST,client:{id:vars.input.clientId},jobberWebUri:'https://secure.getjobber.com/work_requests/222'},userErrors:[]};}
@@ -164,4 +165,100 @@ test('a later external inquiry does not erase placeholder creation provenance on
  const f=fixture({override({query,state}){if(query===_private.QUERIES.phones&&state.clients.length&&failOnce){failOnce=false;throw Error('temporary read failure');}}});
  await bodyOf(write,f,f.body);f.state.requests.push(REQUEST);
  const resumed=await bodyOf(write,f,f.body);assert.equal(resumed.operation_state,'suppressed');assert.equal(resumed.classification,'eligible_new_client');assert.equal(resumed.reason,'prior_request_or_job');assert.equal(resumed.client_id,CLIENT);assert.deepEqual(f.counts(),{client:1,request:0,note:0});
+});
+
+test('new client missing from both phone indexes uses its confirmed ID and complete fresh history once',async()=>{
+ const f=fixture({override({query,state,account,connection}){if(query===_private.QUERIES.phones&&state.clients.length)return {data:{account:{id:account},clientPhones:connection([])}};}});
+ const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,'completed');assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+ const created=f.calls.findIndex(c=>c.query===_private.MUTATIONS.client),after=f.calls.slice(created+1);
+ assert.deepEqual(after.filter(c=>c.query===_private.QUERIES.phones).map(c=>c.vars.searchTerm),[PHONE,PHONE.slice(2)]);
+ assert.ok(after.some(c=>c.query===_private.QUERIES.client&&c.vars.id===CLIENT));assert.ok(after.some(c=>c.query===_private.QUERIES.requests));assert.ok(after.some(c=>c.query===_private.QUERIES.jobs));
+ await bodyOf(write,f,f.body);assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+});
+
+test('known-ID index fallback never overrides another matching client, archived client, changed phone or account',async()=>{
+ for(const scenario of ['shared','archived','changed_phone','wrong_account','missing']){
+  const f=fixture({override({query,state,account,connection}){
+   if(!state.clients.length)return;
+   if(query===_private.QUERIES.phones)return {data:{account:{id:account},clientPhones:connection(scenario==='shared'?[{number:PHONE,normalizedPhoneNumber:PHONE,client:{id:enc('Client',444),isArchived:false}}]:[])}};
+   if(query===_private.QUERIES.client)return {data:{account:{id:scenario==='wrong_account'?ACCOUNTS.kc:account},client:scenario==='missing'?null:{id:CLIENT,isArchived:scenario==='archived',phones:[{number:scenario==='changed_phone'?'+18165550199':PHONE,normalizedPhoneNumber:scenario==='changed_phone'?'+18165550199':PHONE}]}}};
+  }});
+  const result=await bodyOf(write,f,f.body);assert.ok(result.operation_state==='held'||result.http===503,scenario);assert.deepEqual(f.counts(),{client:1,request:0,note:0},scenario);
+ }
+});
+
+test('fresh canonical phone read catches an edit during the Request/Job history scan',async()=>{
+ const f=fixture({override({query,account,state}){
+  if(query===_private.QUERIES.jobs)state.phoneChanged=true;
+  if(query===_private.QUERIES.client&&state.phoneChanged)return {data:{account:{id:account},client:{id:CLIENT,isArchived:false,phones:[{number:'+18165550199',normalizedPhoneNumber:'+18165550199'}]}}};
+ }});
+ const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,'held');assert.equal(result.reason,'known_client_phone_changed');assert.deepEqual(f.counts(),{client:1,request:0,note:0});
+});
+
+async function legacyHeldPartial(options={}) {
+ let failOnce=true;
+ const f=fixture({...options,override(args){
+  if(args.query===_private.QUERIES.phones&&args.state.clients.length&&failOnce){failOnce=false;throw Error('seed a confirmed client-created checkpoint');}
+  return options.override?.(args);
+ }});
+ const first=await bodyOf(write,f,f.body);assert.equal(first.http,503);assert.deepEqual(f.counts(),{client:1,request:0,note:0});
+ // Reproduce the old version's terminal post-create hold without fabricating or
+ // erasing a Request write. Original source/hash/guards come from real handling.
+ f.db.raw.prepare("UPDATE quo_intake_operations SET operation_state='held',reason='inquiry_or_identity_changed_before_request' WHERE operation_id=? AND operation_state='client_created' AND client_id=? AND request_id IS NULL").run(f.body.operation_id,CLIENT);
+ f.recovery={...f.identity,operation_id:f.body.operation_id,expected_client_id:CLIENT};return f;
+}
+
+test('operator recovery uses the original held client/source/guards and creates one Request despite concurrent repeats',async()=>{
+ const f=await legacyHeldPartial();
+ const before=f.db.raw.prepare('SELECT source_json,intent_sha256,client_id FROM quo_intake_operations').get();
+ const results=await Promise.all([bodyOf(resume,f,f.recovery),bodyOf(resume,f,f.recovery)]);assert.ok(results.some(r=>r.operation_state==='completed'));
+ const again=await bodyOf(resume,f,f.recovery);assert.equal(again.operation_state,'completed');assert.equal(again.client_id,CLIENT);assert.equal(again.request_id,REQUEST);assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+ assert.deepEqual(f.db.raw.prepare('SELECT source_json,intent_sha256,client_id FROM quo_intake_operations').get(),before);
+ assert.equal(f.db.raw.prepare('SELECT operation_id FROM quo_intake_phone_guards').get().operation_id,f.body.operation_id);
+ assert.equal(f.db.raw.prepare('SELECT operation_id FROM quo_intake_source_guards').get().operation_id,f.body.operation_id);
+});
+
+test('operator recovery rejects wrong identity, overrides, uncertain phases, altered intent and missing guards',async()=>{
+ for(const scenario of ['identity','client','source_override','auth','uncertain','request_id','note_id','reason','hash','source_guard','phone_guard','expired','disabled']){
+  const f=await legacyHeldPartial();let input={...f.recovery};
+  if(scenario==='identity')input.phone='+18165550199';if(scenario==='client')input.expected_client_id=enc('Client',444);if(scenario==='source_override')input.source=f.source;
+  if(scenario==='uncertain')f.db.raw.exec('UPDATE quo_intake_operations SET uncertain=1');
+  if(scenario==='request_id')f.db.raw.prepare('UPDATE quo_intake_operations SET request_id=?').run(REQUEST);
+  if(scenario==='note_id')f.db.raw.prepare('UPDATE quo_intake_operations SET note_id=?').run(NOTE);
+  if(scenario==='reason')f.db.raw.exec("UPDATE quo_intake_operations SET reason='jobber_request_outcome_unknown'");
+  if(scenario==='hash')f.db.raw.exec("UPDATE quo_intake_operations SET intent_sha256='changed'");
+  if(scenario==='source_guard')f.db.raw.exec('DELETE FROM quo_intake_source_guards');if(scenario==='phone_guard')f.db.raw.exec('DELETE FROM quo_intake_phone_guards');
+  if(scenario==='expired')f.state.now+=25*60*60*1000;if(scenario==='disabled')f.env.QUO_INTAKE_WRITE_ENABLED='false';
+  const context=f.ctx(input);if(scenario==='auth')context.request.headers.set('authorization','Bearer wrong');
+  const response=await resume(context,f.deps);assert.ok([400,401,409,503].includes(response.status),scenario);assert.deepEqual(f.counts(),{client:1,request:0,note:0},scenario);
+ }
+});
+
+test('recovery rechecks current histories, shared phones and current client phone before any Request',async()=>{
+ for(const scenario of ['request','job','shared','phone_changed']){
+  const f=await legacyHeldPartial({override({query,state,account}){if(scenario==='phone_changed'&&state.seedComplete&&query===_private.QUERIES.client)return {data:{account:{id:account},client:{id:CLIENT,isArchived:false,phones:[{number:'+18165550199',normalizedPhoneNumber:'+18165550199'}]}}};}});
+  f.state.seedComplete=true;if(scenario==='request')f.state.requests.push(REQUEST);if(scenario==='job')f.state.jobs.push(enc('Job',444));if(scenario==='shared')f.state.clients.push({id:enc('Client',444)});
+  const result=await bodyOf(resume,f,f.recovery);assert.ok(['held','suppressed'].includes(result.operation_state),scenario);assert.deepEqual(f.counts(),{client:1,request:0,note:0},scenario);
+ }
+});
+
+test('uncertain recovery Request write retains the guard and cannot be resumed a second time',async()=>{
+ const f=await legacyHeldPartial({override({query}){if(query===_private.MUTATIONS.request)throw Error('request response lost');}});
+ const result=await bodyOf(resume,f,f.recovery);assert.equal(result.operation_state,'held');assert.equal(result.uncertain,true);assert.equal(result.request_id,null);
+ assert.equal((await bodyOf(resume,f,f.recovery)).code,'intake_recovery_not_safe');assert.deepEqual(f.counts(),{client:1,request:1,note:0});
+});
+
+test('source photos are real attachments on the same durable note and uncertain uploads do not duplicate',async()=>{
+ for(const uncertain of [false,true]){
+  const f=fixture({override({query}){if(uncertain&&query===_private.MUTATIONS.note)throw Error('note result unknown');}});
+  const url='https://share.quo.com/fixture/attic-photo.jpg';f.body.source={...f.source,media:[url,url]};
+  const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,uncertain?'held':'completed');assert.equal(result.uncertain,uncertain);
+  const sent=f.calls.find(c=>c.query===_private.MUTATIONS.note);assert.deepEqual(sent.vars.input.attachments,[{url}]);assert.match(sent.vars.input.message,/Media:/);assert.equal(sent.vars.requestId,REQUEST);
+  await bodyOf(write,f,f.body);assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+ }
+});
+
+test('long transcript remains intact in the note; oversized text is rejected explicitly',async()=>{
+ const f=fixture(),transcript='x'.repeat(48000);f.body.source={...f.source,transcript};const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,'completed');assert.ok(f.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message.includes(transcript));
+ const tooLong=fixture();assert.equal((await bodyOf(write,tooLong,{...tooLong.body,source:{...tooLong.source,transcript:transcript+'x'}})).http,400);assert.deepEqual(tooLong.counts(),{client:0,request:0,note:0});
 });

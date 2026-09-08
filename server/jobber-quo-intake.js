@@ -30,6 +30,9 @@ const QUERIES = {
       jobs(first:100,after:$after) {nodes {id} pageInfo {hasNextPage endCursor}}
     }
   }`,
+  client: `query GoodAtticQuoIntakeClient($id:EncodedId!) {
+    account {id} client(id:$id) {id isArchived phones {number normalizedPhoneNumber}}
+  }`,
   account: 'query GoodAtticQuoIntakeAccount {account {id}}',
   noteParent: 'query GoodAtticQuoNoteParent($id:EncodedId!) {account {id} request(id:$id) {id client {id}}}',
 };
@@ -128,7 +131,22 @@ function page(connection,seen) {
   if(next)seen.add(next);
   return next;
 }
-async function classify(env,deps,token,route,identity) {
+async function exactClient(env,deps,token,route,identity,clientId) {
+  const data=await read(deps,env,token,route,QUERIES.client,{id:clientId});
+  const client=data.client;
+  if(!contacts.sameId(client?.id,clientId,'Client')||typeof client.isArchived!=='boolean'
+    ||!Array.isArray(client.phones)||client.phones.length>1000)throw new IntakeError('known_client_unavailable');
+  let matches=false;
+  for(const phone of client.phones) {
+    if(!phone||typeof phone.number!=='string'||(phone.normalizedPhoneNumber!==null&&typeof phone.normalizedPhoneNumber!=='string'))throw new IntakeError('intake_phone_identity_conflict',409);
+    const raw=normalizePhone(phone.number),normalized=normalizePhone(phone.normalizedPhoneNumber);
+    if((phone.number.trim()&&!raw)||(phone.normalizedPhoneNumber&&!normalized)||(raw&&normalized&&raw!==normalized))throw new IntakeError('intake_phone_identity_conflict',409);
+    if((normalized||raw)===identity.phone)matches=true;
+  }
+  if(!matches)throw new IntakeError('known_client_phone_changed',409);
+  return client;
+}
+async function classify(env,deps,token,route,identity,knownClientId=null) {
   const matches=new Map();
   for(const searchTerm of [identity.phone,identity.phone.slice(2)]) {
     let after=null;const seen=new Set();let complete=false;
@@ -145,6 +163,14 @@ async function classify(env,deps,token,route,identity) {
       if(!next){complete=true;break;}after=next;
     }
     if(!complete)throw new IntakeError('intake_history_incomplete');
+  }
+  // A client returned by a completed create can be readable by ID before phone
+  // search indexes it. Only a saved selected/created ID may fill that one gap;
+  // all search pages still run and any other matching client remains a conflict.
+  if(knownClientId&&!matches.has(knownClientId)) {
+    if(!canonical(knownClientId,'Client'))throw new IntakeError('invalid_known_client',409);
+    const client=await exactClient(env,deps,token,route,identity,knownClientId);
+    matches.set(knownClientId,client.isArchived);
   }
   const base={...identity,client_id:null,request_ids:[],job_ids:[],history_complete:true,retryable:false};
   if(matches.size>1)return {...base,classification:'held_shared_phone',reason:'multiple_clients_share_phone'};
@@ -167,6 +193,10 @@ async function classify(env,deps,token,route,identity) {
     if(!complete)throw new IntakeError('intake_history_incomplete');
     base[kind==='requests'?'request_ids':'job_ids']=[...ids];
   }
+  // Reconfirm the actual saved phone after the complete history reads. A phone
+  // search hit alone must not authorize writing after staff change that client.
+  const current=await exactClient(env,deps,token,route,identity,clientId);
+  archived ||= current.isArchived;
   if(base.request_ids.length||base.job_ids.length)return {...base,classification:'suppressed_existing_customer',reason:'prior_request_or_job'};
   if(archived)return {...base,classification:'held_archived_client',reason:'archived_unused_client'};
   return {...base,classification:'eligible_unused_client',reason:'client_has_no_requests_or_jobs'};
@@ -251,7 +281,7 @@ function noteMessage(row,source) {
     `Quo ${source.type} ID: ${source.id}`,`Quo event ID: ${source.event_id}`,`Quo conversation ID: ${source.conversation_id}`,
     `Received: ${source.occurred_at}`,`Status: ${source.status}`];
   if(row.operation_kind==='intake'&&row.classification==='eligible_new_client'
-    &&!source.first_name?.trim()&&!source.last_name?.trim())lines.push('Name not yet collected; New lead is a system placeholder.');
+    &&!source.first_name?.trim()&&!source.last_name?.trim())lines.push('At initial capture: Name not yet collected; New lead is a system placeholder.');
   for(const [key,label] of [['answered_at','Answered'],['completed_at','Completed'],['duration','Duration (seconds)'],['quo_url','Open in Quo'],['text','Customer text'],['summary','Call summary'],['transcript','Call transcript'],['voicemail','Voicemail']]) {
     if(source[key]!=null)lines.push(`${label}: ${source[key]}`);
   }
@@ -262,7 +292,9 @@ async function createNote(env,deps,token,row,lease) {
   const db=env.ANGI_ROUTER_DB;
   await checkpoint(db,row,lease,'note_creating',{},nowFor(deps));
   try {
-    const result=await deps.jobberGraphql(env,token.accessToken,MUTATIONS.note,{requestId:row.request_id,input:{message:noteMessage(row,JSON.parse(row.source_json))}});
+    const source=JSON.parse(row.source_json);
+    const input={message:noteMessage(row,source),...(source.media?.length?{attachments:[...new Set(source.media)].map(url=>({url:safeUrl(url,false)}))}:{})};
+    const result=await deps.jobberGraphql(env,token.accessToken,MUTATIONS.note,{requestId:row.request_id,input});
     const note=mutationData(result,'requestCreateNote','requestNote','RequestNote');
     await checkpoint(db,row,lease,'completed',{note_id:canonical(note.id,'RequestNote'),reason:'intake_recorded'},nowFor(deps));
   }catch(error) {
@@ -274,7 +306,10 @@ async function processIntake(env,deps,token,route,identity,input,row,lease) {
   const db=env.ANGI_ROUTER_DB;
   if(row.operation_state==='request_created')return createNote(env,deps,token,row,lease);
   let classification;
-  try{classification=await classify(env,deps,token,route,identity);}catch(error){throw new IntakeError(error instanceof IntakeError?error.code:'jobber_read_failed');}
+  try{classification=await classify(env,deps,token,route,identity,row.client_id);}catch(error){
+    if(error instanceof IntakeError&&error.status===409)return hold(db,row,lease,error.code,nowFor(deps));
+    throw new IntakeError(error instanceof IntakeError?error.code:'jobber_read_failed');
+  }
   if(!classification.classification.startsWith('eligible_')) {
     await checkpoint(db,row,lease,classification.classification.startsWith('suppressed')?'suppressed':'held',
       {classification:row.classification||classification.classification,reason:classification.reason,...(!row.client_id&&classification.client_id?{client_id:classification.client_id}:{})},nowFor(deps));
@@ -309,7 +344,11 @@ async function processIntake(env,deps,token,route,identity,input,row,lease) {
   }
   // A native Angi/website/staff Request could appear while client creation was
   // underway. Recheck the full destination history immediately before creating.
-  const fresh=await classify(env,deps,token,route,identity);
+  let fresh;
+  try{fresh=await classify(env,deps,token,route,identity,row.client_id);}catch(error){
+    if(error instanceof IntakeError&&error.status===409)return hold(db,row,lease,error.code,nowFor(deps));
+    throw error;
+  }
   if(fresh.classification!=='eligible_unused_client'||fresh.client_id!==row.client_id) return hold(db,row,lease,'inquiry_or_identity_changed_before_request',nowFor(deps));
   await checkpoint(db,row,lease,'request_creating',{},nowFor(deps));
   try {
@@ -405,6 +444,55 @@ async function handleWrite(context,deps,kind) {
         }
       }catch{}
     }
+    return errorResponse(error);
+  }finally {
+    if(row&&lease)try{await run(context.env.ANGI_ROUTER_DB,'UPDATE quo_intake_operations SET lease_token = NULL,lease_expires_at = NULL WHERE operation_id = ? AND lease_token = ?',[row.operation_id,lease]);}catch{}
+  }
+}
+/** Explicit operator recovery of a proven partial create, never a new intent. */
+export async function handleJobberQuoIntakeResume(context,deps=leadHelpers) {
+  let row,lease;
+  try {
+    const input=await inputFor(context,[...IDENTITY_FIELDS,'operation_id','expected_client_id']);
+    const {route,identity}=routeInput(input),clientId=canonical(input.expected_client_id,'Client');
+    if(!validOperation(input.operation_id)||!clientId)throw new IntakeError('invalid_input',400);
+    const db=context.env.ANGI_ROUTER_DB;
+    row=await getOperation(db,input.operation_id);
+    if(!row)throw new IntakeError('intake_operation_not_found',404);
+    if(row.operation_kind!=='intake'||IDENTITY_FIELDS.some(key=>row[key]!==identity[key])||row.client_id!==clientId)throw new IntakeError('intake_recovery_identity_conflict',409);
+    if(row.operation_state==='completed')return json(publicOperation(row,nowFor(deps)));
+    // A repeated request during active work is a status read, not another write.
+    if(!FINAL_STATES.has(row.operation_state))return json(publicOperation(row,nowFor(deps)));
+    if(row.operation_state!=='held'||row.reason!=='inquiry_or_identity_changed_before_request'
+      ||row.classification!=='eligible_new_client'||row.uncertain||row.request_id||row.note_id||row.jobber_web_uri)throw new IntakeError('intake_recovery_not_safe',409);
+    if(context.env.QUO_INTAKE_WRITE_ENABLED!=='true')throw new IntakeError('quo_intake_writes_disabled',503);
+    let source;try{source=cleanSource(JSON.parse(row.source_json),identity,nowFor(deps));}catch{throw new IntakeError('intake_recovery_source_invalid',409);}
+    const sourceTime=Date.parse(source.occurred_at),cutoff=Date.parse(context.env.QUO_INTAKE_LIVE_SINCE);
+    if(!Number.isFinite(cutoff)||sourceTime<cutoff||nowFor(deps)-sourceTime>24*60*60*1000)throw new IntakeError('intake_recovery_outside_cutover',409);
+    const original={kind:'intake',...identity,source,expected_client_id:null,parent_operation_id:null,request_id:null};
+    if(await sourceHash(JSON.stringify(original))!==row.intent_sha256)throw new IntakeError('intake_recovery_intent_conflict',409);
+    const sourceGuard=await db.prepare('SELECT operation_id FROM quo_intake_source_guards WHERE account_id = ? AND source_type = ? AND source_id = ?').bind(identity.account_id,source.type,source.id).first();
+    const phoneGuard=await db.prepare('SELECT operation_id FROM quo_intake_phone_guards WHERE account_id = ? AND phone_sha256 = ?').bind(identity.account_id,await sourceHash(identity.phone)).first();
+    if(sourceGuard?.operation_id!==row.operation_id||phoneGuard?.operation_id!==row.operation_id)throw new IntakeError('intake_recovery_guard_conflict',409);
+    lease=crypto.randomUUID();
+    const acquired=await run(db,`UPDATE quo_intake_operations SET lease_token = ?,lease_expires_at = ? WHERE operation_id = ?
+      AND operation_state = 'held' AND reason = 'inquiry_or_identity_changed_before_request' AND classification = 'eligible_new_client'
+      AND client_id = ? AND request_id IS NULL AND note_id IS NULL AND jobber_web_uri IS NULL AND uncertain = 0
+      AND (lease_token IS NULL OR lease_expires_at <= ?)`,[lease,nowFor(deps)+LEASE_MS,row.operation_id,clientId,nowFor(deps)]);
+    if(acquired!==1)return json(publicOperation(await getOperation(db,row.operation_id),nowFor(deps)));
+    row=await getOperation(db,row.operation_id);
+    await checkpoint(db,row,lease,'client_created',{reason:'operator_resume_requested'},nowFor(deps));
+    const token=await deps.refreshJobberAccessToken(context.env,route);
+    await processIntake(context.env,deps,token,route,identity,{expected_client_id:null},row,lease);
+    return json(publicOperation(row,nowFor(deps)));
+  }catch(error) {
+    if(row&&lease)try {
+      const current=await getOperation(context.env.ANGI_ROUTER_DB,row.operation_id);
+      if(current?.lease_token===lease&&WRITE_STATES.has(current.operation_state)) {
+        await hold(context.env.ANGI_ROUTER_DB,current,lease,'jobber_write_outcome_unknown',nowFor(deps),true);
+        return json(publicOperation(current,nowFor(deps)));
+      }
+    }catch{}
     return errorResponse(error);
   }finally {
     if(row&&lease)try{await run(context.env.ANGI_ROUTER_DB,'UPDATE quo_intake_operations SET lease_token = NULL,lease_expires_at = NULL WHERE operation_id = ? AND lease_token = ?',[row.operation_id,lease]);}catch{}
