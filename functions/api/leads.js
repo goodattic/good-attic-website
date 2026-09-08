@@ -1327,6 +1327,18 @@ export async function onRequestPost({ request, env }) {
 
   try {
     const jobber = await submitLeadToJobber(env, lead);
+    if (env.ACKNOWLEDGEMENT_SOURCE_ENABLED === 'true') {
+      // Proof is written only by this successful public form path, never by a
+      // manually created Jobber record or its editable marketing source label.
+      try {
+        const { recordWebsiteAcknowledgementSourceSafely } = await import('../../server/acknowledgement-source.js');
+        await recordWebsiteAcknowledgementSourceSafely(env, lead, jobber);
+      } catch {
+        console.error('Website acknowledgement proof hook unavailable after Jobber succeeded.', {
+          submissionId: lead.submission_id, market: lead.market_key, requestId: jobber.request_id,
+        });
+      }
+    }
     // Attribution is intentionally loaded only for website lead submission.
     // The private appointment resolver imports the Jobber helpers in this file
     // without bringing Fieldflow into its execution path.
