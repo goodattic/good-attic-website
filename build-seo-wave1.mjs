@@ -26,9 +26,9 @@ const googleAdsTrackingSnippet = `  <!-- Google tag (gtag.js) -->
     gtag('js', new Date());
     gtag('config', 'AW-10789892066');
     gtag('config', 'G-P7T219JFV6');
-    gtag('config', 'AW-11103039262/_4E-CN313tIaEJ7eq64p', { 'phone_conversion_number': '385-336-0062' });
-    gtag('config', 'AW-11103039262/-7syCOa6-e0aEJ7eq64p', { 'phone_conversion_number': '314-916-1220' });
-    gtag('config', 'AW-11103039262/35RYCNWL7bgcEJ7eq64p', { 'phone_conversion_number': '816-207-9488' });
+    gtag('config', 'AW-11103039262/_4E-CN313tIaEJ7eq64p', { 'phone_conversion_number': '385-336-4442' });
+    gtag('config', 'AW-11103039262/-7syCOa6-e0aEJ7eq64p', { 'phone_conversion_number': '314-931-2620' });
+    gtag('config', 'AW-11103039262/35RYCNWL7bgcEJ7eq64p', { 'phone_conversion_number': '816-434-0308' });
     window.goodAtticPhoneConversionNumbersConfigured = true;
     window.goodAtticGoogleTagConfigured = true;
     window.goodAtticGa4Configured = true;
@@ -200,19 +200,19 @@ const { approvedReviewExcerpts, documentedProjectProof } = await loadProofData()
 
 const marketPhones = {
   "salt-lake-city-ut": {
-    phoneDisplay: "385-336-0062",
-    phoneHref: "tel:+13853360062",
-    smsHref: "sms:+13853360062"
+    phoneDisplay: "385-336-4442",
+    phoneHref: "tel:+13853364442",
+    smsHref: "sms:+13853364442"
   },
   "st-louis-mo": {
-    phoneDisplay: "314-916-1220",
-    phoneHref: "tel:+13149161220",
-    smsHref: "sms:+13149161220"
+    phoneDisplay: "314-931-2620",
+    phoneHref: "tel:+13149312620",
+    smsHref: "sms:+13149312620"
   },
   "kansas-city-mo": {
-    phoneDisplay: "816-207-9488",
-    phoneHref: "tel:+18162079488",
-    smsHref: "sms:+18162079488"
+    phoneDisplay: "816-434-0308",
+    phoneHref: "tel:+18164340308",
+    smsHref: "sms:+18164340308"
   }
 };
 
@@ -12294,7 +12294,7 @@ function renderCorePage(page, currentUrl) {
 function renderPage(page) {
   const currentUrl = page.url;
   const stylesHref = `${assetHref(currentUrl, "styles.css")}?v=measurement-20260901a`;
-  const scriptHref = `${assetHref(currentUrl, "script.js")}?v=measurement-20260901a`;
+  const scriptHref = `${assetHref(currentUrl, "script.js")}?v=quo-numbers-20260907a`;
   const mainOpenTag = page.page_type === "market" ? '<main id="top">' : '<main class="page-main">';
 
   let bodyContent = "";
