@@ -10,7 +10,7 @@ const now = Date.parse(time) + 60_000;
 const secret = 'unit-test-acknowledgement-broker-secret';
 const cert = 'a89c0a6169eff7dc2ad9b4f6eb0c197671182b06';
 const route = getJobberOAuthRoute('ut', 'website');
-const env = receipt => ({ ANGI_ROUTER_DB: { prepare() { return { bind: () => ({ first: async () => receipt || null }) }; } } });
+const env = (receipt, quoRows = []) => ({ ANGI_ROUTER_DB: { prepare(sql) { return { bind: () => ({ first: async () => receipt || null, all: async () => { assert.match(sql, /FROM quo_intake_operations/); return {success:true,results:quoRows}; } }) }; } } });
 function note(overrides = {}) {
   return { __typename: 'RequestNote', id: encode('RequestNote', 30), createdAt: time,
     message: `Trusted Form: https://cert.trustedform.com/${cert}`,
@@ -137,4 +137,38 @@ test('authorization, arbitrary-query, cross-account, wrong-object and mismatched
   const missingDb = context(); missingDb.env.ANGI_ROUTER_DB.prepare = () => { throw Error('secret database error'); };
   const failed = await handleJobberAcknowledgementResolve(missingDb, dependencies());
   assert.equal(failed.status, 503); assert.doesNotMatch(await failed.text(), /secret database/);
+});
+
+function quoRow(overrides = {}) {
+  return {operation_id:'quo-call-fixture',operation_kind:'intake',operation_state:'completed',account_id:route.expectedAccountId,
+    market:'utah',phone:'+18015551212',phone_number_id:'PNqw8amabk',client_id:encode('Client',20),request_id:encode('Request',10),
+    source_json:JSON.stringify({type:'call',id:'CAfixture',from:'+18015551212',to:'+13853364442',occurred_at:time}),...overrides};
+}
+test('verified Quo phone-intake proof suppresses the welcome across all markets and persisted Request states', async () => {
+  for(const [key,market,pn,number] of [['ut','utah','PNqw8amabk','+13853364442'],['mo_stl','stl','PN6LVKAV9A','+13149312620'],['mo_kc','kc','PNZBZnj8mz','+18164340308']]) {
+    const useRoute=getJobberOAuthRoute(key);
+    for(const operation_state of ['request_created','note_creating','completed','held']) {
+      const row=quoRow({operation_state,account_id:useRoute.expectedAccountId,market,phone_number_id:pn,source_json:JSON.stringify({type:'message',id:'MOfixture',from:'+18015551212',to:number,occurred_at:time})});
+      const result=await resolveAcknowledgementEligibility(env(null,[row]),useRoute,record({source:'Good Attic Website Leads'}),now+900_000);
+      assert.equal(result.eligibility,'suppressed');assert.equal(result.reason,'verified_quo_phone_intake');assert.equal(result.retryable,false);
+    }
+  }
+});
+test('Quo provenance mismatch or conflicting website receipt holds instead of adopting another identity', async () => {
+  const patches=[{account_id:encode('Account',2498453)},{market:'stl'},{phone_number_id:'PN6LVKAV9A'},{client_id:encode('Client',21)},
+    {request_id:encode('Request',11)},{phone:'+18015559999'},{operation_kind:'note'},{operation_state:'request_creating'},
+    {source_json:'broken'},{source_json:JSON.stringify({type:'call',id:'CAfixture',from:'+18015551212',to:'+13149312620',occurred_at:time})}];
+  for(const patch of patches) {
+    const result=await resolveAcknowledgementEligibility(env(null,[quoRow(patch)]),route,record({source:'Good Attic Website Leads'}),now);
+    assert.equal(result.eligibility,'held');assert.equal(result.reason,'source_identity_conflict');assert.equal(result.retryable,false);
+  }
+  for(const [receiptValue,rows] of [[await receipt(),[quoRow()]],[null,[quoRow(),quoRow({operation_id:'other'})]]]) {
+    assert.equal((await resolveAcknowledgementEligibility(env(receiptValue,rows),route,record(),now)).reason,'source_identity_conflict');
+  }
+});
+test('Quo labels alone do not prove phone intake; a pre-checkpoint Request still has its normal proof grace', async () => {
+  const result=await resolveAcknowledgementEligibility(env(null,[]),route,record({source:'Good Attic Website Leads'}),now);
+  assert.equal(result.reason,'website_attestation_pending');assert.equal(result.retryable,true);
+  const labelled=await resolveAcknowledgementEligibility(env(null,[]),route,record({source:'Quo'}),now);
+  assert.equal(labelled.reason,'not_verified_automatic_intake');assert.equal(labelled.eligibility,'suppressed');
 });

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
+import {resolveAcknowledgementEligibility} from '../server/jobber-acknowledgement-resolver.js';
+import {getJobberOAuthRoute} from '../functions/api/jobber/oauth/config.js';
 import {test} from 'node:test';
 import {handleJobberQuoIntakeResolve as resolve,handleJobberQuoIntakeWrite as write,handleJobberQuoIntakeStatus as status,handleJobberQuoIntakeNote as note,_private} from '../server/jobber-quo-intake.js';
 const enc=(kind,id)=>btoa(`gid://Jobber/${kind}/${id}`);
@@ -12,7 +14,8 @@ const ACCOUNTS={utah:enc('Account',2498432),stl:enc('Account',2498453),kc:enc('A
 function database() {
   const db=new DatabaseSync(':memory:');
   db.exec(fs.readFileSync(new URL('../migrations/0006_quo_intake_operations.sql',import.meta.url),'utf8'));
-  return {raw:db,prepare(sql){return {bind(...args){return {async run(){const r=db.prepare(sql).run(...args);return {success:true,meta:{changes:Number(r.changes)}};},async first(){return db.prepare(sql).get(...args)||null;}};}};}};
+  db.exec(fs.readFileSync(new URL('../migrations/0005_acknowledgement_sources.sql',import.meta.url),'utf8'));
+  return {raw:db,prepare(sql){return {bind(...args){return {async run(){const r=db.prepare(sql).run(...args);return {success:true,meta:{changes:Number(r.changes)}};},async first(){return db.prepare(sql).get(...args)||null;},async all(){return {success:true,results:db.prepare(sql).all(...args)};}};}};}};
 }
 function fixture(options={}) {
   const market=options.market||'utah',account=ACCOUNTS[market],db=database();
@@ -130,4 +133,13 @@ test('same canonical source in another operation is suppressed independently of 
 test('delayed note cannot attach to a Request reassigned to another client',async()=>{
   const f=fixture({override({query,account}){if(query===_private.QUERIES.noteParent)return {data:{account:{id:account},request:{id:REQUEST,client:{id:enc('Client',999)}}}};}});await bodyOf(write,f,f.body);
   const result=await bodyOf(note,f,{...f.identity,operation_id:'reassigned-note',parent_operation_id:f.body.operation_id,request_id:REQUEST,source:{...f.source,event_id:'EVlater'}});assert.equal(result.operation_state,'held');assert.equal(result.reason,'intake_note_request_identity_changed');assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+});
+
+test('actual durable broker Request proof suppresses acknowledgement even when the app displays Website Leads',async()=>{
+  for(const market of Object.keys(ACCOUNTS)) {
+    const f=fixture({market});const written=await bodyOf(write,f,f.body);assert.equal(written.operation_state,'completed');
+    const record={id:REQUEST,createdAt:new Date(NOW).toISOString(),source:'Good Attic Website Leads',phone:PHONE,client:{id:CLIENT,firstName:'',phones:[{number:PHONE,normalizedPhoneNumber:PHONE,primary:true,smsAllowed:false}]}};
+    const route=getJobberOAuthRoute({utah:'ut',stl:'mo_stl',kc:'mo_kc'}[market]);
+    const result=await resolveAcknowledgementEligibility(f.env,route,record,NOW+5000);assert.equal(result.eligibility,'suppressed');assert.equal(result.reason,'verified_quo_phone_intake');assert.equal(result.retryable,false);
+  }
 });
