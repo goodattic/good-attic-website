@@ -41,3 +41,6 @@ CREATE TABLE IF NOT EXISTS quo_intake_source_guards (
   created_at TEXT NOT NULL,
   PRIMARY KEY (account_id, source_type, source_id)
 );
+
+CREATE INDEX IF NOT EXISTS quo_intake_operations_request_idx
+  ON quo_intake_operations(account_id, request_id, operation_kind);

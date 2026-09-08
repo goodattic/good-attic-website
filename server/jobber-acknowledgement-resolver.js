@@ -22,6 +22,11 @@ const QUERY = `query GoodAtticAcknowledgementSource($id: EncodedId!) {
   }
 }`;
 const MARKETS = { ut: 'utah', mo_stl: 'stl', mo_kc: 'kc' };
+const QUO_NUMBERS = {
+  utah: {id:'PNqw8amabk',number:'+13853364442'},
+  stl: {id:'PN6LVKAV9A',number:'+13149312620'},
+  kc: {id:'PNZBZnj8mz',number:'+18164340308'},
+};
 const WEBSITE_SOURCES = new Set(['Good Attic Website Leads', 'Good Attic Google Leads']);
 const ANGI_APPLICATION_ID = btoa('gid://Jobber/Application/152570');
 const PROOF_GRACE_MS = 5 * 60_000;
@@ -104,13 +109,40 @@ async function nativeAngiProof(record, market, now) {
   });
 }
 
+async function quoIntakeProof(env, route, record, phone, websiteReceipt) {
+  const result = await env.ANGI_ROUTER_DB.prepare(`SELECT operation_id, operation_kind, operation_state,
+    account_id, market, phone, phone_number_id, client_id, request_id, source_json
+    FROM quo_intake_operations WHERE account_id = ? AND request_id = ? AND operation_kind = 'intake'
+    LIMIT 2`).bind(route.expectedAccountId, canonicalJobberId(record.id, 'Request')).all();
+  if (result?.success === false || !Array.isArray(result?.results)) throw new Error('quo_intake_proof_unavailable');
+  const rows = result.results;
+  if (!rows.length) return null;
+  const row = rows[0], market = MARKETS[route.marketKey], line = QUO_NUMBERS[market];
+  let source;
+  try { source = JSON.parse(row.source_json); } catch { return decision('held', 'source_identity_conflict'); }
+  if (rows.length !== 1 || websiteReceipt || row.account_id !== route.expectedAccountId || row.market !== market
+    || row.operation_kind !== 'intake' || !['request_created', 'note_creating', 'completed', 'held'].includes(row.operation_state)
+    || canonicalJobberId(row.request_id, 'Request') !== canonicalJobberId(record.id, 'Request')
+    || canonicalJobberId(row.client_id, 'Client') !== canonicalJobberId(record.client.id, 'Client')
+    || !phone.phone || phone.reason || normalizeAcknowledgementPhone(row.phone) !== row.phone || row.phone !== phone.phone
+    || row.phone_number_id !== line.id || !['call', 'message'].includes(source?.type)
+    || source.from !== row.phone || source.to !== line.number || typeof source.id !== 'string' || !source.id
+    || !Number.isFinite(Date.parse(source.occurred_at))) return decision('held', 'source_identity_conflict');
+  // A verified phone-origin Request is already a conversation. The mutable
+  // app/source display label never decides whether another welcome is sent.
+  return decision('suppressed', 'verified_quo_phone_intake');
+}
+
 export async function resolveAcknowledgementEligibility(env, route, record, now = Date.now()) {
   const phone = requestPhone(record);
   const base = { phone: phone.phone || '', smsPreference: 'unknown', smsAllowed: phone.smsAllowed ?? null,
     sourceKind: null, sourceLeadId: null, sourceCreatedAt: null };
   let proof;
   const receipt = await readWebsiteAcknowledgementSource(env, route.expectedAccountId, canonicalJobberId(record.id, 'Request'));
-  if (receipt) {
+  const quoProof = await quoIntakeProof(env, route, record, phone, receipt);
+  if (quoProof) {
+    proof = quoProof;
+  } else if (receipt) {
     const sourceTime = Date.parse(receipt.source_created_at), createdTime = Date.parse(record.createdAt);
     if (receipt.account_id !== route.expectedAccountId || receipt.market_key !== route.marketKey
       || canonicalJobberId(receipt.request_id, 'Request') !== canonicalJobberId(record.id, 'Request')
@@ -183,4 +215,4 @@ export async function handleJobberAcknowledgementResolve({ request, env }, depen
   } catch { return json({ ok: false, code: 'jobber_resolve_failed' }, 503); }
 }
 
-export const _private = { QUERY, nativeAngiProof, requestPhone, PROOF_GRACE_MS };
+export const _private = { QUERY, nativeAngiProof, requestPhone, PROOF_GRACE_MS, quoIntakeProof };
