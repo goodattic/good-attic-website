@@ -18,7 +18,7 @@ function note(overrides = {}) {
 }
 function record(overrides = {}) {
   return { id: encode('Request', 10), createdAt: time, jobberWebUri: 'https://secure.getjobber.com/work_requests/10',
-    source: 'Angi', phone: '(801) 555-1212', client: { id: encode('Client', 20), firstName: 'Jamie',
+    source: 'Angi', phone: '(801) 555-1212', client: { id: encode('Client', 20), firstName: 'Jamie', lastName: '',
       phones: [{ number: '8015551212', normalizedPhoneNumber: '+18015551212', primary: true, smsAllowed: true }] },
     notes: { nodes: [note()], pageInfo: { hasNextPage: false } }, ...overrides };
 }
@@ -171,4 +171,15 @@ test('Quo labels alone do not prove phone intake; a pre-checkpoint Request still
   assert.equal(result.reason,'website_attestation_pending');assert.equal(result.retryable,true);
   const labelled=await resolveAcknowledgementEligibility(env(null,[]),route,record({source:'Quo'}),now);
   assert.equal(labelled.reason,'not_verified_automatic_intake');assert.equal(labelled.eligibility,'suppressed');
+});
+
+test('later eligible Angi and website Requests use Hi-there fallback only while a proven Quo placeholder remains unchanged',async()=>{
+ const nameProof={account_id:route.expectedAccountId,client_id:encode('Client',20),operation_kind:'intake',classification:'eligible_new_client',source_json:JSON.stringify({type:'call',id:'CAprior'})};
+ for(const source of ['Angi','Good Attic Website Leads'])for(const [firstName,lastName,hasProof,expected] of [['New lead','',true,''],['Susan','',true,'Susan'],['New lead','Smith',true,'New lead'],['New lead','',false,'New lead']]){
+  const r=record({source});r.client.firstName=firstName;r.client.lastName=lastName;
+  const stored=source==='Angi'?null:await receipt();
+  const ctx=context();ctx.env.ANGI_ROUTER_DB={prepare(sql){return {bind(){return {first:async()=>stored,all:async()=>({success:true,results:sql.includes("classification = 'eligible_new_client'")&&hasProof?[nameProof]:[]})};}};}};
+  const response=await handleJobberAcknowledgementResolve(ctx,dependencies(r));assert.equal(response.status,200);
+  const value=(await response.json()).request;assert.equal(value.eligibility,'eligible');assert.equal(value.firstName,expected);assert.equal(value.sourceKind,source==='Angi'?'angi':'website');
+ }
 });

@@ -44,14 +44,14 @@ function fixture(options={}) {
   return {env,db,state,deps,calls,identity,source,body,ctx,counts};
 }
 async function bodyOf(fn,f,body){const r=await fn(f.ctx(body),f.deps);return {http:r.status,...await r.json()};}
-for(const market of Object.keys(ACCOUNTS))test(`${market}: reuses token authority, creates exactly one phone-only client, Request and note`,async()=>{
+for(const market of Object.keys(ACCOUNTS))test(`${market}: reuses token authority, creates one client with an explicit placeholder, Request and note`,async()=>{
   const f=fixture({market});
   const first=await bodyOf(resolve,f,f.identity);assert.equal(first.classification,'eligible_new_client');
   const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,'completed');assert.equal(result.client_id,CLIENT);assert.equal(result.request_id,REQUEST);assert.equal(result.note_id,NOTE);assert.equal(result.uncertain,false);
   assert.deepEqual(f.counts(),{client:1,request:1,note:1});
   const input=f.calls.find(c=>c.query===_private.MUTATIONS.client).vars.input;
-  assert.equal('firstName' in input,false);assert.equal('lastName' in input,false);assert.equal('smsAllowed' in input.phones[0],false);assert.equal(input.receivesFollowUps,false);
-  const noteText=f.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message;assert.match(noteText,/Quo call ID: CAfixture1/);assert.match(noteText,/Customer asked/);assert.match(noteText,/Operation ID: fixture-operation/);
+  assert.equal(input.firstName,'New lead');assert.equal('lastName' in input,false);assert.equal('smsAllowed' in input.phones[0],false);assert.equal(input.receivesFollowUps,false);
+  const noteText=f.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message;assert.match(noteText,/Quo call ID: CAfixture1/);assert.match(noteText,/Customer asked/);assert.match(noteText,/Name not yet collected; New lead is a system placeholder/);assert.match(noteText,/Operation ID: fixture-operation/);
   assert.deepEqual(await bodyOf(write,f,f.body),result);assert.deepEqual(f.counts(),{client:1,request:1,note:1});
   assert.equal((await bodyOf(status,f,{account_id:ACCOUNTS[market],operation_id:f.body.operation_id})).operation_state,'completed');
 });
@@ -91,7 +91,7 @@ test('native inquiry appearing after client create holds partial client and does
   const f=fixture({override({query,state}){if(query===_private.MUTATIONS.client)state.requests.push(REQUEST);}});
   const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,'held');assert.equal(result.client_id,CLIENT);assert.equal(result.request_id,null);assert.equal(result.reason,'inquiry_or_identity_changed_before_request');assert.deepEqual(f.counts(),{client:1,request:0,note:0});
 });
-test('phone-only business validation rejection is terminal, contains no fabricated name fallback',async()=>{
+test('business validation rejection remains terminal without a second client-create fallback',async()=>{
   const f=fixture({override({query}){if(query===_private.MUTATIONS.client)return {data:{clientCreate:{client:null,userErrors:[{message:'Last name is required',path:['lastName']}]}}};}});
   const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,'held');assert.equal(result.reason,'clientCreate_rejected');assert.equal(result.uncertain,false);await bodyOf(write,f,f.body);assert.deepEqual(f.counts(),{client:1,request:0,note:0});
 });
@@ -142,4 +142,26 @@ test('actual durable broker Request proof suppresses acknowledgement even when t
     const route=getJobberOAuthRoute({utah:'ut',stl:'mo_stl',kc:'mo_kc'}[market]);
     const result=await resolveAcknowledgementEligibility(f.env,route,record,NOW+5000);assert.equal(result.eligibility,'suppressed');assert.equal(result.reason,'verified_quo_phone_intake');assert.equal(result.retryable,false);
   }
+});
+
+test('known-client resume preserves original new-client provenance and the explicit placeholder note',async()=>{
+ let failOnce=true;
+ const f=fixture({override({query,state}){if(query===_private.QUERIES.phones&&state.clients.length&&failOnce){failOnce=false;throw Error('temporary read failure after known successful create');}}});
+ const first=await bodyOf(write,f,f.body);assert.equal(first.http,503);
+ const checkpoint=f.db.raw.prepare('SELECT operation_state,classification,client_id FROM quo_intake_operations WHERE operation_id=?').get(f.body.operation_id);
+ assert.equal(checkpoint.operation_state,'client_created');assert.equal(checkpoint.classification,'eligible_new_client');assert.equal(checkpoint.client_id,CLIENT);
+ const resumed=await bodyOf(write,f,f.body);assert.equal(resumed.operation_state,'completed');assert.equal(resumed.classification,'eligible_new_client');
+ assert.deepEqual(f.counts(),{client:1,request:1,note:1});assert.match(f.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message,/New lead is a system placeholder/);
+});
+test('canonical Quo names bypass the placeholder; existing unused clients are never renamed',async()=>{
+ const named=fixture();const value=await bodyOf(write,named,{...named.body,source:{...named.source,contact_id:'CTknown',first_name:'Susan',last_name:'Customer'}});assert.equal(value.operation_state,'completed');
+ assert.equal(named.calls.find(c=>c.query===_private.MUTATIONS.client).vars.input.firstName,'Susan');assert.doesNotMatch(named.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message,/system placeholder/);
+ const unused=fixture({clients:[{id:CLIENT}]});unused.body.expected_client_id=CLIENT;const reused=await bodyOf(write,unused,unused.body);assert.equal(reused.operation_state,'completed');assert.equal(reused.classification,'eligible_unused_client');assert.equal(unused.counts().client,0);assert.doesNotMatch(unused.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message,/system placeholder/);
+});
+
+test('a later external inquiry does not erase placeholder creation provenance on a resumed known client',async()=>{
+ let failOnce=true;
+ const f=fixture({override({query,state}){if(query===_private.QUERIES.phones&&state.clients.length&&failOnce){failOnce=false;throw Error('temporary read failure');}}});
+ await bodyOf(write,f,f.body);f.state.requests.push(REQUEST);
+ const resumed=await bodyOf(write,f,f.body);assert.equal(resumed.operation_state,'suppressed');assert.equal(resumed.classification,'eligible_new_client');assert.equal(resumed.reason,'prior_request_or_job');assert.equal(resumed.client_id,CLIENT);assert.deepEqual(f.counts(),{client:1,request:0,note:0});
 });
