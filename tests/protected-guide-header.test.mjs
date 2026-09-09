@@ -10,6 +10,7 @@ import { parse } from "parse5";
 import { adapter } from "parse5-htmlparser2-tree-adapter";
 import { selectAll } from "css-select";
 import { assetDelivery, pageAssets } from "../scripts/asset-delivery.mjs";
+import { synchronizationFiles } from "./live-backend-parity.mjs";
 
 const root = new URL("../", import.meta.url);
 const parent = "0e3703bb5606f3c7e30c7f576ac708dc37db01ed";
@@ -66,13 +67,13 @@ test("article, search metadata, schema, FAQ, links, images, forms, header markup
 
 test("historical header exception plus the separately tested modal registrations stay bounded", () => {
   const support = ["scripts/asset-delivery-manifest.json", "scripts/build-pages-output.mjs", "_headers", "tests/asset-delivery.test.mjs", "tests/city-market-exact-copy.test.mjs", "tests/four-guide-ai-authority-cluster.test.mjs", "tests/protected-guide-header.test.mjs", "tests/pages-deployment-hardening.test.mjs", "tests/mobile-header.test.mjs"];
-  const allowed = new Set([...assetDelivery.htmlReferenceChangesOnly, ...support, "tests/asset-delivery-helpers.mjs"]);
+  const allowed = new Set([...synchronizationFiles, ...assetDelivery.htmlReferenceChangesOnly, ...support, "tests/asset-delivery-helpers.mjs"]);
   const tracked = git("ls-tree", "-r", "--name-only", parent).toString().trim().split("\n");
   for (const file of tracked.filter(file => !allowed.has(file))) assert.deepEqual(read(file), before(file), file);
   const expectedManifest = { ...oldManifest, htmlReferenceChangesOnly: [...files, ...oldManifest.htmlReferenceChangesOnly], protectedReferenceException: assetDelivery.protectedReferenceException, js: {...oldManifest.js, to: assetDelivery.js.to}, assets: {...oldManifest.assets, [assetDelivery.js.to]: assetDelivery.assets[assetDelivery.js.to]}, modalFocus: assetDelivery.modalFocus };
   assert.deepEqual(assetDelivery, expectedManifest);
   const added = git("diff", "--name-only", "--diff-filter=A", parent, "--").toString().trim().split("\n").filter(Boolean);
-  assert.ok(added.every(file => ["tests/protected-guide-header.test.mjs", "tests/modal-focus.test.mjs", "tests/modal-focus.browser.mjs", assetDelivery.js.to].includes(file)));
+  assert.ok(added.every(file => [...synchronizationFiles, "tests/protected-guide-header.test.mjs", "tests/modal-focus.test.mjs", "tests/modal-focus.browser.mjs", assetDelivery.js.to].includes(file)));
 });
 
 test("both generations and the phone dependency retain exact parent and rollback bytes", () => {

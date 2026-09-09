@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { assetDelivery } from "../scripts/asset-delivery.mjs";
+import { synchronizationFiles } from "./live-backend-parity.mjs";
 
 // Historical copy/layout tests compare content before the separately tested URL migration.
 export function preAssetMigrationHtml(html, file) {
@@ -17,6 +18,7 @@ export function readApprovedContent(file, root = new URL("../", import.meta.url)
 }
 
 export const assetMigrationFiles = [
+  ...synchronizationFiles,
   ...assetDelivery.htmlReferenceChangesOnly, "styles.css", "script.js", "_headers",
   "build-seo-wave1.mjs", "scripts/build-pages-output.mjs",
   "tests/city-market-exact-copy.test.mjs", "tests/four-guide-ai-authority-cluster.test.mjs",

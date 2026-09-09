@@ -52,8 +52,8 @@ for(const market of Object.keys(ACCOUNTS))test(`${market}: reuses token authorit
   const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,'completed');assert.equal(result.client_id,CLIENT);assert.equal(result.request_id,REQUEST);assert.equal(result.note_id,NOTE);assert.equal(result.uncertain,false);
   assert.deepEqual(f.counts(),{client:1,request:1,note:1});
   const input=f.calls.find(c=>c.query===_private.MUTATIONS.client).vars.input;
-  assert.equal(input.firstName,'New lead');assert.equal('lastName' in input,false);assert.equal('smsAllowed' in input.phones[0],false);assert.equal(input.receivesFollowUps,false);
-  const noteText=f.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message;assert.match(noteText,/Quo call ID: CAfixture1/);assert.match(noteText,/Customer asked/);assert.match(noteText,/Name not yet collected; New lead is a system placeholder/);assert.match(noteText,/Operation ID: fixture-operation/);
+  assert.equal(input.firstName,PHONE);assert.equal('lastName' in input,false);assert.equal('smsAllowed' in input.phones[0],false);assert.equal(input.receivesFollowUps,false);
+  const noteText=f.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message;assert.match(noteText,/Quo call ID: CAfixture1/);assert.match(noteText,/Customer asked/);assert.match(noteText,/Name not yet collected; the temporary intake name is not a confirmed customer name/);assert.match(noteText,/Operation ID: fixture-operation/);
   assert.deepEqual(await bodyOf(write,f,f.body),result);assert.deepEqual(f.counts(),{client:1,request:1,note:1});
   assert.equal((await bodyOf(status,f,{account_id:ACCOUNTS[market],operation_id:f.body.operation_id})).operation_state,'completed');
 });
@@ -153,12 +153,12 @@ test('known-client resume preserves original new-client provenance and the expli
  const checkpoint=f.db.raw.prepare('SELECT operation_state,classification,client_id FROM quo_intake_operations WHERE operation_id=?').get(f.body.operation_id);
  assert.equal(checkpoint.operation_state,'client_created');assert.equal(checkpoint.classification,'eligible_new_client');assert.equal(checkpoint.client_id,CLIENT);
  const resumed=await bodyOf(write,f,f.body);assert.equal(resumed.operation_state,'completed');assert.equal(resumed.classification,'eligible_new_client');
- assert.deepEqual(f.counts(),{client:1,request:1,note:1});assert.match(f.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message,/New lead is a system placeholder/);
+ assert.deepEqual(f.counts(),{client:1,request:1,note:1});assert.match(f.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message,/temporary intake name is not a confirmed customer name/);
 });
 test('canonical Quo names bypass the placeholder; existing unused clients are never renamed',async()=>{
  const named=fixture();const value=await bodyOf(write,named,{...named.body,source:{...named.source,contact_id:'CTknown',first_name:'Susan',last_name:'Customer'}});assert.equal(value.operation_state,'completed');
- assert.equal(named.calls.find(c=>c.query===_private.MUTATIONS.client).vars.input.firstName,'Susan');assert.doesNotMatch(named.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message,/system placeholder/);
- const unused=fixture({clients:[{id:CLIENT}]});unused.body.expected_client_id=CLIENT;const reused=await bodyOf(write,unused,unused.body);assert.equal(reused.operation_state,'completed');assert.equal(reused.classification,'eligible_unused_client');assert.equal(unused.counts().client,0);assert.doesNotMatch(unused.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message,/system placeholder/);
+ assert.equal(named.calls.find(c=>c.query===_private.MUTATIONS.client).vars.input.firstName,'Susan');assert.doesNotMatch(named.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message,/temporary intake name/);
+ const unused=fixture({clients:[{id:CLIENT}]});unused.body.expected_client_id=CLIENT;const reused=await bodyOf(write,unused,unused.body);assert.equal(reused.operation_state,'completed');assert.equal(reused.classification,'eligible_unused_client');assert.equal(unused.counts().client,0);assert.doesNotMatch(unused.calls.find(c=>c.query===_private.MUTATIONS.note).vars.input.message,/temporary intake name/);
 });
 
 test('a later external inquiry does not erase placeholder creation provenance on a resumed known client',async()=>{

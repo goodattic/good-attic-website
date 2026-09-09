@@ -274,7 +274,7 @@ function newClientNames(source) {
   const firstName=typeof source.first_name==='string'?source.first_name.trim():'';
   const lastName=typeof source.last_name==='string'?source.last_name.trim():'';
   if(firstName||lastName)return {...(firstName?{firstName}:{}),...(lastName?{lastName}:{})};
-  return {firstName:QUO_UNKNOWN_CLIENT_NAME};
+  return {firstName:source.type==='call'?source.from:QUO_UNKNOWN_CLIENT_NAME};
 }
 function noteMessage(row,source) {
   const lines=[row.operation_kind==='note'?`Good Attic Quo ${source.type==='message'?'text':'call'} update`:'Good Attic Quo incoming inquiry',
@@ -283,7 +283,7 @@ function noteMessage(row,source) {
     `Quo ${source.type} ID: ${source.id}`,`Quo event ID: ${source.event_id}`,`Quo conversation ID: ${source.conversation_id}`,
     `Received: ${source.occurred_at}`,`Status: ${source.status}`];
   if(row.operation_kind==='intake'&&row.classification==='eligible_new_client'
-    &&!source.first_name?.trim()&&!source.last_name?.trim())lines.push('At initial capture: Name not yet collected; New lead is a system placeholder.');
+    &&!source.first_name?.trim()&&!source.last_name?.trim())lines.push('At initial capture: Name not yet collected; the temporary intake name is not a confirmed customer name.');
   for(const [key,label] of [['answered_at','Answered'],['completed_at','Completed'],['duration','Duration (seconds)'],['quo_url','Open in Quo'],['text','Customer text'],['summary','Call summary'],['transcript','Call transcript'],['voicemail','Voicemail']]) {
     if(source[key]!=null)lines.push(`${label}: ${source[key]}`);
   }

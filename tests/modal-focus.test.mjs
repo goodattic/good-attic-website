@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { assetDelivery } from "../scripts/asset-delivery.mjs";
+import { synchronizationFiles } from "./live-backend-parity.mjs";
 
 const root = new URL("../", import.meta.url);
 const parent = "6295efbc4fdc09a7770fdfdbb793e569757a02ab";
@@ -31,7 +32,7 @@ test("modal child changes exactly one src value per approved page, including fiv
 });
 
 test("modal child cannot change content, CSS, form contracts, backend, or unrelated source", () => {
-  const allowed = new Set([...old.htmlReferenceChangesOnly, ...support, "tests/asset-delivery-helpers.mjs", "tests/four-guide-ai-authority-cluster.test.mjs"]);
+  const allowed = new Set([...synchronizationFiles, ...old.htmlReferenceChangesOnly, ...support, "tests/asset-delivery-helpers.mjs", "tests/four-guide-ai-authority-cluster.test.mjs"]);
   const tracked = git("ls-tree", "-r", "--name-only", parent).toString().trim().split("\n");
   for (const file of tracked.filter(file => !allowed.has(file))) assert.deepEqual(read(file), before(file), file);
   const expected = {...old, js: {...old.js, to: assetDelivery.js.to}, assets: {...old.assets, [assetDelivery.js.to]: sha(read(assetDelivery.js.to))}, modalFocus: {parentCommit: parent, previousAsset: old.js.to}, protectedReferenceException: {...old.protectedReferenceException, currentHashes: assetDelivery.protectedReferenceException.currentHashes}};
