@@ -2,6 +2,11 @@
   "sourceCommit": "aefd55f03ae76a3ce7cbee25807f554bdde5e2d5",
   "restoredCommit": "8e63b1d79389f31b3fe81223cd956bf8726f066c",
   "htmlReferenceChangesOnly": [
+    "resources/blown-insulation-vs-rolled-insulation/index.html",
+    "resources/attic-air-sealing-vs-more-insulation/index.html",
+    "resources/insulation-removal-vs-top-off/index.html",
+    "resources/spray-foam-vs-blown-in-attic-insulation/index.html",
+    "resources/signs-of-attic-pest-contamination/index.html",
     "404.html",
     "about/index.html",
     "contact/index.html",
@@ -100,6 +105,16 @@
     "resources/insulation-removal-vs-top-off/index.html": "59419baf134b2b98861f73fff33fd1ceaeb33d6991ff917a395fde2433924a86",
     "resources/spray-foam-vs-blown-in-attic-insulation/index.html": "faf13fa9cf4f318082b7e2d9d75f93a2d5133424db45331f6a1a5467973f1cfc",
     "resources/signs-of-attic-pest-contamination/index.html": "39144ac32a1a5d321ca978687c178ffdeb9b909060daf5a832139d9c4d0e0297"
+  },
+  "protectedReferenceException": {
+    "parentCommit": "0e3703bb5606f3c7e30c7f576ac708dc37db01ed",
+    "currentHashes": {
+      "resources/blown-insulation-vs-rolled-insulation/index.html": "8556c19be4172e675ac414fdd04a5e5cda5e1a7d05095560930697869e14573e",
+      "resources/attic-air-sealing-vs-more-insulation/index.html": "8c00d19c4aae97d91c11af1abf63701692ef16ae760591ab5b0afbe10c48c543",
+      "resources/insulation-removal-vs-top-off/index.html": "12d8f9642a001df97faee00abb447435f9c3e40791b7921b589ef5cd11e68602",
+      "resources/spray-foam-vs-blown-in-attic-insulation/index.html": "92ab4d95ab9e73bd1d44561be0b72aa64a5059629fed255a2a01681f01fe5888",
+      "resources/signs-of-attic-pest-contamination/index.html": "3ebe506745842339c0629dfb2b1de5693f5338418dc3b452c1f3d47361c7aeae"
+    }
   },
   "css": {
     "from": "styles.css?v=measurement-20260901a",

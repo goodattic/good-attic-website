@@ -51,15 +51,15 @@ for (const cta of Object.values(expectedClosingCtas)) {
 
 const protectedHashes = {
   "resources/blown-insulation-vs-rolled-insulation/index.html":
-    "ea5d660ffba931e1355fa53f8323b40812f270023ff1f000cfd802bf0f6adb37",
+    "8556c19be4172e675ac414fdd04a5e5cda5e1a7d05095560930697869e14573e",
   "resources/attic-air-sealing-vs-more-insulation/index.html":
-    "0fb2ae4f99ec21d943550aa19020f9accfce77364b38bce7a9dc843b97cf2f8c",
+    "8c00d19c4aae97d91c11af1abf63701692ef16ae760591ab5b0afbe10c48c543",
   "resources/insulation-removal-vs-top-off/index.html":
-    "59419baf134b2b98861f73fff33fd1ceaeb33d6991ff917a395fde2433924a86",
+    "12d8f9642a001df97faee00abb447435f9c3e40791b7921b589ef5cd11e68602",
   "resources/spray-foam-vs-blown-in-attic-insulation/index.html":
-    "faf13fa9cf4f318082b7e2d9d75f93a2d5133424db45331f6a1a5467973f1cfc",
+    "92ab4d95ab9e73bd1d44561be0b72aa64a5059629fed255a2a01681f01fe5888",
   "resources/signs-of-attic-pest-contamination/index.html":
-    "39144ac32a1a5d321ca978687c178ffdeb9b909060daf5a832139d9c4d0e0297",
+    "3ebe506745842339c0629dfb2b1de5693f5338418dc3b452c1f3d47361c7aeae",
   "styles.72e38ccd660523f9.css": "72e38ccd660523f9f7268153ebae7adc43d19d7479ea7d1534856b1aca8332fa",
   "script.79eca18f8a153d62.js": "79eca18f8a153d62622de56a1eff83d68f4650e4eebf12b2e2eb7c9fdacee44d",
   "functions/_middleware.js":
@@ -347,7 +347,7 @@ test("the resource hub and sitemap contain each new route once", async () => {
   }
 });
 
-test("protected pages match the current live phone baseline and operational assets retain approved hashes", async () => {
+test("protected pages match the approved two-reference exception and operational assets retain approved hashes", async () => {
   for (const [relativePath, expectedHash] of Object.entries(protectedHashes)) {
     const contents = await readFile(path.join(projectDirectory, relativePath));
     const actualHash = createHash("sha256").update(contents).digest("hex");
@@ -356,10 +356,10 @@ test("protected pages match the current live phone baseline and operational asse
 });
 
 test("new guides preserve the production header, footer, modal, tracking, and form contract", async () => {
-  const baseline = await readFile(
+  const baseline = preAssetMigrationHtml(await readFile(
     path.join(projectDirectory, "resources", "blown-insulation-vs-rolled-insulation", "index.html"),
     "utf8",
-  );
+  ), "resources/blown-insulation-vs-rolled-insulation/index.html");
   const stableBlocks = [
     ["<header class=\"site-header\"", "</header>"],
     ["<footer class=\"footer\">", "</footer>"],

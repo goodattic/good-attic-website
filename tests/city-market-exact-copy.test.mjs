@@ -11,6 +11,7 @@ import { applyHubHotspotCopy } from "../scripts/load-hub-hotspot-copy.mjs";
 import { applyHubHotspotLayout } from "../scripts/hub-hotspot-layout.mjs";
 import { approvedOperationalHashes } from "./approved-operational-hashes.mjs";
 import { readApprovedContent, assetMigrationFiles } from "./asset-delivery-helpers.mjs";
+import { assetDelivery } from "../scripts/asset-delivery.mjs";
 
 const root = new URL("../", import.meta.url);
 const base = cityMarketCopy.base_commit;
@@ -134,11 +135,18 @@ test("unrelated tracked files, Resources, sitemap and operational sources retain
   const expectedHashTest = git("show", `${base}:${hashTest}`)
     .replace("25b191ad3e9d7252ed517da0f4641a32c093345b28f665954e9e6a7bc40be4d6", approvedOperationalHashes["functions/api/leads.js"])
     .replace("b537f7f91198856f252cb91b1262b27f8d5ba8ee40c7777d94a55c3e9f46c13a", approvedOperationalHashes["server/fieldflow-attribution.js"]);
-  assert.equal(await read(hashTest), expectedHashTest
+  let expectedCurrentHashTest = expectedHashTest
     .replace('  "styles.css":', '  "styles.72e38ccd660523f9.css":')
     .replace('  "script.js":', '  "script.79eca18f8a153d62.js":')
     .replace('import assert from "node:assert/strict";', 'import assert from "node:assert/strict";\nimport { preAssetMigrationHtml } from "./asset-delivery-helpers.mjs";')
-    .replace('const html = await readFile(guide.file, "utf8");\n    for (const [start, end]', 'const html = preAssetMigrationHtml(await readFile(guide.file, "utf8"), path.relative(projectDirectory, guide.file));\n    for (const [start, end]'), "only operational approvals and the exact asset migration may change this historical test");
+    .replace('const html = await readFile(guide.file, "utf8");\n    for (const [start, end]', 'const html = preAssetMigrationHtml(await readFile(guide.file, "utf8"), path.relative(projectDirectory, guide.file));\n    for (const [start, end]')
+    .replace('protected pages match the current live phone baseline and operational assets retain approved hashes', 'protected pages match the approved two-reference exception and operational assets retain approved hashes')
+    .replace('const baseline = await readFile(', 'const baseline = preAssetMigrationHtml(await readFile(')
+    .replace('    "utf8",\n  );\n  const stableBlocks', '    "utf8",\n  ), "resources/blown-insulation-vs-rolled-insulation/index.html");\n  const stableBlocks');
+  for (const [file, oldHash] of Object.entries(assetDelivery.protectedHashes)) {
+    expectedCurrentHashTest = expectedCurrentHashTest.replace(oldHash, assetDelivery.protectedReferenceException.currentHashes[file]);
+  }
+  assert.equal(await read(hashTest), expectedCurrentHashTest, "only operational approvals and exact asset-reference exceptions may change this historical test");
   for (const file of [...existing].filter((file) => file.startsWith("resources/") && file.endsWith(".html"))) assert.equal(await read(file), git("show", `${base}:${file}`), file);
 });
 

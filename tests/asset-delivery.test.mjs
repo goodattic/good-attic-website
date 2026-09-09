@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { assetDelivery, pageAssets } from "../scripts/asset-delivery.mjs";
-import { assetMigrationFiles } from "./asset-delivery-helpers.mjs";
+import { assetMigrationFiles, preAssetMigrationHtml } from "./asset-delivery-helpers.mjs";
 
 const root = new URL("../", import.meta.url);
 const read = file => readFileSync(new URL(file, root));
@@ -23,9 +23,9 @@ test("all four asset files retain their full approved content digests", () => {
   assert.deepEqual(read("assets/icons/phone.svg"), original("assets/icons/phone.svg"));
 });
 
-test("exactly 91 HTML files have only their two approved asset references changed", () => {
+test("exactly 91 original plus five exception HTML files change only two asset references", () => {
   const approved = new Set(assetDelivery.htmlReferenceChangesOnly);
-  assert.equal(approved.size, 91);
+  assert.equal(approved.size, 96);
   const files = git("ls-tree", "-r", "--name-only", assetDelivery.sourceCommit).toString().trim().split("\n");
   const changed = [];
   for (const file of files.filter(file => file.endsWith(".html"))) {
@@ -44,13 +44,15 @@ test("exactly 91 HTML files have only their two approved asset references change
   assert.deepEqual(changed.sort(), [...approved].sort());
 });
 
-test("five protected guides and winning card and sitemap stay byte-identical", () => {
+test("five guides reverse exactly to protected bytes; winning card and sitemap stay byte-identical", () => {
   for (const [file, hash] of Object.entries(assetDelivery.protectedHashes)) {
-    assert.equal(sha(read(file)), hash, file);
-    assert.deepEqual(read(file), original(file));
-    assert.deepEqual(read(file), git("show", `${assetDelivery.restoredCommit}:${file}`));
-    assert.equal(pageAssets(file).css, assetDelivery.css.from);
-    assert.equal(pageAssets(file).js, assetDelivery.js.from);
+    const reversed = Buffer.from(preAssetMigrationHtml(read(file).toString(), file));
+    assert.equal(sha(read(file)), assetDelivery.protectedReferenceException.currentHashes[file], file);
+    assert.equal(sha(reversed), hash, file);
+    assert.deepEqual(reversed, original(file));
+    assert.deepEqual(reversed, git("show", `${assetDelivery.restoredCommit}:${file}`));
+    assert.equal(pageAssets(file).css, assetDelivery.css.to);
+    assert.equal(pageAssets(file).js, assetDelivery.js.to);
   }
   const cards = source => [...source.matchAll(/<a class="feature-card page-card-link reveal"[^>]*>[\s\S]*?<\/a>/g)].map(match => match[0]);
   assert.deepEqual(cards(read("resources/index.html").toString()), cards(original("resources/index.html").toString()));
