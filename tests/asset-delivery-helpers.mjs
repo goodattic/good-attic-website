@@ -11,7 +11,8 @@ export function preAssetMigrationHtml(html, file) {
 }
 
 export function readApprovedContent(file, root = new URL("../", import.meta.url)) {
-  const asset = file === "styles.css" ? assetDelivery.css.to : file === "script.js" ? assetDelivery.js.to : file;
+  // Historical layout/copy tests use the retained pre-focus JS; modal tests verify the new asset.
+  const asset = file === "styles.css" ? assetDelivery.css.to : file === "script.js" ? assetDelivery.modalFocus.previousAsset : file;
   return preAssetMigrationHtml(readFileSync(new URL(asset, root), "utf8"), file);
 }
 

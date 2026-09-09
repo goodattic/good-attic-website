@@ -51,15 +51,15 @@ for (const cta of Object.values(expectedClosingCtas)) {
 
 const protectedHashes = {
   "resources/blown-insulation-vs-rolled-insulation/index.html":
-    "8556c19be4172e675ac414fdd04a5e5cda5e1a7d05095560930697869e14573e",
+    "7ff03ab7fad9e74a48dd9534c004425f0c586a46ad3782b69739d0ed9e4d5d55",
   "resources/attic-air-sealing-vs-more-insulation/index.html":
-    "8c00d19c4aae97d91c11af1abf63701692ef16ae760591ab5b0afbe10c48c543",
+    "6f81e9ad81cd54bf314fe85cd36e0c62347f6e90beb58d669d22000250b70126",
   "resources/insulation-removal-vs-top-off/index.html":
-    "12d8f9642a001df97faee00abb447435f9c3e40791b7921b589ef5cd11e68602",
+    "70d062400d27376012ddddaafabeb4b56ea3335334ccab53eee29fdde2cb4f93",
   "resources/spray-foam-vs-blown-in-attic-insulation/index.html":
-    "92ab4d95ab9e73bd1d44561be0b72aa64a5059629fed255a2a01681f01fe5888",
+    "2ab6869e588c6f4357d4ef6cac50ef79657705f9704628971f78be06eb66ef5d",
   "resources/signs-of-attic-pest-contamination/index.html":
-    "3ebe506745842339c0629dfb2b1de5693f5338418dc3b452c1f3d47361c7aeae",
+    "1f9b0c32c4824332d4f624648901a1f11d1f8e94607c861400d533daa90eddcb",
   "styles.72e38ccd660523f9.css": "72e38ccd660523f9f7268153ebae7adc43d19d7479ea7d1534856b1aca8332fa",
   "script.79eca18f8a153d62.js": "79eca18f8a153d62622de56a1eff83d68f4650e4eebf12b2e2eb7c9fdacee44d",
   "functions/_middleware.js":

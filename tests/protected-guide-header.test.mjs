@@ -22,7 +22,7 @@ const oldManifest = JSON.parse(before("scripts/asset-delivery-manifest.json"));
 const files = Object.keys(oldManifest.protectedHashes);
 const substitutions = [
   ['href="../../styles.css?v=measurement-20260901a"', 'href="../../styles.72e38ccd660523f9.css"'],
-  ['src="../../script.js?v=quo-numbers-20260907a"', 'src="../../script.79eca18f8a153d62.js"'],
+  ['src="../../script.js?v=quo-numbers-20260907a"', `src="../../${assetDelivery.js.to}"`],
 ];
 const slices = (html, selector) => {
   const doc = parse(html, { treeAdapter: adapter, sourceCodeLocationInfo: true });
@@ -47,7 +47,7 @@ test("five-guide exception reverses exactly two attribute values and nothing els
     }
     assert.equal(current, expected, file);
     assert.equal(reversed, old, file);
-    assert.deepEqual(pageAssets(file), { css: oldManifest.css.to, js: oldManifest.js.to });
+    assert.deepEqual(pageAssets(file), { css: oldManifest.css.to, js: assetDelivery.js.to });
   }
 });
 
@@ -59,18 +59,20 @@ test("article, search metadata, schema, FAQ, links, images, forms, header markup
     }
     for (const schema of slices(current, 'script[type="application/ld+json"]')) JSON.parse(schema.replace(/^<script[^>]*>/, "").replace(/<\/script>$/, ""));
   }
-  for (const file of ["resources/index.html", "sitemap.xml", "robots.txt", "_headers"]) assert.deepEqual(read(file), before(file), file);
+  assert.equal(read("resources/index.html").toString().replace(assetDelivery.js.to, oldManifest.js.to), before("resources/index.html").toString());
+  assert.equal(read("_headers").toString().replace(`\n/${assetDelivery.js.to}\n  Cache-Control: public, max-age=31536000, immutable\n`, ""), before("_headers").toString());
+  for (const file of ["sitemap.xml", "robots.txt"]) assert.deepEqual(read(file), before(file), file);
 });
 
-test("only five guide files and explicitly scoped generator/test support differ from the parent", () => {
-  const support = ["scripts/asset-delivery-manifest.json", "tests/asset-delivery.test.mjs", "tests/city-market-exact-copy.test.mjs", "tests/four-guide-ai-authority-cluster.test.mjs"];
-  const allowed = new Set([...files, ...support]);
+test("historical header exception plus the separately tested modal registrations stay bounded", () => {
+  const support = ["scripts/asset-delivery-manifest.json", "scripts/build-pages-output.mjs", "_headers", "tests/asset-delivery.test.mjs", "tests/city-market-exact-copy.test.mjs", "tests/four-guide-ai-authority-cluster.test.mjs", "tests/protected-guide-header.test.mjs", "tests/pages-deployment-hardening.test.mjs", "tests/mobile-header.test.mjs"];
+  const allowed = new Set([...assetDelivery.htmlReferenceChangesOnly, ...support, "tests/asset-delivery-helpers.mjs"]);
   const tracked = git("ls-tree", "-r", "--name-only", parent).toString().trim().split("\n");
   for (const file of tracked.filter(file => !allowed.has(file))) assert.deepEqual(read(file), before(file), file);
-  const expectedManifest = { ...oldManifest, htmlReferenceChangesOnly: [...files, ...oldManifest.htmlReferenceChangesOnly], protectedReferenceException: assetDelivery.protectedReferenceException };
+  const expectedManifest = { ...oldManifest, htmlReferenceChangesOnly: [...files, ...oldManifest.htmlReferenceChangesOnly], protectedReferenceException: assetDelivery.protectedReferenceException, js: {...oldManifest.js, to: assetDelivery.js.to}, assets: {...oldManifest.assets, [assetDelivery.js.to]: assetDelivery.assets[assetDelivery.js.to]}, modalFocus: assetDelivery.modalFocus };
   assert.deepEqual(assetDelivery, expectedManifest);
   const added = git("diff", "--name-only", "--diff-filter=A", parent, "--").toString().trim().split("\n").filter(Boolean);
-  assert.ok(added.every(file => file === "tests/protected-guide-header.test.mjs"));
+  assert.ok(added.every(file => ["tests/protected-guide-header.test.mjs", "tests/modal-focus.test.mjs", "tests/modal-focus.browser.mjs", assetDelivery.js.to].includes(file)));
 });
 
 test("both generations and the phone dependency retain exact parent and rollback bytes", () => {

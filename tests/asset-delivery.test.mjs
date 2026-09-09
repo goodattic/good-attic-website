@@ -12,13 +12,13 @@ const git = (...args) => execFileSync("git", args, { cwd: root, maxBuffer: 64 * 
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
 const original = file => git("show", `${assetDelivery.sourceCommit}:${file}`);
 
-test("all four asset files retain their full approved content digests", () => {
+test("retained assets and the new modal asset match their registered full digests", () => {
   for (const [file, hash] of Object.entries(assetDelivery.assets)) {
     assert.equal(sha(read(file)), hash, file);
     if (file.split(".").length === 3) assert.ok(file.includes(hash.slice(0, 16)), file);
   }
   assert.deepEqual(read(assetDelivery.css.to), original("styles.css"));
-  assert.deepEqual(read(assetDelivery.js.to), original("script.js"));
+  assert.deepEqual(read(assetDelivery.modalFocus.previousAsset), original("script.js"));
   for (const file of ["styles.css", "script.js"]) assert.deepEqual(read(file), git("show", `${assetDelivery.restoredCommit}:${file}`));
   assert.deepEqual(read("assets/icons/phone.svg"), original("assets/icons/phone.svg"));
 });
@@ -70,11 +70,12 @@ test("no operational, content, dependency, or other tracked source changes escap
   }
 });
 
-test("only the four asset header blocks change and production keeps its indexing policy", () => {
+test("only registered asset header blocks change and production keeps its indexing policy", () => {
   const before = original("_headers").toString();
   let expected = before;
   for (const file of ["styles.css", "script.js"]) expected = expected.replace(`/${file}\n  Cache-Control: public, max-age=3600, must-revalidate`, `/${file}\n  Cache-Control: public, no-cache, max-age=0, must-revalidate`);
   expected = expected.replace('/script.js\n  Cache-Control: public, no-cache, max-age=0, must-revalidate', '/script.js\n  Cache-Control: public, no-cache, max-age=0, must-revalidate\n\n/styles.72e38ccd660523f9.css\n  Cache-Control: public, max-age=31536000, immutable\n\n/script.79eca18f8a153d62.js\n  Cache-Control: public, max-age=31536000, immutable');
+  expected += `\n/${assetDelivery.js.to}\n  Cache-Control: public, max-age=31536000, immutable\n`;
   assert.equal(read("_headers").toString(), expected);
   assert.doesNotMatch(expected, /noindex/i);
   assert.doesNotMatch(read("robots.txt").toString(), /Disallow:\s*\//);

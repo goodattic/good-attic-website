@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 
-const script = await readFile(new URL("../script.79eca18f8a153d62.js", import.meta.url), "utf8");
+const manifest = JSON.parse(await readFile(new URL("../scripts/asset-delivery-manifest.json", import.meta.url), "utf8"));
+const script = await readFile(new URL(`../${manifest.js.to}`, import.meta.url), "utf8");
 const styles = await readFile(new URL("../styles.72e38ccd660523f9.css", import.meta.url), "utf8");
 const start = script.indexOf("function enhanceMobileHeader() {");
 const end = script.indexOf("\nenhanceMobileHeader();", start);
