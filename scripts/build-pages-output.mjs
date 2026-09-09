@@ -31,11 +31,13 @@ const publicEntries = [
   "robots.txt",
   "salt-lake-city-ut",
   "script.js",
+  "script.79eca18f8a153d62.js",
   "services",
   "site.webmanifest",
   "sitemap.xml",
   "st-louis-mo",
   "styles.css",
+  "styles.72e38ccd660523f9.css",
   "terms-of-service",
 ];
 
