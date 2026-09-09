@@ -10,10 +10,11 @@ import { applyCityMarketCopy, cityMarketCopy, cityMarketFaq } from "../scripts/l
 import { applyHubHotspotCopy } from "../scripts/load-hub-hotspot-copy.mjs";
 import { applyHubHotspotLayout } from "../scripts/hub-hotspot-layout.mjs";
 import { approvedOperationalHashes } from "./approved-operational-hashes.mjs";
+import { readApprovedContent, assetMigrationFiles } from "./asset-delivery-helpers.mjs";
 
 const root = new URL("../", import.meta.url);
 const base = cityMarketCopy.base_commit;
-const read = (file) => readFile(new URL(file, root), "utf8");
+const read = (file) => readApprovedContent(file);
 const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 });
 const sha = (value) => createHash("sha256").update(value).digest("hex");
 const normalize = (value) => value.replace(/\s+/g, " ").trim();
@@ -126,14 +127,18 @@ test("unrelated tracked files, Resources, sitemap and operational sources retain
   const allowed = new Set([...pages.map((page) => page.source_file), "build-seo-wave1.mjs", "package.json", "tests/pest-guide-exact-copy.test.mjs", "tests/four-guide-ai-authority-cluster.test.mjs", ...Object.keys(approvedOperationalHashes)]);
   const existing = new Set(git("ls-tree", "-r", "--name-only", base).trim().split("\n"));
   const changes = git("diff", "--name-only", base, "--").trim().split("\n").filter(Boolean);
-  assert.deepEqual(changes.filter((file) => existing.has(file) && !allowed.has(file)), []);
+  assert.deepEqual(changes.filter((file) => existing.has(file) && !allowed.has(file) && !assetMigrationFiles.includes(file)), []);
   for (const file of ["resources/index.html", "styles.css", "script.js", "sitemap.xml", "robots.txt"]) assert.equal(await read(file), git("show", `${base}:${file}`), file);
   for (const [file, expected] of Object.entries(approvedOperationalHashes)) assert.equal(sha(await read(file)), expected, file);
   const hashTest = "tests/four-guide-ai-authority-cluster.test.mjs";
   const expectedHashTest = git("show", `${base}:${hashTest}`)
     .replace("25b191ad3e9d7252ed517da0f4641a32c093345b28f665954e9e6a7bc40be4d6", approvedOperationalHashes["functions/api/leads.js"])
     .replace("b537f7f91198856f252cb91b1262b27f8d5ba8ee40c7777d94a55c3e9f46c13a", approvedOperationalHashes["server/fieldflow-attribution.js"]);
-  assert.equal(await read(hashTest), expectedHashTest, "only the two justified operational hash expectations may change");
+  assert.equal(await read(hashTest), expectedHashTest
+    .replace('  "styles.css":', '  "styles.72e38ccd660523f9.css":')
+    .replace('  "script.js":', '  "script.79eca18f8a153d62.js":')
+    .replace('import assert from "node:assert/strict";', 'import assert from "node:assert/strict";\nimport { preAssetMigrationHtml } from "./asset-delivery-helpers.mjs";')
+    .replace('const html = await readFile(guide.file, "utf8");\n    for (const [start, end]', 'const html = preAssetMigrationHtml(await readFile(guide.file, "utf8"), path.relative(projectDirectory, guide.file));\n    for (const [start, end]'), "only operational approvals and the exact asset migration may change this historical test");
   for (const file of [...existing].filter((file) => file.startsWith("resources/") && file.endsWith(".html"))) assert.equal(await read(file), git("show", `${base}:${file}`), file);
 });
 

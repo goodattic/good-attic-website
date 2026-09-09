@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
+import { pageAssets } from "./scripts/asset-delivery.mjs";
 import { applyCityMarketCopy } from "./scripts/load-city-market-copy.mjs";
 import { applyHubHotspotCopy } from "./scripts/load-hub-hotspot-copy.mjs";
 import { applyHubHotspotLayout } from "./scripts/hub-hotspot-layout.mjs";
@@ -12303,8 +12304,9 @@ function renderCorePage(page, currentUrl) {
 
 function renderPage(page) {
   const currentUrl = page.url;
-  const stylesHref = `${assetHref(currentUrl, "styles.css")}?v=measurement-20260901a`;
-  const scriptHref = `${assetHref(currentUrl, "script.js")}?v=quo-numbers-20260907a`;
+  const assets = pageAssets(pageFilePath(currentUrl));
+  const stylesHref = assetHref(currentUrl, assets.css);
+  const scriptHref = assetHref(currentUrl, assets.js);
   const mainOpenTag = page.page_type === "market" ? '<main id="top">' : '<main class="page-main">';
 
   let bodyContent = "";

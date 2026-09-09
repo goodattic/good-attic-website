@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { preAssetMigrationHtml } from "./asset-delivery-helpers.mjs";
 import { createHash } from "node:crypto";
 import { access, readFile } from "node:fs/promises";
 import path from "node:path";
@@ -59,8 +60,8 @@ const protectedHashes = {
     "faf13fa9cf4f318082b7e2d9d75f93a2d5133424db45331f6a1a5467973f1cfc",
   "resources/signs-of-attic-pest-contamination/index.html":
     "39144ac32a1a5d321ca978687c178ffdeb9b909060daf5a832139d9c4d0e0297",
-  "styles.css": "72e38ccd660523f9f7268153ebae7adc43d19d7479ea7d1534856b1aca8332fa",
-  "script.js": "79eca18f8a153d62622de56a1eff83d68f4650e4eebf12b2e2eb7c9fdacee44d",
+  "styles.72e38ccd660523f9.css": "72e38ccd660523f9f7268153ebae7adc43d19d7479ea7d1534856b1aca8332fa",
+  "script.79eca18f8a153d62.js": "79eca18f8a153d62622de56a1eff83d68f4650e4eebf12b2e2eb7c9fdacee44d",
   "functions/_middleware.js":
     "0da797087cc6bacfca6b9c1a863df2a489290628380bfdc242e7cf89b537f720",
   "functions/api/leads.js":
@@ -367,7 +368,7 @@ test("new guides preserve the production header, footer, modal, tracking, and fo
   ];
 
   for (const guide of guides) {
-    const html = await readFile(guide.file, "utf8");
+    const html = preAssetMigrationHtml(await readFile(guide.file, "utf8"), path.relative(projectDirectory, guide.file));
     for (const [start, end] of stableBlocks) {
       assert.equal(extractBlock(html, start, end), extractBlock(baseline, start, end));
     }

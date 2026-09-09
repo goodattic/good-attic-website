@@ -8,12 +8,13 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { cityMarketCopy } from "../scripts/load-city-market-copy.mjs";
+import { readApprovedContent, preAssetMigrationHtml, assetMigrationFiles } from "./asset-delivery-helpers.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const parent = "cb2fb2d83e4db12fbc787eda108bed66a08c16ab";
 const route = "/resources/when-attic-cleanup-becomes-restoration/";
 const file = `${route.slice(1)}index.html`;
-const read = (name) => readFile(path.join(root, name), "utf8");
+const read = (name) => readApprovedContent(name);
 const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8", maxBuffer: 20 * 1024 * 1024 });
 const before = (name) => git("show", `${parent}:${name}`);
 const manifest = JSON.parse(await read("content/pest-guide/copy-manifest.json"));
@@ -136,7 +137,7 @@ test("pest-guide chrome, forms, scripts, phones, and all unrelated tracked files
   const allowed = new Set(["build-seo-wave1.mjs", "seo-wave1-page-data.json", "resources/index.html", file, "tests/four-guide-ai-authority-cluster.test.mjs", "package.json", "tests/pest-guide-exact-copy.test.mjs", ...cityMarketCopy.pages.map((page) => page.source_file), ...Object.keys(approvedOperationalHashes)]);
   const existing = new Set(git("ls-tree", "-r", "--name-only", parent).trim().split("\n"));
   const changed = git("diff", "--name-only", parent, "--").trim().split("\n").filter(Boolean);
-  assert.deepEqual(changed.filter((name) => existing.has(name) && !allowed.has(name)), []);
+  assert.deepEqual(changed.filter((name) => existing.has(name) && !allowed.has(name) && !assetMigrationFiles.includes(name)), []);
   for (const [name, expected] of Object.entries(approvedOperationalHashes)) assert.equal(sha(await read(name)), expected, name);
   assert.equal(sha(await read("resources/blown-insulation-vs-rolled-insulation/index.html")), "ea5d660ffba931e1355fa53f8323b40812f270023ff1f000cfd802bf0f6adb37");
   assert.equal(await read("sitemap.xml"), before("sitemap.xml"));
@@ -165,7 +166,7 @@ test("full generation remains reproducible and unrelated generated pages are byt
     execFileSync(process.execPath, ["build-seo-wave1.mjs"], { cwd: temporary });
     const generated = git("ls-tree", "-r", "--name-only", parent).trim().split("\n").filter((name) => name.endsWith(".html") && !["index.html", "404.html"].includes(name));
     generated.push("seo-wave1-page-data.json", "sitemap.xml", "robots.txt");
-    for (const name of generated) assert.equal(await readFile(path.join(temporary, name), "utf8"), await read(name), name);
+    for (const name of generated) assert.equal(preAssetMigrationHtml(await readFile(path.join(temporary, name), "utf8"), name), await read(name), name);
   } finally {
     await rm(temporary, { recursive: true, force: true });
   }

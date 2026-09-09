@@ -687,6 +687,40 @@ function closeLeadThankYou() {
   window.scrollTo(0, leadThankYouScrollY);
 }
 
+function enhanceMobileHeader() {
+  const actions = document.querySelector(".mobile-header-actions");
+  const phone = actions?.querySelector(".mobile-header-phone");
+  const toggle = phone?.querySelector("[data-phone-dropdown-toggle]");
+  const menu = phone?.querySelector(".phone-dropdown__menu");
+  if (!actions || !toggle || !menu || !modal || actions.querySelector(".mobile-quote-button")) return;
+
+  const quote = document.createElement("button");
+  quote.type = "button";
+  quote.className = "nav-cta mobile-quote-button";
+  quote.textContent = "Get Quote";
+  quote.setAttribute("data-open-modal", "");
+  actions.prepend(quote);
+
+  // Move the existing number nodes; keep the market links and tracking listeners intact.
+  const number = document.createElement("p");
+  number.className = "mobile-phone-number";
+  number.append(...toggle.childNodes);
+  menu.prepend(number);
+  menu.id = "mobile-header-phone-menu";
+  toggle.classList.add("mobile-phone-button--icon");
+  toggle.setAttribute("aria-label", "Call or text Good Attic");
+  toggle.setAttribute("aria-controls", menu.id);
+  toggle.title = "Call or text";
+
+  phone.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !phone.classList.contains("is-open")) return;
+    closePhoneDropdowns();
+    toggle.focus();
+  });
+}
+
+enhanceMobileHeader();
+
 document.querySelectorAll("[data-open-modal]").forEach((button) => {
   button.addEventListener("click", openModal);
 });
