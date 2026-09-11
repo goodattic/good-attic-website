@@ -346,3 +346,76 @@ test('message notes cannot bypass held parent outcomes, original guard ownership
   const result=await bodyOf(note,f,input);assert.equal(result.http,409,scenario);assert.deepEqual(f.counts(),{client:1,request:1,note:1},scenario);
  }
 });
+
+const permissionResponse=(account,kind='Job')=>({data:{account:{id:account},client:null},errors:[{message:`An object of type ${kind} was hidden due to permissions`,path:['client',kind==='Job'?'jobs':'requests','nodes',0]}]});
+test('permission-denied histories are permanent holds with directly verified client context, never empty-history eligibility',async()=>{
+ for(const kind of ['requests','jobs']) {
+  const f=fixture({clients:[{id:CLIENT}],requests:[REQUEST],override({query,account}){
+   if(query===_private.QUERIES[kind])return permissionResponse(account,kind==='jobs'?'Job':'Request');
+  }});
+  const result=await bodyOf(resolve,f,f.identity);
+  assert.equal(result.http,200);assert.equal(result.classification,'held_incomplete_history');assert.equal(result.reason,'jobber_permission_denied');
+  assert.equal(result.retryable,false);assert.equal(result.history_complete,false);assert.equal(result.client_id,CLIENT);
+  assert.deepEqual(result.request_ids,kind==='jobs'?[REQUEST]:[]);assert.deepEqual(result.job_ids,[]);
+  assert.ok(f.calls.some(c=>c.query===_private.QUERIES.client));assert.deepEqual(f.counts(),{client:0,request:0,note:0});
+  assert.doesNotMatch(JSON.stringify(result),/hidden due to permissions/);
+ }
+});
+test('permission error does not preserve unverified client context or override account and current-phone conflicts',async()=>{
+ for(const scenario of ['phone_lookup','direct_unavailable','phone_changed','wrong_account']) {
+  const f=fixture({clients:[{id:CLIENT}],requests:[REQUEST],override({query,account}){
+   if(scenario==='phone_lookup'&&query===_private.QUERIES.phones)return permissionResponse(account,'Client');
+   if(query===_private.QUERIES.jobs)return permissionResponse(scenario==='wrong_account'?ACCOUNTS.kc:account);
+   if(query===_private.QUERIES.client&&scenario==='direct_unavailable')throw Error('temporary direct read failure');
+   if(query===_private.QUERIES.client&&scenario==='phone_changed')return {data:{account:{id:account},client:{id:CLIENT,isArchived:false,phones:[{number:'+18165550999',normalizedPhoneNumber:'+18165550999'}]}}};
+  }});
+  const result=await bodyOf(resolve,f,f.identity);
+  assert.equal(result.reason,scenario==='wrong_account'?'jobber_account_mismatch':scenario==='phone_changed'?'known_client_phone_changed':'jobber_permission_denied',scenario);
+  assert.equal(result.retryable,false);assert.equal(result.client_id,null);assert.deepEqual(result.request_ids,[]);assert.equal(result.history_complete,false);
+ }
+});
+test('only complete validated history pages survive a later permission denial',async()=>{
+ const f=fixture({clients:[{id:CLIENT}],requests:[REQUEST],override({query,vars,account}){
+  if(query===_private.QUERIES.jobs)return vars.after?permissionResponse(account):{data:{account:{id:account},client:{id:CLIENT,isArchived:false,jobs:{nodes:[{id:enc('Job',444)}],pageInfo:{hasNextPage:true,endCursor:'later'}}}}};
+ }});
+ const result=await bodyOf(resolve,f,f.identity);assert.equal(result.reason,'jobber_permission_denied');assert.equal(result.client_id,CLIENT);assert.deepEqual(result.request_ids,[REQUEST]);assert.deepEqual(result.job_ids,[]);assert.equal(result.history_complete,false);
+});
+test('generic GraphQL and transport errors still retry and cannot masquerade as verified history',async()=>{
+ for(const message of ['temporary Jobber outage','permissions service temporarily unavailable']) {
+  const f=fixture({clients:[{id:CLIENT}],override({query}){if(query===_private.QUERIES.jobs)return {errors:[{message}]};}});
+  const result=await bodyOf(resolve,f,f.identity);assert.equal(result.reason,'jobber_read_failed');assert.equal(result.retryable,true);assert.equal(result.client_id,null);assert.equal(result.history_complete,false);
+ }
+});
+test('permission denied before a write becomes a durable terminal hold, including preflight account reads',async()=>{
+ for(const deniedQuery of ['account','jobs']) {
+  const f=fixture({clients:[{id:CLIENT}],requests:[REQUEST],override({query,account}){if(query===_private.QUERIES[deniedQuery])return permissionResponse(account);}});
+  f.body.expected_client_id=CLIENT;
+  const result=await bodyOf(write,f,f.body);assert.equal(result.http,200);assert.equal(result.operation_state,'held');assert.equal(result.reason,'jobber_permission_denied');assert.equal(result.retryable,false);assert.equal(result.uncertain,false);
+  assert.equal(result.client_id,deniedQuery==='jobs'?CLIENT:null);assert.equal(result.request_id,null);assert.deepEqual(f.counts(),{client:0,request:0,note:0});
+  const reads=f.calls.length;assert.deepEqual(await bodyOf(write,f,f.body),result);assert.equal(f.calls.length,reads);
+ }
+});
+test('permission lost after a confirmed client create preserves that client and never creates a Request or auto-retries',async()=>{
+ const f=fixture({override({query,state,account}){if(state.clients.length&&query===_private.QUERIES.jobs)return permissionResponse(account);}});
+ const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,'held');assert.equal(result.reason,'jobber_permission_denied');assert.equal(result.client_id,CLIENT);assert.equal(result.classification,'eligible_new_client');assert.equal(result.retryable,false);assert.equal(result.uncertain,false);assert.equal(result.request_id,null);
+ await bodyOf(write,f,f.body);assert.equal((await bodyOf(resume,f,{...f.identity,operation_id:f.body.operation_id,expected_client_id:CLIENT})).code,'intake_recovery_not_safe');assert.deepEqual(f.counts(),{client:1,request:0,note:0});
+});
+test('operator recovery encountering denied history preserves the partial record and ends without a new write',async()=>{
+ const f=await legacyHeldPartial({override({query,state,account}){if(state.recoveryAudit&&query===_private.QUERIES.jobs)return permissionResponse(account);}});
+ f.state.recoveryAudit=true;
+ const before=f.db.raw.prepare('SELECT source_json,intent_sha256,client_id FROM quo_intake_operations').get();
+ const result=await bodyOf(resume,f,f.recovery);assert.equal(result.operation_state,'held');assert.equal(result.reason,'jobber_permission_denied');assert.equal(result.retryable,false);assert.equal(result.uncertain,false);assert.equal(result.client_id,CLIENT);assert.equal(result.request_id,null);
+ assert.deepEqual(f.db.raw.prepare('SELECT source_json,intent_sha256,client_id FROM quo_intake_operations').get(),before);
+ assert.equal((await bodyOf(resume,f,f.recovery)).code,'intake_recovery_not_safe');assert.deepEqual(f.counts(),{client:1,request:0,note:0});
+});
+test('follow-on photo note with denied history holds once without attaching or altering its original Request',async()=>{
+ const f=fixture({override({query,state,account}){if(state.followup&&query===_private.QUERIES.jobs)return permissionResponse(account);}});
+ await bodyOf(write,f,f.body);f.state.followup=true;const input=messageNote(f);
+ const result=await bodyOf(note,f,input);assert.equal(result.operation_state,'held');assert.equal(result.reason,'jobber_permission_denied');assert.equal(result.retryable,false);assert.equal(result.uncertain,false);assert.equal(result.client_id,CLIENT);assert.equal(result.request_id,REQUEST);
+ assert.deepEqual(await bodyOf(note,f,input),result);assert.deepEqual(f.counts(),{client:1,request:1,note:1});assert.equal((await bodyOf(status,f,{account_id:f.identity.account_id,operation_id:f.body.operation_id})).operation_state,'completed');
+});
+test('permission-looking mutation errors retain uncertain outcome protection rather than permanent read classification',async()=>{
+ const f=fixture({override({query}){if(query===_private.MUTATIONS.request)return {errors:[{message:'An object of type Request was hidden due to permissions'}]};}});
+ const result=await bodyOf(write,f,f.body);assert.equal(result.operation_state,'held');assert.equal(result.reason,'jobber_write_outcome_unknown');assert.equal(result.uncertain,true);assert.equal(result.client_id,CLIENT);
+ await bodyOf(write,f,f.body);assert.deepEqual(f.counts(),{client:1,request:1,note:0});
+});

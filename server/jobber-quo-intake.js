@@ -121,10 +121,20 @@ async function inputFor({request,env},allowed) {
 }
 async function read(deps,env,token,route,query,variables={}) {
   const response=await deps.jobberGraphql(env,token.accessToken,query,variables);
-  if(response?.errors?.length)throw new IntakeError('jobber_read_failed');
+  // A populated, conflicting account is never re-labelled as a permissions
+  // problem, even when GraphQL also returns partial data and errors.
+  if(response?.data?.account?.id!=null&&!contacts.sameId(response.data.account.id,route.expectedAccountId,'Account'))throw new IntakeError('jobber_account_mismatch',409);
+  if(response?.errors?.length) {
+    // Match Jobber's observed explicit object-authorization error only. Other
+    // GraphQL/transport failures remain retryable; raw provider text stays out
+    // of the public response. This applies to reads, never mutation outcomes.
+    if(response.errors.some(error=>typeof error?.message==='string'&&/^An object of type [A-Za-z][A-Za-z0-9_]* was hidden due to permissions\.?$/u.test(error.message)))throw new IntakeError('jobber_permission_denied',403);
+    throw new IntakeError('jobber_read_failed');
+  }
   if(!contacts.sameId(response?.data?.account?.id,route.expectedAccountId,'Account'))throw new IntakeError('jobber_account_mismatch',409);
   return response.data;
 }
+const permissionDenied=error=>error instanceof IntakeError&&error.code==='jobber_permission_denied';
 function page(connection,seen) {
   if(!isObject(connection)||!Array.isArray(connection.nodes)||connection.nodes.length>100
     ||typeof connection.pageInfo?.hasNextPage!=='boolean')throw new IntakeError('intake_history_incomplete');
@@ -178,7 +188,7 @@ async function classify(env,deps,token,route,identity,knownClientId=null) {
   if(matches.size>1)return {...base,classification:'held_shared_phone',reason:'multiple_clients_share_phone'};
   if(!matches.size)return {...base,classification:'eligible_new_client',reason:'phone_not_in_destination_account'};
   const [clientId,initialArchived]=[...matches.entries()][0];let archived=initialArchived;base.client_id=clientId;
-  for(const kind of ['requests','jobs']) {
+  try {for(const kind of ['requests','jobs']) {
     let after=null;const seen=new Set(),ids=new Set();let complete=false;
     for(let index=0;index<MAX_PAGES;index++) {
       const data=await read(deps,env,token,route,QUERIES[kind],{id:clientId,after});
@@ -194,6 +204,19 @@ async function classify(env,deps,token,route,identity,knownClientId=null) {
     }
     if(!complete)throw new IntakeError('intake_history_incomplete');
     base[kind==='requests'?'request_ids':'job_ids']=[...ids];
+  }}catch(error) {
+    if(permissionDenied(error)) {
+      // Preserve diagnostic context only after both complete phone searches
+      // found one client and a fresh direct read confirms its current phone.
+      // Known IDs are evidence of existence, never proof of absent history.
+      try {await exactClient(env,deps,token,route,identity,clientId);}
+      catch(verificationError) {
+        if(verificationError instanceof IntakeError&&verificationError.status===409)throw verificationError;
+        throw error;
+      }
+      error.verifiedHistory={client_id:clientId,request_ids:base.request_ids,job_ids:base.job_ids};
+    }
+    throw error;
   }
   // Reconfirm the actual saved phone after the complete history reads. A phone
   // search hit alone must not authorize writing after staff change that client.
@@ -204,7 +227,7 @@ async function classify(env,deps,token,route,identity,knownClientId=null) {
   return {...base,classification:'eligible_unused_client',reason:'client_has_no_requests_or_jobs'};
 }
 function classificationError(identity,error) {
-  return {ok:true,...identity,classification:'held_incomplete_history',reason:error instanceof IntakeError?error.code:'jobber_read_failed',client_id:null,request_ids:[],job_ids:[],history_complete:false,retryable:!(error instanceof IntakeError&&error.status===409)};
+  return {ok:true,...identity,classification:'held_incomplete_history',reason:error instanceof IntakeError?error.code:'jobber_read_failed',client_id:null,request_ids:[],job_ids:[],...(permissionDenied(error)?error.verifiedHistory:{}),history_complete:false,retryable:!(error instanceof IntakeError&&(error.status===409||permissionDenied(error)))};
 }
 const IDENTITY_FIELDS=['account_id','market','phone','phone_number_id'];
 export async function handleJobberQuoIntakeResolve(context,deps=leadHelpers) {
@@ -250,6 +273,11 @@ async function checkpoint(db,row,lease,state,fields={},now) {
 }
 async function hold(db,row,lease,reason,now,uncertain=false) {
   await checkpoint(db,row,lease,'held',{reason,uncertain:uncertain?1:0},now);
+  return row;
+}
+async function holdPermissionError(db,row,lease,error,now) {
+  await checkpoint(db,row,lease,'held',{reason:error.code,classification:row.classification||'held_incomplete_history',
+    ...(!row.client_id&&error.verifiedHistory?.client_id?{client_id:error.verifiedHistory.client_id}:{})},now);
   return row;
 }
 function mutationData(result,key,objectKey,type) {
@@ -325,7 +353,8 @@ async function processIntake(env,deps,token,route,identity,input,row,lease) {
   let classification;
   try{classification=await classify(env,deps,token,route,identity,row.client_id);}catch(error){
     if(error instanceof IntakeError&&error.status===409)return hold(db,row,lease,error.code,nowFor(deps));
-    throw new IntakeError(error instanceof IntakeError?error.code:'jobber_read_failed');
+    if(permissionDenied(error))return holdPermissionError(db,row,lease,error,nowFor(deps));
+    throw error instanceof IntakeError?error:new IntakeError('jobber_read_failed');
   }
   if(!classification.classification.startsWith('eligible_')) {
     await checkpoint(db,row,lease,classification.classification.startsWith('suppressed')?'suppressed':'held',
@@ -364,6 +393,7 @@ async function processIntake(env,deps,token,route,identity,input,row,lease) {
   let fresh;
   try{fresh=await classify(env,deps,token,route,identity,row.client_id);}catch(error){
     if(error instanceof IntakeError&&error.status===409)return hold(db,row,lease,error.code,nowFor(deps));
+    if(permissionDenied(error))return holdPermissionError(db,row,lease,error,nowFor(deps));
     throw error;
   }
   if(fresh.classification!=='eligible_unused_client'||fresh.client_id!==row.client_id) return hold(db,row,lease,'inquiry_or_identity_changed_before_request',nowFor(deps));
@@ -480,6 +510,10 @@ async function handleWrite(context,deps,kind) {
         const current=await getOperation(context.env.ANGI_ROUTER_DB,row.operation_id);
         if(current?.lease_token===lease&&WRITE_STATES.has(current.operation_state)) {
           await hold(context.env.ANGI_ROUTER_DB,current,lease,'jobber_write_outcome_unknown',nowFor(deps),true);
+          return json(publicOperation(current,nowFor(deps)));
+        }
+        if(current?.lease_token===lease&&!FINAL_STATES.has(current.operation_state)&&permissionDenied(error)) {
+          await holdPermissionError(context.env.ANGI_ROUTER_DB,current,lease,error,nowFor(deps));
           return json(publicOperation(current,nowFor(deps)));
         }
       }catch{}
