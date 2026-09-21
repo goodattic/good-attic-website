@@ -2,7 +2,6 @@ import { persistClosedLoopLead } from "./closed-loop-ledger.js";
 
 const SCHEMA_VERSION = "2026-09-21";
 const MAX_ATTEMPTS = 3;
-
 const MARKET_ROUTES = {
   ut: { slug: "slc", tokenKey: "FIELDFLOW_ATTRIBUTION_TOKEN_SLC" },
   mo_stl: { slug: "stl", tokenKey: "FIELDFLOW_ATTRIBUTION_TOKEN_STL" },
@@ -13,37 +12,24 @@ function cleanScalar(value, max = 500) {
   if (!["string", "number", "bigint"].includes(typeof value)) return "";
   return String(value).trim().slice(0, max);
 }
-
 function parseUrl(value) {
   try { return new URL(cleanScalar(value, 5000)); } catch { return null; }
 }
-
 function readAttributionSignal(payload, field) {
-  const landing = [payload?.ad_landing_page, payload?.source_url, payload?.page_url]
-    .map(parseUrl)
-    .find(Boolean);
-  return cleanScalar(landing?.searchParams.get(field), 500)
-    || cleanScalar(payload?.[field], 500);
+  const landing = [payload?.ad_landing_page, payload?.source_url, payload?.page_url].map(parseUrl).find(Boolean);
+  return cleanScalar(landing?.searchParams.get(field), 500) || cleanScalar(payload?.[field], 500);
 }
-
 function safeReferrerOrigin(value) {
   const referrer = cleanScalar(value, 2048);
   if (!referrer) return "";
   if (referrer.toLowerCase() === "google") return "google";
-  if (/^(?:www\.)?google\.[a-z]{2,}(?:\.[a-z]{2})?$/i.test(referrer)) {
-    return referrer.toLowerCase().replace(/^www\./, "");
-  }
+  if (/^(?:www\.)?google\.[a-z]{2,}(?:\.[a-z]{2})?$/i.test(referrer)) return referrer.toLowerCase().replace(/^www\./, "");
   const url = parseUrl(referrer);
-  if (!url || !["http:", "https:"].includes(url.protocol)) return "";
-  return url.origin;
+  return url && ["http:", "https:"].includes(url.protocol) ? url.origin : "";
 }
-
 function compactRecord(record) {
-  return Object.fromEntries(
-    Object.entries(record).filter(([, value]) => value !== "" && value !== null && value !== undefined),
-  );
+  return Object.fromEntries(Object.entries(record).filter(([, value]) => value !== "" && value !== null && value !== undefined));
 }
-
 function compactLandingPage(value) {
   const url = parseUrl(value);
   return url ? `${url.origin}${url.pathname}`.slice(0, 1000) : "";
@@ -82,7 +68,7 @@ export function buildAngiAttribution(angi, requestId) {
   const entityId = cleanScalar(angi?.spEntityId, 64);
   const submissionId = entityId && providerLeadId ? `angi:${entityId}:${providerLeadId}` : "";
   return compactRecord({
-    schema_version: SCHEMA_VERSION,
+    schema_version: "2026-07-31",
     jobber_request_id: cleanScalar(requestId, 255),
     provider_lead_id: providerLeadId,
     provider_name: "Angi",
@@ -94,10 +80,7 @@ export function buildAngiAttribution(angi, requestId) {
   });
 }
 
-function wait(milliseconds) {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds));
-}
-
+function wait(milliseconds) { return new Promise((resolve) => setTimeout(resolve, milliseconds)); }
 function durableLeadFromAttribution(marketKey, record) {
   const requestId = cleanScalar(record?.jobber_request_id, 500);
   const submissionId = cleanScalar(record?.submission_id, 500);
@@ -128,7 +111,6 @@ function durableLeadFromAttribution(marketKey, record) {
 export async function submitFieldflowAttribution(env, marketKey, record) {
   const route = MARKET_ROUTES[marketKey];
   if (!route) return { ok: false, attempts: 0, status: 0, reason: "unsupported_market" };
-
   let ledger = { ok: false, reason: "outside_initial_rollout" };
   const durableLead = durableLeadFromAttribution(marketKey, record);
   if (durableLead) {
@@ -143,17 +125,12 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
       });
     }
   }
-
   if (env?.EXTERNAL_API_WRITES_ENABLED === "false") {
     return { ok: ledger.ok, attempts: 0, status: 0, reason: "external_api_writes_disabled", ledger };
   }
-
   const baseUrl = cleanScalar(env?.FIELDFLOW_ATTRIBUTION_BASE_URL, 2048).replace(/\/+$/, "");
   const token = cleanScalar(env?.[route.tokenKey], 4000);
-  if (!baseUrl || !token) {
-    return { ok: false, attempts: 0, status: 0, reason: "missing_configuration", ledger };
-  }
-
+  if (!baseUrl || !token) return { ok: false, attempts: 0, status: 0, reason: "missing_configuration", ledger };
   let lastStatus = 0;
   let lastReason = "network_error";
   let attempts = 0;
@@ -162,31 +139,20 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
     try {
       const response = await fetch(`${baseUrl}/${route.slug}`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify(record),
       });
       lastStatus = response.status;
       if (response.ok) return { ok: true, attempts: attempt, status: response.status, ledger };
       lastReason = "receiver_rejected";
-      const retryable = response.status === 429 || response.status >= 500;
-      if (!retryable || attempt === MAX_ATTEMPTS) break;
+      if (!(response.status === 429 || response.status >= 500) || attempt === MAX_ATTEMPTS) break;
     } catch {
       lastReason = "network_error";
       if (attempt === MAX_ATTEMPTS) break;
     }
     await wait(250 * attempt);
   }
-
   return { ok: false, attempts, status: lastStatus, reason: lastReason, ledger };
 }
 
-export const _private = {
-  MARKET_ROUTES,
-  SCHEMA_VERSION,
-  durableLeadFromAttribution,
-  readAttributionSignal,
-  safeReferrerOrigin,
-};
+export const _private = { MARKET_ROUTES, SCHEMA_VERSION, durableLeadFromAttribution, readAttributionSignal, safeReferrerOrigin };
