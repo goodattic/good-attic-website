@@ -126,7 +126,7 @@ test("builds an Angi record with exact Jobber and provider identifiers", () => {
       sourceEventAt: "2026-07-31T18:00:00.000Z",
     }, "jobber-request-angi"),
     {
-      schema_version: "2026-09-21",
+      schema_version: "2026-07-31",
       jobber_request_id: "jobber-request-angi",
       provider_lead_id: "635435743",
       provider_name: "Angi",
