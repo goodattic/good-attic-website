@@ -132,7 +132,9 @@ export function createGoogleUploader({ transport, enabled = false, now = () => n
       const window = validateUploadWindow(candidate, candidate.google_action || {});
       if (!window.ok) return { ok: false, status: window.status, diagnostic_code: window.reason };
       if (!adjustmentSupport(candidate.google_action || {}, candidate.event_name)) return { ok: false, status: "held", diagnostic_code: "google_adjustment_not_supported" };
-      const hasWebsiteId = candidate.gclid || candidate.gbraid || candidate.wbraid;
+      const websiteIds = [candidate.gclid, candidate.gbraid, candidate.wbraid].filter(Boolean);
+      if (websiteIds.length > 1) return { ok: false, status: "held", diagnostic_code: "multiple_google_identifiers" };
+      const hasWebsiteId = websiteIds.length === 1;
       const hasCallMatch = candidate.caller_phone && candidate.call_started_at_original;
       if (!hasWebsiteId && !hasCallMatch) return { ok: false, status: "held", diagnostic_code: "missing_google_identifier" };
       const request = {
@@ -144,7 +146,7 @@ export function createGoogleUploader({ transport, enabled = false, now = () => n
         gclid: candidate.gclid || undefined,
         gbraid: candidate.gbraid || undefined,
         wbraid: candidate.wbraid || undefined,
-        caller_phone: candidate.caller_phone || undefined,
+        caller_id: candidate.caller_phone || undefined,
         call_start_time: candidate.call_started_at_original || undefined,
       };
       try {

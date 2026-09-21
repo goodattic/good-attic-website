@@ -86,6 +86,12 @@ test("holds expired windows and unsupported Google adjustments", () => {
   assert.equal(adjustmentSupport({ google_supports_retraction: false }, "cancellation"), false);
 });
 
+test("requires exactly one website click identifier", async () => {
+  const uploader = createGoogleUploader({ enabled: true, transport: { upload: async () => ({}) } });
+  const result = await uploader.upload({ consent_status: "granted", attribution_status: "google_matched", gclid: "g1", gbraid: "b1", milestone_at: "2026-09-21T18:00:00Z", google_action: { upload_window_days: 90, now: "2026-09-22T18:00:00Z" } });
+  assert.equal(result.diagnostic_code, "multiple_google_identifiers");
+});
+
 test("uses invoice total as final revenue, then job invoiced total, without summing", () => {
   assert.deepEqual(revenueEvidence({ invoice: { amounts: { total: 1250 } }, job: { invoicedTotal: 2000 }, quote: { amounts: { total: 3000 } } }), { value_micros: 1250000000, revenue_source: "invoice.amounts.total", revenue_version: "jobber_invoice_total_v1" });
 });
