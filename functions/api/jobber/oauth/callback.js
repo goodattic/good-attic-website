@@ -1,10 +1,19 @@
 import { getJobberOAuthRoute } from "./config.js";
+import { filterQuoteCustomFieldConfigurations } from "../../../../server/jobber-custom-fields.js";
 
 const JOBBER_API_URL = "https://api.getjobber.com/api/graphql";
 const JOBBER_TOKEN_URL = "https://api.getjobber.com/api/oauth/token";
 const DEFAULT_JOBBER_GRAPHQL_VERSION = "2025-04-16";
 const STATE_MAX_AGE_MS = 15 * 60 * 1000;
 const PROCESS_LOCK_LEASE_MS = 4 * 60 * 1000;
+const QUOTE_WRITE_PROBE_MUTATION = `
+  mutation GoodAtticQuoteWriteProbe($quoteId: EncodedId!, $attributes: QuoteEditAttributes!) {
+    quoteEdit(quoteId: $quoteId, attributes: $attributes) {
+      quote { id }
+      userErrors { message path }
+    }
+  }
+`;
 
 class OAuthSetupError extends Error {
   constructor(message, status = 400) {
@@ -242,15 +251,15 @@ async function queryJobberQuoteCapabilities(env, accessToken) {
     body: JSON.stringify({
       query: `
         query GoodAtticQuoteCapabilities {
-          quotes(first: 1) { nodes { id } }
+          quotes(first: 1) { nodes { id quoteNumber } }
           customFieldConfigurations(first: 50) {
             nodes {
-              ... on CustomFieldConfigurationArea { id name appliesTo }
-              ... on CustomFieldConfigurationDropdown { id name appliesTo }
-              ... on CustomFieldConfigurationLink { id name appliesTo }
-              ... on CustomFieldConfigurationNumeric { id name appliesTo }
-              ... on CustomFieldConfigurationText { id name appliesTo }
-              ... on CustomFieldConfigurationTrueFalse { id name appliesTo }
+              ... on CustomFieldConfigurationArea { __typename id name valueType appliesTo readOnly }
+              ... on CustomFieldConfigurationDropdown { __typename id name valueType appliesTo readOnly }
+              ... on CustomFieldConfigurationLink { __typename id name valueType appliesTo readOnly }
+              ... on CustomFieldConfigurationNumeric { __typename id name valueType appliesTo readOnly }
+              ... on CustomFieldConfigurationText { __typename id name valueType appliesTo readOnly }
+              ... on CustomFieldConfigurationTrueFalse { __typename id name valueType appliesTo readOnly }
             }
           }
         }
@@ -262,15 +271,55 @@ async function queryJobberQuoteCapabilities(env, accessToken) {
     return { ok: false, quoteRead: false, customFieldRead: false, errors: data?.errors || [] };
   }
   const configurations = data?.data?.customFieldConfigurations?.nodes || [];
-  const names = new Set(configurations.map((item) => item?.name).filter(Boolean));
+  const quoteConfigurations = filterQuoteCustomFieldConfigurations(configurations);
+  const names = new Set(quoteConfigurations.map((item) => item?.name).filter(Boolean));
   const requiredNames = ["Original Lead ID", "Original Source", "Campaign"];
+  const quote = data?.data?.quotes?.nodes?.[0] || null;
+  const write = await verifyJobberQuoteWriteAccess(env, accessToken, quote);
   return {
-    ok: requiredNames.every((name) => names.has(name)),
-    quoteRead: true,
+    ok: requiredNames.every((name) => names.has(name)) && write.ok,
+    quoteRead: Boolean(quote?.id),
     customFieldRead: true,
+    quoteWrite: write.ok,
+    quoteWriteReason: write.reason,
     customFieldNames: requiredNames.filter((name) => names.has(name)),
     missingCustomFieldNames: requiredNames.filter((name) => !names.has(name)),
   };
+}
+
+async function verifyJobberQuoteWriteAccess(env, accessToken, quote) {
+  if (!quote?.id || !clean(quote.quoteNumber, 500)) {
+    return { ok: false, reason: "no_quote_available_for_write_probe" };
+  }
+
+  const response = await fetch(JOBBER_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      "X-JOBBER-GRAPHQL-VERSION": clean(env.JOBBER_GRAPHQL_VERSION, 40) || DEFAULT_JOBBER_GRAPHQL_VERSION,
+    },
+    body: JSON.stringify({
+      query: QUOTE_WRITE_PROBE_MUTATION,
+      variables: {
+        quoteId: quote.id,
+        // Re-submit the existing quote number so this is a real write-scope
+        // check without changing customer-visible quote content.
+        attributes: { quoteNumber: clean(quote.quoteNumber, 500) },
+      },
+    }),
+  });
+  const data = await safeJson(response);
+  const userErrors = data?.data?.quoteEdit?.userErrors || [];
+  if (!response.ok || data?.errors?.length || userErrors.length || !data?.data?.quoteEdit?.quote?.id) {
+    return {
+      ok: false,
+      reason: "quote_write_probe_failed",
+      errors: data?.errors || [],
+      userErrors,
+    };
+  }
+  return { ok: true };
 }
 
 async function persistRefreshToken(env, route, refreshToken) {
@@ -506,7 +555,7 @@ function renderSuccess(route, accountResult, persistence, capabilities) {
     <p class="muted">Compatibility KV mirror: <strong>${persistence.kvPersisted ? "yes" : "not available"}</strong></p>
     <p class="muted">Quote read access: <strong>${capabilities?.quoteRead ? "yes" : "no"}</strong></p>
     <p class="muted">Custom-field definition read access: <strong>${capabilities?.customFieldRead ? "yes" : "no"}</strong></p>
-    <p class="muted">Quote write access: <strong>verified on the first quote update</strong></p>
+    <p class="muted">Quote write access: <strong>${capabilities?.quoteWrite ? "yes (verified by a no-change quote update)" : "no"}</strong></p>
     <p class="muted">No refresh token is displayed or copied into a second runtime authority.</p>
 
     <h2>Repeat for the other markets</h2>
@@ -590,6 +639,7 @@ export const _private = {
   exchangeAuthorizationCode,
   queryJobberAccount,
   queryJobberQuoteCapabilities,
+  verifyJobberQuoteWriteAccess,
   requireExpectedJobberAccount,
   acquireJobberProcessLock,
   releaseJobberProcessLock,

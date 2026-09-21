@@ -1,0 +1,55 @@
+import assert from "node:assert/strict";
+import { afterEach, test } from "node:test";
+
+import { _private as consumer } from "../workers/jobber-quote-consumer.js";
+
+const originalFetch = globalThis.fetch;
+
+afterEach(() => { globalThis.fetch = originalFetch; });
+
+const EVENT = {
+  schema_version: 1,
+  source: "jobber",
+  topic: "QUOTE_CREATE",
+  event_name: "jobber.quote_attribution.v1",
+  account_id: "Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQzMg==",
+  quote_id: "quote-1",
+  market_key: "ut",
+};
+
+function messageWithResult(result) {
+  const calls = { ack: 0, retry: 0 };
+  return {
+    message: {
+      body: EVENT,
+      ack() { calls.ack += 1; },
+      retry() { calls.retry += 1; },
+    },
+    calls,
+    result,
+  };
+}
+
+test("retries when a Quote has not appeared yet", async () => {
+  globalThis.fetch = async () => Response.json({ ok: true, status: "quote_not_found" });
+  const { message, calls } = messageWithResult();
+  await consumer.processMessage(message, { JOBBER_QUOTE_BROKER_SECRET: "secret" });
+  assert.equal(calls.ack, 0);
+  assert.equal(calls.retry, 1);
+});
+
+test("retries when the originating Request is not visible yet", async () => {
+  globalThis.fetch = async () => Response.json({ ok: true, status: "missing_request" });
+  const { message, calls } = messageWithResult();
+  await consumer.processMessage(message, { JOBBER_QUOTE_BROKER_SECRET: "secret" });
+  assert.equal(calls.ack, 0);
+  assert.equal(calls.retry, 1);
+});
+
+test("acknowledges only terminal resolver statuses", async () => {
+  globalThis.fetch = async () => Response.json({ ok: true, status: "applied" });
+  const { message, calls } = messageWithResult();
+  await consumer.processMessage(message, { JOBBER_QUOTE_BROKER_SECRET: "secret" });
+  assert.equal(calls.ack, 1);
+  assert.equal(calls.retry, 0);
+});

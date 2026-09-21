@@ -57,7 +57,10 @@ async function resolveQuote(env, body) {
   let result = null;
   try { result = await response.json(); } catch { /* retry below */ }
   if (!response.ok || !result?.ok) throw new Error(`resolver_http_${response.status || 0}`);
-  if (["applied", "skipped", "missing_request", "quote_not_found"].includes(result.status)) return result;
+  if (["applied", "skipped"].includes(result.status)) return result;
+  if (["missing_request", "quote_not_found"].includes(result.status)) {
+    throw new Error(`resolver_pending_${result.status}`);
+  }
   throw new Error("resolver_unexpected_status");
 }
 

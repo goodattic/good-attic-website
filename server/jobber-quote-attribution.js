@@ -7,6 +7,7 @@ import {
 
 const MAX_RESOLVER_BODY_BYTES = 32 * 1024;
 const QUOTE_ATTRIBUTION_EVENT_NAME = "jobber.quote_attribution.v1";
+const ATTRIBUTION_CLAIM_LEASE_MS = 2 * 60 * 1000;
 const ENABLED_MARKETS = new Set(["ut", "mo_stl"]);
 
 const ROUTES_BY_ACCOUNT_ID = new Map(
@@ -66,7 +67,9 @@ async function findLead(database, requestId) {
 }
 
 async function beginAttribution(database, quoteId, lead) {
-  const now = new Date().toISOString();
+  const nowMs = Date.now();
+  const now = new Date(nowMs).toISOString();
+  const claimToken = crypto.randomUUID();
   await database.prepare(`
     /* jobber_quote_attribution:insert */
     INSERT OR IGNORE INTO closed_loop_quote_attributions (
@@ -76,31 +79,44 @@ async function beginAttribution(database, quoteId, lead) {
   `).bind(quoteId, lead.lead_id, lead.market_key, lead.jobber_request_id, now, now).run();
   const current = await database.prepare(`
     /* jobber_quote_attribution:select */
-    SELECT quote_id, status, attempt_count
+    SELECT quote_id, status, attempt_count, claim_token, claim_expires_at
     FROM closed_loop_quote_attributions
     WHERE quote_id = ?
     LIMIT 1
   `).bind(quoteId).first();
   if (["applied", "skipped", "manual_review"].includes(current?.status)) return current;
-  await database.prepare(`
+  const claimed = await database.prepare(`
     /* jobber_quote_attribution:claim */
     UPDATE closed_loop_quote_attributions
-    SET status = 'pending', attempt_count = attempt_count + 1,
+    SET claim_token = ?, claim_expires_at = ?, attempt_count = attempt_count + 1,
       last_error_code = NULL, updated_at = ?
     WHERE quote_id = ?
-  `).bind(now, quoteId).run();
-  return { ...current, quote_id: quoteId, status: "pending" };
+      AND status IN ('pending', 'retryable')
+      AND (claim_token IS NULL OR claim_expires_at IS NULL OR claim_expires_at <= ?)
+  `).bind(claimToken, nowMs + ATTRIBUTION_CLAIM_LEASE_MS, now, quoteId, nowMs).run();
+  if (changes(claimed) !== 1) {
+    return { ...current, quote_id: quoteId, claimed: false };
+  }
+  return {
+    ...current,
+    quote_id: quoteId,
+    status: "pending",
+    claimed: true,
+    claimToken,
+  };
 }
 
-async function finishAttribution(database, quoteId, status, errorCode = "") {
+async function finishAttribution(database, quoteId, claimToken, status, errorCode = "") {
   const now = new Date().toISOString();
-  await database.prepare(`
+  const result = await database.prepare(`
     /* jobber_quote_attribution:finish */
     UPDATE closed_loop_quote_attributions
-    SET status = ?, last_error_code = ?, updated_at = ?,
+    SET status = ?, claim_token = NULL, claim_expires_at = NULL,
+      last_error_code = ?, updated_at = ?,
       completed_at = CASE WHEN ? IN ('applied', 'skipped', 'manual_review') THEN ? ELSE completed_at END
-    WHERE quote_id = ?
-  `).bind(status, clean(errorCode, 120) || null, now, status, now, quoteId).run();
+    WHERE quote_id = ? AND status = 'pending' AND claim_token = ?
+  `).bind(status, clean(errorCode, 120) || null, now, status, now, quoteId, claimToken).run();
+  return changes(result) === 1;
 }
 
 function leadForCustomFields(record) {
@@ -212,6 +228,9 @@ export async function resolveQuoteAttribution({ request, env }) {
     if (["applied", "skipped", "manual_review"].includes(checkpoint.status)) {
       return jsonResponse({ ok: true, status: checkpoint.status, quote_id: quote.id, jobber_request_id: requestId });
     }
+    if (!checkpoint.claimed) {
+      return jsonResponse({ ok: false, status: "claim_busy", quote_id: quote.id, jobber_request_id: requestId }, 503);
+    }
     const applied = await applyQuoteCustomFields(
       env,
       token.accessToken,
@@ -220,11 +239,19 @@ export async function resolveQuoteAttribution({ request, env }) {
       requestId,
     );
     if (!applied.ok && !applied.skipped) {
-      await finishAttribution(database, quote.id, "retryable", applied.reason);
+      const finished = await finishAttribution(database, quote.id, checkpoint.claimToken, "retryable", applied.reason);
+      if (!finished) return jsonResponse({ ok: false, status: "claim_lost" }, 503);
       const status = applied.reason === "permission_denied" ? 503 : 502;
       return jsonResponse({ ok: false, status: "quote_attribution_failed", quote_id: quote.id, jobber_request_id: requestId, ...applied }, status);
     }
-    await finishAttribution(database, quote.id, applied.ok ? "applied" : "skipped", applied.reason);
+    const finished = await finishAttribution(
+      database,
+      quote.id,
+      checkpoint.claimToken,
+      applied.ok ? "applied" : "skipped",
+      applied.reason,
+    );
+    if (!finished) return jsonResponse({ ok: false, status: "claim_lost" }, 503);
     return jsonResponse({
       ok: true,
       status: applied.ok ? "applied" : "skipped",
@@ -241,6 +268,7 @@ export async function resolveQuoteAttribution({ request, env }) {
 }
 
 export const _private = {
+  ATTRIBUTION_CLAIM_LEASE_MS,
   ENABLED_MARKETS,
   MAX_RESOLVER_BODY_BYTES,
   QUOTE_ATTRIBUTION_EVENT_NAME,

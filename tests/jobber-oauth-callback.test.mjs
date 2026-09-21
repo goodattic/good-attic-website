@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { test } from "node:test";
+import { afterEach, test } from "node:test";
 
 import {
   _private as oauth,
   onRequestGet,
 } from "../functions/api/jobber/oauth/callback.js";
+
+const originalFetch = globalThis.fetch;
+afterEach(() => { globalThis.fetch = originalFetch; });
 
 class AuthD1 {
   constructor({ fail = false, commitThenThrow = false } = {}) {
@@ -210,6 +213,61 @@ test("hard-pins every OAuth market to its authoritative Jobber account ID", () =
       expectedAccountId,
     );
   }
+});
+
+test("verifies Quote write scope with a real no-change quoteEdit mutation", async () => {
+  const requests = [];
+  globalThis.fetch = async (_url, init) => {
+    const body = JSON.parse(init.body);
+    requests.push(body);
+    if (body.query.includes("GoodAtticQuoteCapabilities")) {
+      return Response.json({
+        data: {
+          quotes: { nodes: [{ id: "quote-1", quoteNumber: "Q-1001" }] },
+          customFieldConfigurations: { nodes: [
+            { __typename: "CustomFieldConfigurationText", id: "lead", name: "Original Lead ID", valueType: "TEXT", appliesTo: "ALL_QUOTES", readOnly: false },
+            { __typename: "CustomFieldConfigurationText", id: "source", name: "Original Source", valueType: "TEXT", appliesTo: "ALL_QUOTES", readOnly: false },
+            { __typename: "CustomFieldConfigurationText", id: "campaign", name: "Campaign", valueType: "TEXT", appliesTo: "ALL_QUOTES", readOnly: false },
+          ] },
+        },
+      });
+    }
+    return Response.json({ data: { quoteEdit: { quote: { id: "quote-1" }, userErrors: [] } } });
+  };
+
+  const result = await oauth.queryJobberQuoteCapabilities({}, "access-token");
+  assert.equal(result.ok, true);
+  assert.equal(result.quoteWrite, true);
+  assert.equal(requests.length, 2);
+  assert.match(requests[1].query, /mutation GoodAtticQuoteWriteProbe/);
+  assert.deepEqual(requests[1].variables, {
+    quoteId: "quote-1",
+    attributes: { quoteNumber: "Q-1001" },
+  });
+});
+
+test("does not report Quote write access when the probe mutation is rejected", async () => {
+  let call = 0;
+  globalThis.fetch = async () => {
+    call += 1;
+    if (call === 1) {
+      return Response.json({
+        data: {
+          quotes: { nodes: [{ id: "quote-1", quoteNumber: "Q-1001" }] },
+          customFieldConfigurations: { nodes: [
+            { __typename: "CustomFieldConfigurationText", id: "lead", name: "Original Lead ID", valueType: "TEXT", appliesTo: "ALL_QUOTES", readOnly: false },
+            { __typename: "CustomFieldConfigurationText", id: "source", name: "Original Source", valueType: "TEXT", appliesTo: "ALL_QUOTES", readOnly: false },
+            { __typename: "CustomFieldConfigurationText", id: "campaign", name: "Campaign", valueType: "TEXT", appliesTo: "ALL_QUOTES", readOnly: false },
+          ] },
+        },
+      });
+    }
+    return Response.json({ errors: [{ message: "Missing write scope" }] }, { status: 403 });
+  };
+  const result = await oauth.queryJobberQuoteCapabilities({}, "access-token");
+  assert.equal(result.ok, false);
+  assert.equal(result.quoteWrite, false);
+  assert.equal(result.quoteWriteReason, "quote_write_probe_failed");
 });
 
 test("checkpoints access, refresh, and expiry in D1 and mirrors refresh to KV", async () => {

@@ -1,4 +1,5 @@
 const CUSTOM_FIELD_NAMES = ["Original Lead ID", "Original Source", "Campaign"];
+const QUOTE_CUSTOM_FIELD_APPLICABILITY = "ALL_QUOTES";
 const CUSTOM_FIELDS_TIMEOUT_MS = 10 * 1000;
 const JOBBER_API_URL = "https://api.getjobber.com/api/graphql";
 
@@ -6,12 +7,12 @@ const CUSTOM_FIELD_CONFIGURATIONS_QUERY = `
   query GoodAtticCustomFieldConfigurations {
     customFieldConfigurations(first: 50) {
       nodes {
-        ... on CustomFieldConfigurationArea { id name valueType appliesTo readOnly }
-        ... on CustomFieldConfigurationDropdown { id name valueType appliesTo readOnly }
-        ... on CustomFieldConfigurationLink { id name valueType appliesTo readOnly }
-        ... on CustomFieldConfigurationNumeric { id name valueType appliesTo readOnly }
-        ... on CustomFieldConfigurationText { id name valueType appliesTo readOnly }
-        ... on CustomFieldConfigurationTrueFalse { id name valueType appliesTo readOnly }
+        ... on CustomFieldConfigurationArea { __typename id name valueType appliesTo readOnly }
+        ... on CustomFieldConfigurationDropdown { __typename id name valueType appliesTo readOnly }
+        ... on CustomFieldConfigurationLink { __typename id name valueType appliesTo readOnly }
+        ... on CustomFieldConfigurationNumeric { __typename id name valueType appliesTo readOnly }
+        ... on CustomFieldConfigurationText { __typename id name valueType appliesTo readOnly }
+        ... on CustomFieldConfigurationTrueFalse { __typename id name valueType appliesTo readOnly }
       }
     }
   }
@@ -105,6 +106,16 @@ export function parseCustomFieldDefinitions(raw) {
   return definitions;
 }
 
+export function filterQuoteCustomFieldConfigurations(configurations = []) {
+  return (Array.isArray(configurations) ? configurations : []).filter((configuration) => (
+    configuration?.id
+    && configuration?.name
+    && configuration.appliesTo === QUOTE_CUSTOM_FIELD_APPLICABILITY
+    && (configuration.__typename === "CustomFieldConfigurationText" || configuration.valueType === "TEXT")
+    && configuration.readOnly === false
+  ));
+}
+
 export function campaignFromLead(lead) {
   const direct = cleanScalar(lead?.campaign, 200);
   if (direct) return direct;
@@ -167,7 +178,7 @@ export async function resolveCustomFieldDefinitions(env, accessToken) {
       ? data.data.customFieldConfigurations.nodes.filter((node) => node?.id && node?.name)
       : [];
     const definitions = new Map(
-      configurations
+      filterQuoteCustomFieldConfigurations(configurations)
         .filter((node) => CUSTOM_FIELD_NAMES.includes(node.name))
         .map((node) => [node.name, node.id]),
     );
@@ -377,9 +388,11 @@ export const _private = {
   CLIENT_CUSTOM_FIELDS_MUTATION,
   CUSTOM_FIELD_NAMES,
   CUSTOM_FIELD_CONFIGURATIONS_QUERY,
+  QUOTE_CUSTOM_FIELD_APPLICABILITY,
   QUOTE_CONTEXT_QUERY,
   QUOTE_CUSTOM_FIELDS_MUTATION,
   MARKET_CONFIG_KEYS,
   classifyJobberFailure,
+  filterQuoteCustomFieldConfigurations,
   jobberGraphql,
 };

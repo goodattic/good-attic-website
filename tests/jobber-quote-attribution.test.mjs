@@ -10,6 +10,7 @@ import {
 import {
   applyQuoteCustomFields,
   buildQuoteCustomFieldAttributes,
+  filterQuoteCustomFieldConfigurations,
   resolveCustomFieldDefinitions,
 } from "../server/jobber-custom-fields.js";
 
@@ -31,10 +32,13 @@ test("resolves the three account-scoped field identifiers programmatically", asy
     data: {
       customFieldConfigurations: {
         nodes: [
-          { id: "ut-lead", name: "Original Lead ID" },
-          { id: "ut-source", name: "Original Source" },
-          { id: "ut-campaign", name: "Campaign" },
-          { id: "other", name: "Unrelated" },
+          { __typename: "CustomFieldConfigurationText", id: "ut-lead", name: "Original Lead ID", valueType: "TEXT", appliesTo: "ALL_QUOTES", readOnly: false },
+          { __typename: "CustomFieldConfigurationText", id: "ut-source", name: "Original Source", valueType: "TEXT", appliesTo: "ALL_QUOTES", readOnly: false },
+          { __typename: "CustomFieldConfigurationText", id: "ut-campaign", name: "Campaign", valueType: "TEXT", appliesTo: "ALL_QUOTES", readOnly: false },
+          { __typename: "CustomFieldConfigurationText", id: "job-lead", name: "Original Lead ID", valueType: "TEXT", appliesTo: "ALL_JOBS", readOnly: false },
+          { __typename: "CustomFieldConfigurationDropdown", id: "ut-source-dropdown", name: "Original Source", valueType: "DROPDOWN", appliesTo: "ALL_QUOTES", readOnly: false },
+          { __typename: "CustomFieldConfigurationText", id: "ut-readonly", name: "Campaign", valueType: "TEXT", appliesTo: "ALL_QUOTES", readOnly: true },
+          { __typename: "CustomFieldConfigurationText", id: "other", name: "Unrelated", valueType: "TEXT", appliesTo: "ALL_QUOTES", readOnly: false },
         ],
       },
     },
@@ -46,6 +50,16 @@ test("resolves the three account-scoped field identifiers programmatically", asy
     ["Original Source", "ut-source"],
     ["Campaign", "ut-campaign"],
   ]);
+});
+
+test("accepts only writable text fields that apply to Quotes", () => {
+  const configurations = [
+    { __typename: "CustomFieldConfigurationText", id: "quote-text", name: "Campaign", valueType: "TEXT", appliesTo: "ALL_QUOTES", readOnly: false },
+    { __typename: "CustomFieldConfigurationText", id: "job-text", name: "Campaign", valueType: "TEXT", appliesTo: "ALL_JOBS", readOnly: false },
+    { __typename: "CustomFieldConfigurationDropdown", id: "quote-dropdown", name: "Campaign", valueType: "DROPDOWN", appliesTo: "ALL_QUOTES", readOnly: false },
+    { __typename: "CustomFieldConfigurationText", id: "quote-readonly", name: "Campaign", valueType: "TEXT", appliesTo: "ALL_QUOTES", readOnly: true },
+  ];
+  assert.deepEqual(filterQuoteCustomFieldConfigurations(configurations).map(({ id }) => id), ["quote-text"]);
 });
 
 test("does not overwrite a staff-corrected value and omits a missing campaign", () => {
@@ -141,4 +155,57 @@ test("preview mode blocks quote writes before resolving fields", async () => {
   );
   assert.deepEqual(result, { ok: false, skipped: true, reason: "external_api_writes_disabled" });
   assert.equal(calls, 0);
+});
+
+class AttributionD1 {
+  constructor() {
+    this.row = null;
+  }
+
+  prepare(sql) {
+    const database = this;
+    if (sql.includes("jobber_quote_attribution:insert")) {
+      return { bind(...values) { return { async run() {
+        if (!database.row) {
+          database.row = {
+            quote_id: values[0],
+            status: "pending",
+            attempt_count: 0,
+            claim_token: null,
+            claim_expires_at: null,
+          };
+        }
+        return { meta: { changes: 1 } };
+      } }; } };
+    }
+    if (sql.includes("jobber_quote_attribution:select")) {
+      return { bind() { return { async first() { return database.row ? { ...database.row } : null; } }; } };
+    }
+    assert.match(sql, /jobber_quote_attribution:claim/);
+    return { bind(...values) { return { async run() {
+      const [claimToken, claimExpiresAt] = values;
+      const now = values[4];
+      const claimable = database.row
+        && ["pending", "retryable"].includes(database.row.status)
+        && (!database.row.claim_token || database.row.claim_expires_at === null || database.row.claim_expires_at <= now);
+      if (!claimable) return { meta: { changes: 0 } };
+      database.row.claim_token = claimToken;
+      database.row.claim_expires_at = claimExpiresAt;
+      database.row.attempt_count += 1;
+      return { meta: { changes: 1 } };
+    } }; } };
+  }
+}
+
+test("claims a duplicate Quote atomically so only one worker can write", async () => {
+  const database = new AttributionD1();
+  const lead = { lead_id: "lead-1", market_key: "ut", jobber_request_id: "request-1" };
+  const [first, second] = await Promise.all([
+    quote.beginAttribution(database, "quote-1", lead),
+    quote.beginAttribution(database, "quote-1", lead),
+  ]);
+  assert.equal(first.claimed, true);
+  assert.equal(second.claimed, false);
+  assert.equal(first.claimToken, database.row.claim_token);
+  assert.equal(database.row.attempt_count, 1);
 });
