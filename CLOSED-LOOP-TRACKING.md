@@ -1,6 +1,6 @@
 # Utah + St. Louis closed-loop rollout
 
-Status: implementation branch only. Nothing in this branch is deployed and Google Ads bidding must remain unchanged.
+Status: implementation branch only. Nothing in this branch is deployed to production and Google Ads bidding must remain unchanged.
 
 ## Existing production flow verified in this repository
 
@@ -73,9 +73,17 @@ Before production:
 9. Deploy the ledger in shadow mode first: record outcomes but do not upload them.
 10. Compare shadow results to Jobber for one full week before enabling Google uploads.
 
+## Preview verification completed
+
+- The preview builds successfully.
+- Preview API writes are blocked by `EXTERNAL_API_WRITES_ENABLED=false`.
+- Preview responses carry a noindex/nofollow directive.
+- The post-Jobber attribution path now writes the PII-minimized Utah/St. Louis inquiry record before forwarding attribution.
+- Kansas City remains outside the first durable rollout.
+
 ## Remaining implementation work
 
-- Wire `buildClosedLoopLead` and `persistClosedLoopLead` into the post-Jobber success path.
+- Apply the ledger schema to an isolated test database and run the full test command in preview.
 - Add Jobber quote/job/invoice webhook resolver support using the existing token authority and queue pattern.
 - Resolve the three Jobber custom field identifiers per account and seed them on quote creation/update.
 - Add a Google upload worker with deterministic order IDs, consent checks, retry/manual-review states and partial-failure logging.
