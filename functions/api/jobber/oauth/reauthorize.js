@@ -132,7 +132,7 @@ export async function onRequestGet(context) {
   if (!market) return chooser(request);
 
   const route = getJobberOAuthRoute(market, "website");
-  if (!route || !["slc", "stl"].includes(route.marketKey)) {
+  if (!route || !["ut", "mo_stl"].includes(route.marketKey)) {
     return htmlResponse("Unsupported Jobber account", "<h1>Choose Utah or St. Louis.</h1>", 400);
   }
 
