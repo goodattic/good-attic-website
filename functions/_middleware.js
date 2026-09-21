@@ -30,6 +30,21 @@ const previewSafeApiPaths = new Set([
   "/api/site-config",
 ]);
 
+function isPreviewHost(hostname) {
+  return hostname.endsWith(".pages.dev") && hostname !== "good-attic-website.pages.dev";
+}
+
+function noindexPreview(response, hostname) {
+  if (!isPreviewHost(hostname)) return response;
+  const headers = new Headers(response.headers);
+  headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export async function onRequest(context) {
   const url = new URL(context.request.url);
   const legacyTarget = legacyRedirects.get(url.pathname);
@@ -47,6 +62,7 @@ export async function onRequest(context) {
       headers: {
         "Cache-Control": "no-store",
         "Content-Type": "application/json; charset=utf-8",
+        ...(isPreviewHost(url.hostname) ? { "X-Robots-Tag": "noindex, nofollow, noarchive" } : {}),
       },
     });
   }
@@ -64,5 +80,6 @@ export async function onRequest(context) {
     return Response.redirect(url.toString(), 301);
   }
 
-  return context.next();
+  const response = await context.next();
+  return noindexPreview(response, url.hostname);
 }
