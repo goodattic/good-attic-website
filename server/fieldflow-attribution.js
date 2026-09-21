@@ -4,18 +4,9 @@ const SCHEMA_VERSION = "2026-09-21";
 const MAX_ATTEMPTS = 3;
 
 const MARKET_ROUTES = {
-  ut: {
-    slug: "slc",
-    tokenKey: "FIELDFLOW_ATTRIBUTION_TOKEN_SLC",
-  },
-  mo_stl: {
-    slug: "stl",
-    tokenKey: "FIELDFLOW_ATTRIBUTION_TOKEN_STL",
-  },
-  mo_kc: {
-    slug: "kc",
-    tokenKey: "FIELDFLOW_ATTRIBUTION_TOKEN_KC",
-  },
+  ut: { slug: "slc", tokenKey: "FIELDFLOW_ATTRIBUTION_TOKEN_SLC" },
+  mo_stl: { slug: "stl", tokenKey: "FIELDFLOW_ATTRIBUTION_TOKEN_STL" },
+  mo_kc: { slug: "kc", tokenKey: "FIELDFLOW_ATTRIBUTION_TOKEN_KC" },
 };
 
 function cleanScalar(value, max = 500) {
@@ -24,19 +15,11 @@ function cleanScalar(value, max = 500) {
 }
 
 function parseUrl(value) {
-  try {
-    return new URL(cleanScalar(value, 5000));
-  } catch {
-    return null;
-  }
+  try { return new URL(cleanScalar(value, 5000)); } catch { return null; }
 }
 
 function readAttributionSignal(payload, field) {
-  const landing = [
-    payload?.ad_landing_page,
-    payload?.source_url,
-    payload?.page_url,
-  ]
+  const landing = [payload?.ad_landing_page, payload?.source_url, payload?.page_url]
     .map(parseUrl)
     .find(Boolean);
   return cleanScalar(landing?.searchParams.get(field), 500)
@@ -97,9 +80,7 @@ export function buildWebsiteAttribution(payload, lead, jobber) {
 export function buildAngiAttribution(angi, requestId) {
   const providerLeadId = cleanScalar(angi?.leadOid, 255);
   const entityId = cleanScalar(angi?.spEntityId, 64);
-  const submissionId = entityId && providerLeadId
-    ? `angi:${entityId}:${providerLeadId}`
-    : "";
+  const submissionId = entityId && providerLeadId ? `angi:${entityId}:${providerLeadId}` : "";
   return compactRecord({
     schema_version: SCHEMA_VERSION,
     jobber_request_id: cleanScalar(requestId, 255),
@@ -146,14 +127,7 @@ function durableLeadFromAttribution(marketKey, record) {
 
 export async function submitFieldflowAttribution(env, marketKey, record) {
   const route = MARKET_ROUTES[marketKey];
-  if (!route) {
-    return {
-      ok: false,
-      attempts: 0,
-      status: 0,
-      reason: "unsupported_market",
-    };
-  }
+  if (!route) return { ok: false, attempts: 0, status: 0, reason: "unsupported_market" };
 
   let ledger = { ok: false, reason: "outside_initial_rollout" };
   const durableLead = durableLeadFromAttribution(marketKey, record);
@@ -170,27 +144,14 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
     }
   }
 
-  if (env?.EXTERNAL_API_WRITES_ENABLED !== "true") {
-    return {
-      ok: ledger.ok,
-      attempts: 0,
-      status: 0,
-      reason: "external_api_writes_disabled",
-      ledger,
-    };
+  if (env?.EXTERNAL_API_WRITES_ENABLED === "false") {
+    return { ok: ledger.ok, attempts: 0, status: 0, reason: "external_api_writes_disabled", ledger };
   }
 
-  const baseUrl = cleanScalar(env?.FIELDFLOW_ATTRIBUTION_BASE_URL, 2048)
-    .replace(/\/+$/, "");
+  const baseUrl = cleanScalar(env?.FIELDFLOW_ATTRIBUTION_BASE_URL, 2048).replace(/\/+$/, "");
   const token = cleanScalar(env?.[route.tokenKey], 4000);
   if (!baseUrl || !token) {
-    return {
-      ok: false,
-      attempts: 0,
-      status: 0,
-      reason: "missing_configuration",
-      ledger,
-    };
+    return { ok: false, attempts: 0, status: 0, reason: "missing_configuration", ledger };
   }
 
   let lastStatus = 0;
@@ -208,15 +169,7 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
         body: JSON.stringify(record),
       });
       lastStatus = response.status;
-      if (response.ok) {
-        return {
-          ok: true,
-          attempts: attempt,
-          status: response.status,
-          ledger,
-        };
-      }
-
+      if (response.ok) return { ok: true, attempts: attempt, status: response.status, ledger };
       lastReason = "receiver_rejected";
       const retryable = response.status === 429 || response.status >= 500;
       if (!retryable || attempt === MAX_ATTEMPTS) break;
@@ -224,17 +177,10 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
       lastReason = "network_error";
       if (attempt === MAX_ATTEMPTS) break;
     }
-
     await wait(250 * attempt);
   }
 
-  return {
-    ok: false,
-    attempts,
-    status: lastStatus,
-    reason: lastReason,
-    ledger,
-  };
+  return { ok: false, attempts, status: lastStatus, reason: lastReason, ledger };
 }
 
 export const _private = {
