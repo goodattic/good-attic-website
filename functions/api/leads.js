@@ -1088,6 +1088,34 @@ async function submitLeadToJobber(env, lead) {
     property?.id || null,
   );
 
+  // Custom field population is best-effort and must never block lead routing.
+  let customFields = { ok: false, skipped: true, reason: "not_attempted" };
+  try {
+    const { applyClientCustomFields } = await import("../../server/jobber-custom-fields.js");
+    customFields = await applyClientCustomFields(env, token.accessToken, client.id, lead, request.id);
+    if (!customFields.ok) {
+      console.error("Jobber custom field population did not apply.", {
+        submissionId: lead.submission_id,
+        market: lead.market_key,
+        requestId: request.id,
+        result: customFields,
+      });
+    }
+  } catch (error) {
+    customFields = {
+      ok: false,
+      skipped: false,
+      reason: "unexpected_error",
+      message: error instanceof Error ? error.message : "unknown_error",
+    };
+    console.error("Jobber custom field population failed unexpectedly.", {
+      submissionId: lead.submission_id,
+      market: lead.market_key,
+      requestId: request.id,
+      error: customFields.message,
+    });
+  }
+
   return {
     account: route.accountLabel,
     market_key: lead.market_key,
@@ -1103,6 +1131,7 @@ async function submitLeadToJobber(env, lead) {
     phone_included: created.phoneIncluded,
     refresh_token_rotated: token.tokenRotated,
     refresh_token_persisted: token.tokenPersisted,
+    custom_fields: customFields,
   };
 }
 
