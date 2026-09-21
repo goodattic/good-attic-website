@@ -1,4 +1,6 @@
-const SCHEMA_VERSION = "2026-07-31";
+import { persistClosedLoopLead } from "./closed-loop-ledger.js";
+
+const SCHEMA_VERSION = "2026-09-21";
 const MAX_ATTEMPTS = 3;
 
 const MARKET_ROUTES = {
@@ -59,16 +61,28 @@ function compactRecord(record) {
   );
 }
 
+function compactLandingPage(value) {
+  const url = parseUrl(value);
+  return url ? `${url.origin}${url.pathname}`.slice(0, 1000) : "";
+}
+
 export function buildWebsiteAttribution(payload, lead, jobber) {
   return compactRecord({
     schema_version: SCHEMA_VERSION,
+    market_key: cleanScalar(lead?.market_key, 40),
+    jobber_account_id: cleanScalar(jobber?.account_id, 255),
     jobber_request_id: cleanScalar(jobber?.request_id, 255),
+    jobber_client_id: cleanScalar(jobber?.client_id, 255),
     submission_id: cleanScalar(lead?.submission_id, 255),
     occurred_at: cleanScalar(lead?.submitted_at, 64),
     lead_source: cleanScalar(lead?.source_label, 100),
     source_key: cleanScalar(lead?.source_key, 50),
     source_detail: cleanScalar(lead?.source_detail, 100),
     source_reason: cleanScalar(lead?.source_reason, 2000) || "server_classified",
+    campaign: readAttributionSignal(payload, "utm_campaign"),
+    service: cleanScalar(lead?.service, 500),
+    landing_page: compactLandingPage(payload?.ad_landing_page || lead?.source_url),
+    consent_state: cleanScalar(lead?.consent, 500),
     gclid: readAttributionSignal(payload, "gclid"),
     gbraid: readAttributionSignal(payload, "gbraid"),
     wbraid: readAttributionSignal(payload, "wbraid"),
@@ -103,6 +117,33 @@ function wait(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
+function durableLeadFromAttribution(marketKey, record) {
+  const requestId = cleanScalar(record?.jobber_request_id, 500);
+  const submissionId = cleanScalar(record?.submission_id, 500);
+  if (!["ut", "mo_stl"].includes(marketKey) || !requestId || !submissionId) return null;
+  const now = new Date().toISOString();
+  return {
+    lead_id: `jobber-request:${requestId}`,
+    submission_id: submissionId,
+    market_key: marketKey,
+    jobber_account_id: cleanScalar(record?.jobber_account_id, 500),
+    jobber_request_id: requestId,
+    jobber_client_id: cleanScalar(record?.jobber_client_id, 500),
+    original_source: cleanScalar(record?.lead_source, 120) || "Unknown",
+    source_detail: cleanScalar(record?.source_detail, 120),
+    campaign: cleanScalar(record?.campaign || record?.utm_campaign, 500),
+    service: cleanScalar(record?.service, 500),
+    landing_page: cleanScalar(record?.landing_page, 1000),
+    gclid: cleanScalar(record?.gclid, 500),
+    gbraid: cleanScalar(record?.gbraid, 500),
+    wbraid: cleanScalar(record?.wbraid, 500),
+    consent_state: cleanScalar(record?.consent_state, 500),
+    inquiry_at: cleanScalar(record?.occurred_at, 80) || now,
+    created_at: now,
+    updated_at: now,
+  };
+}
+
 export async function submitFieldflowAttribution(env, marketKey, record) {
   const route = MARKET_ROUTES[marketKey];
   if (!route) {
@@ -111,6 +152,31 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
       attempts: 0,
       status: 0,
       reason: "unsupported_market",
+    };
+  }
+
+  let ledger = { ok: false, reason: "outside_initial_rollout" };
+  const durableLead = durableLeadFromAttribution(marketKey, record);
+  if (durableLead) {
+    try {
+      ledger = await persistClosedLoopLead(env?.ANGI_ROUTER_DB, durableLead);
+    } catch (error) {
+      ledger = { ok: false, reason: "ledger_write_failed" };
+      console.error("Closed-loop lead persistence failed after Jobber succeeded.", {
+        market: marketKey,
+        jobberRequestId: durableLead.jobber_request_id,
+        error: error instanceof Error ? error.message : "unknown_error",
+      });
+    }
+  }
+
+  if (env?.EXTERNAL_API_WRITES_ENABLED !== "true") {
+    return {
+      ok: ledger.ok,
+      attempts: 0,
+      status: 0,
+      reason: "external_api_writes_disabled",
+      ledger,
     };
   }
 
@@ -123,6 +189,7 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
       attempts: 0,
       status: 0,
       reason: "missing_configuration",
+      ledger,
     };
   }
 
@@ -146,6 +213,7 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
           ok: true,
           attempts: attempt,
           status: response.status,
+          ledger,
         };
       }
 
@@ -165,12 +233,14 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
     attempts,
     status: lastStatus,
     reason: lastReason,
+    ledger,
   };
 }
 
 export const _private = {
   MARKET_ROUTES,
   SCHEMA_VERSION,
+  durableLeadFromAttribution,
   readAttributionSignal,
   safeReferrerOrigin,
 };
