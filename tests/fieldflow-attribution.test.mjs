@@ -27,6 +27,23 @@ function websiteLead(source) {
   }, "submission-123", source);
 }
 
+class MemoryD1 {
+  constructor() {
+    this.calls = [];
+  }
+
+  prepare(sql) {
+    return {
+      bind: (...args) => ({
+        run: async () => {
+          this.calls.push({ sql, args });
+          return { meta: { changes: 1 } };
+        },
+      }),
+    };
+  }
+}
+
 test("builds a canonical, PII-minimized website attribution record", () => {
   const rawPayload = {
     lead_source: "Angi",
@@ -45,17 +62,23 @@ test("builds a canonical, PII-minimized website attribution record", () => {
   });
   const record = buildWebsiteAttribution(rawPayload, lead, {
     request_id: "jobber-request-123",
+    client_id: "jobber-client-123",
   });
 
   assert.deepEqual(record, {
-    schema_version: "2026-07-31",
+    schema_version: "2026-09-21",
+    market_key: "ut",
     jobber_request_id: "jobber-request-123",
+    jobber_client_id: "jobber-client-123",
     submission_id: "submission-123",
     occurred_at: lead.submitted_at,
     lead_source: "Google Ads",
     source_key: "google",
     source_detail: "google_ads",
     source_reason: "gclid",
+    campaign: "summer",
+    service: "Attic insulation assessment",
+    landing_page: "https://goodattic.energy/",
     gclid: "Landing_123456",
     utm_source: "google",
     utm_medium: "cpc",
@@ -71,8 +94,6 @@ test("builds a canonical, PII-minimized website attribution record", () => {
     "address",
     "notes",
     "source_url",
-    "market",
-    "jobber_account_id",
   ]) {
     assert.equal(Object.hasOwn(record, forbidden), false, forbidden);
   }
@@ -118,28 +139,34 @@ test("builds an Angi record with exact Jobber and provider identifiers", () => {
   );
 });
 
-test("selects the exact Fieldflow endpoint and secret for each market", async () => {
+test("persists the durable lead and selects the exact Fieldflow endpoint", async () => {
   const calls = [];
   globalThis.fetch = async (url, options) => {
     calls.push({ url, options });
     return new Response(null, { status: 202 });
   };
+  const database = new MemoryD1();
   const env = {
+    ANGI_ROUTER_DB: database,
+    EXTERNAL_API_WRITES_ENABLED: "true",
     FIELDFLOW_ATTRIBUTION_BASE_URL: "https://fieldflow.example.test/ingest/",
     FIELDFLOW_ATTRIBUTION_TOKEN_SLC: "slc-secret",
     FIELDFLOW_ATTRIBUTION_TOKEN_STL: "stl-secret",
     FIELDFLOW_ATTRIBUTION_TOKEN_KC: "kc-secret",
   };
   const record = {
-    schema_version: "2026-07-31",
+    schema_version: "2026-09-21",
     jobber_request_id: "request",
+    submission_id: "submission",
     occurred_at: "2026-07-31T18:00:00.000Z",
+    lead_source: "Google Ads",
     source_reason: "test",
   };
 
   for (const market of ["ut", "mo_stl", "mo_kc"]) {
     assert.equal((await submitFieldflowAttribution(env, market, record)).ok, true);
   }
+  assert.equal(database.calls.length, 2, "only Utah and St. Louis enter the first durable rollout");
   assert.deepEqual(
     calls.map(({ url, options }) => [url, options.headers.Authorization]),
     [
@@ -150,22 +177,37 @@ test("selects the exact Fieldflow endpoint and secret for each market", async ()
   );
 });
 
+test("blocks preview writes before calling an external receiver", async () => {
+  let called = false;
+  globalThis.fetch = async () => {
+    called = true;
+    return new Response(null, { status: 202 });
+  };
+  const result = await submitFieldflowAttribution({
+    EXTERNAL_API_WRITES_ENABLED: "false",
+  }, "ut", {
+    jobber_request_id: "request-preview",
+    submission_id: "submission-preview",
+  });
+  assert.equal(result.reason, "external_api_writes_disabled");
+  assert.equal(called, false);
+});
+
 test("fails open for unsupported markets, missing config, and receiver rejection", async () => {
   const unsupported = await submitFieldflowAttribution({}, "general", {});
   assert.equal(unsupported.reason, "unsupported_market");
 
-  const missing = await submitFieldflowAttribution({}, "ut", {});
+  const missing = await submitFieldflowAttribution({ EXTERNAL_API_WRITES_ENABLED: "true" }, "ut", {});
   assert.equal(missing.reason, "missing_configuration");
 
   globalThis.fetch = async () => new Response(null, { status: 400 });
   const rejected = await submitFieldflowAttribution({
+    EXTERNAL_API_WRITES_ENABLED: "true",
     FIELDFLOW_ATTRIBUTION_BASE_URL: "https://fieldflow.example.test/ingest",
     FIELDFLOW_ATTRIBUTION_TOKEN_SLC: "slc-secret",
   }, "ut", {});
-  assert.deepEqual(rejected, {
-    ok: false,
-    attempts: 1,
-    status: 400,
-    reason: "receiver_rejected",
-  });
+  assert.equal(rejected.ok, false);
+  assert.equal(rejected.attempts, 1);
+  assert.equal(rejected.status, 400);
+  assert.equal(rejected.reason, "receiver_rejected");
 });
