@@ -85,8 +85,11 @@ async function createState(env, route) {
 }
 
 function redirectUri(env, request) {
-  return clean(env.JOBBER_REAUTHORIZE_REDIRECT_URI, 500)
-    || `${new URL(request.url).origin}/api/jobber/oauth/reauthorize`;
+  // Reauthorization must use the callback already registered in Jobber. A
+  // second redirect URI makes the consent page return directly to a route
+  // Jobber does not know and recreates the missing-code/state failure.
+  return clean(env.JOBBER_OAUTH_REDIRECT_URI, 500)
+    || `${new URL(request.url).origin}/api/jobber/oauth/callback`;
 }
 
 function clientId(env, route) {

@@ -231,6 +231,48 @@ async function queryJobberAccount(env, accessToken) {
   };
 }
 
+async function queryJobberQuoteCapabilities(env, accessToken) {
+  const response = await fetch(JOBBER_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      "X-JOBBER-GRAPHQL-VERSION": clean(env.JOBBER_GRAPHQL_VERSION, 40) || DEFAULT_JOBBER_GRAPHQL_VERSION,
+    },
+    body: JSON.stringify({
+      query: `
+        query GoodAtticQuoteCapabilities {
+          quotes(first: 1) { nodes { id } }
+          customFieldConfigurations(first: 50) {
+            nodes {
+              ... on CustomFieldConfigurationArea { id name appliesTo }
+              ... on CustomFieldConfigurationDropdown { id name appliesTo }
+              ... on CustomFieldConfigurationLink { id name appliesTo }
+              ... on CustomFieldConfigurationNumeric { id name appliesTo }
+              ... on CustomFieldConfigurationText { id name appliesTo }
+              ... on CustomFieldConfigurationTrueFalse { id name appliesTo }
+            }
+          }
+        }
+      `,
+    }),
+  });
+  const data = await safeJson(response);
+  if (!response.ok || data?.errors?.length) {
+    return { ok: false, quoteRead: false, customFieldRead: false, errors: data?.errors || [] };
+  }
+  const configurations = data?.data?.customFieldConfigurations?.nodes || [];
+  const names = new Set(configurations.map((item) => item?.name).filter(Boolean));
+  const requiredNames = ["Original Lead ID", "Original Source", "Campaign"];
+  return {
+    ok: requiredNames.every((name) => names.has(name)),
+    quoteRead: true,
+    customFieldRead: true,
+    customFieldNames: requiredNames.filter((name) => names.has(name)),
+    missingCustomFieldNames: requiredNames.filter((name) => !names.has(name)),
+  };
+}
+
 async function persistRefreshToken(env, route, refreshToken) {
   const tokenStore = env.JOBBER_TOKEN_STORE;
   if (!tokenStore || typeof tokenStore.put !== "function") return false;
@@ -440,7 +482,7 @@ async function persistAuthorizedJobberTokens(env, route, tokenData, accountResul
   };
 }
 
-function renderSuccess(route, accountResult, persistence) {
+function renderSuccess(route, accountResult, persistence, capabilities) {
   const account = accountResult.ok && accountResult.account
     ? `${accountResult.account.name || "Unnamed account"} (${accountResult.account.id || "no id returned"})`
     : "Account query did not return account details.";
@@ -462,6 +504,9 @@ function renderSuccess(route, accountResult, persistence) {
     <h2>Authoritative checkpoint</h2>
     <p class="muted">D1 persisted: <strong>${persistence.d1Persisted ? "yes" : "no"}</strong></p>
     <p class="muted">Compatibility KV mirror: <strong>${persistence.kvPersisted ? "yes" : "not available"}</strong></p>
+    <p class="muted">Quote read access: <strong>${capabilities?.quoteRead ? "yes" : "no"}</strong></p>
+    <p class="muted">Custom-field definition read access: <strong>${capabilities?.customFieldRead ? "yes" : "no"}</strong></p>
+    <p class="muted">Quote write access: <strong>verified on the first quote update</strong></p>
     <p class="muted">No refresh token is displayed or copied into a second runtime authority.</p>
 
     <h2>Repeat for the other markets</h2>
@@ -497,10 +542,19 @@ export async function onRequestGet({ request, env }) {
     const lock = await acquireJobberProcessLock(env, route);
     let tokenData;
     let accountResult;
+    let capabilities;
     let persistence;
     try {
       tokenData = await exchangeAuthorizationCode(env, route, code, getRedirectUri(env, request));
       accountResult = await queryJobberAccount(env, tokenData.access_token);
+      requireExpectedJobberAccount(route, accountResult);
+      capabilities = await queryJobberQuoteCapabilities(env, tokenData.access_token);
+      if (!capabilities.ok) {
+        throw new OAuthSetupError(
+          `Expanded quote access is not available for ${route.accountLabel}. Reauthorize with quote read/write and custom-field configuration scopes.`,
+          403,
+        );
+      }
       persistence = await persistAuthorizedJobberTokens(
         env,
         route,
@@ -511,7 +565,7 @@ export async function onRequestGet({ request, env }) {
       await releaseJobberProcessLock(env, lock);
     }
 
-    return renderSuccess(route, accountResult, persistence);
+    return renderSuccess(route, accountResult, persistence, capabilities);
   } catch (error) {
     if (error instanceof OAuthSetupError) {
       return htmlResponse(
@@ -535,6 +589,7 @@ export const _private = {
   verifyState,
   exchangeAuthorizationCode,
   queryJobberAccount,
+  queryJobberQuoteCapabilities,
   requireExpectedJobberAccount,
   acquireJobberProcessLock,
   releaseJobberProcessLock,

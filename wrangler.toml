@@ -30,3 +30,7 @@ database_id = "934d7ad9-cba8-4cb4-9494-1e9980b7c403"
 [[env.production.queues.producers]]
 binding = "JOBBER_APPOINTMENT_QUEUE"
 queue = "good-attic-jobber-appointment-events"
+
+[[env.production.queues.producers]]
+binding = "JOBBER_QUOTE_QUEUE"
+queue = "good-attic-jobber-quote-events"

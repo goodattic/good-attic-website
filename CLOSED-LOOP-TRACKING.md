@@ -84,8 +84,10 @@ Before production:
 ## Remaining implementation work
 
 - Apply the ledger schema to an isolated test database and run the full test command in preview.
-- Add Jobber quote/job/invoice webhook resolver support using the existing token authority and queue pattern.
-- Resolve the three Jobber custom field identifiers per account and seed them on quote creation/update.
+- Register the Jobber `QUOTE_CREATE` webhook for the Utah and St. Louis Website Leads app connections, pointing to `/api/jobber/webhooks/quote-created`.
+- Apply `migrations/0006_closed_loop_quote_attribution.sql` before enabling the quote consumer.
+- The quote resolver now reads the originating Request, resolves the three custom-field identifiers from the account, and seeds the first Quote through `quoteEdit`; duplicate deliveries and retries are checkpointed by quote ID.
+- The secure reauthorization entry point is `/api/jobber/oauth/reauthorize?market=slc` or `?market=stl`. It uses the existing `JOBBER_OAUTH_REDIRECT_URI` and refuses to checkpoint a token unless the account and quote/custom-field read probes pass.
 - Add a Google upload worker with deterministic order IDs, consent checks, retry/manual-review states and partial-failure logging.
 - Add the weekly reconciliation worker and alert destination.
 - Remove HighLevel from any operational success criteria; Jobber is the CRM of record.

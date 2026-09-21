@@ -1,0 +1,12 @@
+name = "good-attic-jobber-quote-consumer"
+main = "jobber-quote-consumer.js"
+compatibility_date = "2026-07-27"
+
+[[queues.consumers]]
+queue = "good-attic-jobber-quote-events"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 10
+
+[vars]
+JOBBER_QUOTE_RESOLVER_URL = "https://goodattic.energy/api/jobber/quote-resolve"
