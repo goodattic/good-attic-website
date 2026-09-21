@@ -157,6 +157,39 @@ test("preview mode blocks quote writes before resolving fields", async () => {
   assert.equal(calls, 0);
 });
 
+test("test mode skips a Quote that is not explicitly allowlisted", async () => {
+  let calls = 0;
+  globalThis.fetch = async () => { calls += 1; return new Response("{}", { status: 200 }); };
+  const request = new Request("https://example.test/api/jobber/quote-resolve", {
+    method: "POST",
+    headers: { Authorization: "Bearer broker-secret" },
+    body: JSON.stringify({
+      account_id: UTAH_ACCOUNT_ID,
+      market_key: "ut",
+      quote_id: "not-the-test-quote",
+    }),
+  });
+  const database = { prepare() { throw new Error("database should not be touched"); } };
+  const result = await quote.resolveQuoteAttribution({
+    request,
+    env: {
+      JOBBER_QUOTE_BROKER_SECRET: "broker-secret",
+      JOBBER_QUOTE_TEST_MODE: "true",
+      JOBBER_QUOTE_TEST_ALLOWLIST_UT: "ut-test-quote",
+      ANGI_ROUTER_DB: database,
+      EXTERNAL_API_WRITES_ENABLED: "true",
+    },
+  });
+  assert.equal(result.status, 200);
+  assert.deepEqual(await result.json(), {
+    ok: true,
+    status: "skipped",
+    reason: "quote_not_allowlisted",
+    quote_id: "not-the-test-quote",
+  });
+  assert.equal(calls, 0);
+});
+
 class AttributionD1 {
   constructor() {
     this.row = null;

@@ -55,6 +55,20 @@ function changes(result) {
   return Number(result?.meta?.changes ?? result?.changes ?? 0);
 }
 
+function allowlistedQuoteIds(env, marketKey) {
+  const variable = marketKey === "ut"
+    ? env.JOBBER_QUOTE_TEST_ALLOWLIST_UT
+    : marketKey === "mo_stl"
+      ? env.JOBBER_QUOTE_TEST_ALLOWLIST_STL
+      : "";
+  return new Set(String(variable || "").split(",").map((value) => clean(value, 500)).filter(Boolean));
+}
+
+function quoteAllowedInCurrentMode(env, marketKey, quoteId) {
+  if (clean(env.JOBBER_QUOTE_TEST_MODE, 20).toLowerCase() !== "true") return true;
+  return allowlistedQuoteIds(env, marketKey).has(clean(quoteId, 500));
+}
+
 async function findLead(database, requestId) {
   return database.prepare(`
     /* jobber_quote_attribution:find_lead */
@@ -199,6 +213,9 @@ export async function resolveQuoteAttribution({ request, env }) {
   if (!route || !quoteId || (input?.market_key && clean(input.market_key, 40) !== route.marketKey)) {
     return jsonResponse({ ok: false, code: "market_account_mismatch" }, 409);
   }
+  if (!quoteAllowedInCurrentMode(env, route.marketKey, quoteId)) {
+    return jsonResponse({ ok: true, status: "skipped", reason: "quote_not_allowlisted", quote_id: quoteId });
+  }
   if (env.EXTERNAL_API_WRITES_ENABLED !== "true") {
     return jsonResponse({ ok: true, status: "skipped", reason: "external_api_writes_disabled" });
   }
@@ -280,5 +297,8 @@ export const _private = {
   beginAttribution,
   finishAttribution,
   leadForCustomFields,
+  allowlistedQuoteIds,
   quoteLeadLinkStatus,
+  quoteAllowedInCurrentMode,
+  resolveQuoteAttribution,
 };

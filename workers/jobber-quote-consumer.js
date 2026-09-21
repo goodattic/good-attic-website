@@ -22,6 +22,20 @@ function retryMessage(message) {
   message.retry({ delaySeconds: retryDelaySeconds(message) });
 }
 
+function allowlistedQuoteIds(env, marketKey) {
+  const variable = marketKey === "ut"
+    ? env.JOBBER_QUOTE_TEST_ALLOWLIST_UT
+    : marketKey === "mo_stl"
+      ? env.JOBBER_QUOTE_TEST_ALLOWLIST_STL
+      : "";
+  return new Set(String(variable || "").split(",").map((value) => clean(value, 500)).filter(Boolean));
+}
+
+function quoteAllowedInCurrentMode(env, body) {
+  if (clean(env.JOBBER_QUOTE_TEST_MODE, 20).toLowerCase() !== "true") return true;
+  return allowlistedQuoteIds(env, body.market_key).has(clean(body.quote_id, 500));
+}
+
 function validMessage(body) {
   const accountId = clean(body?.account_id, 500);
   const quoteId = clean(body?.quote_id, 500);
@@ -69,6 +83,10 @@ async function processMessage(message, env) {
     message.ack();
     return;
   }
+  if (!quoteAllowedInCurrentMode(env, message.body)) {
+    message.ack();
+    return;
+  }
   try {
     await resolveQuote(env, message.body);
     message.ack();
@@ -89,7 +107,9 @@ export const _private = {
   MARKET_BY_ACCOUNT_ID,
   MAX_RETRY_DELAY_SECONDS,
   QUOTE_ATTRIBUTION_EVENT_NAME,
+  allowlistedQuoteIds,
   processMessage,
+  quoteAllowedInCurrentMode,
   resolveQuote,
   retryDelaySeconds,
   validMessage,

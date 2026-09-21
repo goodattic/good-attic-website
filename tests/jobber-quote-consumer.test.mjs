@@ -53,3 +53,33 @@ test("acknowledges only terminal resolver statuses", async () => {
   assert.equal(calls.ack, 1);
   assert.equal(calls.retry, 0);
 });
+
+test("test mode acknowledges non-allowlisted Quotes without calling the resolver", async () => {
+  let calls = 0;
+  globalThis.fetch = async () => { calls += 1; return Response.json({ ok: true, status: "applied" }); };
+  const { message, calls: messageCalls } = messageWithResult();
+  await consumer.processMessage(message, {
+    JOBBER_QUOTE_BROKER_SECRET: "secret",
+    JOBBER_QUOTE_TEST_MODE: "true",
+    JOBBER_QUOTE_TEST_ALLOWLIST_UT: "ut-test-quote",
+  });
+  assert.equal(messageCalls.ack, 1);
+  assert.equal(messageCalls.retry, 0);
+  assert.equal(calls, 0);
+});
+
+test("test mode allows only the configured Quote ID for its market", () => {
+  assert.equal(consumer.quoteAllowedInCurrentMode({
+    JOBBER_QUOTE_TEST_MODE: "true",
+    JOBBER_QUOTE_TEST_ALLOWLIST_UT: "ut-test-quote",
+    JOBBER_QUOTE_TEST_ALLOWLIST_STL: "stl-test-quote",
+  }, { ...EVENT, quote_id: "ut-test-quote" }), true);
+  assert.equal(consumer.quoteAllowedInCurrentMode({
+    JOBBER_QUOTE_TEST_MODE: "true",
+    JOBBER_QUOTE_TEST_ALLOWLIST_UT: "ut-test-quote",
+    JOBBER_QUOTE_TEST_ALLOWLIST_STL: "stl-test-quote",
+  }, { ...EVENT, quote_id: "stl-test-quote" }), false);
+  assert.equal(consumer.quoteAllowedInCurrentMode({
+    JOBBER_QUOTE_TEST_ALLOWLIST_UT: "ut-test-quote",
+  }, EVENT), true);
+});
