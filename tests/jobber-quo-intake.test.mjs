@@ -13,9 +13,9 @@ const CLIENT=enc('Client',111),REQUEST=enc('Request',222),NOTE=enc('RequestNote'
 const ACCOUNTS={utah:enc('Account',2498432),stl:enc('Account',2498453),kc:enc('Account',1919824)};
 function database() {
   const db=new DatabaseSync(':memory:');
-  db.exec(fs.readFileSync(new URL('../migrations/0006_quo_intake_operations.sql',import.meta.url),'utf8'));
-  db.exec(fs.readFileSync(new URL('../migrations/0005_acknowledgement_sources.sql',import.meta.url),'utf8'));
-  db.exec(fs.readFileSync(new URL('../migrations/0007_quo_call_attributions.sql',import.meta.url),'utf8'));
+  db.exec(fs.readFileSync(new URL('fixtures/quo-intake-operations.sql',import.meta.url),'utf8'));
+  db.exec(fs.readFileSync(new URL('fixtures/acknowledgement-sources.sql',import.meta.url),'utf8'));
+  db.exec(fs.readFileSync(new URL('../migrations/0008_quo_call_attributions.sql',import.meta.url),'utf8'));
   return {raw:db,prepare(sql){return {bind(...args){return {async run(){const r=db.prepare(sql).run(...args);return {success:true,meta:{changes:Number(r.changes)}};},async first(){return db.prepare(sql).get(...args)||null;},async all(){return {success:true,results:db.prepare(sql).all(...args)};}};}};}};
 }
 function fixture(options={}) {

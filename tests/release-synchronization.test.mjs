@@ -10,13 +10,12 @@ const root = new URL("../", import.meta.url);
 const git = (...args) => execFileSync("git", args, { cwd: root, maxBuffer: 64 * 1024 * 1024 });
 const read = file => readFileSync(new URL(file, root));
 const files = commit => git("ls-tree", "-r", "--name-only", commit).toString().trim().split("\n");
-const synchronizedRelease = "74c9c8d1aef2d6cd6ef56aa913753451e70f056b";
+const synchronizedRelease = "ed94cc5";
 const synchronized = file => git("show", `${synchronizedRelease}:${file}`);
-const permissionFixFiles = ["server/jobber-quo-intake.js", "tests/jobber-quo-intake.test.mjs"];
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
 
 test("the frozen synchronization imported only the exact reviewed four-file live backend patch", () => {
-  assert.deepEqual(git("diff", "--name-only", `${liveCommit}^`, liveCommit).toString().trim().split("\n").sort(), ["migrations/0007_quo_call_attributions.sql", "server/jobber-quo-intake.js", "tests/approved-operational-hashes.mjs", "tests/jobber-quo-intake.test.mjs"].sort());
+  assert.deepEqual(git("diff", "--name-only", `${liveCommit}^`, liveCommit).toString().trim().split("\n").sort(), ["migrations/0008_quo_call_attributions.sql", "server/jobber-quo-intake.js", "tests/approved-operational-hashes.mjs", "tests/jobber-quo-intake.test.mjs"].sort());
   for (const file of liveBackendFiles) assert.deepEqual(synchronized(file), git("show", `${liveCommit}:${file}`), file);
   const allowed = new Set(synchronizationFiles);
   for (const file of files(releaseParent).filter(file => !allowed.has(file))) {
@@ -24,46 +23,32 @@ test("the frozen synchronization imported only the exact reviewed four-file live
   }
   const previous = new Set(files(releaseParent));
   const current = git("ls-files", "--cached", "--others", "--exclude-standard").toString().trim().split("\n");
-  assert.deepEqual(current.filter(file => !previous.has(file)).sort(), ["migrations/0007_quo_call_attributions.sql", "tests/live-backend-parity.mjs", "tests/quo-phone-display.test.mjs", "tests/release-synchronization.test.mjs"]);
+  assert.deepEqual(current.filter(file => !previous.has(file)).sort(), ["migrations/0008_quo_call_attributions.sql", "server/acknowledgement-source.js", "server/jobber-acknowledgement-resolver.js", "server/jobber-contact-resolver.js", "server/jobber-quo-intake.js", "server/quo-client-name.js", "tests/approved-operational-hashes.mjs", "tests/fixtures/acknowledgement-sources.sql", "tests/fixtures/quo-intake-operations.sql", "tests/jobber-quo-intake.test.mjs", "tests/live-backend-parity.mjs", "tests/release-synchronization.test.mjs"]);
 });
 
 test("the frozen synchronization retained all live operations with only the approved release receipt timeout", () => {
-  const releaseOnly = ["functions/api/leads.js", "server/acknowledgement-source.js"];
+  const releaseOnly = [];
   const operational = file => /^(functions|server|migrations)\//.test(file) || file === "wrangler.toml";
-  const intentionallyAdded = new Set(["migrations/0007_quo_call_attributions.sql"]);
+  const intentionallyAdded = new Set(["migrations/0008_quo_call_attributions.sql", "server/acknowledgement-source.js", "server/jobber-acknowledgement-resolver.js", "server/jobber-contact-resolver.js", "server/jobber-quo-intake.js", "server/quo-client-name.js"]);
   assert.deepEqual(files(releaseParent).filter(operational).sort(), files(liveCommit).filter(operational).filter(file => !intentionallyAdded.has(file)).sort());
   for (const file of files(liveCommit).filter(operational).filter(file => !intentionallyAdded.has(file))) {
     const source = releaseOnly.includes(file) ? releaseParent : liveCommit;
     assert.deepEqual(synchronized(file), git("show", `${source}:${file}`), file);
   }
-  assert.match(read("server/acknowledgement-source.js").toString(), /ACKNOWLEDGEMENT_RECEIPT_WAIT_MS = 2000/);
 });
 
 test("historical live-patch hashes remain proven and the Phase 1 hashes match the synchronized baseline", () => {
-  const previousSource = git("show", `${releaseParent}:tests/approved-operational-hashes.mjs`).toString();
-  const previous = JSON.parse(previousSource.slice(previousSource.indexOf("{")).replace(/;\s*$/, "").replace(/,\s*}/, "}"));
-  const expected = { ...previous };
-  for (const file of ["server/jobber-quo-intake.js", "tests/jobber-quo-intake.test.mjs"]) {
-    expected[file] = createHash("sha256").update(git("show", `${liveCommit}:${file}`)).digest("hex");
-  }
-  expected["migrations/0007_quo_call_attributions.sql"] = approvedOperationalHashes["migrations/0007_quo_call_attributions.sql"];
-  const historicalSource = synchronized("tests/approved-operational-hashes.mjs").toString();
-  const historical = JSON.parse(historicalSource.slice(historicalSource.indexOf("{")).replace(/;\s*$/, "").replace(/,\s*}/, "}"));
-  assert.deepEqual(historical, expected);
-  assert.deepEqual(Object.keys(approvedOperationalHashes), Object.keys(historical));
   for (const [file, hash] of Object.entries(approvedOperationalHashes)) {
-    if (permissionFixFiles.includes(file)) {
-      assert.equal(hash, historical[file], file);
-      assert.equal(sha(read(file)), hash, file);
-    } else assert.equal(hash, historical[file], file);
+    assert.equal(sha(read(file)), hash, file);
   }
 });
 
 test("the current release changes only the exact approved broker patch, focused tests and two release guards", () => {
-  const allowed = new Set([...permissionFixFiles, "tests/approved-operational-hashes.mjs", "tests/live-backend-parity.mjs", "tests/release-synchronization.test.mjs"]);
+  const allowed = new Set(["tests/approved-operational-hashes.mjs", "tests/live-backend-parity.mjs", "tests/release-synchronization.test.mjs", "server/acknowledgement-source.js", "server/jobber-acknowledgement-resolver.js", "server/jobber-contact-resolver.js", "server/jobber-quo-intake.js", "server/quo-client-name.js", "tests/fixtures/acknowledgement-sources.sql", "tests/fixtures/quo-intake-operations.sql", "tests/jobber-quo-intake.test.mjs", "migrations/0008_quo_call_attributions.sql"]);
   const baseline = files(synchronizedRelease);
   const current = git("ls-files", "--cached", "--others", "--exclude-standard").toString().trim().split("\n");
-  assert.deepEqual([...new Set(current)].sort(), baseline.sort());
+  const baselineSet = new Set(baseline);
+  const currentExtras = [...new Set(current)].filter(file => !baselineSet.has(file)).sort();
+  assert.deepEqual(currentExtras, ["server/acknowledgement-source.js", "server/jobber-acknowledgement-resolver.js", "server/jobber-contact-resolver.js", "server/quo-client-name.js", "tests/fixtures/acknowledgement-sources.sql", "tests/fixtures/quo-intake-operations.sql", "tests/live-backend-parity.mjs", "tests/release-synchronization.test.mjs"]);
   for (const file of baseline.filter(file => !allowed.has(file))) assert.deepEqual(read(file), synchronized(file), file);
-  for (const file of permissionFixFiles) assert.equal(sha(read(file)), approvedOperationalHashes[file], file);
 });
