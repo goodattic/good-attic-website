@@ -59,8 +59,8 @@ test("skips in preview before contacting Jobber", async () => {
     return new Response(JSON.stringify({}), { status: 200 });
   };
   const result = await applyClientCustomFields({
-    EXTERNAL_API_WRITES_ENABLED: "false",
     ...DEFINITIONS_ENV,
+    EXTERNAL_API_WRITES_ENABLED: "false",
   }, "token", "client-1", LEAD, "request-1");
   assert.equal(result.reason, "external_api_writes_disabled");
   assert.equal(called, false);
