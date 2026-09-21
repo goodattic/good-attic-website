@@ -8,6 +8,29 @@ const UPLOAD_STATES = new Set([
   "retryable", "permanently_failed", "retracted",
 ]);
 
+// Jobber webhook payloads contain only an object id. The existing production
+// bridge already proves REQUEST_CREATE/UPDATE and QUOTE_CREATE. The remaining
+// topics are accepted as read-only notifications and are reconciled by the
+// scheduled backfill before any outcome is prepared.
+export const SUPPORTED_JOBBER_TOPICS = new Set([
+  "REQUEST_CREATE", "REQUEST_UPDATE", "VISIT_CREATE", "VISIT_UPDATE",
+  "VISIT_CANCEL", "QUOTE_CREATE", "QUOTE_UPDATE", "QUOTE_APPROVE",
+  "JOB_CREATE", "JOB_UPDATE", "JOB_CANCEL", "INVOICE_CREATE", "INVOICE_UPDATE",
+]);
+
+export const JOBBER_READ_QUERIES = Object.freeze({
+  request: `query Phase2Request($id: EncodedId!) { request(id: $id) { id updatedAt client { id } assessment { id startAt endAt } quotes(first: 50) { nodes { id quoteStatus amounts { total } updatedAt } } jobs(first: 50) { nodes { id jobStatus total invoicedTotal updatedAt quote { id } } } } }`,
+  quote: `query Phase2Quote($id: EncodedId!) { quote(id: $id) { id quoteStatus createdAt updatedAt amounts { total } request { id } client { id } jobs(first: 50) { nodes { id } } } }`,
+  job: `query Phase2Job($id: EncodedId!) { job(id: $id) { id jobStatus startAt endAt total invoicedTotal updatedAt request { id } quote { id } client { id } invoices(first: 50) { nodes { id invoiceStatus amounts { total } updatedAt } } } }`,
+  invoice: `query Phase2Invoice($id: EncodedId!) { invoice(id: $id) { id invoiceStatus issuedDate updatedAt amounts { total } jobs(first: 50) { nodes { id request { id } } } } }`,
+});
+
+const ACCOUNT_MARKETS = Object.freeze({
+  // These are the production-backed website Jobber account identifiers.
+  "Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQzMg==": "ut",
+  "Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQ1Mw==": "mo_stl",
+});
+
 function clean(value, max = 500) {
   if (!["string", "number", "bigint"].includes(typeof value)) return "";
   return String(value).trim().slice(0, max);
@@ -24,6 +47,105 @@ export function outcomeId(input) {
   return ["google-ads-outcome", idPart(input?.event_name), idPart(input?.attribution_path),
     idPart(input?.quo_call_id), idPart(input?.jobber_request_id), idPart(input?.jobber_quote_id),
     idPart(input?.jobber_job_id), idPart(input?.jobber_invoice_id), idPart(input?.milestone_at)].join(":");
+}
+
+export function normalizeJobberWebhook(payload = {}) {
+  const event = payload?.data?.webHookEvent || payload?.webHookEvent || payload;
+  const topic = clean(event?.topic, 80).toUpperCase();
+  const accountId = clean(event?.accountId, 500);
+  const itemId = clean(event?.itemId, 500);
+  if (!SUPPORTED_JOBBER_TOPICS.has(topic)) return { ok: false, reason: "unsupported_topic" };
+  const marketKey = ACCOUNT_MARKETS[accountId];
+  if (!marketKey) return { ok: false, reason: "account_not_enabled" };
+  if (!itemId) return { ok: false, reason: "missing_item_id" };
+  return {
+    ok: true,
+    topic,
+    account_id: accountId,
+    market_key: marketKey,
+    item_id: itemId,
+    occurred_at: iso(event?.occurredAt || event?.occuredAt) || null,
+    read_only: true,
+  };
+}
+
+export function buildBackfillPlan({ market_key, since } = {}) {
+  if (!ENABLED_MARKETS.has(clean(market_key, 40))) return { ok: false, reason: "market_not_enabled" };
+  const from = iso(since);
+  if (!from) return { ok: false, reason: "invalid_since" };
+  return {
+    ok: true,
+    market_key: clean(market_key, 40),
+    since: from,
+    object_types: ["request", "quote", "job", "invoice"],
+    queries: JOBBER_READ_QUERIES,
+    mode: "read_only",
+  };
+}
+
+export function resolveLifecycleOutcomes(record = {}) {
+  const outcomes = [];
+  const requestId = clean(record.jobber_request_id, 500);
+  const marketKey = clean(record.market_key, 40);
+  if (!ENABLED_MARKETS.has(marketKey) || !requestId) return outcomes;
+  const milestone = iso(record.occurred_at || record.updated_at);
+  if (!milestone) return outcomes;
+  if (record.assessment?.startAt && record.assessment?.endAt) {
+    outcomes.push({ event_name: "appointment_set", market_key: marketKey, jobber_request_id: requestId, jobber_appointment_id: clean(record.assessment.id, 500), milestone_at: record.assessment.startAt });
+  }
+  if (record.assessment?.status === "completed" || record.assessment?.completedAt) {
+    outcomes.push({ event_name: "assessment_completed", market_key: marketKey, jobber_request_id: requestId, jobber_appointment_id: clean(record.assessment.id, 500), milestone_at: record.assessment.completedAt || milestone });
+  }
+  for (const quote of record.quotes || []) {
+    if (["accepted", "approved", "converted"].includes(clean(quote.quoteStatus || quote.status, 40).toLowerCase())) {
+      outcomes.push({ event_name: "sold_job", market_key: marketKey, jobber_request_id: requestId, jobber_quote_id: clean(quote.id, 500), value_micros: Number.isFinite(Number(quote.amounts?.total)) ? Math.round(Number(quote.amounts.total) * 1e6) : null, milestone_at: quote.updatedAt || milestone, revenue_source: "accepted_quote_amounts.total", revenue_version: "jobber_quote_total_v1" });
+    }
+  }
+  for (const job of record.jobs || []) {
+    if (["cancelled", "canceled"].includes(clean(job.jobStatus, 40).toLowerCase())) {
+      outcomes.push({ event_name: "cancellation", market_key: marketKey, jobber_request_id: requestId, jobber_job_id: clean(job.id, 500), milestone_at: job.updatedAt || milestone });
+    }
+  }
+  return outcomes;
+}
+
+export function sanitizeDiagnostic(error) {
+  return clean(String(error?.code || error?.message || error || "unknown_error").toLowerCase().replace(/[^a-z0-9_.-]+/g, "_"), 120) || "unknown_error";
+}
+
+export function createGoogleUploader({ transport, enabled = false, now = () => new Date().toISOString() } = {}) {
+  return {
+    async upload(candidate) {
+      if (!enabled) return { ok: false, status: "held", diagnostic_code: "google_upload_disabled" };
+      if (!transport || typeof transport.upload !== "function") return { ok: false, status: "permanently_failed", diagnostic_code: "transport_unavailable" };
+      if (candidate?.consent_status !== "granted") return { ok: false, status: "held", diagnostic_code: "consent_unknown_or_denied" };
+      if (candidate?.attribution_status !== "google_matched") return { ok: false, status: "held", diagnostic_code: "attribution_not_verified" };
+      const window = validateUploadWindow(candidate, candidate.google_action || {});
+      if (!window.ok) return { ok: false, status: window.status, diagnostic_code: window.reason };
+      if (!adjustmentSupport(candidate.google_action || {}, candidate.event_name)) return { ok: false, status: "held", diagnostic_code: "google_adjustment_not_supported" };
+      const hasWebsiteId = candidate.gclid || candidate.gbraid || candidate.wbraid;
+      const hasCallMatch = candidate.caller_phone && candidate.call_started_at_original;
+      if (!hasWebsiteId && !hasCallMatch) return { ok: false, status: "held", diagnostic_code: "missing_google_identifier" };
+      const request = {
+        order_id: candidate.outcome_id,
+        conversion_action: candidate.google_conversion_action,
+        conversion_date_time: candidate.conversion_at || candidate.milestone_at,
+        currency_code: "USD",
+        value: candidate.value_micros == null ? undefined : candidate.value_micros / 1e6,
+        gclid: candidate.gclid || undefined,
+        gbraid: candidate.gbraid || undefined,
+        wbraid: candidate.wbraid || undefined,
+        caller_phone: candidate.caller_phone || undefined,
+        call_start_time: candidate.call_started_at_original || undefined,
+      };
+      try {
+        const response = await transport.upload(request);
+        return { ok: true, status: "submitted", submitted_at: now(), response_category: clean(response?.category, 80) || "accepted" };
+      } catch (error) {
+        return { ok: false, status: error?.retryable === true ? "retryable" : "permanently_failed", diagnostic_code: sanitizeDiagnostic(error) };
+      }
+    },
+  };
 }
 
 export function classifyAttribution({ lead = {}, quoCall = {} } = {}) {
@@ -49,6 +171,31 @@ export function qualifiedLeadEligibility(input = {}) {
   }
   if (expected < 2000) return { eligible: false, status: "ineligible", reason: "expected_value_below_threshold" };
   return { eligible: true, status: "held", reason: "awaiting_attribution_and_consent" };
+}
+
+export function validateUploadWindow(candidate = {}, action = {}) {
+  const occurred = Date.parse(candidate.conversion_at || candidate.milestone_at);
+  const now = Date.parse(action.now || new Date().toISOString());
+  const days = Number(action.upload_window_days);
+  if (!Number.isFinite(occurred) || !Number.isFinite(now) || !Number.isFinite(days) || days <= 0) return { ok: false, status: "held", reason: "upload_window_unknown" };
+  if (occurred > now || now - occurred > days * 86400000) return { ok: false, status: "held", reason: "conversion_window_expired" };
+  return { ok: true };
+}
+
+export function revenueEvidence(record = {}) {
+  const invoiceTotal = Number(record.invoice?.amounts?.total);
+  if (Number.isFinite(invoiceTotal) && invoiceTotal >= 0) return { value_micros: Math.round(invoiceTotal * 1e6), revenue_source: "invoice.amounts.total", revenue_version: "jobber_invoice_total_v1" };
+  const jobTotal = Number(record.job?.invoicedTotal);
+  if (Number.isFinite(jobTotal) && jobTotal >= 0) return { value_micros: Math.round(jobTotal * 1e6), revenue_source: "job.invoicedTotal", revenue_version: "jobber_invoiced_total_v1" };
+  const quoteTotal = Number(record.quote?.amounts?.total);
+  if (Number.isFinite(quoteTotal) && quoteTotal >= 0) return { value_micros: Math.round(quoteTotal * 1e6), revenue_source: "quote.amounts.total", revenue_version: "jobber_quote_total_v1" };
+  return { value_micros: null, revenue_source: null, revenue_version: null };
+}
+
+export function adjustmentSupport({ google_supports_adjustment = false, google_supports_retraction = false } = {}, eventName) {
+  if (eventName === "revenue_restatement") return google_supports_adjustment === true;
+  if (eventName === "cancellation") return google_supports_retraction === true;
+  return true;
 }
 
 export function buildOutcomeCandidate(input = {}) {
