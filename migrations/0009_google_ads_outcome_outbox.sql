@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS google_ads_outcome_outbox (
   milestone_at TEXT NOT NULL,
   conversion_at TEXT,
   value_micros INTEGER,
+  invoice_total_micros INTEGER,
+  collected_payment_micros INTEGER,
   currency_code TEXT CHECK (currency_code IS NULL OR currency_code = 'USD'),
   revenue_source TEXT,
   revenue_version TEXT,

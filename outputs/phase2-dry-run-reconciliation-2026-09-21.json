@@ -1,0 +1,61 @@
+{
+  "observed_at": "2026-09-21T00:00:00Z",
+  "mode": "read_only_dry_run",
+  "google_uploads": 0,
+  "jobber_mutations": 0,
+  "markets": {
+    "ut": {
+      "source_leads": 1,
+      "verified_paid_leads": 0,
+      "calls": 0,
+      "appointments": 0,
+      "assessments": 0,
+      "sold_jobs": 0,
+      "attributable_revenue_usd": 0,
+      "ready_events": 0,
+      "consent_holds": 0,
+      "unmatched": 0,
+      "ambiguous": 0,
+      "expired": 0,
+      "duplicates_prevented": 0,
+      "held": [
+        { "reason": "jobber_read_access_unavailable", "count": 1 }
+      ],
+      "read_status": "cached_token_expired; authorization-only path unavailable without the existing write probe"
+    },
+    "mo_stl": {
+      "source_leads": 2,
+      "verified_paid_leads": 1,
+      "calls": 0,
+      "appointments": 0,
+      "assessments": 0,
+      "sold_jobs": 0,
+      "attributable_revenue_usd": 0,
+      "ready_events": 0,
+      "consent_holds": 0,
+      "unmatched": 2,
+      "ambiguous": 1,
+      "expired": 0,
+      "duplicates_prevented": 0,
+      "jobber_inventory": {
+        "requests": 144,
+        "scheduled_assessments": 84,
+        "quotes": 92,
+        "converted_quotes": 25,
+        "jobs": 25,
+        "invoices": 21
+      },
+      "held": [
+        { "reason": "qualification_unverified", "count": 2 },
+        { "reason": "multiple_google_identifiers", "count": 1 },
+        { "reason": "no_linked_jobber_lifecycle_event", "count": 2 }
+      ],
+      "read_status": "readable; no lifecycle object linked to the two source lead IDs"
+    }
+  },
+  "live_call_ledger": {
+    "ut": { "rows_observed": 0, "duplicate_deliveries_observed": 0 },
+    "mo_stl": { "rows_observed": 0, "duplicate_deliveries_observed": 0 }
+  },
+  "interpretation": "No event is upload-ready. The St. Louis paid lead has both GCLID and GBRAID and is held as ambiguous; the source row is preserved. Production outbox rows are zero because migration 0009 was not applied."
+}

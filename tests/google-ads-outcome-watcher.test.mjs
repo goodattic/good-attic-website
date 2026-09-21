@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { adjustmentSupport, buildOutcomeCandidate, buildBackfillPlan, classifyAttribution, createGoogleUploader, normalizeJobberWebhook, outcomeId, persistOutcomeCandidate, qualifiedLeadEligibility, resolveLifecycleOutcomes, revenueEvidence, validateUploadWindow } from "../server/google-ads-outcome-watcher.js";
+import { actionForCandidate, adjustmentSupport, buildOutcomeCandidate, buildBackfillPlan, classifyAttribution, createGoogleUploader, GOOGLE_ACTION_MAP, normalizeJobberWebhook, outcomeId, persistOutcomeCandidate, qualifiedLeadEligibility, resolveLifecycleOutcomes, revenueEvidence, validateUploadWindow } from "../server/google-ads-outcome-watcher.js";
 import { collectJobberLifecycle, runReadOnlyBackfill } from "../server/google-ads-outcome-collection.js";
 
 class MemoryD1 {
@@ -34,7 +34,7 @@ test("excludes Kansas City and does not infer Google attribution from Jobber alo
 
 test("requires every structured qualification field and the minimum expected value", () => {
   assert.equal(qualifiedLeadEligibility({ homeowner: true, service_area_valid: true, installed_service: true, expected_value_usd: 1999 }).reason, "expected_value_below_threshold");
-  assert.equal(qualifiedLeadEligibility({ homeowner: true, expected_value_usd: 3000 }).reason, "required_qualification_fields_missing");
+  assert.equal(qualifiedLeadEligibility({ homeowner: true, expected_value_usd: 3000 }).reason, "qualification_unverified");
 });
 
 test("persists idempotently with INSERT OR IGNORE", async () => {
@@ -76,7 +76,7 @@ test("uploader is disabled, holds consent, and bounds diagnostics with a fake tr
   assert.equal((await disabled.upload({})).diagnostic_code, "google_upload_disabled");
   const enabled = createGoogleUploader({ enabled: true, transport: { upload: async () => { calls += 1; throw Object.assign(new Error("secret and phone +15551212"), { retryable: true }); } } });
   assert.equal((await enabled.upload({ consent_status: "unknown", attribution_status: "google_matched" })).diagnostic_code, "consent_unknown_or_denied");
-  const retry = await enabled.upload({ consent_status: "granted", attribution_status: "google_matched", outcome_id: "o1", milestone_at: "2026-09-21T18:00:00Z", caller_phone: "+15551212", call_started_at_original: "2026-09-21T12:00:00-06:00", google_action: { upload_window_days: 90, now: "2026-09-22T18:00:00Z" } });
+  const retry = await enabled.upload({ event_name: "qualified_lead", attribution_path: "quo_call", consent_status: "granted", attribution_status: "google_matched", outcome_id: "o1", milestone_at: "2026-09-21T18:00:00Z", value_micros: 1000000, caller_phone: "+15551212", call_started_at_original: "2026-09-21T12:00:00-06:00", google_action: { upload_window_days: 90, now: "2026-09-22T18:00:00Z" } });
   assert.equal(retry.status, "retryable");
   assert.equal(calls, 1);
 });
@@ -88,12 +88,19 @@ test("holds expired windows and unsupported Google adjustments", () => {
 
 test("requires exactly one website click identifier", async () => {
   const uploader = createGoogleUploader({ enabled: true, transport: { upload: async () => ({}) } });
-  const result = await uploader.upload({ consent_status: "granted", attribution_status: "google_matched", gclid: "g1", gbraid: "b1", milestone_at: "2026-09-21T18:00:00Z", google_action: { upload_window_days: 90, now: "2026-09-22T18:00:00Z" } });
+  const result = await uploader.upload({ event_name: "appointment_set", attribution_path: "website", consent_status: "granted", attribution_status: "google_matched", value_micros: 1000000, gclid: "g1", gbraid: "b1", milestone_at: "2026-09-21T18:00:00Z", google_action: { upload_window_days: 90, now: "2026-09-22T18:00:00Z" } });
   assert.equal(result.diagnostic_code, "multiple_google_identifiers");
 });
 
+test("uses the verified action map and never sends call outcomes to click actions", () => {
+  assert.equal(GOOGLE_ACTION_MAP.sold_job.id, "7754270382");
+  assert.equal(actionForCandidate({ event_name: "qualified_lead", attribution_path: "quo_call" }).source, "UPLOAD_CALLS");
+  assert.equal(actionForCandidate({ event_name: "sold_job", attribution_path: "quo_call" }), null);
+  assert.equal(actionForCandidate({ event_name: "appointment_set", attribution_path: "website" }).source, "UPLOAD_CLICKS");
+});
+
 test("uses invoice total as final revenue, then job invoiced total, without summing", () => {
-  assert.deepEqual(revenueEvidence({ invoice: { amounts: { total: 1250 } }, job: { invoicedTotal: 2000 }, quote: { amounts: { total: 3000 } } }), { value_micros: 1250000000, revenue_source: "invoice.amounts.total", revenue_version: "jobber_invoice_total_v1" });
+  assert.deepEqual(revenueEvidence({ invoice: { amounts: { total: 1250 } }, job: { invoicedTotal: 2000 }, quote: { amounts: { total: 3000 } } }), { value_micros: 1250000000, revenue_source: "invoice.amounts.total", revenue_version: "jobber_invoice_total_v1", invoice_total_micros: 1250000000, collected_payment_micros: null });
 });
 
 test("maps Jobber close and payment notifications to sold/revenue-restatement candidates", () => {

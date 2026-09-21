@@ -8,6 +8,13 @@ const UPLOAD_STATES = new Set([
   "retryable", "permanently_failed", "retracted",
 ]);
 
+export const GOOGLE_ACTION_MAP = Object.freeze({
+  appointment_set: { id: "7741195421", name: "GAE - Appointment Set (CRM)", source: "UPLOAD_CLICKS", window_days: 90, value_policy: "explicit_or_hold" },
+  qualified_lead: { id: "7742989654", name: "GAE - Qualified Call Lead (CRM)", source: "UPLOAD_CALLS", window_days: 90, value_policy: "explicit_or_hold" },
+  assessment_completed: { id: "7754270379", name: "GAE - Assessment Completed (CRM)", source: "UPLOAD_CLICKS", window_days: 90, value_policy: "force_zero" },
+  sold_job: { id: "7754270382", name: "GAE - Sold Job (CRM)", source: "UPLOAD_CLICKS", window_days: 90, value_policy: "explicit_revenue" },
+});
+
 // Jobber webhook payloads contain only an object id. The existing production
 // bridge already proves REQUEST_CREATE/UPDATE and QUOTE_CREATE. The remaining
 // topics are accepted as read-only notifications and are reconciled by the
@@ -109,11 +116,11 @@ export function resolveLifecycleOutcomes(record = {}) {
   }
   if (record.topic === "JOB_CLOSED" && record.job?.id) {
     const revenue = revenueEvidence(record);
-    outcomes.push({ event_name: "sold_job", market_key: marketKey, jobber_request_id: requestId, jobber_job_id: clean(record.job.id, 500), jobber_quote_id: clean(record.job.quote?.id, 500), value_micros: revenue.value_micros, milestone_at: record.job.updatedAt || milestone, revenue_source: revenue.revenue_source, revenue_version: revenue.revenue_version });
+    outcomes.push({ event_name: "sold_job", market_key: marketKey, jobber_request_id: requestId, jobber_job_id: clean(record.job.id, 500), jobber_quote_id: clean(record.job.quote?.id, 500), ...revenue, milestone_at: record.job.updatedAt || milestone });
   }
   if (["PAYMENT_CREATE", "PAYMENT_UPDATE", "PAYMENT_DESTROY"].includes(record.topic) && record.invoice?.id) {
     const revenue = revenueEvidence(record);
-    outcomes.push({ event_name: "revenue_restatement", market_key: marketKey, jobber_request_id: requestId, jobber_invoice_id: clean(record.invoice.id, 500), value_micros: revenue.value_micros, milestone_at: record.invoice.updatedAt || milestone, revenue_source: revenue.revenue_source, revenue_version: revenue.revenue_version });
+    outcomes.push({ event_name: "revenue_restatement", market_key: marketKey, jobber_request_id: requestId, jobber_invoice_id: clean(record.invoice.id, 500), ...revenue, milestone_at: record.invoice.updatedAt || milestone });
   }
   return outcomes;
 }
@@ -129,9 +136,12 @@ export function createGoogleUploader({ transport, enabled = false, now = () => n
       if (!transport || typeof transport.upload !== "function") return { ok: false, status: "permanently_failed", diagnostic_code: "transport_unavailable" };
       if (candidate?.consent_status !== "granted") return { ok: false, status: "held", diagnostic_code: "consent_unknown_or_denied" };
       if (candidate?.attribution_status !== "google_matched") return { ok: false, status: "held", diagnostic_code: "attribution_not_verified" };
-      const window = validateUploadWindow(candidate, candidate.google_action || {});
+      const action = actionForCandidate(candidate);
+      if (!action) return { ok: false, status: "held", diagnostic_code: "action_source_mismatch" };
+      const window = validateUploadWindow(candidate, { ...action, ...(candidate.google_action || {}) });
       if (!window.ok) return { ok: false, status: window.status, diagnostic_code: window.reason };
       if (!adjustmentSupport(candidate.google_action || {}, candidate.event_name)) return { ok: false, status: "held", diagnostic_code: "google_adjustment_not_supported" };
+      if (["qualified_lead", "appointment_set", "sold_job"].includes(candidate.event_name) && !Number.isSafeInteger(candidate.value_micros)) return { ok: false, status: "held", diagnostic_code: "explicit_value_required" };
       const websiteIds = [candidate.gclid, candidate.gbraid, candidate.wbraid].filter(Boolean);
       if (websiteIds.length > 1) return { ok: false, status: "held", diagnostic_code: "multiple_google_identifiers" };
       const hasWebsiteId = websiteIds.length === 1;
@@ -139,10 +149,10 @@ export function createGoogleUploader({ transport, enabled = false, now = () => n
       if (!hasWebsiteId && !hasCallMatch) return { ok: false, status: "held", diagnostic_code: "missing_google_identifier" };
       const request = {
         order_id: candidate.outcome_id,
-        conversion_action: candidate.google_conversion_action,
+        conversion_action: candidate.google_conversion_action || action.id,
         conversion_date_time: candidate.conversion_at || candidate.milestone_at,
         currency_code: "USD",
-        value: candidate.value_micros == null ? undefined : candidate.value_micros / 1e6,
+        value: action.value_policy === "force_zero" ? 0 : candidate.value_micros == null ? undefined : candidate.value_micros / 1e6,
         gclid: candidate.gclid || undefined,
         gbraid: candidate.gbraid || undefined,
         wbraid: candidate.wbraid || undefined,
@@ -178,7 +188,7 @@ export function qualifiedLeadEligibility(input = {}) {
   const installed = input.installed_service === true;
   const expected = Number(input.expected_value_usd);
   if (![homeowner, serviceArea, installed].every(Boolean) || !Number.isFinite(expected)) {
-    return { eligible: false, status: "held", reason: "required_qualification_fields_missing" };
+    return { eligible: false, status: "held", reason: "qualification_unverified" };
   }
   if (expected < 2000) return { eligible: false, status: "ineligible", reason: "expected_value_below_threshold" };
   return { eligible: true, status: "held", reason: "awaiting_attribution_and_consent" };
@@ -195,18 +205,28 @@ export function validateUploadWindow(candidate = {}, action = {}) {
 
 export function revenueEvidence(record = {}) {
   const invoiceTotal = Number(record.invoice?.amounts?.total);
-  if (Number.isFinite(invoiceTotal) && invoiceTotal >= 0) return { value_micros: Math.round(invoiceTotal * 1e6), revenue_source: "invoice.amounts.total", revenue_version: "jobber_invoice_total_v1" };
+  const collected = Number(record.invoice?.collectedPayments ?? record.invoice?.paymentsTotal);
+  const reconciliation = { invoice_total_micros: Number.isFinite(invoiceTotal) && invoiceTotal >= 0 ? Math.round(invoiceTotal * 1e6) : null, collected_payment_micros: Number.isFinite(collected) && collected >= 0 ? Math.round(collected * 1e6) : null };
+  if (Number.isFinite(invoiceTotal) && invoiceTotal >= 0) return { value_micros: Math.round(invoiceTotal * 1e6), revenue_source: "invoice.amounts.total", revenue_version: "jobber_invoice_total_v1", ...reconciliation };
   const jobTotal = Number(record.job?.invoicedTotal);
-  if (Number.isFinite(jobTotal) && jobTotal >= 0) return { value_micros: Math.round(jobTotal * 1e6), revenue_source: "job.invoicedTotal", revenue_version: "jobber_invoiced_total_v1" };
+  if (Number.isFinite(jobTotal) && jobTotal >= 0) return { value_micros: Math.round(jobTotal * 1e6), revenue_source: "job.invoicedTotal", revenue_version: "jobber_invoiced_total_v1", ...reconciliation };
   const quoteTotal = Number(record.quote?.amounts?.total);
-  if (Number.isFinite(quoteTotal) && quoteTotal >= 0) return { value_micros: Math.round(quoteTotal * 1e6), revenue_source: "quote.amounts.total", revenue_version: "jobber_quote_total_v1" };
-  return { value_micros: null, revenue_source: null, revenue_version: null };
+  if (Number.isFinite(quoteTotal) && quoteTotal >= 0) return { value_micros: Math.round(quoteTotal * 1e6), revenue_source: "quote.amounts.total", revenue_version: "jobber_quote_total_v1", ...reconciliation };
+  return { value_micros: null, revenue_source: null, revenue_version: null, ...reconciliation };
 }
 
 export function adjustmentSupport({ google_supports_adjustment = false, google_supports_retraction = false } = {}, eventName) {
   if (eventName === "revenue_restatement") return google_supports_adjustment === true;
   if (eventName === "cancellation") return google_supports_retraction === true;
   return true;
+}
+
+export function actionForCandidate(candidate = {}) {
+  const action = GOOGLE_ACTION_MAP[candidate.event_name];
+  if (!action) return null;
+  if (candidate.attribution_path === "quo_call" && action.source !== "UPLOAD_CALLS") return null;
+  if (candidate.attribution_path === "website" && action.source !== "UPLOAD_CLICKS") return null;
+  return action;
 }
 
 export function buildOutcomeCandidate(input = {}) {
@@ -248,6 +268,8 @@ export function buildOutcomeCandidate(input = {}) {
     milestone_at: milestone,
     conversion_at: iso(input.conversion_at) || null,
     value_micros: Number.isSafeInteger(input.value_micros) ? input.value_micros : null,
+    invoice_total_micros: Number.isSafeInteger(input.invoice_total_micros) ? input.invoice_total_micros : null,
+    collected_payment_micros: Number.isSafeInteger(input.collected_payment_micros) ? input.collected_payment_micros : null,
     currency_code: input.value_micros == null ? null : "USD",
     revenue_source: clean(input.revenue_source, 120) || null,
     revenue_version: clean(input.revenue_version, 80) || null,
@@ -266,7 +288,7 @@ export function buildOutcomeCandidate(input = {}) {
 
 export async function persistOutcomeCandidate(database, candidate) {
   if (!database?.prepare || !candidate) return { ok: false, reason: "unavailable" };
-  const columns = ["outcome_id","event_name","market_key","attribution_path","attribution_status","source_lead_id","submission_id","gclid","gbraid","wbraid","quo_call_id","caller_phone","call_started_at_original","call_started_at_utc","call_timezone","jobber_account_id","jobber_request_id","jobber_client_id","jobber_appointment_id","jobber_quote_id","jobber_job_id","jobber_invoice_id","google_account_id","google_conversion_action","milestone_at","conversion_at","value_micros","currency_code","revenue_source","revenue_version","prior_reported_value_micros","service_type","consent_status","consent_evidence","upload_state","attempt_count","created_at","updated_at"];
+  const columns = ["outcome_id","event_name","market_key","attribution_path","attribution_status","source_lead_id","submission_id","gclid","gbraid","wbraid","quo_call_id","caller_phone","call_started_at_original","call_started_at_utc","call_timezone","jobber_account_id","jobber_request_id","jobber_client_id","jobber_appointment_id","jobber_quote_id","jobber_job_id","jobber_invoice_id","google_account_id","google_conversion_action","milestone_at","conversion_at","value_micros","invoice_total_micros","collected_payment_micros","currency_code","revenue_source","revenue_version","prior_reported_value_micros","service_type","consent_status","consent_evidence","upload_state","attempt_count","created_at","updated_at"];
   const values = columns.map((column) => candidate[column] ?? (column === "attempt_count" ? 0 : null));
   const placeholders = columns.map(() => "?").join(", ");
   const result = await database.prepare(`INSERT OR IGNORE INTO google_ads_outcome_outbox (${columns.join(", ")}) VALUES (${placeholders})`).bind(...values).run();
