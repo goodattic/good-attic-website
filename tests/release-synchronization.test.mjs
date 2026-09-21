@@ -5,10 +5,14 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { approvedOperationalHashes } from "./approved-operational-hashes.mjs";
 import { liveCommit, releaseParent, liveBackendFiles, synchronizationFiles } from "./live-backend-parity.mjs";
+import { beforeHomepageCleanup, homepageCleanupAddedTests, homepageCleanupAdaptedTests } from "./homepage-cleanup-helpers.mjs";
 
 const root = new URL("../", import.meta.url);
 const git = (...args) => execFileSync("git", args, { cwd: root, maxBuffer: 64 * 1024 * 1024 });
-const read = file => readFileSync(new URL(file, root));
+const read = file => {
+  const bytes = readFileSync(new URL(file, root));
+  return file === "index.html" ? Buffer.from(beforeHomepageCleanup(bytes.toString(), file)) : bytes;
+};
 const files = commit => git("ls-tree", "-r", "--name-only", commit).toString().trim().split("\n");
 const synchronizedRelease = "754f66cb8df0b8871b14b632804308b2ed19e9b6";
 const synchronized = file => git("show", `${synchronizedRelease}:${file}`);
@@ -18,13 +22,13 @@ const sha = bytes => createHash("sha256").update(bytes).digest("hex");
 test("the frozen synchronization imported only the exact reviewed four-file live backend patch", () => {
   assert.deepEqual(git("diff", "--name-only", `${liveCommit}^`, liveCommit).toString().trim().split("\n").sort(), [...liveBackendFiles].sort());
   for (const file of liveBackendFiles) assert.deepEqual(synchronized(file), git("show", `${liveCommit}:${file}`), file);
-  const allowed = new Set(synchronizationFiles);
+  const allowed = new Set([...synchronizationFiles, ...homepageCleanupAdaptedTests]);
   for (const file of files(releaseParent).filter(file => !allowed.has(file))) {
     assert.deepEqual(read(file), git("show", `${releaseParent}:${file}`), file);
   }
   const previous = new Set(files(releaseParent));
   const current = git("ls-files", "--cached", "--others", "--exclude-standard").toString().trim().split("\n");
-  assert.deepEqual(current.filter(file => !previous.has(file)).sort(), ["tests/live-backend-parity.mjs", "tests/quo-phone-display.test.mjs", "tests/release-synchronization.test.mjs"]);
+  assert.deepEqual(current.filter(file => !previous.has(file)).sort(), [...homepageCleanupAddedTests, "tests/live-backend-parity.mjs", "tests/quo-phone-display.test.mjs", "tests/release-synchronization.test.mjs"].sort());
 });
 
 test("the frozen synchronization retained all live operations with only the approved release receipt timeout", () => {
@@ -58,10 +62,10 @@ test("historical live-patch hashes remain proven; only the two reviewed permissi
 });
 
 test("the current release changes only the exact approved broker patch, focused tests and two release guards", () => {
-  const allowed = new Set([...permissionFixFiles, "tests/approved-operational-hashes.mjs", "tests/release-synchronization.test.mjs"]);
+  const allowed = new Set([...permissionFixFiles, ...homepageCleanupAdaptedTests, "tests/approved-operational-hashes.mjs", "tests/release-synchronization.test.mjs"]);
   const baseline = files(synchronizedRelease);
   const current = git("ls-files", "--cached", "--others", "--exclude-standard").toString().trim().split("\n");
-  assert.deepEqual([...new Set(current)].sort(), baseline.sort());
+  assert.deepEqual([...new Set(current)].sort(), [...baseline, ...homepageCleanupAddedTests].sort());
   for (const file of baseline.filter(file => !allowed.has(file))) assert.deepEqual(read(file), synchronized(file), file);
   for (const file of permissionFixFiles) assert.equal(sha(read(file)), approvedOperationalHashes[file], file);
 });

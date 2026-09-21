@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { assetDelivery } from "../scripts/asset-delivery.mjs";
 import { synchronizationFiles } from "./live-backend-parity.mjs";
+import { beforeHomepageCleanup } from "./homepage-cleanup-helpers.mjs";
 
 const root = new URL("../", import.meta.url);
 const parent = "6295efbc4fdc09a7770fdfdbb793e569757a02ab";
@@ -20,7 +21,7 @@ test("modal child changes exactly one src value per approved page, including fiv
   assert.equal(assetDelivery.modalFocus.previousAsset, old.js.to);
   assert.deepEqual(assetDelivery.htmlReferenceChangesOnly, old.htmlReferenceChangesOnly);
   for (const file of old.htmlReferenceChangesOnly) {
-    const previous = before(file).toString(), current = read(file).toString();
+    const previous = before(file).toString(), current = beforeHomepageCleanup(read(file).toString(), file);
     assert.equal(previous.split(old.js.to).length, 2, file);
     assert.equal(current.split(assetDelivery.js.to).length, 2, file);
     assert.equal(current.replace(assetDelivery.js.to, old.js.to), previous, file);

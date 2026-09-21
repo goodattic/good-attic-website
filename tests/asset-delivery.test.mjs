@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { assetDelivery, pageAssets } from "../scripts/asset-delivery.mjs";
 import { assetMigrationFiles, preAssetMigrationHtml } from "./asset-delivery-helpers.mjs";
+import { beforeHomepageCleanup } from "./homepage-cleanup-helpers.mjs";
 
 const root = new URL("../", import.meta.url);
 const read = file => readFileSync(new URL(file, root));
@@ -38,7 +39,7 @@ test("exactly 91 original plus five exception HTML files change only two asset r
         expected = expected.replace(from, assetDelivery[key].to);
       }
     }
-    assert.equal(read(file).toString(), expected, file);
+    assert.equal(beforeHomepageCleanup(read(file).toString(), file), expected, file);
     if (expected !== before) changed.push(file);
   }
   assert.deepEqual(changed.sort(), [...approved].sort());

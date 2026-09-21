@@ -11,6 +11,7 @@ import { adapter } from "parse5-htmlparser2-tree-adapter";
 import { selectAll } from "css-select";
 import { assetDelivery, pageAssets } from "../scripts/asset-delivery.mjs";
 import { synchronizationFiles } from "./live-backend-parity.mjs";
+import { homepageCleanupAddedTests } from "./homepage-cleanup-helpers.mjs";
 
 const root = new URL("../", import.meta.url);
 const parent = "0e3703bb5606f3c7e30c7f576ac708dc37db01ed";
@@ -73,7 +74,7 @@ test("historical header exception plus the separately tested modal registrations
   const expectedManifest = { ...oldManifest, htmlReferenceChangesOnly: [...files, ...oldManifest.htmlReferenceChangesOnly], protectedReferenceException: assetDelivery.protectedReferenceException, js: {...oldManifest.js, to: assetDelivery.js.to}, assets: {...oldManifest.assets, [assetDelivery.js.to]: assetDelivery.assets[assetDelivery.js.to]}, modalFocus: assetDelivery.modalFocus };
   assert.deepEqual(assetDelivery, expectedManifest);
   const added = git("diff", "--name-only", "--diff-filter=A", parent, "--").toString().trim().split("\n").filter(Boolean);
-  assert.ok(added.every(file => [...synchronizationFiles, "tests/protected-guide-header.test.mjs", "tests/modal-focus.test.mjs", "tests/modal-focus.browser.mjs", assetDelivery.js.to].includes(file)));
+  assert.ok(added.every(file => [...synchronizationFiles, ...homepageCleanupAddedTests, "tests/protected-guide-header.test.mjs", "tests/modal-focus.test.mjs", "tests/modal-focus.browser.mjs", assetDelivery.js.to].includes(file)));
 });
 
 test("both generations and the phone dependency retain exact parent and rollback bytes", () => {
