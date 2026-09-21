@@ -46,7 +46,7 @@ test("persists idempotently with INSERT OR IGNORE", async () => {
 });
 
 test("normalizes only Utah and St. Louis Jobber webhook IDs", () => {
-  const payload = { data: { webHookEvent: { topic: "INVOICE_UPDATE", accountId: "Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQzMg==", itemId: "i1", occurredAt: "2026-09-21T18:00:00-06:00" } } };
+  const payload = { data: { webHookEvent: { topic: "PAYMENT_UPDATE", accountId: "Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQzMg==", itemId: "i1", occurredAt: "2026-09-21T18:00:00-06:00" } } };
   assert.equal(normalizeJobberWebhook(payload).market_key, "ut");
   assert.equal(normalizeJobberWebhook({ ...payload, data: { webHookEvent: { ...payload.data.webHookEvent, accountId: "kc" } } }).reason, "account_not_enabled");
 });
@@ -88,4 +88,11 @@ test("holds expired windows and unsupported Google adjustments", () => {
 
 test("uses invoice total as final revenue, then job invoiced total, without summing", () => {
   assert.deepEqual(revenueEvidence({ invoice: { amounts: { total: 1250 } }, job: { invoicedTotal: 2000 }, quote: { amounts: { total: 3000 } } }), { value_micros: 1250000000, revenue_source: "invoice.amounts.total", revenue_version: "jobber_invoice_total_v1" });
+});
+
+test("maps Jobber close and payment notifications to sold/revenue-restatement candidates", () => {
+  const closed = resolveLifecycleOutcomes({ topic: "JOB_CLOSED", market_key: "ut", jobber_request_id: "r1", occurred_at: "2026-09-21T18:00:00Z", job: { id: "j1", invoicedTotal: 1800, updatedAt: "2026-09-22T18:00:00Z" } });
+  assert.equal(closed.at(-1).event_name, "sold_job");
+  const payment = resolveLifecycleOutcomes({ topic: "PAYMENT_UPDATE", market_key: "ut", jobber_request_id: "r1", occurred_at: "2026-09-23T18:00:00Z", invoice: { id: "i1", amounts: { total: 1700 }, updatedAt: "2026-09-23T18:00:00Z" } });
+  assert.equal(payment.at(-1).event_name, "revenue_restatement");
 });

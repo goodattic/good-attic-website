@@ -17,6 +17,7 @@ export async function collectJobberLifecycle({ database, payload, readObject }) 
   if (!object || typeof object !== "object") return { ok: false, reason: "object_not_found", event };
   const outcomes = resolveLifecycleOutcomes({
     ...object,
+    topic: event.topic,
     market_key: event.market_key,
     occurred_at: event.occurred_at,
   });
@@ -42,7 +43,7 @@ export async function runReadOnlyBackfill({ database, market_key, since, listObj
     const ids = await listObjects({ market_key, objectType, since: plan.since, query: plan.queries[objectType] });
     for (const id of ids || []) {
       const object = await readObject({ market_key, objectType, id });
-      const outcomes = resolveLifecycleOutcomes({ ...object, market_key });
+      const outcomes = resolveLifecycleOutcomes({ ...object, market_key, topic: object?.topic });
       for (const outcome of outcomes) {
         const candidate = buildOutcomeCandidate({ ...outcome, lead: object?.lead, quoCall: object?.quoCall });
         if (candidate.ok) records.push(await persistOutcomeCandidate(database, candidate.candidate));

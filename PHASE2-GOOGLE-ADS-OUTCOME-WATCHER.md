@@ -6,7 +6,7 @@ This implementation is local and dry-run only. It is limited to `ut` and `mo_stl
 
 ## Jobber source of truth
 
-Jobber webhook payloads contain only `topic`, `accountId`, `itemId`, and `occurredAt`; the worker must issue a read-only GraphQL query for the object. The deployed bridge proves `REQUEST_CREATE`, `REQUEST_UPDATE`, and `QUOTE_CREATE`. Phase 2 accepts read-only notifications for visits, quote updates/approval, jobs, and invoices, with a scheduled backfill as the authority when a topic is unavailable.
+Jobber webhook payloads contain only `topic`, `accountId`, `itemId`, and `occurredAt`; the worker must issue a read-only GraphQL query for the object. The deployed bridge proves `REQUEST_CREATE`, `REQUEST_UPDATE`, and `QUOTE_CREATE`. Live schema introspection confirmed `VISIT_CREATE`, `VISIT_UPDATE`, `VISIT_COMPLETE`, `QUOTE_UPDATE`, `QUOTE_SENT`, `QUOTE_APPROVED`, `JOB_CREATE`, `JOB_UPDATE`, `JOB_CLOSED`, `INVOICE_CREATE`, `INVOICE_UPDATE`, and payment create/update/destroy topics. Phase 2 uses those notifications plus a scheduled backfill as the authority when a topic is unavailable.
 
 The read fields are:
 

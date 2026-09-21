@@ -13,9 +13,10 @@ const UPLOAD_STATES = new Set([
 // topics are accepted as read-only notifications and are reconciled by the
 // scheduled backfill before any outcome is prepared.
 export const SUPPORTED_JOBBER_TOPICS = new Set([
-  "REQUEST_CREATE", "REQUEST_UPDATE", "VISIT_CREATE", "VISIT_UPDATE",
-  "VISIT_CANCEL", "QUOTE_CREATE", "QUOTE_UPDATE", "QUOTE_APPROVE",
-  "JOB_CREATE", "JOB_UPDATE", "JOB_CANCEL", "INVOICE_CREATE", "INVOICE_UPDATE",
+  "REQUEST_CREATE", "REQUEST_UPDATE", "VISIT_CREATE", "VISIT_UPDATE", "VISIT_COMPLETE",
+  "QUOTE_CREATE", "QUOTE_UPDATE", "QUOTE_SENT", "QUOTE_APPROVED",
+  "JOB_CREATE", "JOB_UPDATE", "JOB_CLOSED", "INVOICE_CREATE", "INVOICE_UPDATE",
+  "PAYMENT_CREATE", "PAYMENT_UPDATE", "PAYMENT_DESTROY",
 ]);
 
 export const JOBBER_READ_QUERIES = Object.freeze({
@@ -105,6 +106,14 @@ export function resolveLifecycleOutcomes(record = {}) {
     if (["cancelled", "canceled"].includes(clean(job.jobStatus, 40).toLowerCase())) {
       outcomes.push({ event_name: "cancellation", market_key: marketKey, jobber_request_id: requestId, jobber_job_id: clean(job.id, 500), milestone_at: job.updatedAt || milestone });
     }
+  }
+  if (record.topic === "JOB_CLOSED" && record.job?.id) {
+    const revenue = revenueEvidence(record);
+    outcomes.push({ event_name: "sold_job", market_key: marketKey, jobber_request_id: requestId, jobber_job_id: clean(record.job.id, 500), jobber_quote_id: clean(record.job.quote?.id, 500), value_micros: revenue.value_micros, milestone_at: record.job.updatedAt || milestone, revenue_source: revenue.revenue_source, revenue_version: revenue.revenue_version });
+  }
+  if (["PAYMENT_CREATE", "PAYMENT_UPDATE", "PAYMENT_DESTROY"].includes(record.topic) && record.invoice?.id) {
+    const revenue = revenueEvidence(record);
+    outcomes.push({ event_name: "revenue_restatement", market_key: marketKey, jobber_request_id: requestId, jobber_invoice_id: clean(record.invoice.id, 500), value_micros: revenue.value_micros, milestone_at: record.invoice.updatedAt || milestone, revenue_source: revenue.revenue_source, revenue_version: revenue.revenue_version });
   }
   return outcomes;
 }
