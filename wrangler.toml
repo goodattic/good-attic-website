@@ -4,7 +4,7 @@ compatibility_date = "2026-07-27"
 
 [env.production.vars]
 EXTERNAL_API_WRITES_ENABLED = "true"
-JOBBER_QUOTE_TEST_MODE = "true"
+JOBBER_QUOTE_TEST_MODE = "false"
 ANGI_SOURCE_ROUTING_ENABLED = "true"
 JOBBER_GOOGLE_ROUTING_MARKETS = "ut,mo_stl,mo_kc"
 FIELDFLOW_ATTRIBUTION_BASE_URL = "https://fieldflow.goodattic.energy/api/integrations/highlevel/lead-attribution"

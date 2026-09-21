@@ -10,6 +10,6 @@ max_retries = 10
 
 [vars]
 JOBBER_QUOTE_RESOLVER_URL = "https://goodattic.energy/api/jobber/quote-resolve"
-JOBBER_QUOTE_TEST_MODE = "true"
+JOBBER_QUOTE_TEST_MODE = "false"
 JOBBER_QUOTE_TEST_ALLOWLIST_UT = ""
 JOBBER_QUOTE_TEST_ALLOWLIST_STL = ""

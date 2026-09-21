@@ -36,7 +36,6 @@ const QUOTE_CONTEXT_QUERY = `
         }
         ... on CustomFieldDropdown {
           id
-          valueText
           customFieldConfiguration { id name }
         }
         ... on CustomFieldTrueFalse {
@@ -51,7 +50,6 @@ const QUOTE_CONTEXT_QUERY = `
         }
         ... on CustomFieldLink {
           id
-          valueText
           customFieldConfiguration { id name }
         }
       }
