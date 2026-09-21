@@ -35,6 +35,7 @@ const ATTRIBUTION_FIELDS = [
 const MARKET_ROUTES = {
   ut: {
     accountLabel: "Salt Lake City",
+    expectedAccountId: "Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQzMg==",
     authAccountKey: "utah",
     processLockName: "utah_jobber_process",
     refreshTokenEnvKey: "JOBBER_REFRESH_TOKEN_SLC",
@@ -46,6 +47,7 @@ const MARKET_ROUTES = {
   },
   mo_stl: {
     accountLabel: "St. Louis",
+    expectedAccountId: "Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQ1Mw==",
     authAccountKey: "stl",
     processLockName: "stl_jobber_process",
     refreshTokenEnvKey: "JOBBER_REFRESH_TOKEN_STL",
@@ -57,6 +59,7 @@ const MARKET_ROUTES = {
   },
   mo_kc: {
     accountLabel: "Kansas City",
+    expectedAccountId: "Z2lkOi8vSm9iYmVyL0FjY291bnQvMTkxOTgyNA==",
     authAccountKey: "kc",
     processLockName: "kc_jobber_process",
     refreshTokenEnvKey: "JOBBER_REFRESH_TOKEN_KC",
