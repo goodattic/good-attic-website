@@ -1,11 +1,24 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { actionForCandidate, adjustmentSupport, buildOutcomeCandidate, buildBackfillPlan, classifyAttribution, createGoogleUploader, GOOGLE_ACTION_MAP, normalizeJobberWebhook, outcomeId, persistOutcomeCandidate, qualifiedLeadEligibility, resolveLifecycleOutcomes, revenueEvidence, validateUploadWindow } from "../server/google-ads-outcome-watcher.js";
-import { collectJobberLifecycle, runReadOnlyBackfill } from "../server/google-ads-outcome-collection.js";
+import { collectJobberLifecycle, collectJobberRequestLifecycle, loadRequestAttribution, runReadOnlyBackfill } from "../server/google-ads-outcome-collection.js";
 
 class MemoryD1 {
   constructor() { this.calls = []; }
   prepare(sql) { return { bind: (...args) => ({ run: async () => { this.calls.push({ sql, args }); return { meta: { changes: this.calls.length === 1 ? 1 : 0 } }; } }) }; }
+}
+
+class AttributionD1 extends MemoryD1 {
+  constructor() {
+    super();
+    this.lead = null;
+    this.call = null;
+  }
+  prepare(sql) {
+    if (sql.startsWith("SELECT * FROM closed_loop_leads")) return { bind: () => ({ first: async () => this.lead }) };
+    if (sql.startsWith("SELECT * FROM quo_call_attributions")) return { bind: () => ({ all: async () => ({ results: this.call ? [this.call] : [] }), first: async () => this.call }) };
+    return super.prepare(sql);
+  }
 }
 
 test("holds a qualified website outcome until Google attribution and consent are verified", () => {
@@ -74,6 +87,24 @@ test("collects webhook and backfill records through read-only readers", async ()
   assert.equal(plan.mode, "read_only");
   const backfill = await runReadOnlyBackfill({ database: db, market_key: "ut", since: "2026-09-01T00:00:00Z", listObjects: async () => ["r1"], readObject: async () => object });
   assert.equal(backfill.ok, true);
+});
+
+test("joins website and Quo attribution ledgers before writing a dry-run outcome", async () => {
+  const db = new AttributionD1();
+  db.lead = { lead_id: "lead-ut-1", submission_id: "form-1", market_key: "ut", jobber_request_id: "r-ut-1", gclid: "gclid-ut-1", service: "Attic insulation", consent_state: "unknown" };
+  db.call = { quo_call_id: "call-ut-1", caller_phone: "+15550001111", call_started_at_original: "2026-09-22T12:00:00-06:00", call_started_at_utc: "2026-09-22T18:00:00Z", jobber_request_id: "r-ut-1" };
+  const loaded = await loadRequestAttribution({ database: db, market_key: "ut", jobber_request_id: "r-ut-1" });
+  assert.equal(loaded.lead.gclid, "gclid-ut-1");
+  assert.equal(loaded.quoCall.quo_call_id, "call-ut-1");
+  const result = await collectJobberRequestLifecycle({
+    database: db, market_key: "ut", account_id: "ut-account", request_id: "r-ut-1", occurred_at: "2026-09-22T18:00:00Z",
+    readObject: async () => ({ jobber_request_id: "r-ut-1", assessment: { id: "a-ut-1", startAt: "2026-09-25T18:00:00Z", endAt: "2026-09-25T19:00:00Z", status: "scheduled" } }),
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.attribution_source.website, true);
+  assert.equal(result.attribution_source.quo, true);
+  assert.equal(result.writes.length, 1);
+  assert.equal(db.calls.length, 1);
 });
 
 test("uploader is disabled, holds consent, and bounds diagnostics with a fake transport", async () => {
