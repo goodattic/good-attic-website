@@ -263,13 +263,21 @@ export async function resolveQuoteAttribution({ request, env }) {
     if (!checkpoint.claimed) {
       return jsonResponse({ ok: false, status: "claim_busy", quote_id: quote.id, jobber_request_id: requestId }, 503);
     }
-    const applied = await applyQuoteCustomFields(
+    let applied = await applyQuoteCustomFields(
       env,
       token.accessToken,
       quote,
       leadForCustomFields(lead),
       requestId,
     );
+    if (!applied.ok && Number(applied.status) === 401) {
+      await leadHelpers.fenceJobberAccessToken(env, route, "jobber_http_401");
+      const refreshed = await leadHelpers.refreshJobberAccessToken(env, route);
+      applied = await applyQuoteCustomFields(env, refreshed.accessToken, quote, leadForCustomFields(lead), requestId);
+      if (!applied.ok && Number(applied.status) === 401) {
+        await leadHelpers.markJobberAuthorizationBroken(env, route, "jobber_http_401_after_refresh");
+      }
+    }
     if (!applied.ok && !applied.skipped) {
       const finished = await finishAttribution(database, quote.id, checkpoint.claimToken, "retryable", applied.reason);
       if (!finished) return jsonResponse({ ok: false, status: "claim_lost" }, 503);
