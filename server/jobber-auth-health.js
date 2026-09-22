@@ -24,7 +24,8 @@ export async function handleJobberAuthHealth({ request, env }, dependencies = le
     }
     return json({ ok: true, healthy: true, market: input.market, account_id: route.expectedAccountId });
   } catch (error) {
-    return json({ ok: true, healthy: false, market: input.market, code: typeof error?.code === 'string' ? error.code : 'jobber_health_check_failed' });
+    const code = typeof error?.code === 'string' ? error.code : typeof error?.details?.code === 'string' ? error.details.code : 'jobber_health_check_failed';
+    return json({ ok: true, healthy: false, market: input.market, code });
   }
 }
 
