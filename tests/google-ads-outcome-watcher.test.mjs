@@ -41,6 +41,12 @@ test("keeps distinct Quo calls separate while producing deterministic IDs", () =
   assert.equal(first, outcomeId({ event_name: "appointment_set", attribution_path: "quo_call", quo_call_id: "c1", jobber_request_id: "r1", milestone_at: "2026-09-21T18:00:00Z" }));
 });
 
+test("uses one stable qualified-call outcome per Jobber request", () => {
+  const first = outcomeId({ event_name: "qualified_lead", attribution_path: "quo_call", quo_call_id: "c1", jobber_request_id: "r1", milestone_at: "2026-09-21T18:00:00Z" });
+  const second = outcomeId({ event_name: "qualified_lead", attribution_path: "quo_call", quo_call_id: "c2", jobber_request_id: "r1", milestone_at: "2026-09-22T18:00:00Z" });
+  assert.equal(first, second);
+});
+
 test("keeps quote approval and job close under one sold-job outcome", () => {
   const quote = outcomeId({ event_name: "sold_job", attribution_path: "website", jobber_request_id: "r1", jobber_quote_id: "q1", milestone_at: "2026-09-21T18:00:00Z" });
   const close = outcomeId({ event_name: "sold_job", attribution_path: "website", jobber_request_id: "r1", jobber_job_id: "j1", milestone_at: "2026-09-22T18:00:00Z" });
@@ -50,6 +56,10 @@ test("keeps quote approval and job close under one sold-job outcome", () => {
 test("excludes Kansas City and does not infer Google attribution from Jobber alone", () => {
   assert.equal(buildOutcomeCandidate({ event_name: "sold_job", market_key: "mo_kc", milestone_at: "2026-09-21T18:00:00Z" }).reason, "market_not_enabled");
   assert.deepEqual(classifyAttribution({ lead: { source_label: "Google Ads" } }), { attribution_path: "website", attribution_status: "pending", evidence: "unverified_pending_match" });
+});
+
+test("click identifiers take precedence over an attached Quo call", () => {
+  assert.equal(classifyAttribution({ lead: { gclid: "gclid-1" }, quoCall: { quo_call_id: "call-1" } }).attribution_path, "website");
 });
 
 test("qualifies only short or missed calls and ignores the old structured fields", () => {
@@ -75,6 +85,7 @@ test("resolves scheduled, completed, accepted quote, and cancellation outcomes w
   const outcomes = resolveLifecycleOutcomes({ market_key: "mo_stl", jobber_request_id: "r1", occurred_at: "2026-09-21T18:00:00Z", assessment: { id: "a1", startAt: "2026-09-22T18:00:00Z", endAt: "2026-09-22T19:00:00Z", status: "completed", completedAt: "2026-09-22T19:00:00Z" }, quotes: [{ id: "q1", quoteStatus: "converted", amounts: { total: 2500 }, updatedAt: "2026-09-23T00:00:00Z" }, { id: "q2", quoteStatus: "draft", amounts: { total: 10000 } }], jobs: [{ id: "j1", jobStatus: "cancelled", updatedAt: "2026-09-24T00:00:00Z" }] });
   assert.deepEqual(outcomes.map((item) => item.event_name), ["appointment_set", "assessment_completed", "sold_job", "cancellation"]);
   assert.equal(outcomes.find((item) => item.event_name === "sold_job").value_micros, 2500000000);
+  assert.equal(outcomes.find((item) => item.event_name === "appointment_set").milestone_at, "2026-09-21T18:00:00Z");
 });
 
 test("collects webhook and backfill records through read-only readers", async () => {
@@ -114,7 +125,7 @@ test("uploader is disabled, holds consent, and bounds diagnostics with a fake tr
   assert.equal((await disabled.upload({})).diagnostic_code, "google_upload_disabled");
   const enabled = createGoogleUploader({ enabled: true, transport: { upload: async () => { calls += 1; throw Object.assign(new Error("secret and phone +15551212"), { retryable: true }); } } });
   assert.equal((await enabled.upload({ consent_status: "unknown", attribution_status: "google_matched" })).diagnostic_code, "consent_unknown_or_denied");
-  const retry = await enabled.upload({ event_name: "qualified_lead", attribution_path: "quo_call", consent_status: "granted", attribution_status: "google_matched", outcome_id: "o1", milestone_at: "2026-09-21T18:00:00Z", value_micros: 1000000, caller_phone: "+15551212", call_started_at_original: "2026-09-21T12:00:00-06:00", google_action: { upload_window_days: 90, now: "2026-09-22T18:00:00Z" } });
+  const retry = await enabled.upload({ upload_state: "pending", event_name: "qualified_lead", attribution_path: "quo_call", consent_status: "granted", attribution_status: "google_matched", outcome_id: "o1", milestone_at: "2026-09-21T18:00:00Z", value_micros: 1000000, caller_phone: "+15551212", call_started_at_original: "2026-09-21T12:00:00-06:00", google_action: { upload_window_days: 90, now: "2026-09-22T18:00:00Z" } });
   assert.equal(retry.status, "retryable");
   assert.equal(calls, 1);
 });
@@ -127,7 +138,7 @@ test("holds expired windows and unsupported Google adjustments", () => {
 
 test("prefers GCLID when multiple website identifiers are present", async () => {
   const uploader = createGoogleUploader({ enabled: true, transport: { upload: async () => ({}) } });
-  const result = await uploader.upload({ event_name: "appointment_set", attribution_path: "website", consent_status: "granted", attribution_status: "google_matched", value_micros: 1000000, gclid: "g1", gbraid: "b1", milestone_at: "2026-09-21T18:00:00Z", google_action: { upload_window_days: 90, now: "2026-09-22T18:00:00Z" } });
+  const result = await uploader.upload({ upload_state: "pending", event_name: "appointment_set", attribution_path: "website", consent_status: "granted", attribution_status: "google_matched", value_micros: 1000000, gclid: "g1", gbraid: "b1", milestone_at: "2026-09-21T18:00:00Z", google_action: { upload_window_days: 90, now: "2026-09-22T18:00:00Z" } });
   assert.equal(result.status, "submitted");
 });
 
@@ -139,13 +150,13 @@ test("normalizes caller IDs and formats call start in the market timezone", () =
 test("allows a pending identifier to reach the Google transport for matching", async () => {
   let request;
   const uploader = createGoogleUploader({ enabled: true, transport: { upload: async (value) => { request = value; return { category: "accepted" }; } } });
-  const result = await uploader.upload({ event_name: "appointment_set", attribution_path: "website", consent_status: "granted", attribution_status: "pending", outcome_id: "o-pending", value_micros: 0, gclid: "gclid-1", milestone_at: "2026-09-21T18:00:00Z", google_action: { window_days: 90, now: "2026-09-22T18:00:00Z" } });
+  const result = await uploader.upload({ upload_state: "pending", event_name: "appointment_set", attribution_path: "website", consent_status: "granted", attribution_status: "pending", outcome_id: "o-pending", value_micros: 0, gclid: "gclid-1", milestone_at: "2026-09-21T18:00:00Z", google_action: { window_days: 90, now: "2026-09-22T18:00:00Z" } });
   assert.equal(result.status, "submitted");
   assert.equal(request.gclid, "gclid-1");
 });
 
 test("keeps U.S. consent opt-in disabled unless explicitly configured", async () => {
-  const candidate = { event_name: "appointment_set", attribution_path: "website", consent_status: "unknown", attribution_status: "pending", outcome_id: "o-consent", value_micros: 0, gclid: "gclid-consent", milestone_at: "2026-09-21T18:00:00Z", google_action: { window_days: 90, now: "2026-09-22T18:00:00Z" } };
+  const candidate = { upload_state: "pending", event_name: "appointment_set", attribution_path: "website", consent_status: "unknown", attribution_status: "pending", outcome_id: "o-consent", value_micros: 0, gclid: "gclid-consent", milestone_at: "2026-09-21T18:00:00Z", google_action: { window_days: 90, now: "2026-09-22T18:00:00Z" } };
   const held = await createGoogleUploader({ enabled: true, transport: { upload: async () => ({}) } }).upload(candidate);
   assert.equal(held.diagnostic_code, "consent_unknown_or_denied");
   const optedIn = await createGoogleUploader({ enabled: true, usLeadsConsentGranted: true, transport: { upload: async () => ({}) } }).upload(candidate);

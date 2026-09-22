@@ -7,6 +7,16 @@ import {
 } from "./google-ads-outcome-watcher.js";
 
 const CALL_MARKET = { ut: "utah", mo_stl: "stl" };
+const callEligibleForQualifiedLead = (call = {}) => {
+  const status = String(call.final_status || "").toLowerCase();
+  const duration = Number(call.duration_seconds);
+  return ["no-answer", "missed"].includes(status) || (status === "completed" && Number.isFinite(duration) && duration < 90);
+};
+const callsForOutcome = (outcome, calls) => {
+  if (outcome.event_name !== "appointment_set" || !calls.some((call) => call.quo_call_id)) return calls;
+  const eligible = calls.filter(callEligibleForQualifiedLead);
+  return [eligible[0] || calls[0]];
+};
 
 // Join the authoritative Jobber object to the two existing attribution ledgers.
 // This helper only reads; it never changes a lead, call, or Jobber record.
@@ -19,7 +29,7 @@ export async function loadRequestAttribution({ database, market_key, jobber_requ
   const callMarket = CALL_MARKET[market_key];
   const callStatement = callMarket
     ? database.prepare(
-      "SELECT * FROM quo_call_attributions WHERE market = ? AND jobber_request_id = ? ORDER BY created_at ASC LIMIT 1",
+      "SELECT * FROM quo_call_attributions WHERE market = ? AND jobber_request_id = ? ORDER BY created_at ASC",
     ).bind(callMarket, jobber_request_id)
     : null;
   let quoCalls = [];
@@ -42,7 +52,7 @@ export async function collectJobberRequestLifecycle({ database, market_key, acco
   });
   const writes = [];
   const calls = object.quoCall ? [object.quoCall] : (attribution.quoCalls.length ? attribution.quoCalls : [{}]);
-  for (const outcome of outcomes) for (const quoCall of calls) {
+  for (const outcome of outcomes) for (const quoCall of callsForOutcome(outcome, calls)) {
     const event_name = quoCall.quo_call_id && outcome.event_name === "appointment_set" ? "qualified_lead" : outcome.event_name;
     const candidate = buildOutcomeCandidate({ ...outcome, event_name, jobber_account_id: account_id, lead: object.lead || attribution.lead || {}, quoCall });
     if (candidate.ok) writes.push(await persistOutcomeCandidate(database, candidate.candidate));
@@ -68,7 +78,7 @@ export async function collectJobberLifecycle({ database, payload, readObject }) 
   });
   const writes = [];
   const calls = object.quoCall ? [object.quoCall] : (attribution.quoCalls.length ? attribution.quoCalls : [{}]);
-  for (const outcome of outcomes) for (const quoCall of calls) {
+  for (const outcome of outcomes) for (const quoCall of callsForOutcome(outcome, calls)) {
     const event_name = quoCall.quo_call_id && outcome.event_name === "appointment_set" ? "qualified_lead" : outcome.event_name;
     const candidate = buildOutcomeCandidate({ ...outcome, event_name, jobber_account_id: event.account_id, lead: object.lead || attribution.lead || {}, quoCall });
     if (candidate.ok) writes.push(await persistOutcomeCandidate(database, candidate.candidate));
@@ -89,7 +99,7 @@ export async function runReadOnlyBackfill({ database, market_key, since, listObj
       for (const outcome of outcomes) {
         const attribution = await loadRequestAttribution({ database, market_key, jobber_request_id: object?.jobber_request_id || id });
         const calls = object?.quoCall ? [object.quoCall] : (attribution.quoCalls.length ? attribution.quoCalls : [{}]);
-        for (const quoCall of calls) {
+        for (const quoCall of callsForOutcome(outcome, calls)) {
           const event_name = quoCall.quo_call_id && outcome.event_name === "appointment_set" ? "qualified_lead" : outcome.event_name;
           const candidate = buildOutcomeCandidate({ ...outcome, event_name, lead: object?.lead || attribution.lead || {}, quoCall });
           if (candidate.ok) records.push(await persistOutcomeCandidate(database, candidate.candidate));
