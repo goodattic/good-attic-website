@@ -1,0 +1,16 @@
+{
+  "destination": "/resources/when-attic-cleanup-becomes-restoration/",
+  "category": "Pest-damaged attics",
+  "title": "Pests in the Attic: Why Removing the Animal Is Only the First Step",
+  "description": "Understand what pests can leave behind, how cleanup and exclusion work together, and why a contaminated attic may need a fresh start.",
+  "cta": "Read the pest-remediation guide",
+  "action": "update_existing_card_in_place",
+  "preserve": [
+    "href",
+    "position",
+    "image_asset",
+    "image_alt_unless_inaccurate",
+    "all_other_cards"
+  ],
+  "add_card": false
+}

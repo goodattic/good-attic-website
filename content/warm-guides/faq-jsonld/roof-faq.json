@@ -1,0 +1,46 @@
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Does a new roof mean the attic insulation should be replaced?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Clean, dry, pest-free insulation may be able to remain. Replacement is more likely when the insulation is wet, damaged, contaminated, badly compressed, or blocking access to work that needs to happen underneath it."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Should wet insulation be removed before the roof is replaced?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The roof leak should be identified and the contractors should agree on the sequence first. In some projects, early insulation removal helps expose the water path or damaged decking. In others, the roof repair happens first. The decision should be coordinated before either crew begins."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Should attic air sealing happen before new insulation?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Usually, yes. Attic-floor gaps are easier to reach before the final insulation layer is installed. Air sealing should be coordinated with any roof, ventilation, electrical, or combustion-safety work that affects the attic."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can roof replacement help address mouse or bat entry points?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It can create a useful opportunity to find and repair some roofline openings, but active mice or bats should be handled by the appropriate pest or wildlife professional. Entry-point closure should be coordinated with the roofing and attic-restoration plans."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Should insulation removal happen before or after the roof is replaced?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Either sequence can be correct. It depends on the leak, decking work, pest activity, attic access, weather, and which areas each crew needs to reach. The roofer and attic contractor should agree on the sequence before the work starts."
+      }
+    }
+  ]
+}

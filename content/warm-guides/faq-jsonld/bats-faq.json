@@ -1,0 +1,46 @@
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Does one bat mean the attic insulation should be removed?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. A single bat does not prove that a colony is living in the attic or that guano or urine reached the insulation. Repeated activity, an established roost, or contamination within the insulation changes the question."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can bat guano be cleaned without removing the insulation?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Guano limited to a separate hard surface may have a different cleanup answer. When guano or urine has reached or mixed into the insulation, Good Attic recommends removal and full remediation rather than covering it or cleaning only one visible area."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Who should remove active bats from an attic?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A qualified wildlife professional should evaluate the colony, local rules, the season, and the proper exclusion method. Good Attic can coordinate the insulation-restoration work with that plan."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does bat-exclusion timing matter?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Young bats may not yet be able to fly. Closing adults out too early can trap young bats inside and create new problems. The wildlife professional should determine the right timing for the location and season."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can bats return after the attic is restored?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "They can. Closing the openings used by the colony can reduce the chance of another problem, but new gaps may develop as exterior materials age. Continued maintenance still matters."
+      }
+    }
+  ]
+}

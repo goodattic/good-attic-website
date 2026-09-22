@@ -1,6 +1,7 @@
 import { persistClosedLoopLead } from "./closed-loop-ledger.js";
 
 const SCHEMA_VERSION = "2026-09-21";
+const FIELDFLOW_WIRE_VERSION = "2026-07-31";
 const MAX_ATTEMPTS = 3;
 const MARKET_ROUTES = {
   ut: { slug: "slc", tokenKey: "FIELDFLOW_ATTRIBUTION_TOKEN_SLC" },
@@ -33,6 +34,17 @@ function compactRecord(record) {
 function compactLandingPage(value) {
   const url = parseUrl(value);
   return url ? `${url.origin}${url.pathname}`.slice(0, 1000) : "";
+}
+
+function buildFieldflowWireRecord(record) {
+  if (!record?.schema_version) return record;
+  if (![SCHEMA_VERSION, FIELDFLOW_WIRE_VERSION].includes(record?.schema_version)) {
+    throw new Error("unsupported_attribution_schema");
+  }
+  const wire = { ...record, schema_version: FIELDFLOW_WIRE_VERSION };
+  delete wire.self_reported_source;
+  delete wire.self_reported_source_detail;
+  return wire;
 }
 
 export function buildWebsiteAttribution(payload, lead, jobber) {
@@ -131,6 +143,12 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
   const baseUrl = cleanScalar(env?.FIELDFLOW_ATTRIBUTION_BASE_URL, 2048).replace(/\/+$/, "");
   const token = cleanScalar(env?.[route.tokenKey], 4000);
   if (!baseUrl || !token) return { ok: false, attempts: 0, status: 0, reason: "missing_configuration", ledger };
+  let wireRecord;
+  try {
+    wireRecord = buildFieldflowWireRecord(record);
+  } catch {
+    return { ok: false, attempts: 0, status: 0, reason: "unsupported_attribution_schema", ledger };
+  }
   let lastStatus = 0;
   let lastReason = "network_error";
   let attempts = 0;
@@ -140,7 +158,7 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
       const response = await fetch(`${baseUrl}/${route.slug}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify(record),
+        body: JSON.stringify(wireRecord),
       });
       lastStatus = response.status;
       if (response.ok) return { ok: true, attempts: attempt, status: response.status, ledger };
@@ -155,4 +173,12 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
   return { ok: false, attempts, status: lastStatus, reason: lastReason, ledger };
 }
 
-export const _private = { MARKET_ROUTES, SCHEMA_VERSION, durableLeadFromAttribution, readAttributionSignal, safeReferrerOrigin };
+export const _private = {
+  MARKET_ROUTES,
+  SCHEMA_VERSION,
+  FIELDFLOW_WIRE_VERSION,
+  buildFieldflowWireRecord,
+  durableLeadFromAttribution,
+  readAttributionSignal,
+  safeReferrerOrigin,
+};

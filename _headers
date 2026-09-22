@@ -7,7 +7,16 @@
   Cache-Control: public, max-age=31536000, immutable
 
 /styles.css
-  Cache-Control: public, max-age=3600, must-revalidate
+  Cache-Control: public, no-cache, max-age=0, must-revalidate
 
 /script.js
-  Cache-Control: public, max-age=3600, must-revalidate
+  Cache-Control: public, no-cache, max-age=0, must-revalidate
+
+/styles.72e38ccd660523f9.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/script.79eca18f8a153d62.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/script.8c577120c8f5bbb0.js
+  Cache-Control: public, max-age=31536000, immutable

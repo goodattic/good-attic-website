@@ -31,13 +31,15 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'AW-10789892066');
+    gtag('config', 'G-P7T219JFV6');
     gtag('config', 'AW-11103039262/_4E-CN313tIaEJ7eq64p', { 'phone_conversion_number': '385-336-4442' });
     gtag('config', 'AW-11103039262/-7syCOa6-e0aEJ7eq64p', { 'phone_conversion_number': '314-931-2620' });
     gtag('config', 'AW-11103039262/35RYCNWL7bgcEJ7eq64p', { 'phone_conversion_number': '816-434-0308' });
     window.goodAtticPhoneConversionNumbersConfigured = true;
     window.goodAtticGoogleTagConfigured = true;
+    window.goodAtticGa4Configured = true;
   </script>
-  <link rel="stylesheet" href="styles.css?v=legal-20260713a">
+  <link rel="stylesheet" href="styles.72e38ccd660523f9.css">
 </head>
 <body>
   <header class="site-header" data-header>
@@ -324,9 +326,9 @@
 
     <section class="section">
       <div class="section-heading reveal">
-        <p class="eyebrow">High-intent search paths</p>
-        <h2>The attic searches homeowners use right before they call.</h2>
-        <p class="section-subcopy">These themes come from real paid-search performance and are worked into the site where they naturally help a homeowner make the next decision.</p>
+        <p class="eyebrow">COMMON ATTIC QUESTIONS</p>
+        <h2>Understand Your Attic Options</h2>
+        <p class="section-subcopy">These are common questions homeowners ask when deciding whether an attic needs added insulation, removal, air sealing, ventilation, or a more complete restoration.</p>
       </div>
       <div class="tile-grid">
         <article class="info-tile reveal">
@@ -431,7 +433,7 @@
             <article class="feature-card reveal">
               <span class="card-icon">Step 2</span>
               <h3>Project Assessed</h3>
-              <p>Once you get in touch with us, we will collect a full scope understanding of your project, either in-person, or virtually if you'd like. We will then create a tailored quote to meet your needs.</p>
+              <p>A Good Attic advisor inspects the attic at your home, shows you the findings, answers your questions, and builds the quote with you onsite.</p>
             </article>
             <article class="feature-card reveal">
               <span class="card-icon">Step 3</span>
@@ -553,8 +555,8 @@
           </div>
         </article>
         <article class="audience-panel reveal">
-          <h3>Day 1 accuracy</h3>
-          <p>The form below helps homeowners share the right details, so Good Attic can respond with useful next steps.</p>
+          <h3>Helpful details from the start</h3>
+          <p>Tell us what you have noticed so our team can follow up with useful next steps.</p>
           <a class="button primary trust-form-button" href="#contact">Start the Form</a>
         </article>
       </div>
@@ -589,7 +591,7 @@
         <p class="eyebrow">Get a quote</p>
         <h2>Tell us what is happening in your attic.</h2>
         <p>Share the project type, contact details, preferred quote timing, and any helpful notes. Your request goes straight to the team so we can follow up with the right next step.</p>
-        <p class="contact-note">Lead source, page URL, and project type are captured so every request can route into the right follow-up path.</p>
+        <p class="contact-note">Our team will review the details and follow up to help arrange the right next step for your attic.</p>
       </div>
 
       <form class="contact-form reveal lead-form" data-lead-form data-form-name="Homepage contact form" data-lead-endpoint="/api/leads">
@@ -745,6 +747,36 @@
               <option>Afternoon</option>
               <option>Evening</option>
               <option>Anytime</option>
+            </select>
+          </label>
+        </div>
+
+        <h3 class="form-section-title">How You Found Us</h3>
+        <div class="form-two form-two--source">
+          <label>
+            <span>How did you hear about Good Attic? (optional)</span>
+            <select name="self_reported_source">
+              <option value="">Select one</option>
+              <option value="google_search_maps">Google Search or Maps</option>
+              <option value="google_ads">Google ad</option>
+              <option value="ai_search">AI search or assistant</option>
+              <option value="referral">Friend or referral</option>
+              <option value="social_media">Social media</option>
+              <option value="returning_customer">Returning customer</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label data-ai-source-detail hidden>
+            <span>Which AI search or assistant? (optional)</span>
+            <select name="self_reported_source_detail" disabled>
+              <option value="">Select one</option>
+              <option value="google_ai">Google AI Overview or AI Mode</option>
+              <option value="chatgpt">ChatGPT</option>
+              <option value="perplexity">Perplexity</option>
+              <option value="gemini">Gemini</option>
+              <option value="copilot">Microsoft Copilot</option>
+              <option value="claude">Claude</option>
+              <option value="other_ai">Other AI assistant</option>
             </select>
           </label>
         </div>
@@ -946,6 +978,35 @@
               </select>
             </label>
           </div>
+          <h3 class="form-section-title">How You Found Us</h3>
+          <div class="form-two form-two--source">
+            <label>
+              <span>How did you hear about Good Attic? (optional)</span>
+              <select name="self_reported_source">
+                <option value="">Select one</option>
+                <option value="google_search_maps">Google Search or Maps</option>
+                <option value="google_ads">Google ad</option>
+                <option value="ai_search">AI search or assistant</option>
+                <option value="referral">Friend or referral</option>
+                <option value="social_media">Social media</option>
+                <option value="returning_customer">Returning customer</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label data-ai-source-detail hidden>
+              <span>Which AI search or assistant? (optional)</span>
+              <select name="self_reported_source_detail" disabled>
+                <option value="">Select one</option>
+                <option value="google_ai">Google AI Overview or AI Mode</option>
+                <option value="chatgpt">ChatGPT</option>
+                <option value="perplexity">Perplexity</option>
+                <option value="gemini">Gemini</option>
+                <option value="copilot">Microsoft Copilot</option>
+                <option value="claude">Claude</option>
+                <option value="other_ai">Other AI assistant</option>
+              </select>
+            </label>
+          </div>
             <label>
               <span>Additional notes</span>
               <textarea name="additional_notes" rows="3"></textarea>
@@ -962,6 +1023,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=legal-20260713a" defer></script>
+  <script src="script.8c577120c8f5bbb0.js" defer></script>
 </body>
 </html>

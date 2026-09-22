@@ -1,0 +1,46 @@
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Can wet attic insulation be left to dry?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sometimes a small area found quickly may be evaluated after the source is corrected. Insulation that is soaked, matted, smelly, contaminated, visibly damaged, or uneven is more likely to need removal."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Should new insulation be added over a wet area?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Correct the moisture source and make sure the attic is ready before new insulation is installed. Covering wet material can hide the problem and make future inspection harder."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does wet fiberglass always need to be removed?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Not automatically. The source, duration, cleanliness of the water, condition of the insulation, and the materials around it all matter. Fiberglass that is dirty, matted, smelly, contaminated, or no longer holding its shape is a poor candidate to remain."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can Good Attic diagnose mold or certify that the attic is dry?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Good Attic does not provide mold diagnoses or formal moisture clearance. We can document what is visible and coordinate the insulation work with the appropriate professional."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What happens if the wet insulation is vermiculite?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Do not disturb suspected vermiculite like ordinary insulation. EPA advises homeowners to assume it may contain asbestos and involve a qualified asbestos professional when removal is necessary."
+      }
+    }
+  ]
+}

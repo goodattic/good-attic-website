@@ -32,13 +32,26 @@ const expectedPublicEntries = [
   "robots.txt",
   "salt-lake-city-ut",
   "script.js",
+  "script.79eca18f8a153d62.js",
+  "script.8c577120c8f5bbb0.js",
   "services",
   "site.webmanifest",
   "sitemap.xml",
   "st-louis-mo",
   "styles.css",
+  "styles.72e38ccd660523f9.css",
   "terms-of-service",
 ];
+
+async function findHtmlFiles(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const nestedFiles = await Promise.all(entries.map(async (entry) => {
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) return findHtmlFiles(fullPath);
+    return entry.isFile() && entry.name.endsWith(".html") ? [fullPath] : [];
+  }));
+  return nestedFiles.flat();
+}
 
 test("Pages build publishes only the explicit public allowlist", async () => {
   execFileSync(process.execPath, ["scripts/build-pages-output.mjs"], {
@@ -62,6 +75,30 @@ test("Pages build publishes only the explicit public allowlist", async () => {
     "LAUNCH-CHECKLIST.md",
   ]) {
     await assert.rejects(access(path.join(outputDirectory, internalEntry)));
+  }
+});
+
+test("published pages include GA4 and contain only real market proof", async () => {
+  const [home, slcMarket, slcRemoval, kcMarket] = await Promise.all([
+    readFile(path.join(outputDirectory, "index.html"), "utf8"),
+    readFile(path.join(outputDirectory, "salt-lake-city-ut", "index.html"), "utf8"),
+    readFile(path.join(outputDirectory, "salt-lake-city-ut", "insulation-removal", "index.html"), "utf8"),
+    readFile(path.join(outputDirectory, "kansas-city-mo", "index.html"), "utf8"),
+  ]);
+
+  for (const html of [home, slcMarket, slcRemoval, kcMarket]) {
+    assert.match(html, /G-P7T219JFV6/);
+    assert.match(html, /name="self_reported_source"/);
+  }
+
+  assert.match(slcMarket, /Projects from this market/);
+  assert.match(slcMarket, /Real before\/after attic proof/);
+  assert.match(slcRemoval, /Real project proof/);
+  assert.doesNotMatch(kcMarket, /review-carousel__card/);
+
+  const publicScaffold = /Waiting on|Needed:|Open target page|proof shell|proof slot|designed to accept|should eventually support|Ready for approved excerpt/i;
+  for (const htmlFile of await findHtmlFiles(outputDirectory)) {
+    assert.doesNotMatch(await readFile(htmlFile, "utf8"), publicScaffold, path.relative(outputDirectory, htmlFile));
   }
 });
 

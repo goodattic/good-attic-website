@@ -17,6 +17,7 @@ let addressAutocompleteInitPromise = null;
 
 const googleAdsTracking = {
   googleTagId: "AW-10789892066",
+  analyticsMeasurementId: "G-P7T219JFV6",
   destinationId: "AW-11103039262",
   leadConversionSendTo: "AW-11103039262/SDRICJin3tIaEJ7eq64p",
   phoneConversionConfigs: [
@@ -34,6 +35,8 @@ const googleAdsTracking = {
     }
   ],
   attributionStorageKey: "good_attic_ad_attribution",
+  firstAttributionStorageKey: "good_attic_first_attribution",
+  paidAttributionStorageKey: "good_attic_paid_attribution",
   attributionMaxAgeMs: 90 * 24 * 60 * 60 * 1000
 };
 
@@ -169,6 +172,11 @@ function ensureGoogleTag() {
     window.goodAtticGoogleTagConfigured = true;
   }
 
+  if (!window.goodAtticGa4Configured) {
+    window.gtag("config", googleAdsTracking.analyticsMeasurementId);
+    window.goodAtticGa4Configured = true;
+  }
+
   if (!window.goodAtticPhoneConversionNumbersConfigured) {
     googleAdsTracking.phoneConversionConfigs.forEach((config) => {
       window.gtag("config", config.sendTo, {
@@ -266,28 +274,46 @@ function sanitizeStoredAttribution(parsed, now = Date.now()) {
   return attribution;
 }
 
-function removeStoredAttribution() {
+function removeStoredAttribution(storageKey = googleAdsTracking.attributionStorageKey) {
   try {
-    window.localStorage.removeItem(googleAdsTracking.attributionStorageKey);
+    window.localStorage.removeItem(storageKey);
   } catch (error) {
     // Attribution is useful but should never block the form experience.
   }
 }
 
-function readStoredAttribution() {
+function readStoredAttribution(storageKey = googleAdsTracking.attributionStorageKey) {
   try {
-    const stored = window.localStorage.getItem(googleAdsTracking.attributionStorageKey);
+    const stored = window.localStorage.getItem(storageKey);
     if (!stored) return {};
 
     const attribution = sanitizeStoredAttribution(JSON.parse(stored));
     if (attribution) return attribution;
 
-    removeStoredAttribution();
+    removeStoredAttribution(storageKey);
     return {};
   } catch (error) {
-    removeStoredAttribution();
+    removeStoredAttribution(storageKey);
     return {};
   }
+}
+
+function writeStoredAttribution(storageKey, attribution) {
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(attribution));
+  } catch (error) {
+    // Attribution is useful but should never block the form experience.
+  }
+}
+
+function hasPaidAttributionSignal(attribution) {
+  if (["gclid", "gbraid", "wbraid", "gad_source"].some((name) => Boolean(attribution[name]))) {
+    return true;
+  }
+
+  const source = String(attribution.utm_source || "").trim().toLowerCase();
+  const medium = String(attribution.utm_medium || "").trim().toLowerCase().replace(/[\s_]+/g, "-");
+  return source === "google" && ["cpc", "ppc", "paidsearch", "paid-search", "sem"].includes(medium);
 }
 
 function isRepeatAttributionNavigation() {
@@ -339,7 +365,7 @@ function captureAttribution() {
     if (current) return current;
 
     attributionForCurrentDocument = {};
-    removeStoredAttribution();
+    removeStoredAttribution(googleAdsTracking.attributionStorageKey);
     return attributionForCurrentDocument;
   }
 
@@ -355,16 +381,30 @@ function captureAttribution() {
 
   attributionForCurrentDocument = buildAttributionSnapshot(params, referrer);
 
-  try {
-    window.localStorage.setItem(
-      googleAdsTracking.attributionStorageKey,
-      JSON.stringify(attributionForCurrentDocument)
-    );
-  } catch (error) {
-    // Attribution is useful but should never block the form experience.
+  writeStoredAttribution(googleAdsTracking.attributionStorageKey, attributionForCurrentDocument);
+
+  if (!Object.keys(readStoredAttribution(googleAdsTracking.firstAttributionStorageKey)).length) {
+    writeStoredAttribution(googleAdsTracking.firstAttributionStorageKey, attributionForCurrentDocument);
+  }
+
+  if (hasPaidAttributionSignal(attributionForCurrentDocument)) {
+    writeStoredAttribution(googleAdsTracking.paidAttributionStorageKey, attributionForCurrentDocument);
   }
 
   return attributionForCurrentDocument;
+}
+
+function addStoredTouchToPayload(payload, prefix, attribution) {
+  if (!attribution || !Object.keys(attribution).length) return;
+
+  attributionParamNames.forEach((name) => {
+    if (attribution[name]) payload[`${prefix}_${name}`] = attribution[name];
+  });
+
+  payload[`${prefix}_landing_page`] = attribution.landing_page || "";
+  payload[`${prefix}_landing_page_path`] = attribution.landing_page_path || "";
+  payload[`${prefix}_referrer`] = attribution.referrer || "";
+  payload[`${prefix}_captured_at`] = attribution.captured_at || "";
 }
 
 function addAttributionToPayload(payload) {
@@ -379,6 +419,16 @@ function addAttributionToPayload(payload) {
   payload.ad_landing_page_path = attribution.landing_page_path || `${window.location.pathname}${window.location.search}`;
   payload.ad_referrer = attribution.referrer || document.referrer || "";
   payload.attribution_captured_at = attribution.captured_at || "";
+  addStoredTouchToPayload(
+    payload,
+    "first_touch",
+    readStoredAttribution(googleAdsTracking.firstAttributionStorageKey)
+  );
+  addStoredTouchToPayload(
+    payload,
+    "paid_touch",
+    readStoredAttribution(googleAdsTracking.paidAttributionStorageKey)
+  );
   Object.assign(payload, pageContext);
 
   return payload;
@@ -410,8 +460,11 @@ function trackLeadConversion(payload) {
   });
 
   window.gtag("event", "generate_lead", {
-    event_category: "Lead",
-    event_label: payload.form_name || "Good Attic lead form"
+    send_to: googleAdsTracking.analyticsMeasurementId,
+    form_name: payload.form_name || "Good Attic lead form",
+    market: payload.page_market || "general",
+    service_context: payload.page_service_context || "general",
+    self_reported_source: payload.self_reported_source || "not_provided"
   });
 }
 
@@ -419,6 +472,7 @@ function trackPhoneClick(link) {
   ensureGoogleTag();
 
   window.gtag("event", "phone_click", {
+    send_to: googleAdsTracking.analyticsMeasurementId,
     event_category: "Phone",
     event_label: link.getAttribute("href") || "",
     page_location: window.location.href,
@@ -430,6 +484,7 @@ function trackSmsClick(link) {
   ensureGoogleTag();
 
   window.gtag("event", "sms_click", {
+    send_to: googleAdsTracking.analyticsMeasurementId,
     event_category: "SMS",
     event_label: link.getAttribute("href") || "",
     page_location: window.location.href,
@@ -1450,6 +1505,22 @@ function initAddressAutocomplete() {
 document.querySelectorAll("[data-lead-form]").forEach((form) => {
   const projectOptions = [...form.querySelectorAll('input[name="project_type"]')];
   const addressInputs = getAddressInputs(form);
+  const selfReportedSource = form.elements.self_reported_source;
+  const aiSourceDetail = form.querySelector("[data-ai-source-detail]");
+  const aiSourceDetailSelect = form.elements.self_reported_source_detail;
+
+  const syncAiSourceDetail = () => {
+    if (!selfReportedSource || !aiSourceDetail || !aiSourceDetailSelect) return;
+    const showAiDetail = selfReportedSource.value === "ai_search";
+    aiSourceDetail.hidden = !showAiDetail;
+    aiSourceDetailSelect.disabled = !showAiDetail;
+    if (!showAiDetail) aiSourceDetailSelect.value = "";
+  };
+
+  if (selfReportedSource) {
+    selfReportedSource.addEventListener("change", syncAiSourceDetail);
+    syncAiSourceDetail();
+  }
 
   projectOptions.forEach((input) => {
     ["change", "input"].forEach((eventName) => {
@@ -1535,6 +1606,7 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
     }
 
     form.reset();
+    syncAiSourceDetail();
     if (submitButton) {
       submitButton.disabled = false;
       submitButton.removeAttribute("aria-busy");

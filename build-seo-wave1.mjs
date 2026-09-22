@@ -1,6 +1,12 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
+import { pageAssets } from "./scripts/asset-delivery.mjs";
+import { applyCityMarketCopy } from "./scripts/load-city-market-copy.mjs";
+import { applyHubHotspotCopy } from "./scripts/load-hub-hotspot-copy.mjs";
+import { applyHubHotspotLayout } from "./scripts/hub-hotspot-layout.mjs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { loadWarmGuidePackage } from "./scripts/load-warm-guide-copy.mjs";
+import { loadPestGuideCopy, pestGuideRoute } from "./scripts/load-pest-guide-copy.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -24,11 +30,13 @@ const googleAdsTrackingSnippet = `  <!-- Google tag (gtag.js) -->
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'AW-10789892066');
+    gtag('config', 'G-P7T219JFV6');
     gtag('config', 'AW-11103039262/_4E-CN313tIaEJ7eq64p', { 'phone_conversion_number': '385-336-4442' });
     gtag('config', 'AW-11103039262/-7syCOa6-e0aEJ7eq64p', { 'phone_conversion_number': '314-931-2620' });
     gtag('config', 'AW-11103039262/35RYCNWL7bgcEJ7eq64p', { 'phone_conversion_number': '816-434-0308' });
     window.goodAtticPhoneConversionNumbersConfigured = true;
     window.goodAtticGoogleTagConfigured = true;
+    window.goodAtticGa4Configured = true;
   </script>`;
 
 const proofAssets = {
@@ -2940,6 +2948,10 @@ function resourceFeatureImage(resource) {
   if (resource.slug === "why-upstairs-rooms-stay-hot") return proofAssets.hotColdHouse;
   if (resource.slug === "when-attic-cleanup-becomes-restoration") return proofAssets.grossAttic;
   if (resource.slug === "what-happens-during-an-attic-inspection") return proofAssets.sales;
+  if (resource.slug === "attic-insulation-removal-after-mice") return proofAssets.pestDamage;
+  if (resource.slug === "bat-guano-attic-insulation-removal") return proofAssets.dirtyReset;
+  if (resource.slug === "wet-attic-insulation-remove-or-dry") return proofAssets.grossAttic;
+  if (resource.slug === "replace-attic-insulation-when-replacing-roof") return proofAssets.insulation;
   return proofAssets.sales;
 }
 
@@ -3095,7 +3107,7 @@ function renderSiteJsonLd(page) {
         url: `${site.baseUrl}/`,
         logo: `${site.baseUrl}/assets/good-attic-mark-gradient.png`,
         description: site.description,
-        telephone: pagePhone.phoneSchema || pagePhone.phoneDisplay,
+        telephone: site.phoneSchema,
         areaServed,
         contactPoint
       },
@@ -3246,7 +3258,7 @@ function renderMetaTags(page, currentUrl) {
   <meta property="og:type" content="${escapeHtml(ogType)}">
   <meta property="og:site_name" content="${escapeHtml(site.name)}">
   <meta property="og:image" content="${escapeHtml(absoluteImage)}">
-  <meta property="og:image:alt" content="${escapeHtml(page.h1)}">
+  <meta property="og:image:alt" content="${escapeHtml(page.social_image_alt || page.h1)}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(page.seo_title)}">
   <meta name="twitter:description" content="${escapeHtml(page.meta_description)}">
@@ -3612,6 +3624,40 @@ function renderProjectPicker(currentUrl, compact = false) {
   `;
 }
 
+function renderSourceDiscoveryFields() {
+  return `
+    <h3 class="form-section-title">How You Found Us</h3>
+    <div class="form-two form-two--source">
+      <label>
+        <span>How did you hear about Good Attic? (optional)</span>
+        <select name="self_reported_source">
+          <option value="">Select one</option>
+          <option value="google_search_maps">Google Search or Maps</option>
+          <option value="google_ads">Google ad</option>
+          <option value="ai_search">AI search or assistant</option>
+          <option value="referral">Friend or referral</option>
+          <option value="social_media">Social media</option>
+          <option value="returning_customer">Returning customer</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+      <label data-ai-source-detail hidden>
+        <span>Which AI search or assistant? (optional)</span>
+        <select name="self_reported_source_detail" disabled>
+          <option value="">Select one</option>
+          <option value="google_ai">Google AI Overview or AI Mode</option>
+          <option value="chatgpt">ChatGPT</option>
+          <option value="perplexity">Perplexity</option>
+          <option value="gemini">Gemini</option>
+          <option value="copilot">Microsoft Copilot</option>
+          <option value="claude">Claude</option>
+          <option value="other_ai">Other AI assistant</option>
+        </select>
+      </label>
+    </div>
+  `;
+}
+
 function renderModal(currentUrl) {
   return `
     <div class="modal" aria-hidden="true" data-modal>
@@ -3694,6 +3740,7 @@ function renderModal(currentUrl) {
                 </select>
               </label>
             </div>
+            ${renderSourceDiscoveryFields()}
             <label>
               <span>Additional notes</span>
               <textarea name="additional_notes" rows="3"></textarea>
@@ -3782,6 +3829,8 @@ function renderLeadForm(currentUrl) {
         </label>
       </div>
 
+      ${renderSourceDiscoveryFields()}
+
       <label>
         <span>Additional notes for the team</span>
         <textarea name="additional_notes" rows="4" placeholder="Tell us what you are seeing, what rooms feel uncomfortable, or anything else we should know."></textarea>
@@ -3867,6 +3916,8 @@ function renderHomepageLeadForm(currentUrl, formName) {
           </select>
         </label>
       </div>
+
+      ${renderSourceDiscoveryFields()}
 
       <label>
         <span>Additional notes for the team</span>
@@ -4061,12 +4112,15 @@ function renderFaq(items) {
 }
 
 function renderCtaStrip(currentUrl, title, text, primary) {
+  const buttonClass = ["button", "primary", primary.buttonClass].filter(Boolean).join(" ");
   const primaryAction = primary.phone
     ? renderPhoneDropdownButton(primary.label || "Contact our team", primary.phone)
-    : `<a class="button primary" href="${hrefFrom(currentUrl, primary.url)}">${escapeHtml(displayCopy(primary.label))}</a>`;
+    : primary.openModal
+      ? `<button class="${escapeHtml(buttonClass)}" type="button" data-open-modal>${escapeHtml(displayCopy(primary.label))}</button>`
+      : `<a class="${escapeHtml(buttonClass)}" href="${hrefFrom(currentUrl, primary.url)}">${escapeHtml(displayCopy(primary.label))}</a>`;
 
   return `
-    <section class="cta-strip reveal">
+    <section class="cta-strip reveal${primary.alwaysVisible ? " is-visible" : ""}">
       <div>
         <p class="eyebrow">${escapeHtml(displayCopy(primary.kicker || "Next step"))}</p>
         <h2>${escapeHtml(displayCopy(title))}</h2>
@@ -4074,7 +4128,7 @@ function renderCtaStrip(currentUrl, title, text, primary) {
       </div>
       <div class="cta-strip__actions">
         ${primaryAction}
-        <a class="button secondary" href="${hrefFrom(currentUrl, "/financing/")}">Financing Options</a>
+        ${primary.hideSecondary ? "" : `<a class="button secondary" href="${hrefFrom(currentUrl, "/financing/")}">Financing Options</a>`}
       </div>
     </section>
   `;
@@ -4142,11 +4196,38 @@ function renderStructuredSection(section, currentUrl) {
   if (section.layout === "tiles") return renderTileGrid(section.items);
   if (section.layout === "panels") return renderAudiencePanels(section.items);
   if (section.layout === "features") return renderFeatureGrid(section.items, currentUrl, section.withImages || false);
+  if (section.layout === "decision-table") {
+    return `
+      <table class="feature-card reveal" width="100%" cellpadding="12">
+        <thead>
+          <tr>
+            <th scope="col">${escapeHtml(section.columns[0])}</th>
+            <th scope="col">${escapeHtml(section.columns[1])}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${section.rows
+            .map(
+              (row) => `
+                <tr>
+                  <th scope="row">${escapeHtml(row[0])}</th>
+                  <td>${escapeHtml(row[1])}</td>
+                </tr>
+              `
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
+  }
   return "";
 }
 
 function resourceAuthoritySources(page) {
   if (page.page_type !== "resource") return [];
+  if (page.source_groups?.length) {
+    return page.source_groups.flatMap((group) => group.sources || []);
+  }
   const slug = page.slug || "";
   const keys = new Set(["energyStarAttic", "energyStarRValues"]);
 
@@ -4182,6 +4263,36 @@ function renderAuthoritySources(page) {
   const sources = resourceAuthoritySources(page);
   if (!sources.length) return "";
 
+  if (page.source_groups?.length) {
+    return page.source_groups
+      .map(
+        (group) => `
+          <section class="section">
+            <div class="section-heading reveal">
+              <p class="eyebrow">Sources</p>
+              <h2>${escapeHtml(group.heading)}</h2>
+              ${group.intro ? `<p class="section-subcopy">${escapeHtml(group.intro)}</p>` : ""}
+            </div>
+            <div class="feature-grid">
+              ${(group.sources || [])
+                .map(
+                  (source) => `
+                    <a class="feature-card page-card-link reveal" href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">
+                      <p class="eyebrow page-card-link__kicker">Reference</p>
+                      <h3>${escapeHtml(source.title)}</h3>
+                      <p>${escapeHtml(source.text)}</p>
+                      <span class="page-card-link__cta">Open source</span>
+                    </a>
+                  `
+                )
+                .join("")}
+            </div>
+          </section>
+        `
+      )
+      .join("");
+  }
+
   return `
     <section class="section">
       <div class="section-heading reveal">
@@ -4207,14 +4318,259 @@ function renderAuthoritySources(page) {
   `;
 }
 
+function renderExactInline(markdown, currentUrl) {
+  const tokenPattern = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g;
+  let rendered = "";
+  let cursor = 0;
+
+  for (const match of markdown.matchAll(tokenPattern)) {
+    rendered += escapeHtml(markdown.slice(cursor, match.index));
+    const token = match[0];
+    const strong = token.match(/^\*\*(.+)\*\*$/);
+    const link = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (strong) {
+      rendered += `<strong>${escapeHtml(strong[1])}</strong>`;
+    } else if (link) {
+      rendered += `<a href="${escapeHtml(hrefFrom(currentUrl, link[2]))}">${escapeHtml(link[1])}</a>`;
+    }
+    cursor = match.index + token.length;
+  }
+
+  return rendered + escapeHtml(markdown.slice(cursor));
+}
+
+function exactMarkdownBlocks(markdown) {
+  return markdown
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter((block) => block && block !== "---");
+}
+
+function renderExactList(block, currentUrl) {
+  const lines = block.split("\n").map((line) => line.trim());
+  const ordered = /^\d+\. /.test(lines[0]);
+  const tag = ordered ? "ol" : "ul";
+  const prefix = ordered ? /^\d+\. / : /^- /;
+  return `
+    <${tag} class="section-subcopy reveal">
+      ${lines.map((line) => `<li>${renderExactInline(line.replace(prefix, ""), currentUrl)}</li>`).join("")}
+    </${tag}>
+  `;
+}
+
+function renderExactTable(block, currentUrl) {
+  const rows = block
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"))
+    .map((line) => line.slice(1, -1).split("|").map((cell) => cell.trim()));
+  if (rows.length < 3 || !rows[1].every((cell) => /^-+$/.test(cell))) {
+    throw new Error("Invalid exact-copy table");
+  }
+
+  return `
+    <table class="feature-card reveal" width="100%" cellpadding="12">
+      <thead>
+        <tr>${rows[0].map((cell) => `<th scope="col">${renderExactInline(cell, currentUrl)}</th>`).join("")}</tr>
+      </thead>
+      <tbody>
+        ${rows
+          .slice(2)
+          .map(
+            (row) =>
+              `<tr><th scope="row">${renderExactInline(row[0], currentUrl)}</th>${row
+                .slice(1)
+                .map((cell) => `<td>${renderExactInline(cell, currentUrl)}</td>`)
+                .join("")}</tr>`,
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderExactGuideBody(markdown, currentUrl) {
+  const blocks = exactMarkdownBlocks(markdown);
+  const rendered = [];
+
+  for (let index = 0; index < blocks.length; ) {
+    const block = blocks[index];
+    const cardHeading = block.match(/^### ((?:Card|Step) \d+ — .+)$/);
+    if (cardHeading) {
+      const cards = [];
+      while (index < blocks.length) {
+        const heading = blocks[index].match(/^### ((?:Card|Step) \d+ — .+)$/);
+        if (!heading) break;
+        const text = blocks[index + 1];
+        if (!text || /^### /.test(text)) throw new Error(`Missing exact-copy card body for ${heading[1]}`);
+        cards.push({ title: heading[1], text });
+        index += 2;
+      }
+      rendered.push(`
+        <div class="tile-grid">
+          ${cards
+            .map(
+              (card) => `
+                <article class="info-tile reveal">
+                  <h3>${escapeHtml(card.title)}</h3>
+                  <p>${renderExactInline(card.text, currentUrl)}</p>
+                </article>
+              `,
+            )
+            .join("")}
+        </div>
+      `);
+      continue;
+    }
+
+    const subsectionHeading = block.match(/^### (.+)$/);
+    if (subsectionHeading) {
+      const subsectionBlocks = [];
+      index += 1;
+      while (index < blocks.length && !/^### /.test(blocks[index])) {
+        subsectionBlocks.push(blocks[index]);
+        index += 1;
+      }
+      rendered.push(`
+        <div class="section-heading reveal">
+          <h3>${escapeHtml(subsectionHeading[1])}</h3>
+          ${subsectionBlocks.map((item) => renderExactBodyBlock(item, currentUrl, false)).join("")}
+        </div>
+      `);
+      continue;
+    }
+
+    rendered.push(renderExactBodyBlock(block, currentUrl));
+    index += 1;
+  }
+
+  return rendered.join("");
+}
+
+function renderExactBodyBlock(block, currentUrl, reveal = true) {
+  if (block.startsWith("|")) return renderExactTable(block, currentUrl);
+  if (/^(?:\d+\. |- )/.test(block)) return renderExactList(block, currentUrl);
+  return `<p class="section-subcopy${reveal ? " reveal" : ""}">${renderExactInline(
+    block.replace(/\n/g, " ").replace(/\s+/g, " "),
+    currentUrl,
+  )}</p>`;
+}
+
+function renderExactSourceGroups(groups) {
+  return groups
+    .map(
+      (group) => `
+        <section class="section">
+          <div class="section-heading reveal">
+            <h2>${escapeHtml(group.heading)}</h2>
+          </div>
+          <div class="feature-grid">
+            ${group.sources
+              .map(
+                (source) => `
+                  <a class="feature-card page-card-link reveal" href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">
+                    <h3>${escapeHtml(source.title)}</h3>
+                    <p>${escapeHtml(source.text)}</p>
+                  </a>
+                `,
+              )
+              .join("")}
+          </div>
+        </section>
+      `,
+    )
+    .join("");
+}
+
+function renderExactLinkSection(section, currentUrl) {
+  return `
+    <section class="section">
+      <div class="section-heading reveal">
+        ${section.eyebrow ? `<p class="eyebrow">${escapeHtml(section.eyebrow)}</p>` : ""}
+        <h2>${escapeHtml(section.heading)}</h2>
+        ${section.intro ? `<p class="section-subcopy">${escapeHtml(section.intro)}</p>` : ""}
+      </div>
+      <div class="feature-grid">
+        ${section.items
+          .map(
+            (item) => `
+              <a class="feature-card page-card-link reveal" href="${escapeHtml(hrefFrom(currentUrl, item.url))}">
+                <h3>${escapeHtml(item.title)}</h3>
+                ${item.text ? `<p>${escapeHtml(item.text)}</p>` : ""}
+                <span class="page-card-link__cta">${escapeHtml(item.cta)}</span>
+              </a>
+            `,
+          )
+          .join("")}
+      </div>${section.links ? `\n      <p class="section-subcopy reveal">${renderExactInline(section.links, currentUrl)}</p>` : ""}
+    </section>
+  `;
+}
+
+function renderExactGuidePage(page, currentUrl) {
+  const copy = page.exact_copy;
+  return `
+    <div data-exact-guide-content>
+    <section class="section page-hero">
+      ${renderBreadcrumbs(page, currentUrl)}
+      <div class="page-hero__copy">
+        <p class="eyebrow">${escapeHtml(copy.hero.eyebrow)}</p>
+        <h1>${escapeHtml(page.h1)}</h1>
+        ${copy.hero.paragraphs.map((paragraph) => `<p class="page-intro">${escapeHtml(paragraph)}</p>`).join("")}
+      </div>
+    </section>
+
+    ${copy.sections
+      .map(
+        (section) => `
+          <section class="section">
+            <div class="section-heading reveal">
+              ${section.eyebrow ? `<p class="eyebrow">${escapeHtml(section.eyebrow)}</p>` : ""}
+              <h2>${escapeHtml(section.heading)}</h2>
+            </div>
+            ${renderExactGuideBody(section.markdown, currentUrl)}
+          </section>
+        `,
+      )
+      .join("")}
+
+    ${renderCtaStrip(currentUrl, copy.closingCta.heading, copy.closingCta.body, {
+      label: copy.closingCta.label,
+      url: copy.closingCta.url,
+      kicker: copy.closingCta.eyebrow,
+      hideSecondary: true,
+      alwaysVisible: true,
+      openModal: copy.closingCta.openModal,
+      buttonClass: "light"
+    })}
+
+    ${renderExactSourceGroups(copy.sourceGroups)}
+
+    <section class="section">
+      <div class="section-heading reveal">
+        ${copy.faq.eyebrow ? `<p class="eyebrow">${escapeHtml(copy.faq.eyebrow)}</p>` : ""}
+        <h2>${escapeHtml(copy.faq.heading)}</h2>
+      </div>
+      ${renderFaq(copy.faq.items)}
+    </section>
+
+    ${renderExactLinkSection(copy.related, currentUrl)}
+    ${renderExactLinkSection(copy.local, currentUrl)}
+    </div><!-- exact-guide-content:end -->
+  `.replace(/[ \t]+$/gm, "");
+}
+
 function renderResourcePage(page, currentUrl) {
+  if (page.exact_copy) return renderExactGuidePage(page, currentUrl);
+
   return `
     ${renderHero(currentUrl, page, {
       eyebrow: page.hero?.eyebrow || "Resources",
       cardKicker: page.hero?.cardKicker || "Decision guide",
       cardTitle: page.hero?.cardTitle || page.h1,
       cardText: page.hero?.cardText || page.intro,
-      cardPoints: page.hero?.cardPoints || page.trust_elements
+      cardPoints: page.hero?.cardPoints || page.trust_elements,
+      actions: page.hero?.hideActions ? [] : undefined
     })}
 
       ${page.sections
@@ -4224,7 +4580,11 @@ function renderResourcePage(page, currentUrl) {
             <div class="section-heading reveal">
               <p class="eyebrow">${escapeHtml(section.eyebrow)}</p>
               <h2>${escapeHtml(section.heading)}</h2>
-              ${section.subcopy ? `<p class="section-subcopy">${escapeHtml(section.subcopy)}</p>` : ""}
+              ${section.subcopy ? `<p class="section-subcopy">${escapeHtml(section.subcopy)}</p>` : ""}${section.paragraphs?.length
+                ? section.paragraphs
+                    .map((paragraph) => `<p class="section-subcopy">${escapeHtml(paragraph)}</p>`)
+                    .join("")
+                : ""}
             </div>
             ${renderStructuredSection(section, currentUrl)}
           </section>
@@ -4239,7 +4599,7 @@ function renderResourcePage(page, currentUrl) {
     <section class="section">
       <div class="section-heading reveal">
         <p class="eyebrow">FAQ</p>
-        <h2>Questions about ${escapeHtml(page.h1.toLowerCase())}.</h2>
+        <h2>${escapeHtml(page.faq_heading || `Questions about ${page.h1.toLowerCase()}.`)}</h2>
       </div>
       ${renderFaq(page.faq_items)}
     </section>
@@ -5764,17 +6124,15 @@ function buildSupportCityLinks(currentUrl, market) {
   }));
 }
 
-function renderHeroReviewBanner(includeReviewCount = false) {
+function renderHeroReviewBanner(reviewCount = 0) {
+  if (!reviewCount) return "";
+
   return `
     <div class="hero-review-banner" aria-label="Google review rating">
       <span class="hero-review-banner__google">G</span>
       <strong>5.0</strong>
       <span class="hero-review-banner__stars" aria-label="Five star rating">★★★★★</span>
-      ${
-        includeReviewCount
-          ? '<span class="hero-review-banner__volume"><span class="hero-review-banner__count">100+</span><span>Google Reviews</span></span>'
-          : "<span>Google Reviews</span>"
-      }
+      <span class="hero-review-banner__volume"><span class="hero-review-banner__count">${reviewCount}</span><span>Google Reviews</span></span>
     </div>
   `;
 }
@@ -5784,6 +6142,8 @@ function renderSharedAtticHealthLead() {
 }
 
 function renderSharedReviewBand(widgetMarkup) {
+  if (!widgetMarkup) return "";
+
   return `
     <section class="media-band reveal">
       ${widgetMarkup}
@@ -5859,7 +6219,7 @@ function renderExpandableReviewText(text, className) {
   `;
 }
 
-function renderReviewWidgetHeader(title, kicker = "Google Reviews") {
+function renderReviewWidgetHeader(title, kicker = "Google Reviews", reviewCountLabel = "Verified customer reviews") {
   return `
     <div class="review-widget__header">
       <div class="google-mark" aria-hidden="true">
@@ -5871,7 +6231,7 @@ function renderReviewWidgetHeader(title, kicker = "Google Reviews") {
         <div class="review-widget__rating" aria-label="5 out of 5 stars on Google Reviews">
           <strong>5.0</strong>
           <span class="stars" aria-hidden="true">★★★★★</span>
-          <span>100+ Google Reviews</span>
+          <span>${escapeHtml(reviewCountLabel)}</span>
         </div>
       </div>
     </div>
@@ -5941,26 +6301,7 @@ function renderReviewHubCarouselCard(currentUrl, heading, text) {
 }
 
 function marketHubReviewEntries(marketSlug) {
-  return approvedReviewEntries({ marketSlug }).filter((entry) => !entry.city);
-}
-
-function sharedTeamReviewEntries(targetMarketSlug, limit = 6) {
-  const sourcePools = marketCatalog
-    .filter((market) => market.slug !== targetMarketSlug)
-    .map((market) => approvedReviewEntries({ marketSlug: market.slug }))
-    .filter((entries) => entries.length > 0);
-
-  const balancedEntries = [];
-  let poolIndex = 0;
-
-  while (balancedEntries.length < limit && sourcePools.some((entries) => entries.length > 0)) {
-    const activePool = sourcePools[poolIndex % sourcePools.length];
-    const nextEntry = activePool.shift();
-    if (nextEntry) balancedEntries.push(nextEntry);
-    poolIndex += 1;
-  }
-
-  return balancedEntries;
+  return approvedReviewEntries({ marketSlug }).filter((entry) => !entry.city).slice(0, 6);
 }
 
 function reviewSummaryByMarket() {
@@ -5978,20 +6319,17 @@ function cityReviewAssignments() {
   if (cityReviewAssignmentCache) return cityReviewAssignmentCache;
 
   const assignmentMap = new Map();
-  const fallbackPool = approvedReviewEntries({}).filter((entry) => !entry.city);
-  let fallbackCursor = 0;
 
   marketCatalog.forEach((market) => {
+    const marketFallback = approvedReviewEntries({ marketSlug: market.slug })
+      .filter((entry) => !entry.city)
+      .slice(0, 3);
+
     market.supportCities.forEach((city) => {
       const exactEntries = approvedReviewEntries({ marketSlug: market.slug })
         .filter((entry) => entry.city === city.slug)
         .slice(0, 3);
-      const selectedEntries = [...exactEntries];
-
-      while (selectedEntries.length < 3 && fallbackCursor < fallbackPool.length) {
-        selectedEntries.push(fallbackPool[fallbackCursor]);
-        fallbackCursor += 1;
-      }
+      const selectedEntries = exactEntries.length ? exactEntries : marketFallback;
 
       assignmentMap.set(city.slug, selectedEntries);
     });
@@ -6006,26 +6344,25 @@ function cityReviewEntries(citySlug) {
 }
 
 function renderMarketReviewWidget(currentUrl, market) {
-  const marketSpecificEntries = marketHubReviewEntries(market.slug);
-  const sharedTeamEntries = market.slug === "kansas-city-mo" ? sharedTeamReviewEntries(market.slug) : [];
-  const reviewEntries = marketSpecificEntries.length ? marketSpecificEntries : sharedTeamEntries;
-  const isSharedTeamWidget = market.slug === "kansas-city-mo" && !marketSpecificEntries.length && sharedTeamEntries.length > 0;
+  const reviewEntries = marketHubReviewEntries(market.slug);
+  if (!reviewEntries.length) return "";
+
   const desktopReviewCards = reviewEntries.map((entry) => renderCarouselReviewCard(entry)).join("");
   const mobileCarouselCards = [
     ...reviewEntries.map((entry) => renderCarouselReviewCard(entry)),
     renderReviewHubCarouselCard(
       currentUrl,
       `${market.shortName} review library`,
-      isSharedTeamWidget
-        ? `Browse the full Good Attic review hub for more verified customer feedback.`
-        : `Browse the broader Good Attic review hub for more homeowner feedback connected to ${market.shortName}.`
+      `Browse the broader Good Attic review hub for more homeowner feedback connected to ${market.shortName}.`
     )
   ].join("");
 
   return `
     <aside class="review-widget review-widget--market" aria-label="${escapeHtml(market.shortName)} Google review widget">
       ${renderReviewWidgetHeader(
-        isSharedTeamWidget ? `${market.shortName} trust built by the same team` : `${market.shortName} homeowner feedback`
+        `${market.shortName} homeowner feedback`,
+        "Google Reviews",
+        `${approvedReviewEntries({ marketSlug: market.slug }).length} verified reviews`
       )}
       <div class="review-widget__stack review-widget__stack--desktop">
         ${
@@ -6051,6 +6388,8 @@ function renderMarketReviewWidget(currentUrl, market) {
 
 function renderCityReviewWidget(currentUrl, market, city) {
   const reviewEntries = cityReviewEntries(city.slug).slice(0, 3);
+  if (!reviewEntries.length) return "";
+
   const mobileCarouselCards = [
     ...reviewEntries.map((entry) => renderCarouselReviewCard(entry)),
     renderReviewHubCarouselCard(
@@ -6064,19 +6403,12 @@ function renderCityReviewWidget(currentUrl, market, city) {
     <aside class="review-widget review-widget--city" aria-label="${escapeHtml(city.shortName)} homeowner reviews">
       ${renderReviewWidgetHeader(
         "Verified Good Attic customer reviews",
-        "Customer reviews"
+        "Customer reviews",
+        `${approvedReviewEntries({ marketSlug: market.slug }).length} reviews across ${market.shortName}`
       )}
-      ${
-        reviewEntries.length
-          ? `<div class="review-excerpt-list review-excerpt-list--desktop">
-               ${reviewEntries.map((entry) => renderMiniReviewCard(entry, currentUrl)).join("")}
-             </div>`
-          : `<div class="review-widget__shell review-widget__shell--desktop-city">
-             <strong>Verified Good Attic customer reviews</strong>
-               <p>The full Good Attic review hub keeps every approved customer review together while this page highlights a small set of customer feedback.</p>
-               <a class="page-card-link__cta" href="${hrefFrom(currentUrl, "/reviews/")}">Open review library</a>
-             </div>`
-      }
+      <div class="review-excerpt-list review-excerpt-list--desktop">
+        ${reviewEntries.map((entry) => renderMiniReviewCard(entry, currentUrl)).join("")}
+      </div>
       <div class="review-carousel review-carousel--mobile" aria-label="${escapeHtml(city.shortName)} homeowner review carousel">
         <div class="review-carousel__track">
           ${mobileCarouselCards}
@@ -6610,7 +6942,7 @@ function buildMarketPage(market) {
     ${renderHiddenBreadcrumbs(page, currentUrl)}
     <section class="hero section-pin hero--market">
       <div class="hero-copy reveal">
-        ${renderHeroReviewBanner(true)}
+        ${renderHeroReviewBanner(approvedReviewEntries({ marketSlug: market.slug }).length)}
         <p class="eyebrow">Premium Attic Services in ${escapeHtml(market.shortName)}</p>
         <h1 class="hero-display">Attic Services in ${escapeHtml(marketDisplayName(market))}</h1>
         <p class="hero-text">${escapeHtml(page.intro)}</p>
@@ -6897,16 +7229,7 @@ function buildMarketPage(market) {
       ${renderEvidenceGrid(evidenceGallery, currentUrl)}
     </section>
 
-    <section class="section">
-      <div class="section-heading reveal">
-        <p class="eyebrow">Proof ready for this market</p>
-        <h2>The evidence and review inputs that should strengthen ${escapeHtml(market.shortName)} first.</h2>
-        <p class="section-subcopy">${escapeHtml(
-          "This section is designed to accept real approved review excerpts and project evidence later without changing the page structure again."
-        )}</p>
-      </div>
-      ${renderProofQueueGrid(buildDocumentedProofCards({ marketSlug: market.slug }), currentUrl)}
-    </section>
+    ${renderMarketProjectProofSection(currentUrl, market)}
 
     <section class="section">
       <div class="section-heading reveal">
@@ -6991,7 +7314,7 @@ function buildMarketPage(market) {
         <p class="eyebrow">Get a quote</p>
         <h2>Tell us what is happening in your attic in ${escapeHtml(market.shortName)}.</h2>
         <p>Share the project type, contact details, preferred quote timing, and any helpful notes. Your request goes straight to the team so we can follow up with the right next step.</p>
-        <p class="contact-note">Lead source, page URL, and project type are captured so every request can route into the right local follow-up path.</p>
+        <p class="contact-note">Your request goes to the local team serving your address so follow-up stays connected to the right market.</p>
       </div>
 
       ${renderHomepageLeadForm(currentUrl, `${market.shortName} market contact form`)}
@@ -7005,7 +7328,6 @@ function buildServicePage(market, service) {
   const marketShort = market.shortName.toLowerCase();
   const insights = buildMarketServiceInsights(market, service);
   const evidenceGallery = buildServiceEvidenceGallery(market, service);
-  const serviceReviewCount = approvedReviewEntries({ marketSlug: market.slug, serviceSlug: service.slug }).length;
   const faqItems = [...service.faq, ...insights.extraFaq];
   const secondaryKeywords = {
     "attic-insulation": [
@@ -7273,17 +7595,7 @@ function buildServicePage(market, service) {
         )}
       </section>
 
-      <section class="section">
-        <div class="section-heading reveal">
-          <p class="eyebrow">Approved review excerpts</p>
-          <h2>${escapeHtml(
-            serviceReviewCount
-              ? `Homeowner feedback already reinforcing ${service.name.toLowerCase()} in ${market.shortName}.`
-              : `The homeowner feedback themes that should reinforce ${service.name.toLowerCase()} in ${market.shortName}.`
-          )}</h2>
-        </div>
-        ${renderProofQueueGrid(buildReviewExcerptCards({ marketSlug: market.slug, serviceSlug: service.slug, limit: 3 }), currentUrl)}
-      </section>
+      ${renderServiceReviewSection(currentUrl, market, service)}
 
       <section class="section">
         <div class="section-heading reveal">
@@ -7420,7 +7732,7 @@ function buildCityPage(market, city) {
       ${renderHiddenBreadcrumbs(page, currentUrl)}
       <section class="hero section-pin hero--city">
         <div class="hero-copy reveal">
-          ${renderHeroReviewBanner(true)}
+          ${renderHeroReviewBanner(cityReviewEntries(city.slug).length)}
           <p class="eyebrow">Service Area</p>
           <h1 class="hero-display">Attic Services in ${escapeHtml(city.shortName)}</h1>
           <p class="hero-text">${escapeHtml(page.intro)}</p>
@@ -8478,17 +8790,17 @@ function approvedReviewEntries(scope = {}) {
 function documentedProofEntries(scope = {}) {
   return documentedProjectProof.filter((entry) => {
     if (!matchesProofScope(entry, scope)) return false;
-    if (!scope.citySlug && entry.city) return false;
+    if (!scope.citySlug && entry.city && !scope.includeCities) return false;
     return true;
   });
 }
 
 function serviceProjectProofEntries(scope = {}) {
   const limit = typeof scope.limit === "number" ? scope.limit : 3;
-  const exactServiceEntries = documentedProjectProof.filter((entry) => {
+  const exactServiceEntries = scope.serviceSlug ? documentedProjectProof.filter((entry) => {
     if (scope.marketSlug && entry.market !== scope.marketSlug) return false;
-    return scope.serviceSlug ? entry.serviceSlug === scope.serviceSlug : true;
-  });
+    return entry.serviceSlug === scope.serviceSlug;
+  }) : [];
   const marketEntries = documentedProjectProof.filter((entry) => {
     if (scope.marketSlug && entry.market !== scope.marketSlug) return false;
     return Boolean(entry.beforeImage && entry.afterImage);
@@ -8545,25 +8857,41 @@ function buildServiceProjectProofCards(market, service, limit = 3) {
 
 function renderServiceProjectProofSection(currentUrl, market, service) {
   const projectProof = buildServiceProjectProofCards(market, service);
-  const hasProjectProof = projectProof.length > 0;
+  if (!projectProof.length) return "";
 
   return `
       <section class="section">
         <div class="section-heading reveal">
-          <p class="eyebrow">${hasProjectProof ? "Real project proof" : "Proof path for this service"}</p>
-          <h2>${escapeHtml(
-            hasProjectProof
-              ? `Documented attic project proof supporting ${service.name.toLowerCase()} decisions in ${market.shortName}.`
-              : `The real project evidence that should eventually support ${service.name.toLowerCase()} in ${market.shortName}.`
-          )}</h2>
-          <p class="section-subcopy">${escapeHtml(
-            hasProjectProof
-              ? "These are real approved before-and-after attic photo sets from this market. The captions keep the claim honest: they document Good Attic's photo-first project standard, while service-specific pages explain how that proof supports the decision process."
-              : "These proof slots are set up so approved project photos and documented findings can drop into the right page later without redesigning the service architecture."
-          )}</p>
+          <p class="eyebrow">Real project proof</p>
+          <h2>${escapeHtml(`Documented attic projects supporting ${service.name.toLowerCase()} decisions in ${market.shortName}.`)}</h2>
+          <p class="section-subcopy">These approved before-and-after photo sets show real Good Attic projects from this market and the attic conditions our team documented along the way.</p>
         </div>
-        ${hasProjectProof ? renderBeforeAfterProofGrid(projectProof, currentUrl) : renderProofQueueGrid(buildDocumentedProofCards({ marketSlug: market.slug, serviceSlug: service.slug }), currentUrl)}
+        ${renderBeforeAfterProofGrid(projectProof, currentUrl)}
       </section>
+  `;
+}
+
+function buildMarketProjectProofCards(market, limit = 3) {
+  return serviceProjectProofEntries({ marketSlug: market.slug, limit }).map((entry) => ({
+    ...entry,
+    title: entry.title || `${cityLabelForProofEntry(entry, market)} documented attic project`,
+    status: "Real before/after attic proof"
+  }));
+}
+
+function renderMarketProjectProofSection(currentUrl, market) {
+  const projectProof = buildMarketProjectProofCards(market);
+  if (!projectProof.length) return "";
+
+  return `
+    <section class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Projects from this market</p>
+        <h2>Before-and-after attic projects completed across ${escapeHtml(market.shortName)}.</h2>
+        <p class="section-subcopy">These approved project photos show real starting conditions and finished attic work from homes served by the local Good Attic team.</p>
+      </div>
+      ${renderBeforeAfterProofGrid(projectProof, currentUrl)}
+    </section>
   `;
 }
 
@@ -8599,51 +8927,44 @@ function buildReviewExcerptCards(scope = {}) {
     }));
   }
 
-  const scopeLabel = service && market ? `${service.name} in ${market.name}` : market ? market.name : service ? service.name : "Good Attic";
-  const serviceImage = service?.image || proofAssets.sales;
+  return [];
+}
 
-  return [
-    {
-      kicker: "Ready for approved excerpt",
-      title: `Communication review for ${scopeLabel}`,
-      text: `Add a real approved homeowner excerpt that mentions how clearly the attic findings, scope, and next steps were explained.`,
-      image: serviceImage,
-      alt: `Review excerpt shell for ${scopeLabel}`,
-      status: "Waiting on approved quote",
-      meta: ["Theme: clarity and communication", market ? `Primary landing page: ${market.name}` : "Primary landing page: reviews"],
-      url: "/reviews/",
-      cta: "Proof page destination"
-    },
-    {
-      kicker: "Ready for approved excerpt",
-      title: `Cleanliness and homeowner respect review for ${scopeLabel}`,
-      text: "This slot is for a real review excerpt that speaks to cleanliness, respectful crews, and how the home was treated during the project.",
-      image: proofAssets.grossAttic,
-      alt: `Cleanliness review shell for ${scopeLabel}`,
-      status: "Waiting on approved quote",
-      meta: ["Theme: cleanliness and care", service ? `Best fit: ${service.name}` : "Best fit: reviews and market pages"],
-      url: "/reviews/",
-      cta: "Proof page destination"
-    },
-    {
-      kicker: "Ready for approved excerpt",
-      title: `Result-focused review for ${scopeLabel}`,
-      text: "Use a real approved excerpt that mentions the finished attic, the comfort improvement, or why the homeowner felt better about the house afterward.",
-      image: proofAssets.insulation,
-      alt: `Outcome review shell for ${scopeLabel}`,
-      status: "Waiting on approved quote",
-      meta: ["Theme: visible result", market ? `Best secondary target: ${market.name} market page` : "Best secondary target: top service pages"],
-      url: market ? `/${market.slug}/` : "/services/",
-      cta: "Open target page"
-    }
-  ];
+function renderServiceReviewSection(currentUrl, market, service) {
+  const reviewCards = buildReviewExcerptCards({
+    marketSlug: market.slug,
+    serviceSlug: service.slug,
+    limit: 3
+  });
+  if (!reviewCards.length) return "";
+
+  return `
+    <section class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Verified customer reviews</p>
+        <h2>Homeowner feedback about ${escapeHtml(service.name.toLowerCase())} in ${escapeHtml(market.shortName)}.</h2>
+      </div>
+      ${renderProofQueueGrid(reviewCards, currentUrl)}
+    </section>
+  `;
 }
 
 function buildDocumentedProofCards(scope = {}) {
-  const market = scope.marketSlug ? marketBySlug(scope.marketSlug) : null;
-  const service = scope.serviceSlug ? serviceBySlug(scope.serviceSlug) : null;
-  const city = scope.citySlug && market ? market.supportCities.find((item) => item.slug === scope.citySlug) : null;
-  const actualEntries = documentedProofEntries(scope);
+  const entries = documentedProofEntries(scope);
+  const balancedEntries = scope.includeCities
+    ? [
+        ...entries.filter(
+          (entry, index, allEntries) => allEntries.findIndex((candidate) => candidate.city === entry.city) === index
+        ),
+        ...entries
+      ].filter(
+        (entry, index, allEntries) => allEntries.findIndex((candidate) => candidate.title === entry.title) === index
+      )
+    : entries;
+  const actualEntries = balancedEntries.slice(
+    0,
+    typeof scope.limit === "number" ? scope.limit : undefined
+  );
 
   if (actualEntries.length) {
     return actualEntries.map((entry) => ({
@@ -8655,53 +8976,11 @@ function buildDocumentedProofCards(scope = {}) {
       status: entry.status || "Approved asset",
       meta: [entry.assetType ? `Asset: ${entry.assetType}` : null, entry.targetLabel || null].filter(Boolean),
       url: entry.targetUrl || "/reviews/",
-      cta: entry.targetLabel || "Open target page"
+      cta: entry.targetLabel || "View related page"
     }));
   }
 
-  const scopeLabel =
-    service && market
-      ? `${service.name} in ${marketDisplayName(market)}`
-      : city && market
-        ? `${cityDisplayName(city)} through ${marketDisplayName(market)}`
-        : market
-          ? marketDisplayName(market)
-          : service
-            ? service.name
-            : "Good Attic";
-
-  return [
-    {
-      title: `Before-condition photos for ${scopeLabel}`,
-      text: "Add real attic photos that show why the attic needed the work before the project started, especially when the final recommendation was more than a simple top-off.",
-      image: proofAssets.dirtyReset,
-      alt: `Before-condition proof shell for ${scopeLabel}`,
-      status: "Waiting on real photos",
-      meta: ["Needed: before-condition set", service ? `Best page target: ${service.name}` : "Best page target: reviews and market pages"],
-      url: service && market ? `/${market.slug}/${service.slug}/` : market ? `/${market.slug}/` : "/reviews/",
-      cta: "Open target page"
-    },
-    {
-      title: `Inspection findings and scope notes for ${scopeLabel}`,
-      text: "This slot is for real documented findings that show what the attic inspection uncovered and why the scope was sequenced the way it was.",
-      image: proofAssets.sales,
-      alt: `Inspection findings proof shell for ${scopeLabel}`,
-      status: "Waiting on documented findings",
-      meta: ["Needed: findings summary + photo set", market ? `Market path: ${market.name}` : "Market path: reviews"],
-      url: market ? `/${market.slug}/` : "/reviews/",
-      cta: "Open target page"
-    },
-    {
-      title: `Finished-attic outcome for ${scopeLabel}`,
-      text: "Use real after photos that show the attic looked cleaner, more intentional, and more complete after the work was finished.",
-      image: service?.image || proofAssets.insulation,
-      alt: `Finished-attic proof shell for ${scopeLabel}`,
-      status: "Waiting on after photos",
-      meta: ["Needed: after-condition set", city ? `Support page: ${city.name}` : "Support page: top market and service pages"],
-      url: city && market ? `/${market.slug}/service-areas/${city.slug}/` : service && market ? `/${market.slug}/${service.slug}/` : "/reviews/",
-      cta: "Open target page"
-    }
-  ];
+  return [];
 }
 
 const resourcePages = [
@@ -10975,7 +11254,19 @@ const resourcePages = [
   })
 ];
 
-resourcePages.push(...buildMarketProblemResourcePages());
+// These owner-approved guides use first-party service standards alongside the
+// cited public guidance. The citations support safety and sequencing, not the
+// complete Good Attic remediation standard.
+const pestGuideIndex = resourcePages.findIndex((page) => page.url === pestGuideRoute);
+if (pestGuideIndex < 0) throw new Error("Missing existing pest-restoration guide");
+resourcePages[pestGuideIndex] = await loadPestGuideCopy(
+  path.join(__dirname, "content", "pest-guide"), resourcePages[pestGuideIndex],
+);
+
+const warmGuidePackage = await loadWarmGuidePackage(path.join(__dirname, "content", "warm-guides"));
+const fourGuideAuthorityClusterPages = warmGuidePackage.pages.map(buildResourcePage);
+
+resourcePages.push(...fourGuideAuthorityClusterPages, ...buildMarketProblemResourcePages());
 
 function renderLegalPage(page, currentUrl) {
   const isPrivacy = page.slug === "privacy-policy";
@@ -11322,11 +11613,13 @@ function renderCorePage(page, currentUrl) {
           )}</p>
         </div>
         ${renderFeatureGrid(
-          resourcePages.filter((resource) => !resource.market).map((resource) => ({
+          resourcePages
+            .filter((resource) => !resource.market && resource.include_on_services_hub !== false)
+            .map((resource) => ({
             url: resource.url,
-            title: resource.h1,
+            title: resource.services_hub_card?.title || resource.h1,
             kicker: resource.market ? marketBySlug(resource.market)?.shortName || "Resource" : "Resource guide",
-            text: resource.meta_description,
+            text: resource.services_hub_card?.text || resource.meta_description,
             image: resourceFeatureImage(resource),
             alt: resource.h1,
             cta: "Read guide"
@@ -11391,7 +11684,23 @@ function renderCorePage(page, currentUrl) {
     const marketProblemResources = resourcePages.filter(
       (resource) => resource.market && !resource.slug.startsWith("attic-insulation-cost-")
     );
-    const evergreenResources = resourcePages.filter((resource) => !resource.market);
+    const approvedFourGuideOrder = [
+      "attic-insulation-removal-after-mice",
+      "bat-guano-attic-insulation-removal",
+      "wet-attic-insulation-remove-or-dry",
+      "replace-attic-insulation-when-replacing-roof"
+    ];
+    const fourGuideRecords = new Map(
+      resourcePages
+        .filter((resource) => approvedFourGuideOrder.includes(resource.slug))
+        .map((resource) => [resource.slug, resource])
+    );
+    const evergreenResources = [
+      ...resourcePages.filter(
+        (resource) => !resource.market && !fourGuideRecords.has(resource.slug)
+      ),
+      ...approvedFourGuideOrder.map((slug) => fourGuideRecords.get(slug)).filter(Boolean)
+    ];
     const featuredResourceSlugs = [
       "attic-insulation-cost-salt-lake-city-ut",
       "why-upstairs-rooms-stay-hot",
@@ -11521,15 +11830,18 @@ function renderCorePage(page, currentUrl) {
           <h2>Guides for the attic questions that usually shape scope before pricing even starts.</h2>
         </div>
         ${renderFeatureGrid(
-          evergreenResources.map((resource) => ({
-            url: resource.url,
-            title: resource.h1,
-            kicker: "Decision guide",
-            text: resource.meta_description,
-            image: resourceFeatureImage(resource),
-            alt: resource.h1,
-            cta: "Read guide"
-          })),
+          evergreenResources.map((resource) => {
+            const exactCard = resource.hub_card;
+            return {
+              url: resource.url,
+              title: exactCard?.title || resource.h1,
+              kicker: exactCard?.category || "Decision guide",
+              text: exactCard?.text || resource.meta_description,
+              image: resourceFeatureImage(resource),
+              alt: exactCard?.alt || exactCard?.title || resource.h1,
+              cta: exactCard?.cta || "Read guide"
+            };
+          }),
           currentUrl,
           true
         )}
@@ -11621,16 +11933,16 @@ function renderCorePage(page, currentUrl) {
         </div>
         ${renderAudiencePanels([
           {
-            title: "Markets first",
-            text: "The market hub is the main local authority page for each metro, which keeps internal linking cleaner and gives each area one central destination."
+            title: "Start with your nearest market",
+            text: "Each market page brings the local phone number, services, nearby cities, and quote path together in one place."
           },
           {
-            title: "City pages support the market page",
-            text: "Support-city pages should help with local relevance and homeowner orientation, then feed back upward into the correct market and market-service pages."
+            title: "Check nearby service areas",
+            text: "City pages help homeowners confirm local coverage and move directly to the relevant market service."
           },
           {
-            title: "No unsupported storefront signals",
-            text: "Good Attic can build strong local SEO by showing real service-area coverage, local phone paths, and home-based assessments without inventing branches or office-level markup where those things do not actually exist."
+            title: "Real service-area coverage",
+            text: "Good Attic lists the markets and nearby cities our teams actually serve, with direct local contact information for each area."
           }
         ])}
       </section>
@@ -11658,9 +11970,9 @@ function renderCorePage(page, currentUrl) {
       ${renderHero(currentUrl, page, {
         eyebrow: "Reviews & Proof",
         cardKicker: "Trust signal",
-        cardTitle: "Every approved Good Attic customer review belongs in one central library.",
+        cardTitle: "Read verified feedback from Good Attic customers.",
         cardText:
-          "Good Attic keeps approved customer feedback together here so market pages, service pages, and city pages can all point back to one clear review hub as the library grows.",
+          "Customer feedback from our active markets shows how homeowners describe the communication, care, and finished work they received.",
         cardPoints: page.trust_elements
       })}
 
@@ -11670,12 +11982,12 @@ function renderCorePage(page, currentUrl) {
           <h2>${escapeHtml(
             reviewLibraryHasEntries
               ? `All ${approvedReviewCount} approved Good Attic customer reviews in one place.`
-              : "The homeowner review themes this site is prepared to ingest once you approve real excerpts."
+              : "Verified Good Attic customer reviews."
           )}</h2>
           <p class="section-subcopy">${escapeHtml(
             reviewLibraryHasEntries
-              ? "These are real customer excerpts loaded from the shared proof data layer. Add more approved reviews to that data file and this hub will continue to grow automatically."
-              : "These are shells for real homeowner feedback, not fabricated quotes. Once approved excerpts exist, they can be dropped into the shared data layer and flow to the correct proof and market pages."
+              ? "These excerpts come from real Good Attic customer reviews and link back to the relevant local market or service page."
+              : "Customer reviews will appear here after they have been verified for publication."
           )}</p>
         </div>
         ${renderProofQueueGrid(buildReviewExcerptCards({}), currentUrl)}
@@ -11683,12 +11995,12 @@ function renderCorePage(page, currentUrl) {
 
       <section class="section review-proof-section">
         <div class="review-widget review-widget--page reveal" aria-label="Google review preview">
-          ${renderReviewWidgetHeader("Trusted by Good Attic customers")}
+          ${renderReviewWidgetHeader("Trusted by Good Attic customers", "Google Reviews", `${approvedReviewCount} verified reviews`)}
           <div class="review-widget__shell">
             <p>${
               reviewLibraryHasEntries
-                ? `This is the central Good Attic review hub. It currently includes ${approvedReviewCount} approved customer reviews and is designed so more reviews can be added through the shared proof data file.`
-                : "Approved review excerpts or a synced review feed can live here as review sources are connected."
+                ? `Browse ${approvedReviewCount} verified Good Attic customer reviews from the markets we serve.`
+                : "Verified Good Attic customer reviews will appear here."
             }</p>
           </div>
         </div>
@@ -11697,9 +12009,9 @@ function renderCorePage(page, currentUrl) {
       <section class="section">
         <div class="section-heading reveal">
           <p class="eyebrow">Proof library</p>
-          <h2>The kinds of visual proof this page is designed to hold as real approved assets are added.</h2>
+          <h2>What our attic documentation focuses on before and after a project.</h2>
           <p class="section-subcopy">${escapeHtml(
-            "Good Attic should be able to show what the attic looked like, what changed, and why homeowners felt better about the scope afterward."
+              "Clear photos help homeowners understand the starting condition, the work being recommended, and the finished attic."
           )}</p>
         </div>
         ${renderEvidenceGrid(
@@ -11707,26 +12019,26 @@ function renderCorePage(page, currentUrl) {
             {
               kicker: "Documented findings",
               title: "Dirty or compromised attic conditions",
-              text: "This proof slot is designed for real attic photos that show why a top-off was not enough and why cleanup, removal, or a reset belonged in the scope.",
+              text: "Starting-condition photos can show why a top-off is not enough and why cleanup, removal, or a reset belongs in the scope.",
               image: proofAssets.dirtyReset,
-              alt: "Dirty attic conditions proof slot",
-              caption: "Use real approved photos that explain why the scope changed."
+              alt: "Dirty attic conditions documented during an assessment",
+              caption: "Document the condition that changed the recommended scope."
             },
             {
               kicker: "Documented findings",
               title: "Insulation depth and finish quality",
-              text: "This slot is for before-and-after images that show coverage, finish quality, and what a cleaner attic floor looked like after the right install.",
+              text: "Before-and-after images can show coverage, finish quality, and what a cleaner attic floor looks like after the right install.",
               image: proofAssets.hotColdInsulation,
-              alt: "Attic insulation finish proof slot",
-              caption: "Show the difference between thin coverage and a cleaner finished install."
+              alt: "Attic insulation coverage and finish quality",
+              caption: "Compare thin coverage with a cleaner finished install."
             },
             {
               kicker: "Documented findings",
               title: "Air sealing, cleanup, and restoration details",
-              text: "The strongest proof often lives in the details homeowners never see until they are documented clearly during the project.",
+              text: "Important project details often live in areas homeowners cannot see until the attic is documented clearly.",
               image: proofAssets.airSealing,
-              alt: "Air sealing and attic detail proof slot",
-              caption: "Use real detail photos that make the hidden work easier to trust."
+              alt: "Air sealing and attic project details",
+              caption: "Detail photos make hidden attic work easier to understand."
             }
           ],
           currentUrl
@@ -11735,10 +12047,10 @@ function renderCorePage(page, currentUrl) {
 
       <section class="section">
         <div class="section-heading reveal">
-          <p class="eyebrow">Incoming project evidence</p>
-          <h2>The real attic documentation this proof system is designed to absorb next.</h2>
+          <p class="eyebrow">Documented projects</p>
+          <h2>Real before-and-after attic work from Good Attic projects.</h2>
         </div>
-        ${renderProofQueueGrid(buildDocumentedProofCards({}), currentUrl)}
+        ${renderProofQueueGrid(buildDocumentedProofCards({ includeCities: true, limit: 6 }), currentUrl)}
       </section>
 
       <section class="section">
@@ -11765,9 +12077,9 @@ function renderCorePage(page, currentUrl) {
       <section class="section">
         <div class="section-heading reveal">
           <p class="eyebrow">Where proof connects</p>
-          <h2>The pages that should receive the strongest approved review excerpts and project evidence first.</h2>
+          <h2>Browse customer feedback and local service information by market.</h2>
           <p class="section-subcopy">${escapeHtml(
-            "As real review excerpts and documented findings become available, these are the highest-value pages to support first."
+            "Choose a market to see its local services, phone number, nearby cities, and available customer feedback."
           )}</p>
         </div>
         ${renderFeatureGrid(
@@ -11992,8 +12304,9 @@ function renderCorePage(page, currentUrl) {
 
 function renderPage(page) {
   const currentUrl = page.url;
-  const stylesHref = `${assetHref(currentUrl, "styles.css")}?v=legal-20260713a`;
-  const scriptHref = `${assetHref(currentUrl, "script.js")}?v=legal-20260713a`;
+  const assets = pageAssets(pageFilePath(currentUrl));
+  const stylesHref = assetHref(currentUrl, assets.css);
+  const scriptHref = assetHref(currentUrl, assets.js);
   const mainOpenTag = page.page_type === "market" ? '<main id="top">' : '<main class="page-main">';
 
   let bodyContent = "";
@@ -12034,7 +12347,7 @@ ${googleAdsTrackingSnippet}
   ${renderHeader(currentUrl, page)}
   ${mainOpenTag}
     ${bodyContent}
-    ${renderRelatedLinksSection(page, currentUrl)}
+    ${page.suppress_related_links ? "" : renderRelatedLinksSection(page, currentUrl)}
   </main>
   ${renderFooter()}
   ${renderModal(currentUrl)}
@@ -12085,7 +12398,7 @@ async function main() {
   for (const page of pagesToGenerate) {
     const outPath = path.join(__dirname, pageFilePath(page.url));
     await mkdir(path.dirname(outPath), { recursive: true });
-    await writeFile(outPath, renderPage(page));
+    await writeFile(outPath, applyHubHotspotLayout(applyHubHotspotCopy(applyCityMarketCopy(renderPage(page), page.url), page.url), page.url));
   }
 
   await writeFile(path.join(__dirname, "seo-wave1-page-data.json"), JSON.stringify(pages, null, 2));

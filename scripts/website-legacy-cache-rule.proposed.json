@@ -1,0 +1,11 @@
+{
+  "description": "Website legacy CSS and JS: respect origin revalidation (NOT APPLIED)",
+  "expression": "(http.host in {\"goodattic.energy\" \"www.goodattic.energy\"} and http.request.uri.path in {\"/styles.css\" \"/script.js\"})",
+  "action": "set_cache_settings",
+  "action_parameters": {
+    "cache": true,
+    "edge_ttl": { "mode": "respect_origin" },
+    "browser_ttl": { "mode": "respect_origin" }
+  },
+  "enabled": true
+}

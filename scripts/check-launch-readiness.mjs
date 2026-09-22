@@ -131,11 +131,23 @@ async function main() {
 
   const htmlFiles = await findHtmlFiles(projectRoot);
   const htmlFilesWithPlaceholders = [];
+  const htmlFilesWithPublicScaffolding = [];
+  const publicScaffoldPattern = /Waiting on|Needed:|Open target page|proof shell|proof slot|designed to accept|should eventually support|Ready for approved excerpt/i;
   for (const htmlFile of htmlFiles) {
     const html = await readFile(htmlFile, "utf8");
     if (html.includes('content="undefined"') || html.includes(">undefined<")) {
       htmlFilesWithPlaceholders.push(path.relative(projectRoot, htmlFile));
     }
+    if (publicScaffoldPattern.test(html)) {
+      htmlFilesWithPublicScaffolding.push(path.relative(projectRoot, htmlFile));
+    }
+  }
+
+  if (htmlFilesWithPublicScaffolding.length === 0) {
+    ok("Generated HTML has no internal proof-queue scaffolding");
+  } else {
+    fail(`Generated HTML contains internal proof-queue scaffolding: ${htmlFilesWithPublicScaffolding.join(", ")}`);
+    failed = true;
   }
 
   if (htmlFilesWithPlaceholders.length === 0) {
