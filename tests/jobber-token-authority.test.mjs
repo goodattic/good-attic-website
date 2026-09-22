@@ -478,3 +478,65 @@ test("failed website intake is durably queued without exposing secrets in diagno
   assert.match(database.failure[7], /^2026-/);
   assert.match(database.failure[3], /submission-queue-1/);
 });
+
+function intakeLead() {
+  return leads.buildLead({
+    first_name: "Flow",
+    last_name: "Test",
+    phone: "8015550123",
+    email: "flow@example.com",
+    street_address: "1 Main St",
+    city: "Sandy",
+    state: "UT",
+    zip: "84070",
+    message: "Please call",
+  }, "submission-flow-1");
+}
+
+function flowFetch({ requestUnauthorizedOnce = false, clientUnauthorizedTwice = false } = {}) {
+  const calls = { client: 0, request: 0, token: 0 };
+  return {
+    calls,
+    fetch: async (url, options) => {
+      if (String(url).includes("/oauth/token")) {
+        calls.token += 1;
+        return Response.json({ access_token: `access-${calls.token}`, refresh_token: `refresh-${calls.token}`, expires_in: 3600 });
+      }
+      const body = JSON.parse(options.body);
+      if (body.query.includes("ClientCreate")) {
+        calls.client += 1;
+        if (clientUnauthorizedTwice) return new Response("unauthorized", { status: 401 });
+        return Response.json({ data: { clientCreate: { client: { id: "client-flow", firstName: "Flow", lastName: "Test", jobberWebUri: "https://secure.getjobber.com/clients/1", clientProperties: { nodes: [{ id: "property-flow", jobberWebUri: "https://secure.getjobber.com/properties/1" }] } }, userErrors: [] } } });
+      }
+      calls.request += 1;
+      if (requestUnauthorizedOnce && calls.request === 1) return new Response("unauthorized", { status: 401 });
+      return Response.json({ data: { requestCreate: { request: { id: "request-flow", jobberWebUri: "https://secure.getjobber.com/requests/1", property: { id: "property-flow", jobberWebUri: "https://secure.getjobber.com/properties/1" } }, userErrors: [] } } });
+    },
+  };
+}
+
+test("submitLeadToJobber refreshes after a Request 401 and reuses the created client", async () => {
+  const database = new TokenAuthorityD1({ row: authRow() });
+  const plan = flowFetch({ requestUnauthorizedOnce: true });
+  globalThis.fetch = plan.fetch;
+  const result = await leads.submitLeadToJobber(envFor(database), intakeLead());
+  assert.equal(result.client_id, "client-flow");
+  assert.equal(result.request_id, "request-flow");
+  assert.equal(plan.calls.client, 1);
+  assert.equal(plan.calls.request, 2);
+  assert.equal(database.row.last_error_code, null);
+});
+
+test("submitLeadToJobber marks authorization broken after two client 401s", async () => {
+  const database = new TokenAuthorityD1({ row: authRow() });
+  const plan = flowFetch({ clientUnauthorizedTwice: true });
+  globalThis.fetch = plan.fetch;
+  await assert.rejects(
+    leads.submitLeadToJobber(envFor(database), intakeLead()),
+    error => error?.status === 401,
+  );
+  assert.equal(plan.calls.client, 2);
+  assert.equal(plan.calls.request, 0);
+  assert.equal(database.row.refresh_status, "refresh_outcome_unknown");
+  assert.equal(database.row.last_error_code, "jobber_http_401_after_refresh");
+});
