@@ -1067,6 +1067,30 @@ async function recordWebsiteLeadIntakeFailure(env, lead, error) {
   return d1Changes(result) === 1;
 }
 
+async function notifyWebsiteLeadIntakeFailure(env, lead, error) {
+  const service = env.CONTACT_SYNC_SERVICE;
+  const secret = clean(env.CONTACT_SYNC_BROKER_SECRET, 500);
+  if (!service?.fetch || !secret) return false;
+  const response = await service.fetch(new Request("https://contact-sync/internal/website-lead-failure", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${secret}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      id: lead.submission_id,
+      market: lead.market_key,
+      occurred_at: new Date().toISOString(),
+      reason: error?.details?.code || "intake_failed",
+      contact_name: lead.full_name,
+      phone: lead.phone,
+      email: lead.email,
+      message: lead.message,
+    }),
+  }));
+  return response.status === 202;
+}
+
 async function safeJson(response) {
   try {
     return await response.json();
@@ -1485,6 +1509,15 @@ export async function onRequestPost(context) {
           code: queueError?.code || "lead_recovery_queue_failed",
         });
       }
+      try {
+        await notifyWebsiteLeadIntakeFailure(env, lead, error);
+      } catch (alertError) {
+        console.error("Website lead failure alert delivery failed", {
+          submissionId: lead.submission_id,
+          market: lead.market_key,
+          code: alertError?.code || "lead_failure_alert_failed",
+        });
+      }
       console.error("Jobber lead intake failed", {
         submissionId: lead.submission_id,
         market: lead.market_key,
@@ -1527,6 +1560,7 @@ export const _private = {
   fenceJobberAccessToken,
   markJobberAuthorizationBroken,
   recordWebsiteLeadIntakeFailure,
+  notifyWebsiteLeadIntakeFailure,
   jobberGraphql,
   createJobberClient,
   createJobberRequest,
