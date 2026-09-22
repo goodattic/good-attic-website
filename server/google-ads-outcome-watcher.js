@@ -61,6 +61,9 @@ export function outcomeId(input) {
   if (event === "sold_job") {
     return ["jobber-request", idPart(input?.jobber_request_id), "sold_job"].join(":");
   }
+  if (event === "qualified_lead") {
+    return ["jobber-request", idPart(input?.jobber_request_id), "qualified_lead"].join(":");
+  }
   return ["google-ads-outcome", event, idPart(input?.attribution_path),
     idPart(input?.quo_call_id), idPart(input?.jobber_request_id), idPart(input?.jobber_quote_id),
     idPart(input?.jobber_job_id), idPart(input?.jobber_invoice_id), idPart(input?.milestone_at)].join(":");
@@ -108,7 +111,11 @@ export function resolveLifecycleOutcomes(record = {}) {
   const milestone = iso(record.occurred_at || record.updated_at);
   if (!milestone) return outcomes;
   if (record.assessment?.startAt && record.assessment?.endAt) {
-    outcomes.push({ event_name: "appointment_set", market_key: marketKey, jobber_request_id: requestId, jobber_appointment_id: clean(record.assessment.id, 500), milestone_at: record.assessment.startAt });
+    // The conversion is the booking event, not the future visit start. Use
+    // explicit booking metadata when supplied, then the webhook/backfill
+    // observation time already present in the record.
+    const bookedAt = iso(record.assessment.bookedAt || record.assessment.createdAt || record.assessment.updatedAt || record.occurred_at || record.updated_at) || milestone;
+    outcomes.push({ event_name: "appointment_set", market_key: marketKey, jobber_request_id: requestId, jobber_appointment_id: clean(record.assessment.id, 500), milestone_at: bookedAt });
   }
   if (record.assessment?.status === "completed" || record.assessment?.completedAt) {
     outcomes.push({ event_name: "assessment_completed", market_key: marketKey, jobber_request_id: requestId, jobber_appointment_id: clean(record.assessment.id, 500), milestone_at: record.assessment.completedAt || milestone });
@@ -145,6 +152,7 @@ export function createGoogleUploader({ transport, enabled = false, callSoldJobAc
       if (!transport || typeof transport.upload !== "function") return { ok: false, status: "permanently_failed", diagnostic_code: "transport_unavailable" };
       const consentStatus = candidate?.consent_status === "unknown" && usLeadsConsentGranted ? "granted" : candidate?.consent_status;
       if (consentStatus !== "granted") return { ok: false, status: "held", diagnostic_code: "consent_unknown_or_denied" };
+      if (candidate?.upload_state !== "pending") return { ok: false, status: "held", diagnostic_code: "candidate_not_pending" };
       // Google performs the identifier match as part of the upload. A local
       // `pending` record with a valid click/call identifier is therefore
       // uploadable once the feature is explicitly enabled; requiring a prior
@@ -155,6 +163,8 @@ export function createGoogleUploader({ transport, enabled = false, callSoldJobAc
       if (!action) return { ok: false, status: "held", diagnostic_code: "action_source_mismatch" };
       const window = validateUploadWindow(candidate, { ...action, ...(candidate.google_action || {}) });
       if (!window.ok) return { ok: false, status: window.status, diagnostic_code: window.reason };
+      const conversionDateTime = formatGoogleConversionTime(candidate);
+      if (!conversionDateTime) return { ok: false, status: "held", diagnostic_code: "conversion_time_invalid" };
       if (!adjustmentSupport(candidate.google_action || {}, candidate.event_name)) return { ok: false, status: "held", diagnostic_code: "google_adjustment_not_supported" };
       if (["qualified_lead", "appointment_set", "sold_job"].includes(candidate.event_name) && !Number.isSafeInteger(candidate.value_micros)) return { ok: false, status: "held", diagnostic_code: "explicit_value_required" };
       const clickId = clean(candidate.gclid || candidate.gbraid || candidate.wbraid, 500);
@@ -163,10 +173,11 @@ export function createGoogleUploader({ transport, enabled = false, callSoldJobAc
       const callStart = formatGoogleCallStartTime(candidate);
       const hasCallMatch = Boolean(callerId && callStart);
       if (!hasWebsiteId && !hasCallMatch) return { ok: false, status: "held", diagnostic_code: "missing_google_identifier" };
+      if (hasCallMatch && Date.parse(candidate.conversion_at || candidate.milestone_at) < Date.parse(candidate.call_started_at_utc || candidate.call_started_at_original)) return { ok: false, status: "held", diagnostic_code: "conversion_before_call" };
       const request = {
         order_id: candidate.outcome_id,
         conversion_action: candidate.google_conversion_action || action.id,
-        conversion_date_time: candidate.conversion_at || candidate.milestone_at,
+        conversion_date_time: conversionDateTime,
         currency_code: "USD",
         value: action.value_policy === "force_zero" ? 0 : candidate.value_micros == null ? undefined : candidate.value_micros / 1e6,
         gclid: candidate.gclid ? clickId : undefined,
@@ -187,7 +198,7 @@ export function createGoogleUploader({ transport, enabled = false, callSoldJobAc
 
 export function classifyAttribution({ lead = {}, quoCall = {} } = {}) {
   const clickId = clean(lead.gclid || lead.gbraid || lead.wbraid, 500);
-  const path = clean(quoCall.quo_call_id ? "quo_call" : "website", 30);
+  const path = clean(clickId ? "website" : (quoCall.quo_call_id ? "quo_call" : "website"), 30);
   // A click ID is evidence that a lead came through a Google-tagged path, but
   // it is not a successful Google Ads match. Calls remain pending until Google
   // accepts the caller/time match; no source inference is performed.
@@ -216,7 +227,7 @@ export function normalizeE164(value) {
 const MARKET_TIME_ZONES = Object.freeze({ ut: "America/Denver", mo_stl: "America/Chicago" });
 
 export function formatGoogleCallStartTime(candidate = {}) {
-  const value = candidate.call_started_at_original || candidate.call_started_at_utc;
+  const value = candidate.call_started_at_utc || candidate.call_started_at_original;
   const instant = Date.parse(value || "");
   if (!Number.isFinite(instant)) return null;
   const timeZone = candidate.call_timezone || MARKET_TIME_ZONES[candidate.market_key] || "UTC";
@@ -231,6 +242,12 @@ export function formatGoogleCallStartTime(candidate = {}) {
   const sign = offset >= 0 ? "+" : "-";
   const absolute = Math.abs(offset);
   return `${local}${sign}${String(Math.floor(absolute / 60)).padStart(2, "0")}:${String(absolute % 60).padStart(2, "0")}`;
+}
+
+export function formatGoogleConversionTime(candidate = {}) {
+  const value = candidate.conversion_at || candidate.milestone_at;
+  if (!value) return null;
+  return formatGoogleCallStartTime({ ...candidate, call_started_at_utc: value, call_started_at_original: null });
 }
 
 export function validateUploadWindow(candidate = {}, action = {}) {
@@ -286,6 +303,7 @@ export function buildOutcomeCandidate(input = {}) {
   const qualified = event === "qualified_lead" ? qualifiedLeadEligibility(input) : { eligible: true, status: "pending" };
   const quoCall = input.quoCall || {};
   const lead = input.lead || {};
+  const valueMicros = Number.isSafeInteger(input.value_micros) ? input.value_micros : ["qualified_lead", "appointment_set"].includes(event) ? 0 : null;
   const candidate = {
     outcome_id: outcomeId({ ...input, attribution_path: attribution.attribution_path, milestone_at: milestone }),
     event_name: event,
@@ -313,10 +331,10 @@ export function buildOutcomeCandidate(input = {}) {
     google_conversion_action: clean(input.google_conversion_action, 500) || null,
     milestone_at: milestone,
     conversion_at: iso(input.conversion_at) || null,
-    value_micros: Number.isSafeInteger(input.value_micros) ? input.value_micros : ["qualified_lead", "appointment_set"].includes(event) ? 0 : null,
+    value_micros: valueMicros,
     invoice_total_micros: Number.isSafeInteger(input.invoice_total_micros) ? input.invoice_total_micros : null,
     collected_payment_micros: Number.isSafeInteger(input.collected_payment_micros) ? input.collected_payment_micros : null,
-    currency_code: input.value_micros == null ? null : "USD",
+    currency_code: valueMicros == null ? null : "USD",
     revenue_source: clean(input.revenue_source, 120) || null,
     revenue_version: clean(input.revenue_version, 80) || null,
     prior_reported_value_micros: Number.isSafeInteger(input.prior_reported_value_micros) ? input.prior_reported_value_micros : null,
