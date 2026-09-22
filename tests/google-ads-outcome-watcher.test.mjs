@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { actionForCandidate, adjustmentSupport, buildOutcomeCandidate, buildBackfillPlan, classifyAttribution, createGoogleAdsApiTransport, createGoogleUploader, formatGoogleCallStartTime, GOOGLE_ACTION_MAP, normalizeE164, normalizeJobberWebhook, outcomeId, persistOutcomeCandidate, qualifiedLeadEligibility, resolveLifecycleOutcomes, revenueEvidence, validateUploadWindow } from "../server/google-ads-outcome-watcher.js";
+import { actionForCandidate, adjustmentSupport, buildOutcomeCandidate, buildBackfillPlan, classifyAttribution, createGoogleAdsApiTransport, createGoogleUploader, formatGoogleCallStartTime, GOOGLE_ACTION_MAP, GOOGLE_ADS_API_VERSION, normalizeE164, normalizeJobberWebhook, outcomeId, persistOutcomeCandidate, qualifiedLeadEligibility, resolveLifecycleOutcomes, revenueEvidence, validateUploadWindow } from "../server/google-ads-outcome-watcher.js";
 import { collectJobberLifecycle, collectJobberRequestLifecycle, loadRequestAttribution, runReadOnlyBackfill } from "../server/google-ads-outcome-collection.js";
 
 class MemoryD1 {
@@ -186,7 +186,31 @@ test("builds disabled-by-default Google Ads API click and call transports", asyn
   assert.equal(JSON.parse(requests[1].options.body).partialFailure, true);
   assert.match(requests[2].url, /uploadCallConversions$/);
   assert.equal(JSON.parse(requests[2].options.body).conversions[0].callerId, "+15551234567");
+  assert.match(requests[1].url, new RegExp(`/${GOOGLE_ADS_API_VERSION}/`));
   assert.throws(() => createGoogleAdsApiTransport({ developerToken: "dev" }), /configuration_missing/);
+});
+
+test("sends optional manager header and surfaces partial conversion rejection", async () => {
+  const requests = [];
+  const fetchImpl = async (url, options) => {
+    requests.push({ url, options });
+    if (url.includes("oauth2.googleapis.com")) return { ok: true, json: async () => ({ access_token: "token", expires_in: 3600 }) };
+    return { ok: true, json: async () => ({ partialFailureError: { message: "CLICK_NOT_FOUND", details: [{ errors: [{ errorCode: { conversionUploadError: "CLICK_NOT_FOUND" } }] }] } }) };
+  };
+  const transport = createGoogleAdsApiTransport({ developerToken: "dev", clientId: "client", clientSecret: "secret", refreshToken: "refresh", loginCustomerId: "123-456-7890", fetchImpl });
+  const result = await transport.upload({ conversion_action: "7741195421", conversion_date_time: "2026-09-21 12:00:00-06:00", value: 0, order_id: "o1", gclid: "missing" });
+  assert.equal(result.category, "rejected");
+  assert.equal(requests[1].options.headers["login-customer-id"], "1234567890");
+});
+
+test("duplicate order partial failure is idempotent success", async () => {
+  const fetchImpl = async (url) => url.includes("oauth2.googleapis.com")
+    ? { ok: true, json: async () => ({ access_token: "token", expires_in: 3600 }) }
+    : { ok: true, json: async () => ({ partialFailureError: { message: "DUPLICATE_ORDER_ID" } }) };
+  const transport = createGoogleAdsApiTransport({ developerToken: "dev", clientId: "client", clientSecret: "secret", refreshToken: "refresh", fetchImpl });
+  const result = await transport.upload({ conversion_action: "7741195421", conversion_date_time: "2026-09-21 12:00:00-06:00", value: 0, order_id: "same", gclid: "g" });
+  assert.equal(result.category, "accepted_duplicate");
+  assert.equal(result.accepted, true);
 });
 
 test("uses invoice total as final revenue, then job invoiced total, without summing", () => {

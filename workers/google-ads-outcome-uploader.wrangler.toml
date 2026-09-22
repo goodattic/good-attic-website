@@ -1,0 +1,15 @@
+name = "good-attic-google-ads-outcome-uploader"
+main = "google-ads-outcome-uploader.js"
+compatibility_date = "2026-07-27"
+workers_dev = false
+
+[triggers]
+crons = ["0 * * * *"]
+
+[vars]
+GOOGLE_ADS_UPLOAD_ENABLED = "false"
+
+[[d1_databases]]
+binding = "ANGI_ROUTER_DB"
+database_name = "good-attic-angi-jobber-router"
+database_id = "934d7ad9-cba8-4cb4-9494-1e9980b7c403"

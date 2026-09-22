@@ -17,6 +17,10 @@ export const GOOGLE_ACTION_MAP = Object.freeze({
 });
 
 export const GOOGLE_ADS_CUSTOMER_ID = "4800890529";
+// Keep the API version in one place so the annual Google Ads version bump is
+// deliberate and reviewable. The transport remains disabled unless enabled
+// explicitly by the caller.
+export const GOOGLE_ADS_API_VERSION = "v24";
 
 // Jobber webhook payloads contain only an object id. The existing production
 // bridge already proves REQUEST_CREATE/UPDATE and QUOTE_CREATE. The remaining
@@ -150,7 +154,7 @@ export function sanitizeDiagnostic(error) {
   return clean(String(error?.code || error?.message || error || "unknown_error").toLowerCase().replace(/[^a-z0-9_.-]+/g, "_"), 120) || "unknown_error";
 }
 
-export function createGoogleAdsApiTransport({ developerToken, clientId, clientSecret, refreshToken, customerId = GOOGLE_ADS_CUSTOMER_ID, apiVersion = "v18", fetchImpl = globalThis.fetch } = {}) {
+export function createGoogleAdsApiTransport({ developerToken, clientId, clientSecret, refreshToken, customerId = GOOGLE_ADS_CUSTOMER_ID, loginCustomerId = "", apiVersion = GOOGLE_ADS_API_VERSION, fetchImpl = globalThis.fetch } = {}) {
   const required = { developerToken, clientId, clientSecret, refreshToken, customerId };
   if (Object.values(required).some((value) => !String(value || "").trim())) throw new Error("google_ads_transport_configuration_missing");
   if (typeof fetchImpl !== "function") throw new Error("google_ads_fetch_unavailable");
@@ -190,14 +194,21 @@ export function createGoogleAdsApiTransport({ developerToken, clientId, clientSe
         if (request.gbraid) conversion.gbraid = request.gbraid;
         if (request.wbraid) conversion.wbraid = request.wbraid;
       }
+      const headers = { authorization: `Bearer ${await getAccessToken()}`, "developer-token": developerToken, "content-type": "application/json" };
+      if (String(loginCustomerId).trim()) headers["login-customer-id"] = String(loginCustomerId).replace(/\D/g, "");
       const response = await fetchImpl(`https://googleads.googleapis.com/${apiVersion}/customers/${normalizedCustomerId}:${method}`, {
         method: "POST",
-        headers: { authorization: `Bearer ${await getAccessToken()}`, "developer-token": developerToken, "content-type": "application/json" },
+        headers,
         body: JSON.stringify({ partialFailure: true, conversions: [conversion], validateOnly: false }),
       });
       if (!response.ok) throw Object.assign(new Error(`google_ads_${method.toLowerCase()}_failed`), { retryable: response.status >= 500 || response.status === 429 });
       const body = await response.json();
-      return { category: body?.partialFailureError ? "accepted_with_errors" : "accepted", partial_failure: body?.partialFailureError || null };
+      if (body?.partialFailureError) {
+        const diagnostic = sanitizeDiagnostic(body.partialFailureError);
+        const duplicate = /duplicate|already.*(exist|accepted)|order.?id/i.test(JSON.stringify(body.partialFailureError));
+        return { category: duplicate ? "accepted_duplicate" : "rejected", accepted: duplicate, partial_failure: body.partialFailureError, diagnostic_code: duplicate ? "duplicate_order_id_already_accepted" : diagnostic };
+      }
+      return { category: "accepted", accepted: true, partial_failure: null };
     },
   };
 }
@@ -245,6 +256,10 @@ export function createGoogleUploader({ transport, enabled = false, callSoldJobAc
       };
       try {
         const response = await transport.upload(request);
+        if (response?.category === "rejected") return { ok: false, status: "permanently_failed", diagnostic_code: sanitizeDiagnostic(response.diagnostic_code || response.partial_failure || "google_conversion_rejected"), response_category: "rejected" };
+        // Google may report a duplicate order ID as a partial failure even
+        // though the original conversion was accepted. Treat that as an
+        // idempotent success so the outbox does not retry forever.
         return { ok: true, status: "submitted", submitted_at: now(), response_category: clean(response?.category, 80) || "accepted" };
       } catch (error) {
         return { ok: false, status: error?.retryable === true ? "retryable" : "permanently_failed", diagnostic_code: sanitizeDiagnostic(error) };
