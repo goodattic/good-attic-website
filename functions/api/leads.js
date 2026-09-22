@@ -982,6 +982,40 @@ async function refreshJobberAccessToken(env, route) {
   );
 }
 
+async function fenceJobberAccessToken(env, route, code = "jobber_http_401") {
+  const database = env.ANGI_ROUTER_DB;
+  const accountKey = getJobberBrokerAccountKey(route);
+  if (!database?.prepare || !accountKey) return false;
+  const result = await database.prepare(`
+    /* jobber_token_authority:fence_unauthorized_access */
+    UPDATE angi_router_jobber_auth
+    SET access_expires_at = 0,
+        refresh_status = 'ready',
+        last_error_code = ?,
+        updated_at = ?
+    WHERE account_key = ?
+  `).bind(clean(code, 120), new Date().toISOString(), accountKey).run();
+  return d1Changes(result) === 1;
+}
+
+async function markJobberAuthorizationBroken(env, route, code = "jobber_http_401") {
+  const database = env.ANGI_ROUTER_DB;
+  const accountKey = getJobberBrokerAccountKey(route);
+  if (!database?.prepare || !accountKey) return false;
+  const result = await database.prepare(`
+    /* jobber_token_authority:mark_unauthorized_broken */
+    UPDATE angi_router_jobber_auth
+    SET access_expires_at = 0,
+        refresh_status = 'refresh_outcome_unknown',
+        refresh_lease_token = NULL,
+        refresh_lease_expires_at = NULL,
+        last_error_code = ?,
+        updated_at = ?
+    WHERE account_key = ?
+  `).bind(clean(code, 120), new Date().toISOString(), accountKey).run();
+  return d1Changes(result) === 1;
+}
+
 async function safeJson(response) {
   try {
     return await response.json();
@@ -1213,43 +1247,49 @@ function resolveLeadJobberRoute(env, lead) {
 
 async function submitLeadToJobber(env, lead) {
   const route = resolveLeadJobberRoute(env, lead);
-  const token = await refreshJobberAccessToken(env, route);
-  const created = await createJobberClient(env, token.accessToken, lead);
-  const client = created.result?.data?.clientCreate?.client || {};
-  const property = client.clientProperties?.nodes?.[0] || null;
+  let token = await refreshJobberAccessToken(env, route);
+  let clientCreated = false;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const created = await createJobberClient(env, token.accessToken, lead);
+      const client = created.result?.data?.clientCreate?.client || {};
+      const property = client.clientProperties?.nodes?.[0] || null;
 
-  if (!client.id) {
-    throw new LeadSubmissionError("Jobber did not return the created client.", 502, {
-      account: route.accountLabel,
-    });
+      if (!client.id) {
+        throw new LeadSubmissionError("Jobber did not return the created client.", 502, { account: route.accountLabel });
+      }
+      clientCreated = true;
+
+      const request = await createJobberRequest(env, token.accessToken, lead, client.id, property?.id || null);
+      return {
+        account: route.accountLabel,
+        account_id: route.expectedAccountId,
+        market_key: lead.market_key,
+        client_id: client.id || null,
+        client_url: client.jobberWebUri || null,
+        property_id: request.property?.id || property?.id || null,
+        property_url: request.property?.jobberWebUri || property?.jobberWebUri || null,
+        request_id: request.id,
+        request_url: request.jobberWebUri || null,
+        attributed_source: lead.source_label,
+        jobber_source_app: route.sourceKey || "website",
+        source_app_fallback: route.attributionFallback,
+        phone_included: created.phoneIncluded,
+        refresh_token_rotated: token.tokenRotated,
+        refresh_token_persisted: token.tokenPersisted,
+        custom_fields: { ok: false, skipped: true, reason: "wait_for_first_quote" },
+      };
+    } catch (error) {
+      const unauthorized = error instanceof LeadSubmissionError && Number(error.status) === 401;
+      if (!unauthorized || attempt === 1 || clientCreated) {
+        if (unauthorized) await markJobberAuthorizationBroken(env, route, "jobber_http_401_after_refresh");
+        throw error;
+      }
+      await fenceJobberAccessToken(env, route, "jobber_http_401");
+      token = await refreshJobberAccessToken(env, route);
+    }
   }
-
-  const request = await createJobberRequest(
-    env,
-    token.accessToken,
-    lead,
-    client.id,
-    property?.id || null,
-  );
-
-  return {
-    account: route.accountLabel,
-    account_id: route.expectedAccountId,
-    market_key: lead.market_key,
-    client_id: client.id || null,
-    client_url: client.jobberWebUri || null,
-    property_id: request.property?.id || property?.id || null,
-    property_url: request.property?.jobberWebUri || property?.jobberWebUri || null,
-    request_id: request.id,
-    request_url: request.jobberWebUri || null,
-    attributed_source: lead.source_label,
-    jobber_source_app: route.sourceKey || "website",
-    source_app_fallback: route.attributionFallback,
-    phone_included: created.phoneIncluded,
-    refresh_token_rotated: token.tokenRotated,
-    refresh_token_persisted: token.tokenPersisted,
-    custom_fields: { ok: false, skipped: true, reason: "wait_for_first_quote" },
-  };
+  throw new LeadSubmissionError("Jobber lead routing failed after authorization recovery.", 503, { account: route.accountLabel });
 }
 
 function wait(milliseconds) {
@@ -1385,6 +1425,14 @@ export async function onRequestPost(context) {
     });
   } catch (error) {
     if (error instanceof LeadSubmissionError) {
+      console.error("Jobber lead intake failed", {
+        submissionId: lead.submission_id,
+        market: lead.market_key,
+        status: error.status,
+        code: error.details?.code || "jobber_lead_intake_failed",
+      });
+    }
+    if (error instanceof LeadSubmissionError) {
       return jsonResponse({
         ok: false,
         message: error.message,
@@ -1416,6 +1464,8 @@ export const _private = {
   buildRequestInstructions,
   buildGhlLead,
   refreshJobberAccessToken,
+  fenceJobberAccessToken,
+  markJobberAuthorizationBroken,
   jobberGraphql,
   createJobberClient,
   createJobberRequest,
