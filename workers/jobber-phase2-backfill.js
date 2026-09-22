@@ -6,6 +6,7 @@ import { runReadOnlyBackfillWithReader } from "../server/google-ads-outcome-coll
 // Shadow-only scheduled backfill. The collector writes only the local outcome
 // outbox; it never calls Jobber mutations or Google.
 export async function runPhase2ShadowBackfill({ env, database = env.ANGI_ROUTER_DB, since = "2026-08-24T00:00:00Z" } = {}) {
+  if (String(env.PHASE2_SHADOW_ENABLED || "false").toLowerCase() !== "true") return { ok: true, mode: "disabled", processed: 0 };
   const reader = createJobberPhase2Reader({ tokenForMarket: async market => (await leadHelpers.refreshJobberAccessToken(env, getJobberOAuthRoute(market, "website"))).accessToken });
   const results = {};
   for (const market_key of ["ut", "mo_stl"]) results[market_key] = await runReadOnlyBackfillWithReader({ database, market_key, since, reader });
