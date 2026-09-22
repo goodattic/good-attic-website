@@ -34,11 +34,11 @@ test("holds a qualified website outcome until Google attribution and consent are
   assert.equal(result.candidate.consent_status, "unknown");
 });
 
-test("keeps distinct Quo calls separate while producing deterministic IDs", () => {
+test("keeps appointment outcome stable across Quo calls and edits", () => {
   const first = outcomeId({ event_name: "appointment_set", attribution_path: "quo_call", quo_call_id: "c1", jobber_request_id: "r1", milestone_at: "2026-09-21T18:00:00Z" });
   const second = outcomeId({ event_name: "appointment_set", attribution_path: "quo_call", quo_call_id: "c2", jobber_request_id: "r1", milestone_at: "2026-09-21T18:00:00Z" });
-  assert.notEqual(first, second);
-  assert.equal(first, outcomeId({ event_name: "appointment_set", attribution_path: "quo_call", quo_call_id: "c1", jobber_request_id: "r1", milestone_at: "2026-09-21T18:00:00Z" }));
+  assert.equal(first, second);
+  assert.equal(first, outcomeId({ event_name: "appointment_set", attribution_path: "website", quo_call_id: "c1", jobber_request_id: "r1", milestone_at: "2026-09-23T18:00:00Z" }));
 });
 
 test("uses one stable qualified-call outcome per Jobber request", () => {
@@ -82,10 +82,10 @@ test("normalizes only Utah and St. Louis Jobber webhook IDs", () => {
 });
 
 test("resolves scheduled, completed, accepted quote, and cancellation outcomes without summing quotes", () => {
-  const outcomes = resolveLifecycleOutcomes({ market_key: "mo_stl", jobber_request_id: "r1", occurred_at: "2026-09-21T18:00:00Z", assessment: { id: "a1", startAt: "2026-09-22T18:00:00Z", endAt: "2026-09-22T19:00:00Z", status: "completed", completedAt: "2026-09-22T19:00:00Z" }, quotes: [{ id: "q1", quoteStatus: "converted", amounts: { total: 2500 }, updatedAt: "2026-09-23T00:00:00Z" }, { id: "q2", quoteStatus: "draft", amounts: { total: 10000 } }], jobs: [{ id: "j1", jobStatus: "cancelled", updatedAt: "2026-09-24T00:00:00Z" }] });
+  const outcomes = resolveLifecycleOutcomes({ market_key: "mo_stl", jobber_request_id: "r1", occurred_at: "2026-09-21T18:00:00Z", assessment: { id: "a1", createdAt: "2026-09-21T18:05:00Z", startAt: "2026-09-22T18:00:00Z", endAt: "2026-09-22T19:00:00Z", status: "completed", completedAt: "2026-09-22T19:00:00Z" }, quotes: [{ id: "q1", quoteStatus: "converted", amounts: { total: 2500 }, updatedAt: "2026-09-23T00:00:00Z" }, { id: "q2", quoteStatus: "draft", amounts: { total: 10000 } }], jobs: [{ id: "j1", jobStatus: "cancelled", updatedAt: "2026-09-24T00:00:00Z" }] });
   assert.deepEqual(outcomes.map((item) => item.event_name), ["appointment_set", "assessment_completed", "sold_job", "cancellation"]);
   assert.equal(outcomes.find((item) => item.event_name === "sold_job").value_micros, 2500000000);
-  assert.equal(outcomes.find((item) => item.event_name === "appointment_set").milestone_at, "2026-09-21T18:00:00Z");
+  assert.equal(outcomes.find((item) => item.event_name === "appointment_set").milestone_at, "2026-09-21T18:05:00Z");
 });
 
 test("collects webhook and backfill records through read-only readers", async () => {
@@ -117,6 +117,7 @@ test("joins website and Quo attribution ledgers before writing a dry-run outcome
   assert.equal(result.attribution_source.quo, true);
   assert.equal(result.writes.length, 1);
   assert.equal(db.calls.length, 1);
+  assert.equal(db.calls[0].args[1], "appointment_set");
 });
 
 test("uploader is disabled, holds consent, and bounds diagnostics with a fake transport", async () => {

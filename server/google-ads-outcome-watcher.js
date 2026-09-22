@@ -28,7 +28,7 @@ export const SUPPORTED_JOBBER_TOPICS = new Set([
 ]);
 
 export const JOBBER_READ_QUERIES = Object.freeze({
-  request: `query Phase2Request($id: EncodedId!) { request(id: $id) { id updatedAt client { id } assessment { id startAt endAt } quotes(first: 50) { nodes { id quoteStatus amounts { total } updatedAt } } jobs(first: 50) { nodes { id jobStatus total invoicedTotal updatedAt quote { id } } } } }`,
+  request: `query Phase2Request($id: EncodedId!) { request(id: $id) { id updatedAt client { id } assessment { id createdAt startAt endAt } quotes(first: 50) { nodes { id quoteStatus amounts { total } updatedAt } } jobs(first: 50) { nodes { id jobStatus total invoicedTotal updatedAt quote { id } } } } }`,
   quote: `query Phase2Quote($id: EncodedId!) { quote(id: $id) { id quoteStatus createdAt updatedAt amounts { total } request { id } client { id } jobs(first: 50) { nodes { id } } } }`,
   job: `query Phase2Job($id: EncodedId!) { job(id: $id) { id jobStatus startAt endAt total invoicedTotal updatedAt request { id } quote { id } client { id } invoices(first: 50) { nodes { id invoiceStatus amounts { total } updatedAt } } } }`,
   invoice: `query Phase2Invoice($id: EncodedId!) { invoice(id: $id) { id invoiceStatus issuedDate updatedAt amounts { total } jobs(first: 50) { nodes { id request { id } } } } }`,
@@ -63,6 +63,9 @@ export function outcomeId(input) {
   }
   if (event === "qualified_lead") {
     return ["jobber-request", idPart(input?.jobber_request_id), "qualified_lead"].join(":");
+  }
+  if (event === "appointment_set") {
+    return ["jobber-request", idPart(input?.jobber_request_id), "appointment_set"].join(":");
   }
   return ["google-ads-outcome", event, idPart(input?.attribution_path),
     idPart(input?.quo_call_id), idPart(input?.jobber_request_id), idPart(input?.jobber_quote_id),

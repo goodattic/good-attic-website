@@ -53,7 +53,7 @@ export async function collectJobberRequestLifecycle({ database, market_key, acco
   const writes = [];
   const calls = object.quoCall ? [object.quoCall] : (attribution.quoCalls.length ? attribution.quoCalls : [{}]);
   for (const outcome of outcomes) for (const quoCall of callsForOutcome(outcome, calls)) {
-    const event_name = quoCall.quo_call_id && outcome.event_name === "appointment_set" ? "qualified_lead" : outcome.event_name;
+    const event_name = quoCall.quo_call_id && !attribution.lead?.gclid && !attribution.lead?.gbraid && !attribution.lead?.wbraid && outcome.event_name === "appointment_set" ? "qualified_lead" : outcome.event_name;
     const candidate = buildOutcomeCandidate({ ...outcome, event_name, jobber_account_id: account_id, lead: object.lead || attribution.lead || {}, quoCall });
     if (candidate.ok) writes.push(await persistOutcomeCandidate(database, candidate.candidate));
   }
@@ -79,7 +79,7 @@ export async function collectJobberLifecycle({ database, payload, readObject }) 
   const writes = [];
   const calls = object.quoCall ? [object.quoCall] : (attribution.quoCalls.length ? attribution.quoCalls : [{}]);
   for (const outcome of outcomes) for (const quoCall of callsForOutcome(outcome, calls)) {
-    const event_name = quoCall.quo_call_id && outcome.event_name === "appointment_set" ? "qualified_lead" : outcome.event_name;
+    const event_name = quoCall.quo_call_id && !attribution.lead?.gclid && !attribution.lead?.gbraid && !attribution.lead?.wbraid && outcome.event_name === "appointment_set" ? "qualified_lead" : outcome.event_name;
     const candidate = buildOutcomeCandidate({ ...outcome, event_name, jobber_account_id: event.account_id, lead: object.lead || attribution.lead || {}, quoCall });
     if (candidate.ok) writes.push(await persistOutcomeCandidate(database, candidate.candidate));
   }
@@ -100,7 +100,7 @@ export async function runReadOnlyBackfill({ database, market_key, since, listObj
         const attribution = await loadRequestAttribution({ database, market_key, jobber_request_id: object?.jobber_request_id || id });
         const calls = object?.quoCall ? [object.quoCall] : (attribution.quoCalls.length ? attribution.quoCalls : [{}]);
         for (const quoCall of callsForOutcome(outcome, calls)) {
-          const event_name = quoCall.quo_call_id && outcome.event_name === "appointment_set" ? "qualified_lead" : outcome.event_name;
+          const event_name = quoCall.quo_call_id && !attribution.lead?.gclid && !attribution.lead?.gbraid && !attribution.lead?.wbraid && outcome.event_name === "appointment_set" ? "qualified_lead" : outcome.event_name;
           const candidate = buildOutcomeCandidate({ ...outcome, event_name, lead: object?.lead || attribution.lead || {}, quoCall });
           if (candidate.ok) records.push(await persistOutcomeCandidate(database, candidate.candidate));
         }
