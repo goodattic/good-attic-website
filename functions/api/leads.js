@@ -1323,40 +1323,22 @@ function resolveLeadJobberRoute(env, lead) {
 async function submitLeadToJobber(env, lead) {
   const route = resolveLeadJobberRoute(env, lead);
   let token = await refreshJobberAccessToken(env, route);
-  let clientCreated = false;
+  let created;
+  let client;
+  let property;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const created = await createJobberClient(env, token.accessToken, lead);
-      const client = created.result?.data?.clientCreate?.client || {};
-      const property = client.clientProperties?.nodes?.[0] || null;
+      created = await createJobberClient(env, token.accessToken, lead);
+      client = created.result?.data?.clientCreate?.client || {};
+      property = client.clientProperties?.nodes?.[0] || null;
 
       if (!client.id) {
         throw new LeadSubmissionError("Jobber did not return the created client.", 502, { account: route.accountLabel });
       }
-      clientCreated = true;
-
-      const request = await createJobberRequest(env, token.accessToken, lead, client.id, property?.id || null);
-      return {
-        account: route.accountLabel,
-        account_id: route.expectedAccountId,
-        market_key: lead.market_key,
-        client_id: client.id || null,
-        client_url: client.jobberWebUri || null,
-        property_id: request.property?.id || property?.id || null,
-        property_url: request.property?.jobberWebUri || property?.jobberWebUri || null,
-        request_id: request.id,
-        request_url: request.jobberWebUri || null,
-        attributed_source: lead.source_label,
-        jobber_source_app: route.sourceKey || "website",
-        source_app_fallback: route.attributionFallback,
-        phone_included: created.phoneIncluded,
-        refresh_token_rotated: token.tokenRotated,
-        refresh_token_persisted: token.tokenPersisted,
-        custom_fields: { ok: false, skipped: true, reason: "wait_for_first_quote" },
-      };
+      break;
     } catch (error) {
       const unauthorized = error instanceof LeadSubmissionError && Number(error.status) === 401;
-      if (!unauthorized || attempt === 1 || clientCreated) {
+      if (!unauthorized || attempt === 1) {
         if (unauthorized) await markJobberAuthorizationBroken(env, route, "jobber_http_401_after_refresh");
         throw error;
       }
@@ -1364,7 +1346,41 @@ async function submitLeadToJobber(env, lead) {
       token = await refreshJobberAccessToken(env, route);
     }
   }
-  throw new LeadSubmissionError("Jobber lead routing failed after authorization recovery.", 503, { account: route.accountLabel });
+
+  let request;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      request = await createJobberRequest(env, token.accessToken, lead, client.id, property?.id || null);
+      break;
+    } catch (error) {
+      const unauthorized = error instanceof LeadSubmissionError && Number(error.status) === 401;
+      if (!unauthorized || attempt === 1) {
+        if (unauthorized) await markJobberAuthorizationBroken(env, route, "jobber_http_401_after_refresh");
+        throw error;
+      }
+      await fenceJobberAccessToken(env, route, "jobber_http_401");
+      token = await refreshJobberAccessToken(env, route);
+    }
+  }
+
+  return {
+    account: route.accountLabel,
+    account_id: route.expectedAccountId,
+    market_key: lead.market_key,
+    client_id: client.id,
+    client_url: client.jobberWebUri || null,
+    property_id: request.property?.id || property?.id || null,
+    property_url: request.property?.jobberWebUri || property?.jobberWebUri || null,
+    request_id: request.id,
+    request_url: request.jobberWebUri || null,
+    attributed_source: lead.source_label,
+    jobber_source_app: route.sourceKey || "website",
+    source_app_fallback: route.attributionFallback,
+    phone_included: created.phoneIncluded,
+    refresh_token_rotated: token.tokenRotated,
+    refresh_token_persisted: token.tokenPersisted,
+    custom_fields: { ok: false, skipped: true, reason: "wait_for_first_quote" },
+  };
 }
 
 function wait(milliseconds) {
