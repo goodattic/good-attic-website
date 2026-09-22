@@ -27,6 +27,12 @@ test("keeps distinct Quo calls separate while producing deterministic IDs", () =
   assert.equal(first, outcomeId({ event_name: "appointment_set", attribution_path: "quo_call", quo_call_id: "c1", jobber_request_id: "r1", milestone_at: "2026-09-21T18:00:00Z" }));
 });
 
+test("keeps quote approval and job close under one sold-job outcome", () => {
+  const quote = outcomeId({ event_name: "sold_job", attribution_path: "website", jobber_request_id: "r1", jobber_quote_id: "q1", milestone_at: "2026-09-21T18:00:00Z" });
+  const close = outcomeId({ event_name: "sold_job", attribution_path: "website", jobber_request_id: "r1", jobber_job_id: "j1", milestone_at: "2026-09-22T18:00:00Z" });
+  assert.equal(quote, close);
+});
+
 test("excludes Kansas City and does not infer Google attribution from Jobber alone", () => {
   assert.equal(buildOutcomeCandidate({ event_name: "sold_job", market_key: "mo_kc", milestone_at: "2026-09-21T18:00:00Z" }).reason, "market_not_enabled");
   assert.deepEqual(classifyAttribution({ lead: { source_label: "Google Ads" } }), { attribution_path: "website", attribution_status: "pending", evidence: "unverified_pending_match" });
@@ -83,6 +89,7 @@ test("uploader is disabled, holds consent, and bounds diagnostics with a fake tr
 
 test("holds expired windows and unsupported Google adjustments", () => {
   assert.equal(validateUploadWindow({ milestone_at: "2026-01-01T00:00:00Z" }, { upload_window_days: 90, now: "2026-09-21T00:00:00Z" }).reason, "conversion_window_expired");
+  assert.equal(validateUploadWindow({ milestone_at: "2026-09-20T00:00:00Z" }, { window_days: 90, now: "2026-09-21T00:00:00Z" }).ok, true);
   assert.equal(adjustmentSupport({ google_supports_retraction: false }, "cancellation"), false);
 });
 
@@ -90,6 +97,14 @@ test("requires exactly one website click identifier", async () => {
   const uploader = createGoogleUploader({ enabled: true, transport: { upload: async () => ({}) } });
   const result = await uploader.upload({ event_name: "appointment_set", attribution_path: "website", consent_status: "granted", attribution_status: "google_matched", value_micros: 1000000, gclid: "g1", gbraid: "b1", milestone_at: "2026-09-21T18:00:00Z", google_action: { upload_window_days: 90, now: "2026-09-22T18:00:00Z" } });
   assert.equal(result.diagnostic_code, "multiple_google_identifiers");
+});
+
+test("allows a pending identifier to reach the Google transport for matching", async () => {
+  let request;
+  const uploader = createGoogleUploader({ enabled: true, transport: { upload: async (value) => { request = value; return { category: "accepted" }; } } });
+  const result = await uploader.upload({ event_name: "appointment_set", attribution_path: "website", consent_status: "granted", attribution_status: "pending", outcome_id: "o-pending", value_micros: 0, gclid: "gclid-1", milestone_at: "2026-09-21T18:00:00Z", google_action: { window_days: 90, now: "2026-09-22T18:00:00Z" } });
+  assert.equal(result.status, "submitted");
+  assert.equal(request.gclid, "gclid-1");
 });
 
 test("uses the verified action map and never sends call outcomes to click actions", () => {

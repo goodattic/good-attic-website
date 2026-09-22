@@ -52,7 +52,16 @@ function iso(value) {
 function idPart(value) { return clean(value, 500) || "_"; }
 
 export function outcomeId(input) {
-  return ["google-ads-outcome", idPart(input?.event_name), idPart(input?.attribution_path),
+  const event = idPart(input?.event_name);
+  // A quote approval and the later Jobber close event describe the same sold
+  // outcome. Keep one stable key per request so the two lifecycle signals
+  // cannot create two Google conversions. Revenue changes use their invoice
+  // identity and remain separate restatements.
+  if (event === "sold_job") {
+    return ["google-ads-outcome", event, idPart(input?.attribution_path),
+      idPart(input?.quo_call_id), idPart(input?.jobber_request_id)].join(":");
+  }
+  return ["google-ads-outcome", event, idPart(input?.attribution_path),
     idPart(input?.quo_call_id), idPart(input?.jobber_request_id), idPart(input?.jobber_quote_id),
     idPart(input?.jobber_job_id), idPart(input?.jobber_invoice_id), idPart(input?.milestone_at)].join(":");
 }
@@ -135,7 +144,12 @@ export function createGoogleUploader({ transport, enabled = false, now = () => n
       if (!enabled) return { ok: false, status: "held", diagnostic_code: "google_upload_disabled" };
       if (!transport || typeof transport.upload !== "function") return { ok: false, status: "permanently_failed", diagnostic_code: "transport_unavailable" };
       if (candidate?.consent_status !== "granted") return { ok: false, status: "held", diagnostic_code: "consent_unknown_or_denied" };
-      if (candidate?.attribution_status !== "google_matched") return { ok: false, status: "held", diagnostic_code: "attribution_not_verified" };
+      // Google performs the identifier match as part of the upload. A local
+      // `pending` record with a valid click/call identifier is therefore
+      // uploadable once the feature is explicitly enabled; requiring a prior
+      // `google_matched` state makes the first upload impossible. Explicitly
+      // rejected or ineligible records remain held.
+      if (!["pending", "google_matched"].includes(candidate?.attribution_status)) return { ok: false, status: "held", diagnostic_code: "attribution_not_verified" };
       const action = actionForCandidate(candidate);
       if (!action) return { ok: false, status: "held", diagnostic_code: "action_source_mismatch" };
       const window = validateUploadWindow(candidate, { ...action, ...(candidate.google_action || {}) });
@@ -197,7 +211,10 @@ export function qualifiedLeadEligibility(input = {}) {
 export function validateUploadWindow(candidate = {}, action = {}) {
   const occurred = Date.parse(candidate.conversion_at || candidate.milestone_at);
   const now = Date.parse(action.now || new Date().toISOString());
-  const days = Number(action.upload_window_days);
+  // The action map uses `window_days`; accept the explicit test override too.
+  // Keeping both names here prevents a configuration spelling difference from
+  // holding every otherwise-valid event as `upload_window_unknown`.
+  const days = Number(action.window_days ?? action.upload_window_days);
   if (!Number.isFinite(occurred) || !Number.isFinite(now) || !Number.isFinite(days) || days <= 0) return { ok: false, status: "held", reason: "upload_window_unknown" };
   if (occurred > now || now - occurred > days * 86400000) return { ok: false, status: "held", reason: "conversion_window_expired" };
   return { ok: true };
