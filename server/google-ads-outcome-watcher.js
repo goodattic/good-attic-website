@@ -13,8 +13,10 @@ export const GOOGLE_ACTION_MAP = Object.freeze({
   qualified_lead: { id: "7742989654", name: "GAE - Qualified Call Lead (CRM)", source: "UPLOAD_CALLS", window_days: 90, value_policy: "explicit_or_hold" },
   assessment_completed: { id: "7754270379", name: "GAE - Assessment Completed (CRM)", source: "UPLOAD_CLICKS", window_days: 90, value_policy: "force_zero" },
   sold_job: { id: "7754270382", name: "GAE - Sold Job (CRM)", source: "UPLOAD_CLICKS", window_days: 90, value_policy: "explicit_revenue" },
-  sold_job_call: { id: null, name: "GAE - Sold Job (CRM) — call action pending", source: "UPLOAD_CALLS", window_days: 90, value_policy: "explicit_revenue" },
+  sold_job_call: { id: "7788072382", name: "GAE - Sold Job from Call (CRM)", source: "UPLOAD_CALLS", window_days: 90, value_policy: "explicit_revenue" },
 });
+
+export const GOOGLE_ADS_CUSTOMER_ID = "4800890529";
 
 // Jobber webhook payloads contain only an object id. The existing production
 // bridge already proves REQUEST_CREATE/UPDATE and QUOTE_CREATE. The remaining
@@ -148,7 +150,59 @@ export function sanitizeDiagnostic(error) {
   return clean(String(error?.code || error?.message || error || "unknown_error").toLowerCase().replace(/[^a-z0-9_.-]+/g, "_"), 120) || "unknown_error";
 }
 
-export function createGoogleUploader({ transport, enabled = false, callSoldJobActionId = null, usLeadsConsentGranted = false, now = () => new Date().toISOString() } = {}) {
+export function createGoogleAdsApiTransport({ developerToken, clientId, clientSecret, refreshToken, customerId = GOOGLE_ADS_CUSTOMER_ID, apiVersion = "v18", fetchImpl = globalThis.fetch } = {}) {
+  const required = { developerToken, clientId, clientSecret, refreshToken, customerId };
+  if (Object.values(required).some((value) => !String(value || "").trim())) throw new Error("google_ads_transport_configuration_missing");
+  if (typeof fetchImpl !== "function") throw new Error("google_ads_fetch_unavailable");
+  const normalizedCustomerId = String(customerId).replace(/\D/g, "");
+  const actionResource = (actionId) => `customers/${normalizedCustomerId}/conversionActions/${String(actionId).replace(/\D/g, "")}`;
+  let accessToken = null;
+  let tokenExpiresAt = 0;
+  async function getAccessToken() {
+    if (accessToken && Date.now() < tokenExpiresAt - 60_000) return accessToken;
+    const response = await fetchImpl("https://oauth2.googleapis.com/token", {
+      method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, refresh_token: refreshToken, grant_type: "refresh_token" }),
+    });
+    if (!response.ok) throw Object.assign(new Error("google_ads_oauth_failed"), { retryable: response.status >= 500 || response.status === 429 });
+    const token = await response.json();
+    if (!token?.access_token) throw new Error("google_ads_oauth_token_missing");
+    accessToken = token.access_token;
+    tokenExpiresAt = Date.now() + Number(token.expires_in || 3600) * 1000;
+    return accessToken;
+  }
+  return {
+    async upload(request = {}) {
+      const isCall = Boolean(request.caller_id && request.call_start_time);
+      const method = isCall ? "uploadCallConversions" : "uploadClickConversions";
+      const conversion = {
+        conversionAction: actionResource(request.conversion_action),
+        conversionDateTime: request.conversion_date_time,
+        conversionValue: request.value,
+        currencyCode: request.currency_code || "USD",
+        orderId: request.order_id,
+      };
+      if (isCall) {
+        conversion.callerId = request.caller_id;
+        conversion.callStartDateTime = request.call_start_time;
+      } else {
+        if (request.gclid) conversion.gclid = request.gclid;
+        if (request.gbraid) conversion.gbraid = request.gbraid;
+        if (request.wbraid) conversion.wbraid = request.wbraid;
+      }
+      const response = await fetchImpl(`https://googleads.googleapis.com/${apiVersion}/customers/${normalizedCustomerId}:${method}`, {
+        method: "POST",
+        headers: { authorization: `Bearer ${await getAccessToken()}`, "developer-token": developerToken, "content-type": "application/json" },
+        body: JSON.stringify({ partialFailure: true, conversions: [conversion], validateOnly: false }),
+      });
+      if (!response.ok) throw Object.assign(new Error(`google_ads_${method.toLowerCase()}_failed`), { retryable: response.status >= 500 || response.status === 429 });
+      const body = await response.json();
+      return { category: body?.partialFailureError ? "accepted_with_errors" : "accepted", partial_failure: body?.partialFailureError || null };
+    },
+  };
+}
+
+export function createGoogleUploader({ transport, enabled = false, callSoldJobActionId = GOOGLE_ACTION_MAP.sold_job_call.id, usLeadsConsentGranted = false, now = () => new Date().toISOString() } = {}) {
   return {
     async upload(candidate) {
       if (!enabled) return { ok: false, status: "held", diagnostic_code: "google_upload_disabled" };
