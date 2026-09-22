@@ -43,7 +43,8 @@ export async function collectJobberRequestLifecycle({ database, market_key, acco
   const writes = [];
   const calls = object.quoCall ? [object.quoCall] : (attribution.quoCalls.length ? attribution.quoCalls : [{}]);
   for (const outcome of outcomes) for (const quoCall of calls) {
-    const candidate = buildOutcomeCandidate({ ...outcome, jobber_account_id: account_id, lead: object.lead || attribution.lead || {}, quoCall });
+    const event_name = quoCall.quo_call_id && outcome.event_name === "appointment_set" ? "qualified_lead" : outcome.event_name;
+    const candidate = buildOutcomeCandidate({ ...outcome, event_name, jobber_account_id: account_id, lead: object.lead || attribution.lead || {}, quoCall });
     if (candidate.ok) writes.push(await persistOutcomeCandidate(database, candidate.candidate));
   }
   return { ok: true, market_key, request_id, outcome_count: outcomes.length, writes, attribution_source: { website: Boolean(attribution.lead), quo: Boolean(attribution.quoCall) } };
@@ -68,7 +69,8 @@ export async function collectJobberLifecycle({ database, payload, readObject }) 
   const writes = [];
   const calls = object.quoCall ? [object.quoCall] : (attribution.quoCalls.length ? attribution.quoCalls : [{}]);
   for (const outcome of outcomes) for (const quoCall of calls) {
-    const candidate = buildOutcomeCandidate({ ...outcome, jobber_account_id: event.account_id, lead: object.lead || attribution.lead || {}, quoCall });
+    const event_name = quoCall.quo_call_id && outcome.event_name === "appointment_set" ? "qualified_lead" : outcome.event_name;
+    const candidate = buildOutcomeCandidate({ ...outcome, event_name, jobber_account_id: event.account_id, lead: object.lead || attribution.lead || {}, quoCall });
     if (candidate.ok) writes.push(await persistOutcomeCandidate(database, candidate.candidate));
   }
   return { ok: true, event, outcome_count: outcomes.length, writes };
@@ -88,7 +90,8 @@ export async function runReadOnlyBackfill({ database, market_key, since, listObj
         const attribution = await loadRequestAttribution({ database, market_key, jobber_request_id: object?.jobber_request_id || id });
         const calls = object?.quoCall ? [object.quoCall] : (attribution.quoCalls.length ? attribution.quoCalls : [{}]);
         for (const quoCall of calls) {
-          const candidate = buildOutcomeCandidate({ ...outcome, lead: object?.lead || attribution.lead || {}, quoCall });
+          const event_name = quoCall.quo_call_id && outcome.event_name === "appointment_set" ? "qualified_lead" : outcome.event_name;
+          const candidate = buildOutcomeCandidate({ ...outcome, event_name, lead: object?.lead || attribution.lead || {}, quoCall });
           if (candidate.ok) records.push(await persistOutcomeCandidate(database, candidate.candidate));
         }
       }

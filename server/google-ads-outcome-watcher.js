@@ -13,6 +13,7 @@ export const GOOGLE_ACTION_MAP = Object.freeze({
   qualified_lead: { id: "7742989654", name: "GAE - Qualified Call Lead (CRM)", source: "UPLOAD_CALLS", window_days: 90, value_policy: "explicit_or_hold" },
   assessment_completed: { id: "7754270379", name: "GAE - Assessment Completed (CRM)", source: "UPLOAD_CLICKS", window_days: 90, value_policy: "force_zero" },
   sold_job: { id: "7754270382", name: "GAE - Sold Job (CRM)", source: "UPLOAD_CLICKS", window_days: 90, value_policy: "explicit_revenue" },
+  sold_job_call: { id: null, name: "GAE - Sold Job (CRM) — call action pending", source: "UPLOAD_CALLS", window_days: 90, value_policy: "explicit_revenue" },
 });
 
 // Jobber webhook payloads contain only an object id. The existing production
@@ -52,7 +53,15 @@ function iso(value) {
 function idPart(value) { return clean(value, 500) || "_"; }
 
 export function outcomeId(input) {
-  return ["google-ads-outcome", idPart(input?.event_name), idPart(input?.attribution_path),
+  const event = idPart(input?.event_name);
+  // A quote approval and the later Jobber close event describe the same sold
+  // outcome. Keep one stable key per request so the two lifecycle signals
+  // cannot create two Google conversions. Revenue changes use their invoice
+  // identity and remain separate restatements.
+  if (event === "sold_job") {
+    return ["jobber-request", idPart(input?.jobber_request_id), "sold_job"].join(":");
+  }
+  return ["google-ads-outcome", event, idPart(input?.attribution_path),
     idPart(input?.quo_call_id), idPart(input?.jobber_request_id), idPart(input?.jobber_quote_id),
     idPart(input?.jobber_job_id), idPart(input?.jobber_invoice_id), idPart(input?.milestone_at)].join(":");
 }
@@ -129,23 +138,30 @@ export function sanitizeDiagnostic(error) {
   return clean(String(error?.code || error?.message || error || "unknown_error").toLowerCase().replace(/[^a-z0-9_.-]+/g, "_"), 120) || "unknown_error";
 }
 
-export function createGoogleUploader({ transport, enabled = false, now = () => new Date().toISOString() } = {}) {
+export function createGoogleUploader({ transport, enabled = false, callSoldJobActionId = null, usLeadsConsentGranted = false, now = () => new Date().toISOString() } = {}) {
   return {
     async upload(candidate) {
       if (!enabled) return { ok: false, status: "held", diagnostic_code: "google_upload_disabled" };
       if (!transport || typeof transport.upload !== "function") return { ok: false, status: "permanently_failed", diagnostic_code: "transport_unavailable" };
-      if (candidate?.consent_status !== "granted") return { ok: false, status: "held", diagnostic_code: "consent_unknown_or_denied" };
-      if (candidate?.attribution_status !== "google_matched") return { ok: false, status: "held", diagnostic_code: "attribution_not_verified" };
-      const action = actionForCandidate(candidate);
+      const consentStatus = candidate?.consent_status === "unknown" && usLeadsConsentGranted ? "granted" : candidate?.consent_status;
+      if (consentStatus !== "granted") return { ok: false, status: "held", diagnostic_code: "consent_unknown_or_denied" };
+      // Google performs the identifier match as part of the upload. A local
+      // `pending` record with a valid click/call identifier is therefore
+      // uploadable once the feature is explicitly enabled; requiring a prior
+      // `google_matched` state makes the first upload impossible. Explicitly
+      // rejected or ineligible records remain held.
+      if (!["pending", "google_matched"].includes(candidate?.attribution_status)) return { ok: false, status: "held", diagnostic_code: "attribution_not_verified" };
+      const action = actionForCandidate(candidate, { call_sold_job_action_id: callSoldJobActionId });
       if (!action) return { ok: false, status: "held", diagnostic_code: "action_source_mismatch" };
       const window = validateUploadWindow(candidate, { ...action, ...(candidate.google_action || {}) });
       if (!window.ok) return { ok: false, status: window.status, diagnostic_code: window.reason };
       if (!adjustmentSupport(candidate.google_action || {}, candidate.event_name)) return { ok: false, status: "held", diagnostic_code: "google_adjustment_not_supported" };
       if (["qualified_lead", "appointment_set", "sold_job"].includes(candidate.event_name) && !Number.isSafeInteger(candidate.value_micros)) return { ok: false, status: "held", diagnostic_code: "explicit_value_required" };
-      const websiteIds = [candidate.gclid, candidate.gbraid, candidate.wbraid].filter(Boolean);
-      if (websiteIds.length > 1) return { ok: false, status: "held", diagnostic_code: "multiple_google_identifiers" };
-      const hasWebsiteId = websiteIds.length === 1;
-      const hasCallMatch = candidate.caller_phone && candidate.call_started_at_original;
+      const clickId = clean(candidate.gclid || candidate.gbraid || candidate.wbraid, 500);
+      const hasWebsiteId = Boolean(clickId);
+      const callerId = normalizeE164(candidate.caller_phone);
+      const callStart = formatGoogleCallStartTime(candidate);
+      const hasCallMatch = Boolean(callerId && callStart);
       if (!hasWebsiteId && !hasCallMatch) return { ok: false, status: "held", diagnostic_code: "missing_google_identifier" };
       const request = {
         order_id: candidate.outcome_id,
@@ -153,11 +169,11 @@ export function createGoogleUploader({ transport, enabled = false, now = () => n
         conversion_date_time: candidate.conversion_at || candidate.milestone_at,
         currency_code: "USD",
         value: action.value_policy === "force_zero" ? 0 : candidate.value_micros == null ? undefined : candidate.value_micros / 1e6,
-        gclid: candidate.gclid || undefined,
-        gbraid: candidate.gbraid || undefined,
-        wbraid: candidate.wbraid || undefined,
-        caller_id: candidate.caller_phone || undefined,
-        call_start_time: candidate.call_started_at_original || undefined,
+        gclid: candidate.gclid ? clickId : undefined,
+        gbraid: !candidate.gclid && candidate.gbraid ? clickId : undefined,
+        wbraid: !candidate.gclid && !candidate.gbraid && candidate.wbraid ? clickId : undefined,
+        caller_id: hasWebsiteId ? undefined : callerId || undefined,
+        call_start_time: hasWebsiteId ? undefined : callStart || undefined,
       };
       try {
         const response = await transport.upload(request);
@@ -183,21 +199,47 @@ export function classifyAttribution({ lead = {}, quoCall = {} } = {}) {
 }
 
 export function qualifiedLeadEligibility(input = {}) {
-  const homeowner = input.homeowner === true;
-  const serviceArea = input.service_area_valid === true;
-  const installed = input.installed_service === true;
-  const expected = Number(input.expected_value_usd);
-  if (![homeowner, serviceArea, installed].every(Boolean) || !Number.isFinite(expected)) {
-    return { eligible: false, status: "held", reason: "qualification_unverified" };
+  const call = input.quoCall || {};
+  const status = clean(call.final_status, 40).toLowerCase();
+  const duration = Number(call.duration_seconds);
+  if (!["no-answer", "missed"].includes(status) && !(status === "completed" && Number.isFinite(duration) && duration < 90)) {
+    return { eligible: false, status: "ineligible", reason: "answered_call_already_counted" };
   }
-  if (expected < 2000) return { eligible: false, status: "ineligible", reason: "expected_value_below_threshold" };
-  return { eligible: true, status: "held", reason: "awaiting_attribution_and_consent" };
+  return { eligible: true, status: "pending", reason: "awaiting_google_match_and_consent" };
+}
+
+export function normalizeE164(value) {
+  const normalized = clean(value, 40).replace(/[^+\d]/g, "");
+  return /^\+[1-9]\d{7,14}$/.test(normalized) ? normalized : null;
+}
+
+const MARKET_TIME_ZONES = Object.freeze({ ut: "America/Denver", mo_stl: "America/Chicago" });
+
+export function formatGoogleCallStartTime(candidate = {}) {
+  const value = candidate.call_started_at_original || candidate.call_started_at_utc;
+  const instant = Date.parse(value || "");
+  if (!Number.isFinite(instant)) return null;
+  const timeZone = candidate.call_timezone || MARKET_TIME_ZONES[candidate.market_key] || "UTC";
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", {
+    timeZone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+  }).formatToParts(new Date(instant)).filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+  const local = `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+  const utcParts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: "UTC", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).formatToParts(new Date(instant)).filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+  const localAsUtc = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second);
+  const utcAsUtc = Date.UTC(+utcParts.year, +utcParts.month - 1, +utcParts.day, +utcParts.hour, +utcParts.minute, +utcParts.second);
+  const offset = Math.round((localAsUtc - utcAsUtc) / 60000);
+  const sign = offset >= 0 ? "+" : "-";
+  const absolute = Math.abs(offset);
+  return `${local}${sign}${String(Math.floor(absolute / 60)).padStart(2, "0")}:${String(absolute % 60).padStart(2, "0")}`;
 }
 
 export function validateUploadWindow(candidate = {}, action = {}) {
   const occurred = Date.parse(candidate.conversion_at || candidate.milestone_at);
   const now = Date.parse(action.now || new Date().toISOString());
-  const days = Number(action.upload_window_days);
+  // The action map uses `window_days`; accept the explicit test override too.
+  // Keeping both names here prevents a configuration spelling difference from
+  // holding every otherwise-valid event as `upload_window_unknown`.
+  const days = Number(action.window_days ?? action.upload_window_days);
   if (!Number.isFinite(occurred) || !Number.isFinite(now) || !Number.isFinite(days) || days <= 0) return { ok: false, status: "held", reason: "upload_window_unknown" };
   if (occurred > now || now - occurred > days * 86400000) return { ok: false, status: "held", reason: "conversion_window_expired" };
   return { ok: true };
@@ -221,7 +263,11 @@ export function adjustmentSupport({ google_supports_adjustment = false, google_s
   return true;
 }
 
-export function actionForCandidate(candidate = {}) {
+export function actionForCandidate(candidate = {}, { call_sold_job_action_id = null } = {}) {
+  if (candidate.event_name === "assessment_completed") return null;
+  if (candidate.attribution_path === "quo_call" && candidate.event_name === "sold_job") {
+    return call_sold_job_action_id ? { ...GOOGLE_ACTION_MAP.sold_job_call, id: call_sold_job_action_id } : null;
+  }
   const action = GOOGLE_ACTION_MAP[candidate.event_name];
   if (!action) return null;
   if (candidate.attribution_path === "quo_call" && action.source !== "UPLOAD_CALLS") return null;
@@ -237,7 +283,7 @@ export function buildOutcomeCandidate(input = {}) {
   const milestone = iso(input.milestone_at || input.occurred_at);
   if (!milestone) return { ok: false, reason: "invalid_milestone_time" };
   const attribution = classifyAttribution(input);
-  const qualified = event === "qualified_lead" ? qualifiedLeadEligibility(input) : { eligible: true, status: "held" };
+  const qualified = event === "qualified_lead" ? qualifiedLeadEligibility(input) : { eligible: true, status: "pending" };
   const quoCall = input.quoCall || {};
   const lead = input.lead || {};
   const candidate = {
@@ -267,7 +313,7 @@ export function buildOutcomeCandidate(input = {}) {
     google_conversion_action: clean(input.google_conversion_action, 500) || null,
     milestone_at: milestone,
     conversion_at: iso(input.conversion_at) || null,
-    value_micros: Number.isSafeInteger(input.value_micros) ? input.value_micros : null,
+    value_micros: Number.isSafeInteger(input.value_micros) ? input.value_micros : ["qualified_lead", "appointment_set"].includes(event) ? 0 : null,
     invoice_total_micros: Number.isSafeInteger(input.invoice_total_micros) ? input.invoice_total_micros : null,
     collected_payment_micros: Number.isSafeInteger(input.collected_payment_micros) ? input.collected_payment_micros : null,
     currency_code: input.value_micros == null ? null : "USD",
