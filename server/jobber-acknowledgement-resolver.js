@@ -191,8 +191,9 @@ export async function handleJobberAcknowledgementResolve({ request, env }, depen
   if (!route || !canonicalJobberId(input.request_id, 'Request')) return json({ ok: false, code: 'unknown_jobber_object' }, 400);
   if (!env.ANGI_ROUTER_DB?.prepare) return json({ ok: false, code: 'jobber_authoritative_database_unavailable' }, 503);
   try {
-    const token = await dependencies.refreshJobberAccessToken(env, route);
-    const result = await dependencies.jobberGraphql(env, token.accessToken, QUERY, { id: input.request_id });
+    const result = dependencies.jobberGraphqlWithAuthorizationRecovery
+      ? await dependencies.jobberGraphqlWithAuthorizationRecovery(env, route, QUERY, { id: input.request_id })
+      : await (async () => { const token = await dependencies.refreshJobberAccessToken(env, route); return dependencies.jobberGraphql(env, token.accessToken, QUERY, { id: input.request_id }); })();
     if (result?.errors?.length) return json({ ok: false, code: 'jobber_resolve_failed' }, 503);
     if (!contactHelpers.sameId(result?.data?.account?.id, route.expectedAccountId, 'Account')) return json({ ok: false, code: 'jobber_account_mismatch' }, 409);
     const record = result.data.request;

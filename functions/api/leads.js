@@ -1016,6 +1016,24 @@ async function markJobberAuthorizationBroken(env, route, code = "jobber_http_401
   return d1Changes(result) === 1;
 }
 
+async function jobberGraphqlWithAuthorizationRecovery(env, route, query, variables = {}) {
+  let token = await refreshJobberAccessToken(env, route);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      return await jobberGraphql(env, token.accessToken, query, variables);
+    } catch (error) {
+      const unauthorized = error instanceof LeadSubmissionError && Number(error.status) === 401;
+      if (!unauthorized || attempt === 1) {
+        if (unauthorized) await markJobberAuthorizationBroken(env, route, "jobber_http_401_after_refresh");
+        throw error;
+      }
+      await fenceJobberAccessToken(env, route, "jobber_http_401");
+      token = await refreshJobberAccessToken(env, route);
+    }
+  }
+  throw new LeadSubmissionError("Jobber read failed after authorization recovery.", 503, { code: "jobber_authorization_recovery_failed" });
+}
+
 async function recordWebsiteLeadIntakeFailure(env, lead, error) {
   const database = env.ANGI_ROUTER_DB;
   if (!database?.prepare) return false;
@@ -1575,6 +1593,7 @@ export const _private = {
   refreshJobberAccessToken,
   fenceJobberAccessToken,
   markJobberAuthorizationBroken,
+  jobberGraphqlWithAuthorizationRecovery,
   recordWebsiteLeadIntakeFailure,
   notifyWebsiteLeadIntakeFailure,
   jobberGraphql,

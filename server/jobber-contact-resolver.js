@@ -150,8 +150,9 @@ export async function handleJobberContactResolve({ request, env }, dependencies 
   }
 
   try {
-    const token = await dependencies.refreshJobberAccessToken(env, route);
-    const result = await dependencies.jobberGraphql(env, token.accessToken, QUERIES[type], { id: input.item_id });
+    const result = dependencies.jobberGraphqlWithAuthorizationRecovery
+      ? await dependencies.jobberGraphqlWithAuthorizationRecovery(env, route, QUERIES[type], { id: input.item_id })
+      : await (async () => { const token = await dependencies.refreshJobberAccessToken(env, route); return dependencies.jobberGraphql(env, token.accessToken, QUERIES[type], { id: input.item_id }); })();
     if (result?.errors?.length) return json({ ok: false, code: "jobber_resolve_failed" }, 503);
     if (!result?.data?.account?.id) return json({ ok: false, code: "jobber_response_invalid" }, 502);
     if (!sameId(result.data.account.id, route.expectedAccountId, "Account")) {

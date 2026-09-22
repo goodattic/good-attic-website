@@ -173,13 +173,9 @@ export async function handleJobberAppointmentResolve({ request, env }) {
   }
 
   try {
-    const token = await leadHelpers.refreshJobberAccessToken(env, route);
-    const result = await leadHelpers.jobberGraphql(
-      env,
-      token.accessToken,
-      REQUEST_ASSESSMENT_QUERY,
-      { id: requestId },
-    );
+    const result = leadHelpers.jobberGraphqlWithAuthorizationRecovery
+      ? await leadHelpers.jobberGraphqlWithAuthorizationRecovery(env, route, REQUEST_ASSESSMENT_QUERY, { id: requestId })
+      : await (async () => { const token = await leadHelpers.refreshJobberAccessToken(env, route); return leadHelpers.jobberGraphql(env, token.accessToken, REQUEST_ASSESSMENT_QUERY, { id: requestId }); })();
     const jobberRequest = result?.data?.request;
     if (!jobberRequest?.id) {
       return jsonResponse({ ok: false, code: "request_not_found" }, 404);
