@@ -109,3 +109,11 @@ export async function runReadOnlyBackfill({ database, market_key, since, listObj
   }
   return { ok: true, mode: "read_only", object_types: plan.object_types, writes: records };
 }
+
+// Production wiring supplies the existing market-scoped Jobber token reader;
+// this convenience wrapper keeps the collector read-only and prevents a
+// caller from accidentally substituting a mutation client.
+export async function runReadOnlyBackfillWithReader({ database, market_key, since, reader }) {
+  if (!reader || typeof reader.listObjects !== "function" || typeof reader.readObject !== "function") return { ok: false, reason: "backfill_reader_unavailable" };
+  return runReadOnlyBackfill({ database, market_key, since, listObjects: reader.listObjects, readObject: reader.readObject });
+}
