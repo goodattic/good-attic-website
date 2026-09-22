@@ -3,7 +3,7 @@ import { _private as contactHelpers } from './jobber-contact-resolver.js';
 import { getJobberOAuthRoute } from '../functions/api/jobber/oauth/config.js';
 
 const QUERY = 'query GoodAtticJobberAuthHealth { account { id } }';
-const MARKETS = new Set(['utah', 'stl', 'kc']);
+const MARKET_INPUT = { utah: 'ut', stl: 'mo_stl', kc: 'mo_kc' };
 const json = (body, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 
 export async function handleJobberAuthHealth({ request, env }, dependencies = leadHelpers) {
@@ -11,10 +11,10 @@ export async function handleJobberAuthHealth({ request, env }, dependencies = le
   if (!await contactHelpers.authorized(request, env.CONTACT_SYNC_BROKER_SECRET)) return json({ ok: false, code: 'unauthorized' }, 401);
   let input;
   try { input = await request.json(); } catch { return json({ ok: false, code: 'invalid_input' }, 400); }
-  if (!input || typeof input.market !== 'string' || !MARKETS.has(input.market) || Object.keys(input).some(k => k !== 'market')) {
+  if (!input || typeof input.market !== 'string' || !Object.hasOwn(MARKET_INPUT, input.market) || Object.keys(input).some(k => k !== 'market')) {
     return json({ ok: false, code: 'invalid_input' }, 400);
   }
-  const route = getJobberOAuthRoute(input.market, 'website');
+  const route = getJobberOAuthRoute(MARKET_INPUT[input.market], 'website');
   try {
     const token = await dependencies.refreshJobberAccessToken(env, route);
     const result = await dependencies.jobberGraphql(env, token.accessToken, QUERY, {});
