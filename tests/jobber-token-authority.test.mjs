@@ -39,6 +39,10 @@ class TokenAuthorityD1 {
   }
 
   async run(sql, bindings) {
+    if (sql.includes("website_lead_intake_failures:record")) {
+      this.failure = bindings;
+      return changed(1);
+    }
     if (sql.includes("jobber_token_authority:fence_unauthorized_access")) {
       const [errorCode, updatedAt, accountKey] = bindings;
       if (!this.row || this.row.account_key !== accountKey) return changed(0);
@@ -445,4 +449,32 @@ test("a second unauthorized response marks the Jobber authorization broken", asy
   assert.equal(database.row.access_expires_at, 0);
   assert.equal(database.row.refresh_status, "refresh_outcome_unknown");
   assert.equal(database.row.last_error_code, "jobber_http_401_after_refresh");
+});
+
+test("failed website intake is durably queued without exposing secrets in diagnostics", async () => {
+  const database = new TokenAuthorityD1({ row: authRow() });
+  const lead = {
+    submission_id: "submission-queue-1",
+    market_key: "utah",
+    source_key: "website",
+    first_name: "Test",
+    last_name: "Lead",
+    full_name: "Test Lead",
+    phone: "+18015550123",
+    email: "test@example.com",
+    address: "1 Main St",
+    city: "Sandy",
+    state: "UT",
+    zip: "84070",
+    message: "Please call",
+  };
+  const error = new leads.LeadSubmissionError("Jobber failed", 401, { code: "jobber_http_401_after_refresh" });
+  assert.equal(await leads.recordWebsiteLeadIntakeFailure(envFor(database), lead, error), true);
+  assert.equal(database.failure[0], lead.submission_id);
+  assert.equal(database.failure[1], "utah");
+  assert.equal(database.failure[4], "jobber_http_401_after_refresh");
+  assert.equal(database.failure[5], 401);
+  assert.match(database.failure[6], /^2026-/);
+  assert.match(database.failure[7], /^2026-/);
+  assert.match(database.failure[3], /submission-queue-1/);
 });

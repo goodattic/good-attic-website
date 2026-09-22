@@ -1016,6 +1016,57 @@ async function markJobberAuthorizationBroken(env, route, code = "jobber_http_401
   return d1Changes(result) === 1;
 }
 
+async function recordWebsiteLeadIntakeFailure(env, lead, error) {
+  const database = env.ANGI_ROUTER_DB;
+  if (!database?.prepare) return false;
+  const now = new Date();
+  const createdAt = now.toISOString();
+  const expiresAt = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString();
+  const code = clean(error?.details?.code, 120) || "jobber_lead_intake_failed";
+  const payload = {
+    first_name: lead.first_name,
+    last_name: lead.last_name,
+    full_name: lead.full_name,
+    phone: lead.phone,
+    email: lead.email,
+    address: lead.address,
+    city: lead.city,
+    state: lead.state,
+    zip: lead.zip,
+    message: lead.message,
+    submission_id: lead.submission_id,
+  };
+  const result = await database.prepare(`
+    /* website_lead_intake_failures:record */
+    INSERT INTO website_lead_intake_failures (
+      submission_id, market_key, source_key, payload_json, error_code,
+      error_status, attempt_count, state, next_retry_at, expires_at,
+      created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, 1, 'pending', ?, ?, ?, ?)
+    ON CONFLICT (submission_id) DO UPDATE SET
+      payload_json = excluded.payload_json,
+      error_code = excluded.error_code,
+      error_status = excluded.error_status,
+      attempt_count = website_lead_intake_failures.attempt_count + 1,
+      state = 'pending',
+      next_retry_at = excluded.next_retry_at,
+      expires_at = excluded.expires_at,
+      updated_at = excluded.updated_at
+  `).bind(
+    lead.submission_id,
+    lead.market_key,
+    lead.source_key,
+    JSON.stringify(payload),
+    code,
+    Number.isFinite(Number(error?.status)) ? Number(error.status) : null,
+    createdAt,
+    expiresAt,
+    createdAt,
+    createdAt,
+  ).run();
+  return d1Changes(result) === 1;
+}
+
 async function safeJson(response) {
   try {
     return await response.json();
@@ -1425,6 +1476,15 @@ export async function onRequestPost(context) {
     });
   } catch (error) {
     if (error instanceof LeadSubmissionError) {
+      try {
+        await recordWebsiteLeadIntakeFailure(env, lead, error);
+      } catch (queueError) {
+        console.error("Website lead recovery queue write failed", {
+          submissionId: lead.submission_id,
+          market: lead.market_key,
+          code: queueError?.code || "lead_recovery_queue_failed",
+        });
+      }
       console.error("Jobber lead intake failed", {
         submissionId: lead.submission_id,
         market: lead.market_key,
@@ -1466,6 +1526,7 @@ export const _private = {
   refreshJobberAccessToken,
   fenceJobberAccessToken,
   markJobberAuthorizationBroken,
+  recordWebsiteLeadIntakeFailure,
   jobberGraphql,
   createJobberClient,
   createJobberRequest,
