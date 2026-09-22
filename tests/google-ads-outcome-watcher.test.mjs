@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { actionForCandidate, adjustmentSupport, buildOutcomeCandidate, buildBackfillPlan, classifyAttribution, createGoogleAdsApiTransport, createGoogleUploader, formatGoogleCallStartTime, GOOGLE_ACTION_MAP, GOOGLE_ADS_API_VERSION, normalizeE164, normalizeJobberWebhook, outcomeId, persistOutcomeCandidate, qualifiedLeadEligibility, resolveLifecycleOutcomes, revenueEvidence, validateUploadWindow } from "../server/google-ads-outcome-watcher.js";
-import { collectJobberLifecycle, collectJobberRequestLifecycle, loadRequestAttribution, runReadOnlyBackfill } from "../server/google-ads-outcome-collection.js";
+import { collectJobberLifecycle, collectJobberRequestLifecycle, loadRequestAttribution, runReadOnlyBackfill, runReadOnlyBackfillWithReader } from "../server/google-ads-outcome-collection.js";
 
 class MemoryD1 {
   constructor() { this.calls = []; }
@@ -99,6 +99,7 @@ test("collects webhook and backfill records through read-only readers", async ()
   assert.equal(plan.mode, "read_only");
   const backfill = await runReadOnlyBackfill({ database: db, market_key: "ut", since: "2026-09-01T00:00:00Z", listObjects: async () => ["r1"], readObject: async () => object });
   assert.equal(backfill.ok, true);
+  assert.equal((await runReadOnlyBackfillWithReader({ database: db, market_key: "ut", since: "2026-09-01T00:00:00Z", reader: { listObjects: async () => ["r1"], readObject: async () => object } })).ok, true);
 });
 
 test("joins website and Quo attribution ledgers before writing a dry-run outcome", async () => {
