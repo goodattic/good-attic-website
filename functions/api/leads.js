@@ -1482,8 +1482,10 @@ export async function onRequestPost(context) {
     }, 400);
   }
 
+  let jobberCompleted = false;
   try {
     const jobber = await submitLeadToJobber(env, lead);
+    jobberCompleted = true;
     if (env.ACKNOWLEDGEMENT_SOURCE_ENABLED === 'true') {
       // Proof is written only by this successful public form path, never by a
       // manually created Jobber record or its editable marketing source label.
@@ -1537,7 +1539,7 @@ export async function onRequestPost(context) {
       fieldflow,
     });
   } catch (error) {
-    if (error instanceof LeadSubmissionError) {
+    if (!jobberCompleted) {
       try {
         await recordWebsiteLeadIntakeFailure(env, lead, error);
       } catch (queueError) {
@@ -1559,8 +1561,8 @@ export async function onRequestPost(context) {
       console.error("Jobber lead intake failed", {
         submissionId: lead.submission_id,
         market: lead.market_key,
-        status: error.status,
-        code: error.details?.code || "jobber_lead_intake_failed",
+        status: Number.isFinite(Number(error?.status)) ? Number(error.status) : 500,
+        code: error?.details?.code || error?.code || "jobber_lead_intake_failed",
       });
     }
     if (error instanceof LeadSubmissionError) {
