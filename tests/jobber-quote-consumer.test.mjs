@@ -83,3 +83,19 @@ test("test mode allows only the configured Quote ID for its market", () => {
     JOBBER_QUOTE_TEST_ALLOWLIST_UT: "ut-test-quote",
   }, EVENT), true);
 });
+
+test("scheduled authorization health uses the protected Pages endpoint", async () => {
+  let request;
+  globalThis.fetch = async (url, options) => {
+    request = { url, options };
+    return Response.json({ ok: true, results: [] });
+  };
+  const result = await consumer.runAuthorizationHealth({
+    JOBBER_AUTH_HEALTH_URL: "https://example.test/api/jobber/oauth/health-check",
+    JOBBER_AUTH_HEALTH_SECRET: "health-secret",
+  });
+  assert.equal(result.ok, true);
+  assert.equal(request.url, "https://example.test/api/jobber/oauth/health-check");
+  assert.equal(request.options.method, "POST");
+  assert.equal(request.options.headers.Authorization, "Bearer health-secret");
+});

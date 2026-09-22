@@ -8,8 +8,12 @@ max_batch_size = 10
 max_batch_timeout = 5
 max_retries = 10
 
+[triggers]
+crons = ["*/30 * * * *"]
+
 [vars]
 JOBBER_QUOTE_RESOLVER_URL = "https://goodattic.energy/api/jobber/quote-resolve"
+JOBBER_AUTH_HEALTH_URL = "https://goodattic.energy/api/jobber/oauth/health-check"
 JOBBER_QUOTE_TEST_MODE = "false"
 JOBBER_QUOTE_TEST_ALLOWLIST_UT = ""
 JOBBER_QUOTE_TEST_ALLOWLIST_STL = ""

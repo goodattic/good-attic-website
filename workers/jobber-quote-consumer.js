@@ -2,6 +2,7 @@ const QUOTE_ATTRIBUTION_EVENT_NAME = "jobber.quote_attribution.v1";
 const BASE_RETRY_DELAY_SECONDS = 60;
 const MAX_RETRY_DELAY_SECONDS = 60 * 60;
 const DEFAULT_RESOLVER_URL = "https://goodattic.energy/api/jobber/quote-resolve";
+const DEFAULT_AUTH_HEALTH_URL = "https://goodattic.energy/api/jobber/oauth/health-check";
 
 const MARKET_BY_ACCOUNT_ID = new Map([
   ["Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQzMg==", "ut"],
@@ -95,14 +96,46 @@ async function processMessage(message, env) {
   }
 }
 
+async function runAuthorizationHealth(env) {
+  const healthUrl = clean(env.JOBBER_AUTH_HEALTH_URL || DEFAULT_AUTH_HEALTH_URL, 2000);
+  const secret = clean(env.JOBBER_AUTH_HEALTH_SECRET, 2000);
+  if (!secret) throw new Error("auth_health_secret_not_configured");
+  const response = await fetch(healthUrl, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secret}`,
+      "Content-Type": "application/json",
+    },
+    body: "{}",
+    redirect: "manual",
+    signal: AbortSignal.timeout(45_000),
+  });
+  let result = null;
+  try { result = await response.json(); } catch { /* report the HTTP status below */ }
+  if (!response.ok || !result?.ok) {
+    throw new Error(`auth_health_http_${response.status || 0}`);
+  }
+  return result;
+}
+
 export default {
   async queue(batch, env) {
     for (const message of batch.messages) await processMessage(message, env);
+  },
+  async scheduled(_controller, env) {
+    try {
+      await runAuthorizationHealth(env);
+    } catch (error) {
+      console.error("Jobber source authorization health check failed.", {
+        error: error instanceof Error ? error.message : "unknown_error",
+      });
+    }
   },
 };
 
 export const _private = {
   BASE_RETRY_DELAY_SECONDS,
+  DEFAULT_AUTH_HEALTH_URL,
   DEFAULT_RESOLVER_URL,
   MARKET_BY_ACCOUNT_ID,
   MAX_RETRY_DELAY_SECONDS,
@@ -112,5 +145,6 @@ export const _private = {
   quoteAllowedInCurrentMode,
   resolveQuote,
   retryDelaySeconds,
+  runAuthorizationHealth,
   validMessage,
 };
