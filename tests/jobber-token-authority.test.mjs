@@ -39,6 +39,32 @@ class TokenAuthorityD1 {
   }
 
   async run(sql, bindings) {
+    if (sql.includes("jobber_token_authority:fence_unauthorized_access")) {
+      const [errorCode, updatedAt, accountKey] = bindings;
+      if (!this.row || this.row.account_key !== accountKey) return changed(0);
+      Object.assign(this.row, {
+        access_expires_at: 0,
+        refresh_status: "ready",
+        last_error_code: errorCode,
+        updated_at: updatedAt,
+      });
+      return changed(1);
+    }
+
+    if (sql.includes("jobber_token_authority:mark_unauthorized_broken")) {
+      const [errorCode, updatedAt, accountKey] = bindings;
+      if (!this.row || this.row.account_key !== accountKey) return changed(0);
+      Object.assign(this.row, {
+        access_expires_at: 0,
+        refresh_status: "refresh_outcome_unknown",
+        refresh_lease_token: null,
+        refresh_lease_expires_at: null,
+        last_error_code: errorCode,
+        updated_at: updatedAt,
+      });
+      return changed(1);
+    }
+
     if (sql.includes("jobber_token_authority:ensure_process_lock")) {
       const [lockName, updatedAt] = bindings;
       if (!this.locks.has(lockName)) {
@@ -379,4 +405,44 @@ test("missing authoritative D1 fails closed without touching Jobber", async () =
     (error) => error?.details?.code === "jobber_authoritative_database_unavailable",
   );
   assert.equal(calls, 0);
+});
+
+test("an unauthorized Jobber response fences the cached access token", async () => {
+  const database = new TokenAuthorityD1({
+    row: authRow({
+      access_token: "live-access",
+      access_expires_at: Date.now() + 3_600_000,
+    }),
+  });
+
+  const changedRows = await leads.fenceJobberAccessToken(
+    envFor(database),
+    leads.MARKET_ROUTES.ut,
+    "jobber_http_401",
+  );
+
+  assert.equal(changedRows, true);
+  assert.equal(database.row.access_expires_at, 0);
+  assert.equal(database.row.refresh_status, "ready");
+  assert.equal(database.row.last_error_code, "jobber_http_401");
+});
+
+test("a second unauthorized response marks the Jobber authorization broken", async () => {
+  const database = new TokenAuthorityD1({
+    row: authRow({
+      access_token: "refreshed-access",
+      access_expires_at: Date.now() + 3_600_000,
+    }),
+  });
+
+  const changedRows = await leads.markJobberAuthorizationBroken(
+    envFor(database),
+    leads.MARKET_ROUTES.ut,
+    "jobber_http_401_after_refresh",
+  );
+
+  assert.equal(changedRows, true);
+  assert.equal(database.row.access_expires_at, 0);
+  assert.equal(database.row.refresh_status, "refresh_outcome_unknown");
+  assert.equal(database.row.last_error_code, "jobber_http_401_after_refresh");
 });

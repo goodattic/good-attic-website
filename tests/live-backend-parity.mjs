@@ -10,6 +10,8 @@ export const liveBackendFiles = [
 ];
 export const synchronizationFiles = [
   ...liveBackendFiles,
+  "functions/api/leads.js",
+  "tests/jobber-token-authority.test.mjs",
   "server/acknowledgement-source.js",
   "server/jobber-acknowledgement-resolver.js",
   "server/jobber-contact-resolver.js",

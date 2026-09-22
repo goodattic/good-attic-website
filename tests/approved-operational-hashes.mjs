@@ -1,6 +1,6 @@
 // Intentional operational hashes for the production-backed Phase 1 baseline.
 export const approvedOperationalHashes = {
-  "functions/api/leads.js": "694ff095eca12da1d5692c9a57f9a04ae2bfc55454ef0c93b089888e7cb54f98",
+  "functions/api/leads.js": "fb0d4730805f04269000505acb49f12c9ddbcb7ae10eb19759ea8e6a764aeeb2",
   "server/fieldflow-attribution.js": "528f1610272f6c905ed30ab440030d8b433ac745e4b3da02236d8f446326d74c",
   "server/jobber-quo-intake.js": "6332f5faa5e130a534f0c49004ed55ad5baa0a7d8810806a5868f3b9199e5503",
   "migrations/0008_quo_call_attributions.sql": "e8f12988ddb7a4f3169f19ed4587c4d6fd42369eab987768c70ea5b7e9fb2388",
