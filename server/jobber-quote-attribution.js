@@ -10,6 +10,21 @@ const QUOTE_ATTRIBUTION_EVENT_NAME = "jobber.quote_attribution.v1";
 const ATTRIBUTION_CLAIM_LEASE_MS = 2 * 60 * 1000;
 const ENABLED_MARKETS = new Set(["ut", "mo_stl"]);
 
+async function quoteReadWithAuthorizationRecovery(env, route, query, variables) {
+  let token = await leadHelpers.refreshJobberAccessToken(env, route);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const result = await customFieldHelpers.jobberGraphql(env, token.accessToken, query, variables);
+    if (Number(result?.response?.status) !== 401) return { token, result };
+    if (attempt === 1) {
+      await leadHelpers.markJobberAuthorizationBroken(env, route, "jobber_http_401_after_refresh");
+      return { token, result };
+    }
+    await leadHelpers.fenceJobberAccessToken(env, route, "jobber_http_401");
+    token = await leadHelpers.refreshJobberAccessToken(env, route);
+  }
+  throw new Error("quote_authorization_recovery_failed");
+}
+
 const ROUTES_BY_ACCOUNT_ID = new Map(
   [...ENABLED_MARKETS].map((marketKey) => {
     const route = getJobberOAuthRoute(marketKey, "website");
@@ -221,13 +236,13 @@ export async function resolveQuoteAttribution({ request, env }) {
   }
 
   try {
-    const token = await leadHelpers.refreshJobberAccessToken(env, route);
-    const quoteResult = await customFieldHelpers.jobberGraphql(
+    const recovered = await quoteReadWithAuthorizationRecovery(
       env,
-      token.accessToken,
+      route,
       customFieldHelpers.QUOTE_CONTEXT_QUERY,
       { id: quoteId },
     );
+    const { token, result: quoteResult } = recovered;
     if (!quoteResult.response.ok || quoteResult.data?.errors?.length) {
       return jsonResponse({ ok: false, code: classifyGraphqlFailure(quoteResult) }, 503);
     }

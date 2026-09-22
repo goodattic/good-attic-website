@@ -128,7 +128,9 @@ async function inputFor({request,env},allowed) {
   return input;
 }
 async function read(deps,env,token,route,query,variables={}) {
-  const response=await deps.jobberGraphql(env,token.accessToken,query,variables);
+  const response=deps.jobberGraphqlWithAuthorizationRecovery
+    ? await deps.jobberGraphqlWithAuthorizationRecovery(env,route,query,variables)
+    : await deps.jobberGraphql(env,token.accessToken,query,variables);
   // A populated, conflicting account is never re-labelled as a permissions
   // problem, even when GraphQL also returns partial data and errors.
   if(response?.data?.account?.id!=null&&!contacts.sameId(response.data.account.id,route.expectedAccountId,'Account'))throw new IntakeError('jobber_account_mismatch',409);
