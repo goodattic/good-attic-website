@@ -1,0 +1,15 @@
+name = "good-attic-jobber-phase2-backfill"
+main = "jobber-phase2-backfill.js"
+compatibility_date = "2026-07-27"
+workers_dev = false
+
+[triggers]
+crons = ["17 * * * *"]
+
+[vars]
+PHASE2_SHADOW_ENABLED = "false"
+
+[[d1_databases]]
+binding = "ANGI_ROUTER_DB"
+database_name = "good-attic-angi-jobber-router"
+database_id = "934d7ad9-cba8-4cb4-9494-1e9980b7c403"
