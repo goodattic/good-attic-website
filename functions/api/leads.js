@@ -1034,6 +1034,10 @@ async function jobberGraphqlWithAuthorizationRecovery(env, route, query, variabl
   throw new LeadSubmissionError("Jobber read failed after authorization recovery.", 503, { code: "jobber_authorization_recovery_failed" });
 }
 
+async function jobberMutationWithAuthorizationRecovery(env, route, query, variables = {}) {
+  return jobberGraphqlWithAuthorizationRecovery(env, route, query, variables);
+}
+
 async function recordWebsiteLeadIntakeFailure(env, lead, error) {
   const database = env.ANGI_ROUTER_DB;
   if (!database?.prepare) return false;
@@ -1594,6 +1598,7 @@ export const _private = {
   fenceJobberAccessToken,
   markJobberAuthorizationBroken,
   jobberGraphqlWithAuthorizationRecovery,
+  jobberMutationWithAuthorizationRecovery,
   recordWebsiteLeadIntakeFailure,
   notifyWebsiteLeadIntakeFailure,
   jobberGraphql,

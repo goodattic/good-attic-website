@@ -404,13 +404,17 @@ async function processIntake(env,deps,token,route,identity,input,row,lease) {
       try {
         // Jobber requires a name. Use a visibly generic system placeholder only
         // for a new client whose canonical Quo contact has no actual name.
-        const result=await deps.jobberGraphql(env,token.accessToken,MUTATIONS.client,{input:{
+        const result=deps.jobberMutationWithAuthorizationRecovery
+          ? await deps.jobberMutationWithAuthorizationRecovery(env,route,MUTATIONS.client,{input:{
           phones:[{description:'MAIN',number:identity.phone,primary:true}],
           receivesReminders:false,receivesFollowUps:false,receivesQuoteFollowUps:false,
           receivesInvoiceFollowUps:false,receivesReviewRequests:false,
           sourceAttribution:{sourceText:'Quo'},
           ...newClientNames(JSON.parse(row.source_json)),
-        }});
+        }})
+          : await deps.jobberGraphql(env,token.accessToken,MUTATIONS.client,{input:{
+            phones:[{description:'MAIN',number:identity.phone,primary:true}], receivesReminders:false,receivesFollowUps:false,receivesQuoteFollowUps:false,receivesInvoiceFollowUps:false,receivesReviewRequests:false,sourceAttribution:{sourceText:'Quo'},...newClientNames(JSON.parse(row.source_json)),
+          }});
         const client=mutationData(result,'clientCreate','client','Client');
         // Persist the returned ID before validating any optional response data.
         await checkpoint(db,row,lease,'client_created',{client_id:canonical(client.id,'Client')},nowFor(deps));
@@ -432,7 +436,9 @@ async function processIntake(env,deps,token,route,identity,input,row,lease) {
   await checkpoint(db,row,lease,'request_creating',{},nowFor(deps));
   const source=JSON.parse(row.source_json);
   try {
-    const result=await deps.jobberGraphql(env,token.accessToken,MUTATIONS.request,{input:{clientId:row.client_id,title:`Quo ${source.type==='message'?'text':'call'} inquiry [${source.id}]`}});
+    const result=deps.jobberMutationWithAuthorizationRecovery
+      ? await deps.jobberMutationWithAuthorizationRecovery(env,route,MUTATIONS.request,{input:{clientId:row.client_id,title:`Quo ${source.type==='message'?'text':'call'} inquiry [${source.id}]`}})
+      : await deps.jobberGraphql(env,token.accessToken,MUTATIONS.request,{input:{clientId:row.client_id,title:`Quo ${source.type==='message'?'text':'call'} inquiry [${source.id}]`}});
     const request=mutationData(result,'requestCreate','request','Request');
     await checkpoint(db,row,lease,'request_created',{request_id:canonical(request.id,'Request')},nowFor(deps));
     if(!contacts.sameId(request.client?.id,row.client_id,'Client'))return hold(db,row,lease,'created_request_client_mismatch',nowFor(deps));
