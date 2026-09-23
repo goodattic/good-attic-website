@@ -1,0 +1,92 @@
+{
+  "checked_at": "2026-09-23T20:03:07.750Z",
+  "workers": [
+    {
+      "name": "good-attic-jobber-phase2-backfill",
+      "upload_enabled": "false",
+      "google_secret_names": [
+        "GOOGLE_DATA_MANAGER_OAUTH_CLIENT_ID",
+        "GOOGLE_DATA_MANAGER_OAUTH_CLIENT_SECRET",
+        "GOOGLE_DATA_MANAGER_OAUTH_REFRESH_TOKEN"
+      ]
+    },
+    {
+      "name": "good-attic-google-ads-outcome-uploader",
+      "upload_enabled": "false",
+      "google_secret_names": []
+    }
+  ],
+  "outbox": [
+    {
+      "upload_state": "shadow",
+      "count": 559,
+      "attempts": 0
+    }
+  ],
+  "runs": [
+    {
+      "trigger": "manual",
+      "started_at": "2026-09-23T20:02:11.450Z",
+      "completed_at": "2026-09-23T20:02:15.634Z",
+      "status": "success",
+      "events_processed": 101,
+      "webhooks_processed": 0
+    },
+    {
+      "trigger": "scheduled",
+      "started_at": "2026-09-23T20:00:15.632Z",
+      "completed_at": "2026-09-23T20:00:36.184Z",
+      "status": "success",
+      "events_processed": 101,
+      "webhooks_processed": 1
+    },
+    {
+      "trigger": "scheduled",
+      "started_at": "2026-09-23T19:55:15.279Z",
+      "completed_at": "2026-09-23T19:55:35.603Z",
+      "status": "success",
+      "events_processed": 101,
+      "webhooks_processed": 1
+    },
+    {
+      "trigger": "scheduled",
+      "started_at": "2026-09-23T19:50:15.400Z",
+      "completed_at": "2026-09-23T19:50:33.425Z",
+      "status": "success",
+      "events_processed": 101,
+      "webhooks_processed": 0
+    },
+    {
+      "trigger": "scheduled",
+      "started_at": "2026-09-23T19:45:15.363Z",
+      "completed_at": "2026-09-23T19:45:32.627Z",
+      "status": "success",
+      "events_processed": 101,
+      "webhooks_processed": 0
+    },
+    {
+      "trigger": "scheduled",
+      "started_at": "2026-09-23T19:40:15.388Z",
+      "completed_at": "2026-09-23T19:40:34.514Z",
+      "status": "success",
+      "events_processed": 101,
+      "webhooks_processed": 0
+    },
+    {
+      "trigger": "scheduled",
+      "started_at": "2026-09-23T19:12:32.101Z",
+      "completed_at": "2026-09-23T19:12:47.749Z",
+      "status": "success",
+      "events_processed": 101,
+      "webhooks_processed": 0
+    },
+    {
+      "trigger": "manual",
+      "started_at": "2026-09-23T19:09:30.532Z",
+      "completed_at": "2026-09-23T19:09:33.484Z",
+      "status": "success",
+      "events_processed": 101,
+      "webhooks_processed": 0
+    }
+  ]
+}

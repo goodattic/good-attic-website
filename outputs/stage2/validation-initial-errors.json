@@ -1,0 +1,70 @@
+{
+  "transport": "data_manager_api",
+  "validate_only": true,
+  "recorded_conversions": 0,
+  "attempted": true,
+  "limitation": "Synchronous validation only; Google provides no asynchronous match diagnostics for validateOnly requests.",
+  "rows": [
+    {
+      "event_id": "gae-stl-sold-64231311",
+      "result": "GOOGLE_VALIDATION_ERROR",
+      "http_status": 400,
+      "google_response_raw": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"There was a problem with the request.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"INVALID_ARGUMENT\",\n        \"domain\": \"datamanager.googleapis.com\",\n        \"metadata\": {\n          \"requestId\": \"t-6b92f22c-df2a-492d-8ae9-171ef145993e\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RequestInfo\",\n        \"requestId\": \"t-6b92f22c-df2a-492d-8ae9-171ef145993e\"\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.BadRequest\",\n        \"fieldViolations\": [\n          {\n            \"field\": \"events.events[0].event_source\",\n            \"description\": \"Required field is missing.\",\n            \"reason\": \"REQUIRED_FIELD_MISSING\"\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+    },
+    {
+      "event_id": "gae-stl-sold-64405592",
+      "result": "GOOGLE_VALIDATION_ERROR",
+      "http_status": 400,
+      "google_response_raw": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"There was a problem with the request.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"INVALID_ARGUMENT\",\n        \"domain\": \"datamanager.googleapis.com\",\n        \"metadata\": {\n          \"requestId\": \"t-acfca281-7423-4213-a0c3-4336934b63fc\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RequestInfo\",\n        \"requestId\": \"t-acfca281-7423-4213-a0c3-4336934b63fc\"\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.BadRequest\",\n        \"fieldViolations\": [\n          {\n            \"field\": \"events.events[0].event_source\",\n            \"description\": \"Required field is missing.\",\n            \"reason\": \"REQUIRED_FIELD_MISSING\"\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+    },
+    {
+      "event_id": "gae-stl-sold-64423473",
+      "result": "GOOGLE_VALIDATION_ERROR",
+      "http_status": 400,
+      "google_response_raw": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"There was a problem with the request.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"INVALID_ARGUMENT\",\n        \"domain\": \"datamanager.googleapis.com\",\n        \"metadata\": {\n          \"requestId\": \"t-c1db7bc2-510d-4401-ae57-5cd86cd4461f\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RequestInfo\",\n        \"requestId\": \"t-c1db7bc2-510d-4401-ae57-5cd86cd4461f\"\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.BadRequest\",\n        \"fieldViolations\": [\n          {\n            \"field\": \"events.events[0].event_source\",\n            \"description\": \"Required field is missing.\",\n            \"reason\": \"REQUIRED_FIELD_MISSING\"\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+    },
+    {
+      "event_id": "gae-stl-sold-64534205",
+      "result": "GOOGLE_VALIDATION_ERROR",
+      "http_status": 400,
+      "google_response_raw": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"There was a problem with the request.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"INVALID_ARGUMENT\",\n        \"domain\": \"datamanager.googleapis.com\",\n        \"metadata\": {\n          \"requestId\": \"t-94b81350-6aec-41b5-92b8-4c21f45d70fc\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RequestInfo\",\n        \"requestId\": \"t-94b81350-6aec-41b5-92b8-4c21f45d70fc\"\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.BadRequest\",\n        \"fieldViolations\": [\n          {\n            \"field\": \"events.events[0].event_source\",\n            \"description\": \"Required field is missing.\",\n            \"reason\": \"REQUIRED_FIELD_MISSING\"\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+    },
+    {
+      "event_id": "gae-slc-sold-63859930",
+      "result": "GOOGLE_VALIDATION_ERROR",
+      "http_status": 400,
+      "google_response_raw": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"There was a problem with the request.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"INVALID_ARGUMENT\",\n        \"domain\": \"datamanager.googleapis.com\",\n        \"metadata\": {\n          \"requestId\": \"t-e98f896c-6e64-43f4-8d70-c08d3f8fc176\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RequestInfo\",\n        \"requestId\": \"t-e98f896c-6e64-43f4-8d70-c08d3f8fc176\"\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.BadRequest\",\n        \"fieldViolations\": [\n          {\n            \"field\": \"events.events[0].event_source\",\n            \"description\": \"Required field is missing.\",\n            \"reason\": \"REQUIRED_FIELD_MISSING\"\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+    },
+    {
+      "event_id": "gae-slc-sold-65441706",
+      "result": "GOOGLE_VALIDATION_ERROR",
+      "http_status": 400,
+      "google_response_raw": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"There was a problem with the request.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"INVALID_ARGUMENT\",\n        \"domain\": \"datamanager.googleapis.com\",\n        \"metadata\": {\n          \"requestId\": \"t-2f62d823-98b8-411a-8970-ea888b5b3bf4\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RequestInfo\",\n        \"requestId\": \"t-2f62d823-98b8-411a-8970-ea888b5b3bf4\"\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.BadRequest\",\n        \"fieldViolations\": [\n          {\n            \"field\": \"events.events[0].event_source\",\n            \"description\": \"Required field is missing.\",\n            \"reason\": \"REQUIRED_FIELD_MISSING\"\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+    },
+    {
+      "event_id": "gae-slc-sold-65678461",
+      "result": "GOOGLE_VALIDATION_ERROR",
+      "http_status": 400,
+      "google_response_raw": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"There was a problem with the request.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"INVALID_ARGUMENT\",\n        \"domain\": \"datamanager.googleapis.com\",\n        \"metadata\": {\n          \"requestId\": \"t-3df12837-ff75-4142-9b65-d0565b24b403\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RequestInfo\",\n        \"requestId\": \"t-3df12837-ff75-4142-9b65-d0565b24b403\"\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.BadRequest\",\n        \"fieldViolations\": [\n          {\n            \"field\": \"events.events[0].event_source\",\n            \"description\": \"Required field is missing.\",\n            \"reason\": \"REQUIRED_FIELD_MISSING\"\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+    },
+    {
+      "event_id": "gae-stl-sold-63891747",
+      "result": "GOOGLE_VALIDATION_ERROR",
+      "http_status": 400,
+      "google_response_raw": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"There was a problem with the request.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"INVALID_ARGUMENT\",\n        \"domain\": \"datamanager.googleapis.com\",\n        \"metadata\": {\n          \"requestId\": \"t-1a92ac8d-dd7d-4ebc-b074-cbe91a8e33d5\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RequestInfo\",\n        \"requestId\": \"t-1a92ac8d-dd7d-4ebc-b074-cbe91a8e33d5\"\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.BadRequest\",\n        \"fieldViolations\": [\n          {\n            \"field\": \"events.events[0].event_source\",\n            \"description\": \"Required field is missing.\",\n            \"reason\": \"REQUIRED_FIELD_MISSING\"\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+    },
+    {
+      "event_id": "gae-stl-sold-65203544",
+      "result": "GOOGLE_VALIDATION_ERROR",
+      "http_status": 400,
+      "google_response_raw": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"There was a problem with the request.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"INVALID_ARGUMENT\",\n        \"domain\": \"datamanager.googleapis.com\",\n        \"metadata\": {\n          \"requestId\": \"t-62647ae9-ece3-4bc3-bca0-12b5215d2904\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RequestInfo\",\n        \"requestId\": \"t-62647ae9-ece3-4bc3-bca0-12b5215d2904\"\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.BadRequest\",\n        \"fieldViolations\": [\n          {\n            \"field\": \"events.events[0].event_source\",\n            \"description\": \"Required field is missing.\",\n            \"reason\": \"REQUIRED_FIELD_MISSING\"\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+    },
+    {
+      "event_id": "gae-stl-assessment-33833856",
+      "result": "GOOGLE_VALIDATION_ERROR",
+      "http_status": 400,
+      "google_response_raw": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"There was a problem with the request.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"INVALID_ARGUMENT\",\n        \"domain\": \"datamanager.googleapis.com\",\n        \"metadata\": {\n          \"requestId\": \"t-8516bda3-d324-4101-9414-0d61d4c1d2b6\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RequestInfo\",\n        \"requestId\": \"t-8516bda3-d324-4101-9414-0d61d4c1d2b6\"\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.BadRequest\",\n        \"fieldViolations\": [\n          {\n            \"field\": \"events.events[0].event_source\",\n            \"description\": \"Required field is missing.\",\n            \"reason\": \"REQUIRED_FIELD_MISSING\"\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+    }
+  ],
+  "checked_at": "2026-09-23T20:01:46.104Z"
+}

@@ -7,7 +7,7 @@ import {validationCandidates,dataManagerValidationRequest,validateDataManagerOnl
 const row={event_id:'sale',action:'7754270382',timestamp:'2026-08-24 21:56:33+00:00',value:123,gclid:'g',gbraid:'b',wbraid:'w'};
 const env={GOOGLE_ADS_UPLOAD_ENABLED:'false',...Object.fromEntries(['OAUTH_CLIENT_ID','OAUTH_CLIENT_SECRET','OAUTH_REFRESH_TOKEN'].map(n=>['GOOGLE_DATA_MANAGER_'+n,'test']))};
 test('one identifier, explicit offset, one destination and test-only request',()=>{
- const b=dataManagerValidationRequest(row);assert.equal(b.validateOnly,true);assert.deepEqual(b.events[0].adIdentifiers,{gclid:'g'});assert.equal(b.events[0].eventTimestamp,'2026-08-24T21:56:33+00:00');assert.equal(b.destinations[0].operatingAccount.accountId,'4800890529');
+ const b=dataManagerValidationRequest(row);assert.equal(b.validateOnly,true);assert.equal(b.events[0].eventSource,'OTHER');assert.deepEqual(b.events[0].adIdentifiers,{gclid:'g'});assert.equal(b.events[0].eventTimestamp,'2026-08-24T21:56:33+00:00');assert.equal(b.destinations[0].operatingAccount.accountId,'4800890529');
  assert.throws(()=>dataManagerValidationRequest({...row,timestamp:'2026-08-24 21:56:33'}),/offset/);
  assert.deepEqual(dataManagerValidationRequest({...row,gclid:null}).events[0].adIdentifiers,{gbraid:'b'});
 });

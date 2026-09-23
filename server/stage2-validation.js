@@ -28,7 +28,7 @@ export function dataManagerValidationRequest(row) {
   return {
     destinations:[{operatingAccount:{accountType:'GOOGLE_ADS',accountId:'4800890529'},productDestinationId:row.action}],
     events:[{transactionId:row.event_id,eventTimestamp:timestamp.toISOString().replace('.000Z','+00:00').replace('Z','+00:00'),
-      adIdentifiers:identifier,currency:'USD',conversionValue:row.value}],
+      adIdentifiers:identifier,eventSource:'OTHER',currency:'USD',conversionValue:row.value}],
     validateOnly:true
   };
 }

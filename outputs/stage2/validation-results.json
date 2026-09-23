@@ -2,53 +2,69 @@
   "transport": "data_manager_api",
   "validate_only": true,
   "recorded_conversions": 0,
-  "attempted": false,
+  "attempted": true,
   "limitation": "Synchronous validation only; Google provides no asynchronous match diagnostics for validateOnly requests.",
   "rows": [
     {
       "event_id": "gae-stl-sold-64231311",
-      "result": "NOT_SENT_MISSING_CREDENTIALS"
+      "result": "VALIDATE_ONLY_HTTP_SUCCESS",
+      "http_status": 200,
+      "google_response_raw": "{\n  \"requestId\": \"v-b21f2f76-8348-41dd-ac2e-a3aca668d8e8\"\n}\n"
     },
     {
       "event_id": "gae-stl-sold-64405592",
-      "result": "NOT_SENT_MISSING_CREDENTIALS"
+      "result": "VALIDATE_ONLY_HTTP_SUCCESS",
+      "http_status": 200,
+      "google_response_raw": "{\n  \"requestId\": \"v-f99520d9-2c22-4cac-91e5-fdfda583e546\"\n}\n"
     },
     {
       "event_id": "gae-stl-sold-64423473",
-      "result": "NOT_SENT_MISSING_CREDENTIALS"
+      "result": "VALIDATE_ONLY_HTTP_SUCCESS",
+      "http_status": 200,
+      "google_response_raw": "{\n  \"requestId\": \"v-c56c4217-7cc4-45b3-8707-270eb0822325\"\n}\n"
     },
     {
       "event_id": "gae-stl-sold-64534205",
-      "result": "NOT_SENT_MISSING_CREDENTIALS"
+      "result": "VALIDATE_ONLY_HTTP_SUCCESS",
+      "http_status": 200,
+      "google_response_raw": "{\n  \"requestId\": \"v-0aedbd98-e458-476f-8e02-443ae4f1aec5\"\n}\n"
     },
     {
       "event_id": "gae-slc-sold-63859930",
-      "result": "NOT_SENT_MISSING_CREDENTIALS"
+      "result": "VALIDATE_ONLY_HTTP_SUCCESS",
+      "http_status": 200,
+      "google_response_raw": "{\n  \"requestId\": \"v-c55256c2-7420-46bc-acb3-09c45d405aef\"\n}\n"
     },
     {
       "event_id": "gae-slc-sold-65441706",
-      "result": "NOT_SENT_MISSING_CREDENTIALS"
+      "result": "VALIDATE_ONLY_HTTP_SUCCESS",
+      "http_status": 200,
+      "google_response_raw": "{\n  \"requestId\": \"v-84be3a83-cebe-4d0d-a555-2ffbe06e1429\"\n}\n"
     },
     {
       "event_id": "gae-slc-sold-65678461",
-      "result": "NOT_SENT_MISSING_CREDENTIALS"
+      "result": "VALIDATE_ONLY_HTTP_SUCCESS",
+      "http_status": 200,
+      "google_response_raw": "{\n  \"requestId\": \"v-2e02d872-e28d-4680-bb11-ed124b48b0cc\"\n}\n"
     },
     {
       "event_id": "gae-stl-sold-63891747",
-      "result": "NOT_SENT_MISSING_CREDENTIALS"
+      "result": "VALIDATE_ONLY_HTTP_SUCCESS",
+      "http_status": 200,
+      "google_response_raw": "{\n  \"requestId\": \"v-77fbbf1f-ac85-4723-9885-621d386aafcf\"\n}\n"
     },
     {
       "event_id": "gae-stl-sold-65203544",
-      "result": "NOT_SENT_MISSING_CREDENTIALS"
+      "result": "VALIDATE_ONLY_HTTP_SUCCESS",
+      "http_status": 200,
+      "google_response_raw": "{\n  \"requestId\": \"v-9a660a9b-73ab-40ba-96c7-b7fa6a78a4c7\"\n}\n"
     },
     {
       "event_id": "gae-stl-assessment-33833856",
-      "result": "NOT_SENT_MISSING_CREDENTIALS"
+      "result": "VALIDATE_ONLY_HTTP_SUCCESS",
+      "http_status": 200,
+      "google_response_raw": "{\n  \"requestId\": \"v-0d19bc34-473f-494b-97de-d20ec6f68326\"\n}\n"
     }
   ],
-  "missing_credentials": [
-    "GOOGLE_DATA_MANAGER_OAUTH_CLIENT_ID",
-    "GOOGLE_DATA_MANAGER_OAUTH_CLIENT_SECRET",
-    "GOOGLE_DATA_MANAGER_OAUTH_REFRESH_TOKEN"
-  ]
+  "checked_at": "2026-09-23T20:02:49.281491+00:00"
 }
