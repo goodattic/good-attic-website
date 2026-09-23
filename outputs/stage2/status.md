@@ -34,7 +34,7 @@ Migration 0012 freezes previously observed historical scheduled assessments. New
 
 The public /health endpoint now returns last_successful_run_at, last_successful_scheduled_run_at and 24-hour counters. Failed and partially failed runs do not advance success timestamps. Counts are aggregated; no client, click ID or Jobber record data is exposed. events_processed counts distinct outcome evaluations within each successful run, summed over runs; repeated reconciliation is included. unique_events_touched and new_shadow_events cover the ledger's rolling 24 hours, including Stage 1 activity before instrumentation began.
 
-At 19:09:33 UTC the successful manual run evaluated 101 outcome IDs. No scheduled run had yet been verified. The five-minute trigger was reapplied with Wrangler; live observation continues. A null scheduled timestamp is explicitly not proof of autonomy.
+At 19:09:33 UTC the successful manual run evaluated 101 outcome IDs. An autonomous scheduled run then completed at 2026-09-23T19:12:47.749Z, verified directly from D1-backed /health. Two successful runs total 202 outcome evaluations. The five-minute trigger was reapplied with Wrangler at 19:09:48 UTC; the observed run occurred near the previous hourly :12 schedule, so autonomous execution is proved but the new five-minute cadence still needs observation after propagation. No local process invoked /tick for that scheduled run.
 
 Thirty relevant tests passed (12 Stage 1, 7 Stage 2, 11 existing uploader/token authority).
 
