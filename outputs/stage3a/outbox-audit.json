@@ -1,0 +1,31 @@
+[
+  [
+    {
+      "outcome_id": "gae-stl-sold-65203544",
+      "upload_state": "accepted",
+      "attempt_count": 1,
+      "google_response_category": "DATA_MANAGER_INGESTION_ACCEPTED_NOT_MATCH_CONFIRMED"
+    }
+  ],
+  [
+    {
+      "upload_state": "accepted",
+      "count": 1,
+      "attempts": 1
+    },
+    {
+      "upload_state": "shadow",
+      "count": 559,
+      "attempts": 0
+    }
+  ],
+  [
+    {
+      "event_id": "gae-stl-sold-65203544",
+      "state": "ingestion_accepted",
+      "response_status": 200,
+      "request_id": "e9071fc4-f101-4586-8bf5-e700179d6e8e",
+      "claimed_at": "2026-09-23T20:08:18.022Z"
+    }
+  ]
+]

@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-09-23T20:09:18.388Z",
+  "flags": [
+    {
+      "worker": "good-attic-jobber-phase2-backfill",
+      "GOOGLE_ADS_UPLOAD_ENABLED": "false"
+    },
+    {
+      "worker": "good-attic-google-ads-outcome-uploader",
+      "GOOGLE_ADS_UPLOAD_ENABLED": "false"
+    }
+  ],
+  "send_route_closed": true,
+  "real_send_function_in_deployed_bundle": false,
+  "nonvalidate_assignment_in_deployed_bundle": false
+}

@@ -1,0 +1,23 @@
+{
+  "mode": "shadow",
+  "google_upload_enabled": false,
+  "real_upload_transport": null,
+  "validation_transport": "data_manager_api",
+  "markets": [
+    "ut",
+    "mo_stl",
+    "mo_kc"
+  ],
+  "last_successful_run_at": "2026-09-23T20:05:52.597Z",
+  "last_successful_scheduled_run_at": "2026-09-23T20:05:52.597Z",
+  "metrics_since": "2026-09-23T19:09:30.170Z",
+  "last_24h": {
+    "successful_runs": 9,
+    "events_processed": 910,
+    "unique_events_touched": 560,
+    "new_shadow_events": 559,
+    "webhooks_processed": 10
+  },
+  "events_processed_definition": "Distinct outcome evaluations per successful run, summed across runs; repeated reconciliation is included.",
+  "customer_data_exposed": false
+}

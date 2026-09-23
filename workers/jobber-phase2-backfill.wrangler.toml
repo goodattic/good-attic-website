@@ -1,5 +1,5 @@
 name = "good-attic-jobber-phase2-backfill"
-main = "stage1-shadow.js"
+main = "stage3a-canary.js"
 compatibility_date = "2026-07-27"
 workers_dev = true
 
