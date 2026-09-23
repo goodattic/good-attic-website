@@ -1,15 +1,26 @@
 name = "good-attic-jobber-phase2-backfill"
-main = "jobber-phase2-backfill.js"
+main = "stage1-shadow.js"
 compatibility_date = "2026-07-27"
-workers_dev = false
+workers_dev = true
 
 [triggers]
-crons = ["17 * * * *"]
+crons = ["*/5 * * * *"]
 
 [vars]
-PHASE2_SHADOW_ENABLED = "false"
+GOOGLE_ADS_UPLOAD_ENABLED = "false"
+PHASE2_SHADOW_ENABLED = "true"
+
+[[rules]]
+type = "Text"
+globs = ["**/*.sql"]
+fallthrough = true
 
 [[d1_databases]]
 binding = "ANGI_ROUTER_DB"
 database_name = "good-attic-angi-jobber-router"
 database_id = "934d7ad9-cba8-4cb4-9494-1e9980b7c403"
+
+[[d1_databases]]
+binding = "WEBSITE_ATTRIBUTION_DB"
+database_name = "fieldflow-prod"
+database_id = "7f9bffa8-07d7-4cd8-a60f-96a7d0af3486"

@@ -5,3 +5,6 @@ dist/
 .env.*
 .dev.vars
 .wrangler/
+
+# Local audit snapshots / bundles; never credentials.
+.stage1-private/

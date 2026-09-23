@@ -1,0 +1,387 @@
+[
+  {
+    "market": "mo_kc",
+    "account": "1919824",
+    "since": "2026-07-01T00:00:00.000Z",
+    "as_of": "2026-09-23T18:46:17.583Z",
+    "mode": "shadow",
+    "google_upload_enabled": false,
+    "website_leads_with_click_id": 1,
+    "website_leads_missing_click_id": 3,
+    "daily": {
+      "date": "2026-09-23",
+      "time_zone": "UTC",
+      "website_leads_with_click_id": 0,
+      "website_leads_missing_click_id": 0,
+      "stages": {
+        "appointment_set": {
+          "observed": 0,
+          "shadow_ready": 0,
+          "held": 0,
+          "shadow_ready_value_usd": 0
+        },
+        "assessment_completed": {
+          "observed": 1,
+          "shadow_ready": 0,
+          "held": 1,
+          "shadow_ready_value_usd": 0
+        },
+        "sold_job": {
+          "observed": 1,
+          "shadow_ready": 0,
+          "held": 1,
+          "shadow_ready_value_usd": 0
+        }
+      }
+    },
+    "stages": {
+      "appointment_set": {
+        "observed": 16,
+        "website_with_click_id": 1,
+        "shadow_ready": 0,
+        "held": 16,
+        "observed_value_usd": 0,
+        "shadow_ready_value_usd": 0
+      },
+      "assessment_completed": {
+        "observed": 9,
+        "website_with_click_id": 0,
+        "shadow_ready": 0,
+        "held": 9,
+        "observed_value_usd": 0,
+        "shadow_ready_value_usd": 0
+      },
+      "sold_job": {
+        "observed": 84,
+        "website_with_click_id": 0,
+        "shadow_ready": 0,
+        "held": 84,
+        "observed_value_usd": 37771.86,
+        "shadow_ready_value_usd": 0
+      }
+    },
+    "linkage": {
+      "request": {
+        "scanned": 27,
+        "missing_request_link": 0,
+        "without_original_website_lead": 23
+      },
+      "quote": {
+        "scanned": 22,
+        "missing_request_link": 10,
+        "without_original_website_lead": 22
+      },
+      "job": {
+        "scanned": 83,
+        "missing_request_link": 79,
+        "without_original_website_lead": 83
+      }
+    },
+    "attribution_requests_not_returned_by_backfill": [],
+    "hold_reasons": {
+      "missing_original_website_lead": 108,
+      "missing_click_id": 108,
+      "appointment_booking_time_unavailable": 16,
+      "missing_request_link": 80,
+      "quote_approval_time_unavailable": 77,
+      "missing_approved_quote": 77,
+      "approved_quote_value_unavailable": 77
+    },
+    "held_event_count": 109,
+    "scan_complete": true,
+    "scan": [
+      {
+        "market_key": "mo_kc",
+        "object_type": "job",
+        "cursor": null,
+        "completed_at": "2026-09-23T18:37:51.871Z",
+        "page_count": 4,
+        "object_count": 83,
+        "error": null,
+        "updated_at": "2026-09-23T18:37:51.871Z"
+      },
+      {
+        "market_key": "mo_kc",
+        "object_type": "quote",
+        "cursor": null,
+        "completed_at": "2026-09-23T18:36:49.842Z",
+        "page_count": 1,
+        "object_count": 22,
+        "error": null,
+        "updated_at": "2026-09-23T18:36:49.842Z"
+      },
+      {
+        "market_key": "mo_kc",
+        "object_type": "request",
+        "cursor": null,
+        "completed_at": "2026-09-23T18:37:39.094Z",
+        "page_count": 2,
+        "object_count": 27,
+        "error": null,
+        "updated_at": "2026-09-23T18:37:39.094Z"
+      }
+    ],
+    "webhooks": []
+  },
+  {
+    "market": "mo_stl",
+    "account": "2498453",
+    "since": "2026-07-01T00:00:00.000Z",
+    "as_of": "2026-09-23T18:46:17.262Z",
+    "mode": "shadow",
+    "google_upload_enabled": false,
+    "website_leads_with_click_id": 14,
+    "website_leads_missing_click_id": 26,
+    "daily": {
+      "date": "2026-09-23",
+      "time_zone": "UTC",
+      "website_leads_with_click_id": 0,
+      "website_leads_missing_click_id": 0,
+      "stages": {
+        "appointment_set": {
+          "observed": 0,
+          "shadow_ready": 0,
+          "held": 0,
+          "shadow_ready_value_usd": 0
+        },
+        "assessment_completed": {
+          "observed": 1,
+          "shadow_ready": 0,
+          "held": 1,
+          "shadow_ready_value_usd": 0
+        },
+        "sold_job": {
+          "observed": 0,
+          "shadow_ready": 0,
+          "held": 0,
+          "shadow_ready_value_usd": 0
+        }
+      }
+    },
+    "stages": {
+      "appointment_set": {
+        "observed": 90,
+        "website_with_click_id": 11,
+        "shadow_ready": 0,
+        "held": 90,
+        "observed_value_usd": 0,
+        "shadow_ready_value_usd": 0
+      },
+      "assessment_completed": {
+        "observed": 78,
+        "website_with_click_id": 9,
+        "shadow_ready": 9,
+        "held": 69,
+        "observed_value_usd": 0,
+        "shadow_ready_value_usd": 0
+      },
+      "sold_job": {
+        "observed": 28,
+        "website_with_click_id": 5,
+        "shadow_ready": 5,
+        "held": 23,
+        "observed_value_usd": 141280.14,
+        "shadow_ready_value_usd": 22520.4
+      }
+    },
+    "linkage": {
+      "request": {
+        "scanned": 153,
+        "missing_request_link": 0,
+        "without_original_website_lead": 119
+      },
+      "quote": {
+        "scanned": 95,
+        "missing_request_link": 17,
+        "without_original_website_lead": 65
+      },
+      "job": {
+        "scanned": 27,
+        "missing_request_link": 7,
+        "without_original_website_lead": 18
+      }
+    },
+    "attribution_requests_not_returned_by_backfill": [
+      "Z2lkOi8vSm9iYmVyL1JlcXVlc3QvMzI0MjQ0OTY=",
+      "Z2lkOi8vSm9iYmVyL1JlcXVlc3QvMzI4MjA3MTA=",
+      "Z2lkOi8vSm9iYmVyL1JlcXVlc3QvMzM5OTEwNzQ=",
+      "Z2lkOi8vSm9iYmVyL1JlcXVlc3QvMzMwNTI2MDE=",
+      "Z2lkOi8vSm9iYmVyL1JlcXVlc3QvMzQwMDM2NzE=",
+      "Z2lkOi8vSm9iYmVyL1JlcXVlc3QvMzQwMzU3Mjk="
+    ],
+    "hold_reasons": {
+      "missing_original_website_lead": 130,
+      "missing_click_id": 171,
+      "appointment_booking_time_unavailable": 90,
+      "missing_request_link": 7,
+      "quote_approval_time_unavailable": 1,
+      "missing_approved_quote": 1,
+      "approved_quote_value_unavailable": 1
+    },
+    "held_event_count": 182,
+    "scan_complete": true,
+    "scan": [
+      {
+        "market_key": "mo_stl",
+        "object_type": "job",
+        "cursor": null,
+        "completed_at": "2026-09-23T18:37:38.514Z",
+        "page_count": 2,
+        "object_count": 27,
+        "error": null,
+        "updated_at": "2026-09-23T18:37:38.514Z"
+      },
+      {
+        "market_key": "mo_stl",
+        "object_type": "quote",
+        "cursor": null,
+        "completed_at": "2026-09-23T18:37:51.139Z",
+        "page_count": 4,
+        "object_count": 95,
+        "error": null,
+        "updated_at": "2026-09-23T18:37:51.139Z"
+      },
+      {
+        "market_key": "mo_stl",
+        "object_type": "request",
+        "cursor": null,
+        "completed_at": "2026-09-23T18:38:06.887Z",
+        "page_count": 7,
+        "object_count": 153,
+        "error": null,
+        "updated_at": "2026-09-23T18:38:06.887Z"
+      }
+    ],
+    "webhooks": []
+  },
+  {
+    "market": "ut",
+    "account": "2498432",
+    "since": "2026-07-01T00:00:00.000Z",
+    "as_of": "2026-09-23T18:46:16.933Z",
+    "mode": "shadow",
+    "google_upload_enabled": false,
+    "website_leads_with_click_id": 11,
+    "website_leads_missing_click_id": 19,
+    "daily": {
+      "date": "2026-09-23",
+      "time_zone": "UTC",
+      "website_leads_with_click_id": 0,
+      "website_leads_missing_click_id": 0,
+      "stages": {
+        "appointment_set": {
+          "observed": 0,
+          "shadow_ready": 0,
+          "held": 0,
+          "shadow_ready_value_usd": 0
+        },
+        "assessment_completed": {
+          "observed": 0,
+          "shadow_ready": 0,
+          "held": 0,
+          "shadow_ready_value_usd": 0
+        },
+        "sold_job": {
+          "observed": 0,
+          "shadow_ready": 0,
+          "held": 0,
+          "shadow_ready_value_usd": 0
+        }
+      }
+    },
+    "stages": {
+      "appointment_set": {
+        "observed": 107,
+        "website_with_click_id": 6,
+        "shadow_ready": 0,
+        "held": 107,
+        "observed_value_usd": 0,
+        "shadow_ready_value_usd": 0
+      },
+      "assessment_completed": {
+        "observed": 86,
+        "website_with_click_id": 5,
+        "shadow_ready": 5,
+        "held": 81,
+        "observed_value_usd": 0,
+        "shadow_ready_value_usd": 0
+      },
+      "sold_job": {
+        "observed": 61,
+        "website_with_click_id": 3,
+        "shadow_ready": 3,
+        "held": 58,
+        "observed_value_usd": 251998.81,
+        "shadow_ready_value_usd": 12148.98
+      }
+    },
+    "linkage": {
+      "request": {
+        "scanned": 168,
+        "missing_request_link": 0,
+        "without_original_website_lead": 143
+      },
+      "quote": {
+        "scanned": 156,
+        "missing_request_link": 68,
+        "without_original_website_lead": 143
+      },
+      "job": {
+        "scanned": 60,
+        "missing_request_link": 32,
+        "without_original_website_lead": 54
+      }
+    },
+    "attribution_requests_not_returned_by_backfill": [
+      "Z2lkOi8vSm9iYmVyL1JlcXVlc3QvMzI1MDM3ODU=",
+      "Z2lkOi8vSm9iYmVyL1JlcXVlc3QvMzI2MTY1MDA=",
+      "Z2lkOi8vSm9iYmVyL1JlcXVlc3QvMzM3NTAzMDY=",
+      "Z2lkOi8vSm9iYmVyL1JlcXVlc3QvMzM5OTEwODE=",
+      "Z2lkOi8vSm9iYmVyL1JlcXVlc3QvMzQwNTAzNjA="
+    ],
+    "hold_reasons": {
+      "missing_click_id": 240,
+      "appointment_booking_time_unavailable": 107,
+      "missing_original_website_lead": 220,
+      "missing_request_link": 33,
+      "quote_approval_time_unavailable": 19,
+      "missing_approved_quote": 19,
+      "approved_quote_value_unavailable": 19
+    },
+    "held_event_count": 246,
+    "scan_complete": true,
+    "scan": [
+      {
+        "market_key": "ut",
+        "object_type": "job",
+        "cursor": null,
+        "completed_at": "2026-09-23T18:37:43.486Z",
+        "page_count": 3,
+        "object_count": 60,
+        "error": null,
+        "updated_at": "2026-09-23T18:37:43.486Z"
+      },
+      {
+        "market_key": "ut",
+        "object_type": "quote",
+        "cursor": null,
+        "completed_at": "2026-09-23T18:38:06.204Z",
+        "page_count": 7,
+        "object_count": 156,
+        "error": null,
+        "updated_at": "2026-09-23T18:38:06.204Z"
+      },
+      {
+        "market_key": "ut",
+        "object_type": "request",
+        "cursor": null,
+        "completed_at": "2026-09-23T18:38:05.597Z",
+        "page_count": 7,
+        "object_count": 168,
+        "error": null,
+        "updated_at": "2026-09-23T18:38:05.597Z"
+      }
+    ],
+    "webhooks": []
+  }
+]
