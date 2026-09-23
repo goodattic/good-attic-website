@@ -4,6 +4,7 @@ import { verifyJobberWebhookSignature } from '../server/jobber-appointment-webho
 import { SINCE, MARKETS, accountMarket, deriveEvents, clickIdentifier } from '../server/stage1-model.js';
 import { validationCandidates, validateDataManagerOnly } from '../server/stage2-validation.js';
 import { firstScheduledObservation, health } from '../server/stage2-health.js';
+import ownerLinkMigration from '../migrations/0013_owner_link_overrides.sql';
 import stage2Migration from '../migrations/0012_stage2_observability.sql';
 import migration from '../migrations/0010_stage1_shadow.sql';
 import outboxMigration from '../migrations/0011_stage1_outbox.sql';
@@ -61,8 +62,9 @@ async function cachedEnvironment(env) {
  const objects=new Map((await all(db,'SELECT * FROM closed_loop_stage1_objects')).map(o=>[o.market_key+':'+o.object_type+':'+o.object_id,o]));
  const leads=new Map((await all(db,'SELECT * FROM closed_loop_stage1_leads')).map(l=>[l.market_key+':'+l.request_id,l]));
  const historical=new Set((await all(db,'SELECT market_key,request_id FROM closed_loop_stage2_historical_appointments')).map(r=>r.market_key+':'+r.request_id));
+ const overrides=new Map((await all(db,'SELECT * FROM closed_loop_owner_link_overrides')).map(r=>[r.market_key+':'+r.quote_id,r]));
  const states=new Map((await all(db,'SELECT outcome_id,upload_state FROM google_ads_outcome_outbox')).map(e=>[e.outcome_id,e]));
- const cached={prepare(sql){return {bind(...args){return {async first(){if(sql.startsWith('SELECT object_json'))return objects.get(args.join(':'))||null;if(sql.startsWith('SELECT * FROM closed_loop_stage1_leads'))return leads.get(args.join(':'))||null;if(sql.startsWith('SELECT request_id FROM closed_loop_stage2_historical_appointments'))return historical.has(args.join(':'))?{request_id:args[1]}:null;if(sql.startsWith('SELECT upload_state'))return states.get(args[0])||null;throw Error('unexpected_cached_query');},async run(){writes.push(db.prepare(sql).bind(...args));}};}};}};
+ const cached={prepare(sql){return {bind(...args){return {async first(){if(sql.startsWith('SELECT object_json'))return objects.get(args.join(':'))||null;if(sql.startsWith('SELECT * FROM closed_loop_stage1_leads'))return leads.get(args.join(':'))||null;if(sql.startsWith('SELECT request_id FROM closed_loop_stage2_historical_appointments'))return historical.has(args.join(':'))?{request_id:args[1]}:null;if(sql.startsWith('SELECT * FROM closed_loop_owner_link_overrides'))return overrides.get(args.join(':'))||null;if(sql.startsWith('SELECT upload_state'))return states.get(args[0])||null;throw Error('unexpected_cached_query');},async run(){writes.push(db.prepare(sql).bind(...args));}};}};}};
  return {env:{...env,ANGI_ROUTER_DB:cached},async flush(){for(let i=0;i<writes.length;i+=75)await db.batch(writes.slice(i,i+75));}};
 }
 
@@ -72,10 +74,19 @@ async function processObject(env, market, type, object, webhook = null) {
   const old = await db.prepare('SELECT object_json,first_scheduled_at FROM closed_loop_stage1_objects WHERE market_key=? AND object_type=? AND object_id=?').bind(market,type,object.id).first();
   const historical=type==='request' ? await db.prepare('SELECT request_id FROM closed_loop_stage2_historical_appointments WHERE market_key=? AND request_id=?').bind(market,object.id).first() : null;
   const scheduledAt=type==='request' ? firstScheduledObservation(old,object,historical,env.STAGE2_APPOINTMENT_CUTOFF,now()) : null;
-  const requestId = type === 'request' ? object.id : object.request?.id || object.quote?.request?.id || null;
+  const quote = type === 'quote' ? object : type === 'job' ? object.quote : null;
+  const override = quote ? await db.prepare('SELECT * FROM closed_loop_owner_link_overrides WHERE market_key=? AND quote_id=?').bind(market,quote.id).first() : null;
+  // Apply owner evidence only to derivation; retain the original Jobber JSON below.
+  let effective = object;
+  if (override) {
+    const conflict = [object.request?.id,quote.request?.id].some(id=>id && id!==override.request_id);
+    effective = type === 'quote' ? {...object,request:{id:override.request_id}} : {...object,request:{id:override.request_id},quote:{...quote,request:{id:override.request_id}}};
+    if (conflict) effective.ownerLinkConflict = true;
+  }
+  const requestId = type === 'request' ? object.id : effective.request?.id || effective.quote?.request?.id || null;
   await run(db, `INSERT INTO closed_loop_stage1_objects (market_key,object_type,object_id,request_id,client_id,source_created_at,source_updated_at,object_json,first_scheduled_at,observed_at) VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(market_key,object_type,object_id) DO UPDATE SET request_id=excluded.request_id,source_updated_at=excluded.source_updated_at,object_json=excluded.object_json,first_scheduled_at=COALESCE(closed_loop_stage1_objects.first_scheduled_at,excluded.first_scheduled_at),observed_at=excluded.observed_at`, market,type,object.id,requestId,object.client?.id || null,object.createdAt || null,object.updatedAt || null,JSON.stringify(object),scheduledAt,now());
   const lead = requestId ? await db.prepare('SELECT * FROM closed_loop_stage1_leads WHERE market_key=? AND request_id=?').bind(market,requestId).first() : null;
-  for (const e of deriveEvents(market,type,object,lead,scheduledAt)) {await persistEvent(db,e);env.STAGE2_RUN_STATS?.events.add(e.id);}
+  for (const e of deriveEvents(market,type,effective,lead,scheduledAt)) {await persistEvent(db,e);env.STAGE2_RUN_STATS?.events.add(e.id);}
 }
 
 async function scanPage(env, market, type) {
@@ -155,7 +166,7 @@ async function tick(env, trigger="manual") {
     await syncAttribution(env);await drainWebhooks(env);
     const pages={};for(const m of Object.keys(MARKETS)){pages[m]={};for(const t of ['request','quote','job'])pages[m][t]=await scanPage(env,m,t);}
     // Re-evaluate cached observations when late website attribution arrives.
-    const cached=await all(db,'SELECT * FROM closed_loop_stage1_objects WHERE request_id IN (SELECT request_id FROM closed_loop_stage1_leads)');
+    const cached=await all(db,`SELECT o.* FROM closed_loop_stage1_objects o WHERE request_id IN (SELECT request_id FROM closed_loop_stage1_leads) OR EXISTS (SELECT 1 FROM closed_loop_owner_link_overrides v WHERE v.market_key=o.market_key AND v.quote_id=CASE WHEN o.object_type='quote' THEN o.object_id ELSE json_extract(o.object_json,'$.quote.id') END)`);
     const cache=await cachedEnvironment(env);
     for(const o of cached)await processObject(cache.env,o.market_key,o.object_type,JSON.parse(o.object_json));
     await cache.flush();
@@ -193,7 +204,7 @@ export default {
       if(path==='/initialize'&&request.method==='POST'){
         if(env.GOOGLE_ADS_UPLOAD_ENABLED!=='false')throw Error('stage1_requires_google_upload_disabled');
         const schema=await env.ANGI_ROUTER_DB.prepare("SELECT sql FROM sqlite_master WHERE name='google_ads_outcome_outbox'").first();
-        const sql=migration+(schema?.sql.includes("'shadow'")&&schema.sql.includes("'mo_kc'")?'':outboxMigration)+stage2Migration;
+        const sql=migration+(schema?.sql.includes("'shadow'")&&schema.sql.includes("'mo_kc'")?'':outboxMigration)+stage2Migration+ownerLinkMigration;
         const statements=sql.replace(/--[^\n]*/g,'').split(';').map(s=>s.trim()).filter(Boolean);
         await env.ANGI_ROUTER_DB.batch(statements.map(s=>env.ANGI_ROUTER_DB.prepare(s)));
         return json({initialized:true,mode:'shadow'});

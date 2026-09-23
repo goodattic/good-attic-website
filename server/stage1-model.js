@@ -35,6 +35,7 @@ export function deriveEvents(market, type, object, lead, scheduledAt, now = new 
   }
   return events.filter(e => !e.windowTime || Date.parse(e.windowTime) >= Date.parse(SINCE)).map(e => {
     const reasons = [];
+    if (object.ownerLinkConflict) reasons.push('owner_override_conflicts_with_jobber_link');
     if (!requestId) reasons.push('missing_request_link');
     if(type==='job'&&object.request?.id&&object.quote?.request?.id&&object.request.id!==object.quote.request.id)reasons.push('conflicting_job_quote_request_links');
     if (!lead) reasons.push('missing_original_website_lead');
