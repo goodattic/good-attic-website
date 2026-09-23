@@ -4,6 +4,7 @@ import { verifyJobberWebhookSignature } from '../server/jobber-appointment-webho
 import { SINCE, MARKETS, accountMarket, deriveEvents, clickIdentifier } from '../server/stage1-model.js';
 import { validationCandidates, validateDataManagerOnly } from '../server/stage2-validation.js';
 import { firstScheduledObservation, health } from '../server/stage2-health.js';
+import ownerReviewMigration from '../migrations/0014_owner_request_review.sql';
 import ownerLinkMigration from '../migrations/0013_owner_link_overrides.sql';
 import stage2Migration from '../migrations/0012_stage2_observability.sql';
 import migration from '../migrations/0010_stage1_shadow.sql';
@@ -63,8 +64,10 @@ async function cachedEnvironment(env) {
  const leads=new Map((await all(db,'SELECT * FROM closed_loop_stage1_leads')).map(l=>[l.market_key+':'+l.request_id,l]));
  const historical=new Set((await all(db,'SELECT market_key,request_id FROM closed_loop_stage2_historical_appointments')).map(r=>r.market_key+':'+r.request_id));
  const overrides=new Map((await all(db,'SELECT * FROM closed_loop_owner_link_overrides')).map(r=>[r.market_key+':'+r.quote_id,r]));
+ const requestLinks=new Map((await all(db,'SELECT * FROM closed_loop_owner_request_links')).map(r=>[r.market_key+':'+r.replacement_request_id,r]));
+ const dispositions=new Map((await all(db,'SELECT * FROM closed_loop_lead_dispositions')).map(r=>[r.market_key+':'+r.request_id,r]));
  const states=new Map((await all(db,'SELECT outcome_id,upload_state FROM google_ads_outcome_outbox')).map(e=>[e.outcome_id,e]));
- const cached={prepare(sql){return {bind(...args){return {async first(){if(sql.startsWith('SELECT object_json'))return objects.get(args.join(':'))||null;if(sql.startsWith('SELECT * FROM closed_loop_stage1_leads'))return leads.get(args.join(':'))||null;if(sql.startsWith('SELECT request_id FROM closed_loop_stage2_historical_appointments'))return historical.has(args.join(':'))?{request_id:args[1]}:null;if(sql.startsWith('SELECT * FROM closed_loop_owner_link_overrides'))return overrides.get(args.join(':'))||null;if(sql.startsWith('SELECT upload_state'))return states.get(args[0])||null;throw Error('unexpected_cached_query');},async run(){writes.push(db.prepare(sql).bind(...args));}};}};}};
+ const cached={prepare(sql){return {bind(...args){return {async first(){if(sql.startsWith('SELECT object_json'))return objects.get(args.join(':'))||null;if(sql.startsWith('SELECT * FROM closed_loop_stage1_leads'))return leads.get(args.join(':'))||null;if(sql.startsWith('SELECT request_id FROM closed_loop_stage2_historical_appointments'))return historical.has(args.join(':'))?{request_id:args[1]}:null;if(sql.startsWith('SELECT * FROM closed_loop_owner_link_overrides'))return overrides.get(args.join(':'))||null;if(sql.startsWith('SELECT * FROM closed_loop_owner_request_links'))return requestLinks.get(args.join(':'))||null;if(sql.startsWith('SELECT * FROM closed_loop_lead_dispositions'))return dispositions.get(args.join(':'))||null;if(sql.startsWith('SELECT upload_state'))return states.get(args[0])||null;throw Error('unexpected_cached_query');},async run(){writes.push(db.prepare(sql).bind(...args));}};}};}};
  return {env:{...env,ANGI_ROUTER_DB:cached},async flush(){for(let i=0;i<writes.length;i+=75)await db.batch(writes.slice(i,i+75));}};
 }
 
@@ -85,7 +88,12 @@ async function processObject(env, market, type, object, webhook = null) {
   }
   const requestId = type === 'request' ? object.id : effective.request?.id || effective.quote?.request?.id || null;
   await run(db, `INSERT INTO closed_loop_stage1_objects (market_key,object_type,object_id,request_id,client_id,source_created_at,source_updated_at,object_json,first_scheduled_at,observed_at) VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(market_key,object_type,object_id) DO UPDATE SET request_id=excluded.request_id,source_updated_at=excluded.source_updated_at,object_json=excluded.object_json,first_scheduled_at=COALESCE(closed_loop_stage1_objects.first_scheduled_at,excluded.first_scheduled_at),observed_at=excluded.observed_at`, market,type,object.id,requestId,object.client?.id || null,object.createdAt || null,object.updatedAt || null,JSON.stringify(object),scheduledAt,now());
-  const lead = requestId ? await db.prepare('SELECT * FROM closed_loop_stage1_leads WHERE market_key=? AND request_id=?').bind(market,requestId).first() : null;
+  const requestLink = requestId ? await db.prepare('SELECT * FROM closed_loop_owner_request_links WHERE market_key=? AND replacement_request_id=?').bind(market,requestId).first() : null;
+  const attributionRequestId = requestLink?.source_request_id || requestId;
+  let lead = attributionRequestId ? await db.prepare('SELECT * FROM closed_loop_stage1_leads WHERE market_key=? AND request_id=?').bind(market,attributionRequestId).first() : null;
+  const disposition = attributionRequestId ? await db.prepare('SELECT * FROM closed_loop_lead_dispositions WHERE market_key=? AND request_id=?').bind(market,attributionRequestId).first() : null;
+  if (lead && disposition) lead={...lead,disposition:disposition.disposition};
+  if (requestLink) effective={...effective,ownerAllowedStage:requestLink.allowed_stage};
   for (const e of deriveEvents(market,type,effective,lead,scheduledAt)) {await persistEvent(db,e);env.STAGE2_RUN_STATS?.events.add(e.id);}
 }
 
@@ -129,10 +137,16 @@ async function drainWebhooks(env) {
 export async function makeReports(env) {
   const db=env.ANGI_ROUTER_DB, reports=[];
   for(const market of Object.keys(MARKETS)) {
-    const leads=await all(db,'SELECT * FROM closed_loop_stage1_leads WHERE market_key=? AND inquiry_at>=?',market,SINCE);
+    const dispositions=await all(db,'SELECT * FROM closed_loop_lead_dispositions WHERE market_key=?',market);
+    const tests=new Set(dispositions.filter(d=>d.disposition==='test_excluded').map(d=>d.request_id));
+    const resolved=new Set(dispositions.map(d=>d.request_id));
+    const links=await all(db,'SELECT * FROM closed_loop_owner_request_links WHERE market_key=?',market);
+    for(const link of links)resolved.add(link.source_request_id);
+    const leads=(await all(db,'SELECT * FROM closed_loop_stage1_leads WHERE market_key=? AND inquiry_at>=?',market,SINCE)).filter(l=>!tests.has(l.request_id));
     const events=await all(db,'SELECT * FROM closed_loop_stage1_events WHERE market_key=?',market);
-    const allLeads=await all(db,'SELECT * FROM closed_loop_stage1_leads WHERE market_key=?',market);
+    const allLeads=(await all(db,'SELECT * FROM closed_loop_stage1_leads WHERE market_key=?',market)).filter(l=>!tests.has(l.request_id));
     const clickedRequests=new Set(allLeads.filter(l=>Object.keys(clickIdentifier(l)).length).map(l=>l.request_id));
+    for(const link of links)if(clickedRequests.has(link.source_request_id))clickedRequests.add(link.replacement_request_id);
     const objects=await all(db,'SELECT object_type,object_id,request_id FROM closed_loop_stage1_objects WHERE market_key=?',market);
     const stages={};
     for(const stage of ['appointment_set','assessment_completed','sold_job']){const s=events.filter(e=>e.event_name===stage),ready=s.filter(e=>e.payload_json);stages[stage]={observed:s.length,website_with_click_id:s.filter(e=>clickedRequests.has(e.request_id)).length,shadow_ready:ready.length,held:s.length-ready.length,observed_value_usd:Math.round(s.reduce((n,e)=>n+(e.value_micros||0),0)/10000)/100,shadow_ready_value_usd:Math.round(ready.reduce((n,e)=>n+(e.value_micros||0),0)/10000)/100};}
@@ -140,12 +154,12 @@ export async function makeReports(env) {
     const allLeadIds=new Set(allLeads.map(r=>r.request_id));
     const linkage={};for(const type of ['request','quote','job']){const s=objects.filter(o=>o.object_type===type);linkage[type]={scanned:s.length,missing_request_link:s.filter(o=>!o.request_id).length,without_original_website_lead:s.filter(o=>!o.request_id||!allLeadIds.has(o.request_id)).length};}
     const requestIds=new Set(objects.filter(o=>o.object_type==='request').map(o=>o.object_id));
-    const missingRequestObjects=allLeads.filter(l=>!requestIds.has(l.request_id)).map(l=>l.request_id);
+    const missingRequestObjects=allLeads.filter(l=>!requestIds.has(l.request_id)&&!resolved.has(l.request_id)).map(l=>l.request_id);
     const today=now().slice(0,10);
     const daily={date:today,time_zone:'UTC',website_leads_with_click_id:leads.filter(l=>l.inquiry_at.slice(0,10)===today&&Object.keys(clickIdentifier(l)).length).length,website_leads_missing_click_id:leads.filter(l=>l.inquiry_at.slice(0,10)===today&&!Object.keys(clickIdentifier(l)).length).length,stages:{}};
     for(const stage of Object.keys(stages)){const e=events.filter(e=>e.event_name===stage&&e.conversion_at?.slice(0,10)===today);daily.stages[stage]={observed:e.length,shadow_ready:e.filter(e=>e.payload_json).length,held:e.filter(e=>!e.payload_json).length,shadow_ready_value_usd:Math.round(e.filter(e=>e.payload_json).reduce((n,e)=>n+(e.value_micros||0),0)/10000)/100};}
     const scan=await all(db,'SELECT * FROM closed_loop_stage1_scan WHERE market_key=?',market);
-    const report={market,account:MARKETS[market].account,since:SINCE,as_of:now(),mode:'shadow',google_upload_enabled:false,website_leads_with_click_id:leads.filter(l=>Object.keys(clickIdentifier(l)).length).length,website_leads_missing_click_id:leads.filter(l=>!Object.keys(clickIdentifier(l)).length).length,daily,stages,linkage,attribution_requests_not_returned_by_backfill:missingRequestObjects,hold_reasons:reasons,held_event_count:events.filter(e=>JSON.parse(e.hold_reasons_json).length).length,scan_complete:scan.length===3&&scan.every(s=>s.completed_at&&!s.error),scan,webhooks:await all(db,'SELECT state,count(*) count FROM closed_loop_stage1_webhooks WHERE market_key=? GROUP BY state',market)};
+    const report={market,account:MARKETS[market].account,since:SINCE,as_of:now(),mode:'shadow',google_upload_enabled:false,excluded_test_leads:tests.size,closed_deleted_by_staff:dispositions.filter(d=>d.disposition==='closed_deleted_by_staff').length,owner_verified_request_links:links.length,website_leads_with_click_id:leads.filter(l=>Object.keys(clickIdentifier(l)).length).length,website_leads_missing_click_id:leads.filter(l=>!Object.keys(clickIdentifier(l)).length).length,daily,stages,linkage,attribution_requests_not_returned_by_backfill:missingRequestObjects,hold_reasons:reasons,held_event_count:events.filter(e=>JSON.parse(e.hold_reasons_json).length).length,scan_complete:scan.length===3&&scan.every(s=>s.completed_at&&!s.error),scan,webhooks:await all(db,'SELECT state,count(*) count FROM closed_loop_stage1_webhooks WHERE market_key=? GROUP BY state',market)};
     await run(db,'INSERT INTO closed_loop_stage1_reports(report_date,market_key,report_json,updated_at) VALUES(?,?,?,?) ON CONFLICT(report_date,market_key) DO UPDATE SET report_json=excluded.report_json,updated_at=excluded.updated_at',now().slice(0,10),market,JSON.stringify(report),now());reports.push(report);
   }
   return reports;
@@ -166,7 +180,7 @@ async function tick(env, trigger="manual") {
     await syncAttribution(env);await drainWebhooks(env);
     const pages={};for(const m of Object.keys(MARKETS)){pages[m]={};for(const t of ['request','quote','job'])pages[m][t]=await scanPage(env,m,t);}
     // Re-evaluate cached observations when late website attribution arrives.
-    const cached=await all(db,`SELECT o.* FROM closed_loop_stage1_objects o WHERE request_id IN (SELECT request_id FROM closed_loop_stage1_leads) OR EXISTS (SELECT 1 FROM closed_loop_owner_link_overrides v WHERE v.market_key=o.market_key AND v.quote_id=CASE WHEN o.object_type='quote' THEN o.object_id ELSE json_extract(o.object_json,'$.quote.id') END)`);
+    const cached=await all(db,`SELECT o.* FROM closed_loop_stage1_objects o WHERE request_id IN (SELECT request_id FROM closed_loop_stage1_leads) OR EXISTS (SELECT 1 FROM closed_loop_owner_request_links r WHERE r.market_key=o.market_key AND r.replacement_request_id=o.request_id) OR EXISTS (SELECT 1 FROM closed_loop_owner_link_overrides v WHERE v.market_key=o.market_key AND v.quote_id=CASE WHEN o.object_type='quote' THEN o.object_id ELSE json_extract(o.object_json,'$.quote.id') END)`);
     const cache=await cachedEnvironment(env);
     for(const o of cached)await processObject(cache.env,o.market_key,o.object_type,JSON.parse(o.object_json));
     await cache.flush();
@@ -204,7 +218,7 @@ export default {
       if(path==='/initialize'&&request.method==='POST'){
         if(env.GOOGLE_ADS_UPLOAD_ENABLED!=='false')throw Error('stage1_requires_google_upload_disabled');
         const schema=await env.ANGI_ROUTER_DB.prepare("SELECT sql FROM sqlite_master WHERE name='google_ads_outcome_outbox'").first();
-        const sql=migration+(schema?.sql.includes("'shadow'")&&schema.sql.includes("'mo_kc'")?'':outboxMigration)+stage2Migration+ownerLinkMigration;
+        const sql=migration+(schema?.sql.includes("'shadow'")&&schema.sql.includes("'mo_kc'")?'':outboxMigration)+stage2Migration+ownerLinkMigration+ownerReviewMigration;
         const statements=sql.replace(/--[^\n]*/g,'').split(';').map(s=>s.trim()).filter(Boolean);
         await env.ANGI_ROUTER_DB.batch(statements.map(s=>env.ANGI_ROUTER_DB.prepare(s)));
         return json({initialized:true,mode:'shadow'});

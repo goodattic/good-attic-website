@@ -5,11 +5,11 @@ import { DatabaseSync } from 'node:sqlite';
 import { deriveEvents, numericId, accountMarket, clickIdentifier, validationRequest, validateGoogleOnly } from '../server/stage1-model.js';
 import { registerHooks } from 'node:module';
 registerHooks({load(url,context,next){if(url.endsWith('.sql'))return {format:'module',source:'export default '+JSON.stringify(readFileSync(new URL(url),'utf8')),shortCircuit:true};return next(url,context);}});
-const {default:worker,persistEvent,processObject}=await import('../workers/stage1-shadow.js');
+const {default:worker,persistEvent,processObject,makeReports}=await import('../workers/stage1-shadow.js');
 const id=(t,n)=>btoa(`gid://Jobber/${t}/${n}`);
 const lead={lead_id:'test',inquiry_at:'2026-08-01T00:00:00Z',gclid:'g',gbraid:'b',wbraid:'w'};
 const quote={id:id('Quote',42),createdAt:'2026-08-02T00:00:00Z',request:{id:id('Request',7)},quoteStatus:'approved',lastTransitioned:{approvedAt:'2026-08-03T00:00:00Z'},amounts:{total:123.45}};
-function db(){const sqlite=new DatabaseSync(':memory:');sqlite.exec(readFileSync(new URL('../migrations/0009_google_ads_outcome_outbox.sql',import.meta.url),'utf8'));sqlite.exec(readFileSync(new URL('../migrations/0010_stage1_shadow.sql',import.meta.url),'utf8'));sqlite.exec(readFileSync(new URL('../migrations/0011_stage1_outbox.sql',import.meta.url),'utf8'));sqlite.exec(readFileSync(new URL('../migrations/0012_stage2_observability.sql',import.meta.url),'utf8'));sqlite.exec(readFileSync(new URL('../migrations/0013_owner_link_overrides.sql',import.meta.url),'utf8'));return {sqlite,prepare(sql){let args=[];return {bind(...v){args=v;return this},async first(){return sqlite.prepare(sql).get(...args)||null},async all(){return {results:sqlite.prepare(sql).all(...args)}},async run(){const r=sqlite.prepare(sql).run(...args);return {meta:{changes:Number(r.changes)}}}}}};}
+function db(){const sqlite=new DatabaseSync(':memory:');sqlite.exec(readFileSync(new URL('../migrations/0009_google_ads_outcome_outbox.sql',import.meta.url),'utf8'));sqlite.exec(readFileSync(new URL('../migrations/0010_stage1_shadow.sql',import.meta.url),'utf8'));sqlite.exec(readFileSync(new URL('../migrations/0011_stage1_outbox.sql',import.meta.url),'utf8'));sqlite.exec(readFileSync(new URL('../migrations/0012_stage2_observability.sql',import.meta.url),'utf8'));sqlite.exec(readFileSync(new URL('../migrations/0013_owner_link_overrides.sql',import.meta.url),'utf8'));sqlite.exec(readFileSync(new URL('../migrations/0014_owner_request_review.sql',import.meta.url),'utf8'));return {sqlite,prepare(sql){let args=[];return {bind(...v){args=v;return this},async first(){return sqlite.prepare(sql).get(...args)||null},async all(){return {results:sqlite.prepare(sql).all(...args)}},async run(){const r=sqlite.prepare(sql).run(...args);return {meta:{changes:Number(r.changes)}}}}}};}
 test('raw and encoded Jobber IDs, all markets',()=>{assert.equal(numericId('42'),'42');assert.equal(numericId(id('Quote',42)),'42');assert.equal(accountMarket('1919824'),'mo_kc');assert.equal(accountMarket(id('Account',2498432)),'ut');});
 test('one identifier, explicit UTC, approval time and approved value',()=>{const [e]=deriveEvents('mo_kc','quote',quote,lead);assert.equal(e.id,'gae-kc-sold-42');assert.deepEqual(clickIdentifier(lead),{gclid:'g'});assert.equal(e.payload.conversionDateTime,'2026-08-03 00:00:00+00:00');assert.equal(e.payload.conversionValue,123.45);assert.equal(e.payload.gbraid,undefined);assert.deepEqual(clickIdentifier({gbraid:'b',wbraid:'w'}),{gbraid:'b'});assert.deepEqual(clickIdentifier({wbraid:'w'}),{wbraid:'w'});});
 test('historical booking time unknown, completion known',()=>{const e=deriveEvents('ut','request',{id:id('Request',7),assessment:{startAt:'2026-08-02T00:00:00Z',endAt:'2026-08-02T01:00:00Z',isComplete:true,completedAt:'2026-08-02T02:00:00Z'}},lead);assert.equal(e.length,2);assert.equal(e[0].payload,null);assert.deepEqual(e[0].reasons,['appointment_booking_time_unavailable']);assert.equal(e[1].payload.conversionValue,0);});
@@ -75,4 +75,32 @@ test('owner override survives quote/job reprocessing, preserves raw observations
  assert.equal(d.sqlite.prepare("SELECT payload_json FROM closed_loop_stage1_events WHERE market_key='ut'").get().payload_json,null);
  await processObject(env,'mo_stl','quote',{...raw,request:{id:id('Request',8)}});
  assert.ok(d.sqlite.prepare("SELECT hold_reasons_json FROM closed_loop_stage1_events WHERE market_key='mo_stl'").get().hold_reasons_json.includes('owner_override_conflicts'));
+});
+
+test('owner request replacement uses original click only for assessment, excludes tests and keeps archived quote unsold',async()=>{
+ const d=db(),source=id('Request',70),replacement=id('Request',71),env={ANGI_ROUTER_DB:d};
+ d.sqlite.prepare('INSERT INTO closed_loop_owner_request_links VALUES(?,?,?,?,?,?,?,?,?)').run('ut',replacement,source,id('Quote',42),'assessment_completed','Patrick','2026-09-23','2026-09-23T20:00:00Z','confirmed');
+ d.sqlite.prepare('INSERT INTO closed_loop_stage1_leads(market_key,request_id,lead_id,inquiry_at,gclid,source,updated_at) VALUES(?,?,?,?,?,?,?)').run('ut',source,'original','2026-08-01T00:00:00Z','original-click','test','now');
+ const object={id:replacement,createdAt:'2026-07-31T00:00:00Z',assessment:{id:'a',startAt:'2026-08-03T00:00:00Z',endAt:'2026-08-03T01:00:00Z',isComplete:true,completedAt:'2026-08-03T00:30:00Z'}};
+ await processObject(env,'ut','request',object);
+ const e=d.sqlite.prepare("SELECT * FROM closed_loop_stage1_events WHERE event_name='assessment_completed'").get();assert.equal(JSON.parse(e.payload_json).gclid,'original-click');assert.equal(e.request_id,replacement);
+ assert.equal(d.sqlite.prepare("SELECT payload_json FROM closed_loop_stage1_events WHERE event_name='appointment_set'").get().payload_json,null);
+ await processObject(env,'ut','quote',{...quote,request:{id:replacement},quoteStatus:'archived',lastTransitioned:{approvedAt:null,convertedAt:null}});
+ assert.equal(d.sqlite.prepare("SELECT count(*) n FROM closed_loop_stage1_events WHERE event_name='sold_job'").get().n,0);
+ await processObject(env,'ut','quote',{...quote,request:{id:replacement}});
+ assert.equal(d.sqlite.prepare("SELECT payload_json FROM closed_loop_stage1_events WHERE event_name='sold_job'").get().payload_json,null);
+ for(const state of ['test_excluded','closed_deleted_by_staff']){
+ d.sqlite.prepare('INSERT OR REPLACE INTO closed_loop_lead_dispositions VALUES(?,?,?,?,?,?,?)').run('ut',source,state,'Patrick','2026-09-23','now','confirmed');
+ await processObject(env,'ut','request',object);assert.equal(d.sqlite.prepare("SELECT payload_json FROM closed_loop_stage1_events WHERE event_name='assessment_completed'").get().payload_json,null);
+ }
+});
+
+test('reports exclude tests from lead counts and resolve staff-deleted request follow-up',async()=>{
+ const d=db();
+ for(const [rid,state] of [['test','test_excluded'],['junk','closed_deleted_by_staff']]){
+ d.sqlite.prepare('INSERT INTO closed_loop_stage1_leads(market_key,request_id,lead_id,inquiry_at,source,updated_at) VALUES(?,?,?,?,?,?)').run('ut',rid,rid,'2026-09-01T00:00:00Z','test','now');
+ d.sqlite.prepare('INSERT INTO closed_loop_lead_dispositions VALUES(?,?,?,?,?,?,?)').run('ut',rid,state,'Patrick','2026-09-23','now','confirmed');
+ }
+ const report=(await makeReports({ANGI_ROUTER_DB:d})).find(r=>r.market==='ut');
+ assert.equal(report.website_leads_missing_click_id,1);assert.equal(report.excluded_test_leads,1);assert.equal(report.closed_deleted_by_staff,1);assert.deepEqual(report.attribution_requests_not_returned_by_backfill,[]);
 });
