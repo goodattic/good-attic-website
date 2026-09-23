@@ -38,6 +38,8 @@ The appointment column counts linked website-click leads with a scheduled assess
 | St. Louis / 2498453 | 14 | 26 | 11 / 0 | 9 | 5 | $22,520.40 |
 | Kansas City / 1919824 | 1 | 3 | 1 / 0 | 0 | 0 | $0.00 |
 
+The missing-click counts are raw ledger counts and include three explicitly tagged prior QA submissions: two Utah and one St. Louis, with campaign names codex-ut-closed-loop-test / codex-stl-closed-loop-test. Excluding those three known tests gives 17 / 25 / 3 missing-click leads for Utah / St. Louis / KC. The tests have no click IDs and no eligible events.
+
 Total eligible: 22 events (14 assessments and 8 sales), $34,669.38. There are 18 scheduled appointments with linked click IDs, all held. A missing click ID is counted but never produces an eligible payload.
 
 ## Full Jobber reconciliation and review queue
