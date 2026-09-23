@@ -1,0 +1,54 @@
+{
+  "transport": "data_manager_api",
+  "validate_only": true,
+  "recorded_conversions": 0,
+  "attempted": false,
+  "limitation": "Synchronous validation only; Google provides no asynchronous match diagnostics for validateOnly requests.",
+  "rows": [
+    {
+      "event_id": "gae-stl-sold-64231311",
+      "result": "NOT_SENT_MISSING_CREDENTIALS"
+    },
+    {
+      "event_id": "gae-stl-sold-64405592",
+      "result": "NOT_SENT_MISSING_CREDENTIALS"
+    },
+    {
+      "event_id": "gae-stl-sold-64423473",
+      "result": "NOT_SENT_MISSING_CREDENTIALS"
+    },
+    {
+      "event_id": "gae-stl-sold-64534205",
+      "result": "NOT_SENT_MISSING_CREDENTIALS"
+    },
+    {
+      "event_id": "gae-slc-sold-63859930",
+      "result": "NOT_SENT_MISSING_CREDENTIALS"
+    },
+    {
+      "event_id": "gae-slc-sold-65441706",
+      "result": "NOT_SENT_MISSING_CREDENTIALS"
+    },
+    {
+      "event_id": "gae-slc-sold-65678461",
+      "result": "NOT_SENT_MISSING_CREDENTIALS"
+    },
+    {
+      "event_id": "gae-stl-sold-63891747",
+      "result": "NOT_SENT_MISSING_CREDENTIALS"
+    },
+    {
+      "event_id": "gae-stl-sold-65203544",
+      "result": "NOT_SENT_MISSING_CREDENTIALS"
+    },
+    {
+      "event_id": "gae-stl-assessment-33833856",
+      "result": "NOT_SENT_MISSING_CREDENTIALS"
+    }
+  ],
+  "missing_credentials": [
+    "GOOGLE_DATA_MANAGER_OAUTH_CLIENT_ID",
+    "GOOGLE_DATA_MANAGER_OAUTH_CLIENT_SECRET",
+    "GOOGLE_DATA_MANAGER_OAUTH_REFRESH_TOKEN"
+  ]
+}
