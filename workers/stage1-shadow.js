@@ -143,13 +143,14 @@ export async function makeReports(env) {
     const links=await all(db,'SELECT * FROM closed_loop_owner_request_links WHERE market_key=?',market);
     for(const link of links)resolved.add(link.source_request_id);
     const leads=(await all(db,'SELECT * FROM closed_loop_stage1_leads WHERE market_key=? AND inquiry_at>=?',market,SINCE)).filter(l=>!tests.has(l.request_id));
-    const events=await all(db,'SELECT * FROM closed_loop_stage1_events WHERE market_key=?',market);
+    const events=await all(db,'SELECT e.*,o.upload_state,o.google_response_category FROM closed_loop_stage1_events e LEFT JOIN google_ads_outcome_outbox o USING(outcome_id) WHERE e.market_key=?',market);
+    const isReady=e=>e.payload_json&&e.upload_state==='shadow';
     const allLeads=(await all(db,'SELECT * FROM closed_loop_stage1_leads WHERE market_key=?',market)).filter(l=>!tests.has(l.request_id));
     const clickedRequests=new Set(allLeads.filter(l=>Object.keys(clickIdentifier(l)).length).map(l=>l.request_id));
     for(const link of links)if(clickedRequests.has(link.source_request_id))clickedRequests.add(link.replacement_request_id);
     const objects=await all(db,'SELECT object_type,object_id,request_id FROM closed_loop_stage1_objects WHERE market_key=?',market);
     const stages={};
-    for(const stage of ['appointment_set','assessment_completed','sold_job']){const s=events.filter(e=>e.event_name===stage),ready=s.filter(e=>e.payload_json);stages[stage]={observed:s.length,website_with_click_id:s.filter(e=>clickedRequests.has(e.request_id)).length,shadow_ready:ready.length,held:s.length-ready.length,observed_value_usd:Math.round(s.reduce((n,e)=>n+(e.value_micros||0),0)/10000)/100,shadow_ready_value_usd:Math.round(ready.reduce((n,e)=>n+(e.value_micros||0),0)/10000)/100};}
+    for(const stage of ['appointment_set','assessment_completed','sold_job']){const s=events.filter(e=>e.event_name===stage),ready=s.filter(isReady);stages[stage]={observed:s.length,website_with_click_id:s.filter(e=>clickedRequests.has(e.request_id)).length,shadow_ready:ready.length,held:s.filter(e=>!e.payload_json).length,observed_value_usd:Math.round(s.reduce((n,e)=>n+(e.value_micros||0),0)/10000)/100,shadow_ready_value_usd:Math.round(ready.reduce((n,e)=>n+(e.value_micros||0),0)/10000)/100};}
     const reasons={};for(const e of events)for(const reason of JSON.parse(e.hold_reasons_json))reasons[reason]=(reasons[reason]||0)+1;
     const allLeadIds=new Set(allLeads.map(r=>r.request_id));
     const linkage={};for(const type of ['request','quote','job']){const s=objects.filter(o=>o.object_type===type);linkage[type]={scanned:s.length,missing_request_link:s.filter(o=>!o.request_id).length,without_original_website_lead:s.filter(o=>!o.request_id||!allLeadIds.has(o.request_id)).length};}
@@ -157,16 +158,16 @@ export async function makeReports(env) {
     const missingRequestObjects=allLeads.filter(l=>!requestIds.has(l.request_id)&&!resolved.has(l.request_id)).map(l=>l.request_id);
     const today=now().slice(0,10);
     const daily={date:today,time_zone:'UTC',website_leads_with_click_id:leads.filter(l=>l.inquiry_at.slice(0,10)===today&&Object.keys(clickIdentifier(l)).length).length,website_leads_missing_click_id:leads.filter(l=>l.inquiry_at.slice(0,10)===today&&!Object.keys(clickIdentifier(l)).length).length,stages:{}};
-    for(const stage of Object.keys(stages)){const e=events.filter(e=>e.event_name===stage&&e.conversion_at?.slice(0,10)===today);daily.stages[stage]={observed:e.length,shadow_ready:e.filter(e=>e.payload_json).length,held:e.filter(e=>!e.payload_json).length,shadow_ready_value_usd:Math.round(e.filter(e=>e.payload_json).reduce((n,e)=>n+(e.value_micros||0),0)/10000)/100};}
+    for(const stage of Object.keys(stages)){const e=events.filter(e=>e.event_name===stage&&e.conversion_at?.slice(0,10)===today);daily.stages[stage]={observed:e.length,shadow_ready:e.filter(isReady).length,held:e.filter(e=>!e.payload_json).length,shadow_ready_value_usd:Math.round(e.filter(isReady).reduce((n,e)=>n+(e.value_micros||0),0)/10000)/100};}
     const scan=await all(db,'SELECT * FROM closed_loop_stage1_scan WHERE market_key=?',market);
-    const report={market,account:MARKETS[market].account,since:SINCE,as_of:now(),mode:'shadow',google_upload_enabled:false,excluded_test_leads:tests.size,closed_deleted_by_staff:dispositions.filter(d=>d.disposition==='closed_deleted_by_staff').length,owner_verified_request_links:links.length,website_leads_with_click_id:leads.filter(l=>Object.keys(clickIdentifier(l)).length).length,website_leads_missing_click_id:leads.filter(l=>!Object.keys(clickIdentifier(l)).length).length,daily,stages,linkage,attribution_requests_not_returned_by_backfill:missingRequestObjects,hold_reasons:reasons,held_event_count:events.filter(e=>JSON.parse(e.hold_reasons_json).length).length,scan_complete:scan.length===3&&scan.every(s=>s.completed_at&&!s.error),scan,webhooks:await all(db,'SELECT state,count(*) count FROM closed_loop_stage1_webhooks WHERE market_key=? GROUP BY state',market)};
+    const report={market,account:MARKETS[market].account,since:SINCE,as_of:now(),mode:env.GOOGLE_ADS_UPLOAD_ENABLED==='true'?'live':'shadow',google_upload_enabled:env.GOOGLE_ADS_UPLOAD_ENABLED==='true',upload_counts:{accepted:events.filter(e=>e.upload_state==='accepted'&&e.google_response_category!=='duplicate_of_sheet_import').length,duplicate:events.filter(e=>e.google_response_category==='duplicate_of_sheet_import').length,failed:events.filter(e=>e.upload_state==='retryable').length,processing:events.filter(e=>e.upload_state==='submitted').length},excluded_test_leads:tests.size,closed_deleted_by_staff:dispositions.filter(d=>d.disposition==='closed_deleted_by_staff').length,owner_verified_request_links:links.length,website_leads_with_click_id:leads.filter(l=>Object.keys(clickIdentifier(l)).length).length,website_leads_missing_click_id:leads.filter(l=>!Object.keys(clickIdentifier(l)).length).length,daily,stages,linkage,attribution_requests_not_returned_by_backfill:missingRequestObjects,hold_reasons:reasons,held_event_count:events.filter(e=>JSON.parse(e.hold_reasons_json).length).length,scan_complete:scan.length===3&&scan.every(s=>s.completed_at&&!s.error),scan,webhooks:await all(db,'SELECT state,count(*) count FROM closed_loop_stage1_webhooks WHERE market_key=? GROUP BY state',market)};
     await run(db,'INSERT INTO closed_loop_stage1_reports(report_date,market_key,report_json,updated_at) VALUES(?,?,?,?) ON CONFLICT(report_date,market_key) DO UPDATE SET report_json=excluded.report_json,updated_at=excluded.updated_at',now().slice(0,10),market,JSON.stringify(report),now());reports.push(report);
   }
   return reports;
 }
 
 async function tick(env, trigger="manual") {
-  if(env.GOOGLE_ADS_UPLOAD_ENABLED !== 'false') throw Error('stage1_requires_google_upload_disabled');
+  if(env.GOOGLE_ADS_UPLOAD_ENABLED !== 'false' && !(env.GOOGLE_ADS_UPLOAD_ENABLED === 'true' && env.GOOGLE_ADS_TRANSPORT === 'data_manager_api')) throw Error('stage1_requires_google_upload_disabled');
   if(env.PHASE2_SHADOW_ENABLED !== 'true') return {mode:'disabled'};
   const db=env.ANGI_ROUTER_DB,lease=String(Date.now()+840000);
   const claim=await run(db,"INSERT INTO closed_loop_stage1_control(name,value,updated_at) VALUES('tick_lease',?,?) ON CONFLICT(name) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at WHERE CAST(closed_loop_stage1_control.value AS INTEGER)<?",lease,now(),Date.now());
@@ -174,7 +175,7 @@ async function tick(env, trigger="manual") {
   const runId=crypto.randomUUID();
   const stats={events:new Set(),webhooks:0};
   try {
-  const cutoff=await db.prepare("SELECT value FROM closed_loop_stage1_control WHERE name='stage2_appointment_start_at'").first();
+  const cutoff=await db.prepare("SELECT value FROM closed_loop_stage1_control WHERE name IN ('stage3c_activated_at','stage2_appointment_start_at') ORDER BY CASE name WHEN 'stage3c_activated_at' THEN 0 ELSE 1 END LIMIT 1").first();
   env={...env,STAGE2_RUN_STATS:stats,STAGE2_APPOINTMENT_CUTOFF:cutoff?.value};
   await run(db,"INSERT INTO closed_loop_stage2_runs(run_id,trigger,started_at,status) VALUES(?,?,?,'running')",runId,trigger,now());
     await syncAttribution(env);await drainWebhooks(env);
