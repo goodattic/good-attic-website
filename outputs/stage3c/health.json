@@ -1,0 +1,33 @@
+{
+  "mode": "live",
+  "google_upload_enabled": true,
+  "real_upload_transport": "data_manager_api",
+  "validation_transport": "data_manager_api",
+  "markets": [
+    "ut",
+    "mo_stl",
+    "mo_kc"
+  ],
+  "last_successful_run_at": "2026-09-24T20:31:07.425Z",
+  "last_successful_scheduled_run_at": "2026-09-24T20:31:07.425Z",
+  "metrics_since": "2026-09-23T19:09:30.170Z",
+  "last_24h": {
+    "successful_runs": 286,
+    "events_processed": 31207,
+    "unique_events_touched": 576,
+    "new_shadow_events": 16,
+    "webhooks_processed": 126
+  },
+  "events_processed_definition": "Distinct outcome evaluations per successful run, summed across runs; repeated reconciliation is included.",
+  "customer_data_exposed": false,
+  "uploads_enabled": true,
+  "events_uploaded_last_24h": 25,
+  "upload_counts": {
+    "accepted": 1,
+    "failed": 0,
+    "duplicate": 0,
+    "processing": 25,
+    "in_flight": 0
+  },
+  "last_successful_upload_run_at": "2026-09-24T20:35:19.184Z"
+}
