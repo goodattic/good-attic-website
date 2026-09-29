@@ -1,0 +1,10 @@
+Google Ads v24 OAuth proof: HTTP 200, no developer-token header, no login-customer-id header.
+Expected Utah call returned: 2026-09-25 08:30:19 America/Denver, 20 seconds, area 801.
+UploadCallConversions validateOnly=true: HTTP 200, response {}. No conversion uploaded; matching not proven by validateOnly.
+New Cloudflare secret GOOGLE_ADS_OAUTH_REFRESH_TOKEN stored on good-attic-jobber-phase2-backfill. Existing Data Manager secrets untouched. Both OAuth client secrets verified enabled.
+D1 remote SELECT succeeded; production writes: none.
+Shadow collector: 9 calls, 1 matched candidate, 2 eligible unresolved, 6 excluded at >=60 seconds. Matched candidate held shadow_only.
+Source range: 2026-09-08 through 2026-09-29. Times in table are Google account America/Denver time, including Missouri calls. Request timestamps are UTC.
+Quo matches on excluded calls were checked separately; collector excludes them before Jobber qualification. Listed excluded-row Jobber IDs/timestamps come from ledger/cache and were not freshly qualified.
+Utah 2026-09-10 13:02:01: absent from current ledger, historical Quo retrieval still needed. STL 2026-09-17 09:16:34: Google omitted area code, so strict match held. No guess made.
+This run used live Google reads, 79 stored Quo calls, cached request data, and a fresh Utah Jobber query confirming target Request/client and no prior jobs. No production outbox writes, migration, code deploy, or uploads performed.

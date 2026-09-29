@@ -68,6 +68,7 @@ export function outcomeId(input) {
     return ["jobber-request", idPart(input?.jobber_request_id), "sold_job"].join(":");
   }
   if (event === "qualified_lead") {
+    if (input?.google_call_key) return ["google-call", idPart(input.google_call_key), "qualified_lead"].join(":");
     return ["jobber-request", idPart(input?.jobber_request_id), "qualified_lead"].join(":");
   }
   if (event === "appointment_set") {
@@ -367,7 +368,7 @@ export function actionForCandidate(candidate = {}, { call_sold_job_action_id = n
 export function buildOutcomeCandidate(input = {}) {
   const market = clean(input.market_key, 40);
   const event = clean(input.event_name, 80);
-  if (!ENABLED_MARKETS.has(market)) return { ok: false, reason: "market_not_enabled" };
+  if (!ENABLED_MARKETS.has(market) && input.allow_market !== true) return { ok: false, reason: "market_not_enabled" };
   if (!EVENT_NAMES.has(event)) return { ok: false, reason: "event_not_supported" };
   const milestone = iso(input.milestone_at || input.occurred_at);
   if (!milestone) return { ok: false, reason: "invalid_milestone_time" };
@@ -388,6 +389,7 @@ export function buildOutcomeCandidate(input = {}) {
     gbraid: clean(lead.gbraid, 500) || null,
     wbraid: clean(lead.wbraid, 500) || null,
     quo_call_id: clean(quoCall.quo_call_id, 500) || null,
+    google_call_key: clean(input.google_call_key, 500) || null,
     caller_phone: clean(quoCall.caller_phone, 40) || null,
     call_started_at_original: clean(quoCall.call_started_at_original, 120) || null,
     call_started_at_utc: iso(quoCall.call_started_at_utc) || null,
@@ -424,7 +426,7 @@ export function buildOutcomeCandidate(input = {}) {
 
 export async function persistOutcomeCandidate(database, candidate) {
   if (!database?.prepare || !candidate) return { ok: false, reason: "unavailable" };
-  const columns = ["outcome_id","event_name","market_key","attribution_path","attribution_status","source_lead_id","submission_id","gclid","gbraid","wbraid","quo_call_id","caller_phone","call_started_at_original","call_started_at_utc","call_timezone","jobber_account_id","jobber_request_id","jobber_client_id","jobber_appointment_id","jobber_quote_id","jobber_job_id","jobber_invoice_id","google_account_id","google_conversion_action","milestone_at","conversion_at","value_micros","invoice_total_micros","collected_payment_micros","currency_code","revenue_source","revenue_version","prior_reported_value_micros","service_type","consent_status","consent_evidence","upload_state","attempt_count","created_at","updated_at"];
+  const columns = ["outcome_id","event_name","market_key","attribution_path","attribution_status","source_lead_id","submission_id","gclid","gbraid","wbraid","quo_call_id","google_call_key","caller_phone","call_started_at_original","call_started_at_utc","call_timezone","jobber_account_id","jobber_request_id","jobber_client_id","jobber_appointment_id","jobber_quote_id","jobber_job_id","jobber_invoice_id","google_account_id","google_conversion_action","milestone_at","conversion_at","value_micros","invoice_total_micros","collected_payment_micros","currency_code","revenue_source","revenue_version","prior_reported_value_micros","service_type","consent_status","consent_evidence","upload_state","attempt_count","created_at","updated_at"];
   const values = columns.map((column) => candidate[column] ?? (column === "attempt_count" ? 0 : null));
   const placeholders = columns.map(() => "?").join(", ");
   const result = await database.prepare(`INSERT OR IGNORE INTO google_ads_outcome_outbox (${columns.join(", ")}) VALUES (${placeholders})`).bind(...values).run();

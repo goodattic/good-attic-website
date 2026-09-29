@@ -7,6 +7,7 @@ workers_dev = true
 crons = ["*/5 * * * *"]
 
 [vars]
+QUALIFIED_PHONE_UPLOAD_ENABLED = "true"
 GOOGLE_ADS_UPLOAD_ENABLED = "true"
 GOOGLE_ADS_TRANSPORT = "data_manager_api"
 PHASE2_SHADOW_ENABLED = "true"

@@ -1,0 +1,10 @@
+market,google_call_time_denver,duration_seconds,area_code,quo_match,jobber_request_id,jobber_client_id,request_created_utc,would_upload,upload_state,reason
+ut,2026-09-10 11:50:04,339,435,no,,,,no,excluded,google_call_already_counted
+ut,2026-09-10 13:02:01,33,801,no,,,,no,held,no_matching_quo_call
+ut,2026-09-25 08:30:19,20,801,yes,34398701,154393192,2026-09-25T14:30:57Z,"yes, after approval",held,shadow_only
+mo_stl,2026-09-15 11:41:06,295,314,no,,,,no,excluded,google_call_already_counted
+mo_stl,2026-09-17 09:16:34,0,unavailable,no,,,,no,held,google_call_missing_match_fields
+mo_stl,2026-09-25 09:49:28,65,314,no,,,,no,excluded,google_call_already_counted
+mo_stl,2026-09-25 11:24:45,500,314,yes,34410561,154415599,2026-09-25T17:33:12Z,no,excluded,google_call_already_counted
+mo_stl,2026-09-29 09:52:50,169,314,yes,34546480,154765087,2026-09-29T15:56:08Z,no,excluded,google_call_already_counted
+mo_kc,2026-09-25 08:28:13,221,816,no,,,,no,excluded,google_call_already_counted
