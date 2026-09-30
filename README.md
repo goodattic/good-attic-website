@@ -60,6 +60,12 @@ Recommended production setup:
 - Build command: `npm run build`
 - Build output directory: `dist`
 
+`baseline/live-site-2026-09-30` is the canonical GitHub default and Cloudflare
+Pages production branch. Start every website change from that branch. The older
+`main` branch remains available as historical code, not as a release source.
+Publishing is explicit after the guarded release review; a branch push alone
+does not publish the site.
+
 The build copies only an explicit allowlist of public site files into `dist`.
 Before any production release, run the baseline guard described in
 [LIVE-SITE-BASELINE.md](LIVE-SITE-BASELINE.md). The current live deployment is

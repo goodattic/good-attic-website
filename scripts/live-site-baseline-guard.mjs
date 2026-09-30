@@ -70,6 +70,27 @@ export function compareSnapshots(baseline, candidate, review = {}) {
   return violations.sort();
 }
 
+export function assertServedProductionDeployment(project, deployments, expectedId) {
+  const servedId = project?.canonical_deployment?.id;
+  if (!servedId) throw new Error("Cloudflare Pages did not identify the serving production deployment");
+  if (servedId !== expectedId) {
+    throw new Error(`Production changed since baseline: expected ${expectedId}; found ${servedId}. Stop and re-baseline from the current live deployment.`);
+  }
+
+  const canonicalIndex = deployments.findIndex((deployment) => deployment.id === servedId);
+  if (canonicalIndex < 0) throw new Error("Serving production deployment was absent from the recent deployment list");
+  const newer = deployments.slice(0, canonicalIndex);
+  for (const deployment of newer) {
+    const stages = deployment.stages;
+    const latest = deployment.latest_stage;
+    const idle = latest?.status === "idle" && !latest.started_on && !latest.ended_on &&
+      Array.isArray(stages) && stages.length > 0 &&
+      stages.every((stage) => stage.status === "idle" && !stage.started_on && !stage.ended_on);
+    if (!idle) throw new Error(`New production deployment ${deployment.id} is not idle; inspect it before publishing`);
+  }
+  return newer.length;
+}
+
 export function assertMarketNumbers(pages, markets) {
   const errors = [];
   for (const [market, { page, display, e164 }] of Object.entries(markets)) {

@@ -12,7 +12,15 @@ const jobber = { market_key: 'ut', request_id: encode('Request', 10), client_id:
 const secretError = () => Error('secret-token test@example.invalid 8015551212');
 const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
 const flush = async () => { for (let i = 0; i < 6; i++) await immediate(); };
-async function until(check) { for (let i = 0; i < 100 && !check(); i++) await immediate(); assert.ok(check(), 'expected async stage reached'); }
+// Reaching readback includes WebCrypto's asynchronous SHA-256 digest. A fixed
+// number of event-loop turns can finish before that work does on a busy CI host.
+// Use real wall time for stage setup; the receipt's 2000ms deadline is still
+// asserted below with the mocked clock at 1999ms and 2000ms.
+async function until(check) {
+  const deadline = Date.now() + 10_000;
+  while (!check() && Date.now() < deadline) await immediate();
+  assert.ok(check(), 'expected async stage reached');
+}
 
 function memoryDatabase() {
   const sqlite = new DatabaseSync(':memory:');
