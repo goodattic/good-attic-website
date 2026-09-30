@@ -31,7 +31,13 @@ node scripts/check-live-site-baseline.mjs
 ```
 
 3. Confirm the live Pages deployment has not changed since the baseline was
-captured, then publish only the guarded `dist` artifact and reviewed Functions.
+captured:
+
+```bash
+node scripts/check-live-site-baseline.mjs --check-live-deployment
+```
+
+Then, after approval, publish only the guarded `dist` artifact and reviewed Functions.
 Follow [LIVE-SITE-BASELINE.md](LIVE-SITE-BASELINE.md); do not publish `.` or
 push the old `main` branch as a deployment shortcut.
 

@@ -5,6 +5,18 @@
     "runtime/.github/workflows/live-site-release-guard.yml": {
       "expectedSha256": "cd87c86178d62b13612e3c3e559780321235590f88e68e16b17473eaf36b112f",
       "reason": "Fetch complete Git history so historical release proof tests can run in GitHub Actions."
+    },
+    "runtime/scripts/check-live-site-baseline.mjs": {
+      "expectedSha256": "b634f00572ca770050a599cd8b890c671f2ee1f5d67a7786d23c0269cef61df7",
+      "reason": "Compare the Cloudflare serving deployment rather than inert Git push records during online preflight."
+    },
+    "runtime/scripts/live-site-baseline-guard.mjs": {
+      "expectedSha256": "dc52ffc6b48293281f29e80b040cb1186b5520bad8545aa178c6f4f1589e3cbf",
+      "reason": "Reject active production changes while allowing never-started deployment records."
+    },
+    "runtime/tests/live-site-baseline-guard.test.mjs": {
+      "expectedSha256": "a71707289eeb124241eaa0791c54f86d12d1f33873c6b464d8aff412b3d7bd55",
+      "reason": "Verify serving deployment identity and inert versus active production record handling."
     }
   }
 }

@@ -15,6 +15,13 @@ static improvements were deployed from uncommitted files. Commit `4919386` on
 release from `24e8665`, the old `main`, or `stage1-shadow` without this snapshot
 would restore older content and phone numbers.
 
+`baseline/live-site-2026-09-30` is the canonical GitHub default and Cloudflare
+Pages production branch. Start each website change from its current tip. The
+older `main` remains as history. Automatic Cloudflare Pages production and
+preview builds are intentionally disabled so pushing a branch cannot publish
+an unreviewed checkout. Publish explicitly only after approval, the full tests,
+the local guard, and the online deployment-ID preflight below pass.
+
 Before a release, build and run:
 
 ```sh
@@ -38,7 +45,14 @@ Every intentionally changed, added, or removed public or runtime file needs an e
 
 The `Live site release guard` GitHub Actions workflow runs the build, full test
 suite, and local hash guard on this baseline branch and on pull requests into
-it. It has no deployment step. Its green result does not replace the online
-deployment-ID preflight or review of the exact proposed change list.
+it. It runs after a push, so it is not a pre-deployment gate by itself and has
+no deployment step. Its green result does not replace the online deployment-ID
+preflight or review of the exact proposed change list. Use an explicit guarded
+publish from the canonical branch only after approval.
 
-Once a new release is verified live, capture a **new** baseline from that deployment, update the deployment ID, and empty the reviewed-change list. Do not refresh the baseline from an unshipped candidate just to make a failing guard pass. This guard detects byte changes and protected phone/script invariants; ordinary tests and a post-deploy check still matter for behavior.
+After **every** new release is verified live, capture a new baseline from that
+deployment, update the deployment ID, and empty the reviewed-change list before
+the next change starts. Do not refresh the baseline from an unshipped candidate
+just to make a failing guard pass. This guard detects byte changes and protected
+phone/script invariants; ordinary tests and a post-deploy check still matter for
+behavior.

@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import {
   assertActiveScript,
   assertMarketNumbers,
+  assertServedProductionDeployment,
   compareSnapshots,
   pageContent,
   snapshot,
@@ -39,29 +40,36 @@ if (errors.length) {
 }
 
 if (flags.has("--check-live-deployment") && !process.exitCode) {
-  const token = process.env.CLOUDFLARE_API_TOKEN;
+  let token = process.env.CLOUDFLARE_API_TOKEN;
   const { accountId, projectName, id } = baseline.productionDeployment;
-  let latestId;
-  if (token) {
-    const url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/pages/projects/${encodeURIComponent(projectName)}/deployments?env=production&per_page=1`;
-    const response = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
-    if (!response.ok) throw new Error(`Cloudflare Pages deployment lookup failed: HTTP ${response.status}`);
-    const body = await response.json();
-    if (body?.success !== true) throw new Error("Cloudflare Pages deployment lookup failed");
-    latestId = body?.result?.[0]?.id;
-  } else {
-    // Wrangler's existing OAuth login is sufficient for a read-only preflight.
-    // This avoids making release safety depend on another expiring API token.
-    const output = execFileSync("npx", [
-      "wrangler", "pages", "deployment", "list",
-      "--project-name", projectName,
-      "--environment", "production",
-      "--json",
-    ], { cwd: root, encoding: "utf8", timeout: 45_000 });
-    const deployments = JSON.parse(output);
-    latestId = deployments.find((entry) => entry.Environment === "Production")?.Id;
+  if (!token) {
+    // Reuse Wrangler's authenticated session without printing or storing its token.
+    const output = execFileSync("npx", ["wrangler", "auth", "token", "--json"], {
+      cwd: root, encoding: "utf8", timeout: 45_000,
+    });
+    token = JSON.parse(output).token;
   }
-  if (!latestId) throw new Error("Cloudflare Pages deployment lookup returned no production deployment");
-  if (latestId !== id) throw new Error(`Production changed since baseline: expected ${id}; found ${latestId}. Stop and re-baseline from the current live deployment.`);
-  console.log(`Online deployment preflight passed: production still ${id}`);
+  if (!token) throw new Error("Cloudflare Pages authentication unavailable for deployment preflight");
+
+  const projectUrl = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/pages/projects/${encodeURIComponent(projectName)}`;
+  async function getBody(url) {
+    const response = await fetch(url, {
+      headers: { authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!response.ok) throw new Error(`Cloudflare Pages lookup failed: HTTP ${response.status}`);
+    const body = await response.json();
+    if (body?.success !== true) throw new Error("Cloudflare Pages lookup failed");
+    return body;
+  }
+  const project = (await getBody(projectUrl)).result;
+  const deployments = [];
+  for (let page = 1; page <= 100; page++) {
+    const batch = (await getBody(`${projectUrl}/deployments?env=production&per_page=10&page=${page}`)).result;
+    if (!Array.isArray(batch)) throw new Error("Cloudflare Pages deployment list was invalid");
+    deployments.push(...batch);
+    if (batch.some((deployment) => deployment.id === id) || batch.length < 10) break;
+  }
+  const idleCount = assertServedProductionDeployment(project, deployments, id);
+  console.log(`Online deployment preflight passed: production still ${id}; ${idleCount} newer idle record(s) ignored`);
 }

@@ -168,7 +168,13 @@ X-Good-Attic-Event: jobber.appointment_scheduled.v1
 Idempotency-Key: jobber-assessment:JOBBER_ACCOUNT_ID:JOBBER_ASSESSMENT_ID
 ```
 
-## Safe activation order
+## Historical activation order
+
+The sequence below documents the original bridge activation. For any new
+Pages release, start from the canonical `baseline/live-site-2026-09-30` branch
+and follow [LIVE-SITE-BASELINE.md](LIVE-SITE-BASELINE.md), including its release
+guard and online preflight. Do not use the old generic branch/deploy steps below
+as a shortcut around the current live-site baseline.
 
 1. Move the reviewed bridge files to a clean production branch; do not deploy
    the current dirty backup-branch checkout.

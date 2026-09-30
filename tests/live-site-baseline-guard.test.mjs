@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import {
   assertActiveScript,
   assertMarketNumbers,
+  assertServedProductionDeployment,
   compareSnapshots,
 } from "../scripts/live-site-baseline-guard.mjs";
 
@@ -51,4 +52,20 @@ test("all pages must reference the reviewed active script exactly once", () => {
   const pages = { "index.html": '<script src="script.40559d41a6b61dc2.js"></script>' };
   assert.deepEqual(assertActiveScript(pages, "script.40559d41a6b61dc2.js", { "script.40559d41a6b61dc2.js": "hash" }), []);
   assert.match(assertActiveScript(pages, "script.488eaabd8e623d5d.js", { "script.488eaabd8e623d5d.js": "hash" })[0], /expected one/);
+});
+
+test("online preflight ignores only never-started Pages records above the serving deployment", () => {
+  const project = { canonical_deployment: { id: "live" } };
+  const idle = { id: "queued", latest_stage: { status: "idle", started_on: null, ended_on: null }, stages: [
+    { status: "idle", started_on: null, ended_on: null },
+    { status: "idle", started_on: null, ended_on: null },
+  ] };
+  const deployments = [idle, { id: "live" }];
+  assert.equal(assertServedProductionDeployment(project, deployments, "live"), 1);
+  assert.throws(() => assertServedProductionDeployment({ canonical_deployment: { id: "changed" } }, deployments, "live"), /Production changed/);
+  assert.throws(() => assertServedProductionDeployment(project, [
+    { ...idle, stages: [{ status: "active", started_on: "now", ended_on: null }] },
+    { id: "live" },
+  ], "live"), /not idle/);
+  assert.throws(() => assertServedProductionDeployment(project, [idle], "live"), /absent/);
 });
