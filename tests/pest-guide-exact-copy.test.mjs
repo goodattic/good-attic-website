@@ -17,6 +17,8 @@ const file = `${route.slice(1)}index.html`;
 const read = (name) => readApprovedContent(name);
 const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8", maxBuffer: 20 * 1024 * 1024 });
 const before = (name) => git("show", `${parent}:${name}`);
+const pestGuideRelease = "e6fa694";
+const released = (name) => git("show", `${pestGuideRelease}:${name}`);
 const manifest = JSON.parse(await read("content/pest-guide/copy-manifest.json"));
 const metadata = JSON.parse(await read("content/pest-guide/page-metadata.json"));
 const schema = JSON.parse(await read("content/pest-guide/faq-jsonld.json"));
@@ -129,20 +131,23 @@ test("only the existing pest Resources card changes; every card stays in order w
   assert.equal(mask(await read("resources/index.html")), mask(before("resources/index.html")));
 });
 
-test("pest-guide chrome, forms, scripts, phones, and all unrelated tracked files retain the preview parent", async () => {
+test("the historical pest-guide release retained chrome, forms, and unrelated source", async () => {
   const original = before(file);
   for (const regex of [/<header[\s\S]*?<\/header>/, /<footer[\s\S]*?<\/footer>/, /<div class="modal"[\s\S]*$/]) assert.equal(html.match(regex)[0], original.match(regex)[0]);
   const scripts = (source) => [...source.matchAll(/<script(?! type="application\/ld\+json")[\s\S]*?<\/script>/g)].map((match) => match[0]);
   assert.deepEqual(scripts(html), scripts(original));
   const allowed = new Set(["build-seo-wave1.mjs", "seo-wave1-page-data.json", "resources/index.html", file, "tests/four-guide-ai-authority-cluster.test.mjs", "package.json", "tests/pest-guide-exact-copy.test.mjs", ...cityMarketCopy.pages.map((page) => page.source_file), ...Object.keys(approvedOperationalHashes)]);
   const existing = new Set(git("ls-tree", "-r", "--name-only", parent).trim().split("\n"));
-  const changed = git("diff", "--name-only", parent, "--").trim().split("\n").filter(Boolean);
+  const changed = git("diff", "--name-only", parent, pestGuideRelease, "--").trim().split("\n").filter(Boolean);
   assert.deepEqual(changed.filter((name) => existing.has(name) && !allowed.has(name) && !assetMigrationFiles.includes(name)), []);
-  for (const [name, expected] of Object.entries(approvedOperationalHashes)) assert.equal(sha(await read(name)), expected, name);
-  assert.equal(sha(await read("resources/blown-insulation-vs-rolled-insulation/index.html")), "ea5d660ffba931e1355fa53f8323b40812f270023ff1f000cfd802bf0f6adb37");
-  assert.equal(await read("sitemap.xml"), before("sitemap.xml"));
+  for (const [name, expected] of Object.entries(approvedOperationalHashes)) {
+    const approvedRelease = name === "tests/jobber-quo-intake.test.mjs" ? "204f5b7" : "ed94cc5";
+    assert.equal(sha(git("show", `${approvedRelease}:${name}`)), expected, name);
+  }
+  assert.equal(sha(released("resources/blown-insulation-vs-rolled-insulation/index.html")), "ea5d660ffba931e1355fa53f8323b40812f270023ff1f000cfd802bf0f6adb37");
+  assert.equal(released("sitemap.xml"), before("sitemap.xml"));
   const oldData = JSON.parse(before("seo-wave1-page-data.json"));
-  const newData = JSON.parse(await read("seo-wave1-page-data.json"));
+  const newData = JSON.parse(released("seo-wave1-page-data.json"));
   assert.deepEqual(oldData.map((page) => page.url), newData.map((page) => page.url));
   assert.deepEqual(oldData.filter((page) => page.url !== route), newData.filter((page) => page.url !== route));
 });

@@ -34,6 +34,8 @@ const expectedPublicEntries = [
   "script.js",
   "script.79eca18f8a153d62.js",
   "script.8c577120c8f5bbb0.js",
+  "script.488eaabd8e623d5d.js",
+  "script.40559d41a6b61dc2.js",
   "services",
   "site.webmanifest",
   "sitemap.xml",
@@ -53,12 +55,19 @@ async function findHtmlFiles(directory) {
   return nestedFiles.flat();
 }
 
-test("Pages build publishes only the explicit public allowlist", async () => {
-  execFileSync(process.execPath, ["scripts/build-pages-output.mjs"], {
-    cwd: projectDirectory,
-    stdio: "pipe",
-  });
-
+test("Pages output publishes only the explicit public allowlist", async () => {
+  // `npm run check` builds once before the parallel test suite. Rebuilding here
+  // would delete `dist` while the live baseline guard reads it. Preserve a
+  // standalone test invocation when the output has not yet been built.
+  try {
+    await access(outputDirectory);
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+    execFileSync(process.execPath, ["scripts/build-pages-output.mjs"], {
+      cwd: projectDirectory,
+      stdio: "pipe",
+    });
+  }
   assert.deepEqual(
     (await readdir(outputDirectory)).sort(),
     [...expectedPublicEntries].sort(),

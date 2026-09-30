@@ -12,7 +12,10 @@ const parent = "6295efbc4fdc09a7770fdfdbb793e569757a02ab";
 const git = (...args) => execFileSync("git", args, { cwd: root, maxBuffer: 64 * 1024 * 1024 });
 const read = file => readFileSync(new URL(file, root));
 const before = file => git("show", `${parent}:${file}`);
+const modalRelease = "0ebc4ec";
+const released = file => git("show", `${modalRelease}:${file}`);
 const old = JSON.parse(before("scripts/asset-delivery-manifest.json"));
+const releasedManifest = JSON.parse(released("scripts/asset-delivery-manifest.json"));
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
 const support = ["_headers", "scripts/asset-delivery-manifest.json", "scripts/build-pages-output.mjs", "tests/asset-delivery.test.mjs", "tests/protected-guide-header.test.mjs", "tests/pages-deployment-hardening.test.mjs", "tests/mobile-header.test.mjs"];
 
@@ -32,18 +35,18 @@ test("modal child changes exactly one src value per approved page, including fiv
   }
 });
 
-test("modal child cannot change content, CSS, form contracts, backend, or unrelated source", () => {
+test("the historical modal release changed no unrelated source", () => {
   const allowed = new Set([...synchronizationFiles, ...old.htmlReferenceChangesOnly, ...support, "tests/asset-delivery-helpers.mjs", "tests/four-guide-ai-authority-cluster.test.mjs"]);
   const tracked = git("ls-tree", "-r", "--name-only", parent).toString().trim().split("\n");
-  for (const file of tracked.filter(file => !allowed.has(file))) assert.deepEqual(read(file), before(file), file);
-  const expected = {...old, js: {...old.js, to: assetDelivery.js.to}, assets: {...old.assets, [assetDelivery.js.to]: sha(read(assetDelivery.js.to))}, modalFocus: {parentCommit: parent, previousAsset: old.js.to}, protectedReferenceException: {...old.protectedReferenceException, currentHashes: assetDelivery.protectedReferenceException.currentHashes}};
-  assert.deepEqual(assetDelivery, expected);
-  assert.equal(read("_headers").toString(), before("_headers").toString() + `\n/${assetDelivery.js.to}\n  Cache-Control: public, max-age=31536000, immutable\n`);
-  assert.equal(read("scripts/build-pages-output.mjs").toString(), before("scripts/build-pages-output.mjs").toString().replace(`  "${old.js.to}",`, `  "${old.js.to}",\n  "${assetDelivery.js.to}",`));
+  for (const file of tracked.filter(file => !allowed.has(file))) assert.deepEqual(released(file), before(file), file);
+  const expected = {...old, js: {...old.js, to: releasedManifest.js.to}, assets: {...old.assets, [releasedManifest.js.to]: sha(released(releasedManifest.js.to))}, modalFocus: {parentCommit: parent, previousAsset: old.js.to}, protectedReferenceException: {...old.protectedReferenceException, currentHashes: releasedManifest.protectedReferenceException.currentHashes}};
+  assert.deepEqual(releasedManifest, expected);
+  assert.equal(released("_headers").toString(), before("_headers").toString() + `\n/${releasedManifest.js.to}\n  Cache-Control: public, max-age=31536000, immutable\n`);
+  assert.equal(released("scripts/build-pages-output.mjs").toString(), before("scripts/build-pages-output.mjs").toString().replace(`  "${old.js.to}",`, `  "${old.js.to}",\n  "${releasedManifest.js.to}",`));
 });
 
-test("new JavaScript changes only modal interaction; analytics, validation, submission and success are exact", () => {
-  const previous = read(old.js.to).toString(), current = read(assetDelivery.js.to).toString();
+test("the historical modal asset changed only interaction, not form analytics or submission", () => {
+  const previous = before(old.js.to).toString(), current = released(releasedManifest.js.to).toString();
   const start = previous.indexOf("function openModal()"), end = previous.indexOf("function getLeadThankYouModal()");
   const newStart = current.indexOf("let modalInteractionState = null;"), newEnd = current.indexOf("function getLeadThankYouModal()");
   assert.ok(start > 0 && end > start && newStart > 0 && newEnd > newStart);

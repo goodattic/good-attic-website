@@ -6,7 +6,8 @@ Static marketing site for Good Attic.
 
 - `index.html` - site markup
 - `styles.css` - site styles
-- `script.js` - site interactions
+- `src/site-interactions.js` - canonical source for the script loaded by live pages
+- `script.js` - legacy public URL, retained for compatibility; live pages load the hashed script
 - `assets/` - images, logo files, and visual assets
 
 ## Local Preview
@@ -29,6 +30,10 @@ To regenerate the non-home routes, sitemap, robots file, and page model JSON:
 ```bash
 node build-seo-wave1.mjs
 ```
+
+This generator can replace reviewed live page content. Run it only for an
+intentional SEO content release, then review every resulting page change against
+the [live-site baseline](LIVE-SITE-BASELINE.md).
 
 ## Launch Readiness
 
@@ -56,6 +61,10 @@ Recommended production setup:
 - Build output directory: `dist`
 
 The build copies only an explicit allowlist of public site files into `dist`.
+Before any production release, run the baseline guard described in
+[LIVE-SITE-BASELINE.md](LIVE-SITE-BASELINE.md). The current live deployment is
+the baseline; the older `main` branch and legacy `script.js` are not safe
+substitutes for its static content or active script.
 Internal functions, tests, migrations, source data, scripts, and documentation are
 never placed in the static output. Preview deployments also fail closed for every
 API route except the read-only `/api/site-config`; only the production environment

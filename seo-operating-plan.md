@@ -27,15 +27,15 @@ Make Good Attic the strongest organic and local-search attic insulation brand in
 Run before deploy:
 
 ```bash
-node build-seo-wave1.mjs
+npm run build
 node scripts/check-launch-readiness.mjs
+node scripts/check-live-site-baseline.mjs
 ```
 
-Deploy:
-
-```bash
-npx wrangler pages deploy . --project-name good-attic-website --branch main
-```
+Use the guarded `dist` artifact and the reviewed Pages Functions after the
+online deployment-ID preflight in [LIVE-SITE-BASELINE.md](LIVE-SITE-BASELINE.md).
+Do not deploy `.` or regenerate SEO pages unless that content is the reviewed
+change; either path could restore older copy or phone numbers.
 
 After deploy:
 

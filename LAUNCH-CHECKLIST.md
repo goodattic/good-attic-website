@@ -15,10 +15,10 @@ This file separates the launch tasks Codex can handle in-repo from the steps tha
 
 ## Launch command sequence
 
-1. Rebuild the site:
+1. Build the reviewed site source. Run `build-seo-wave1.mjs` only when the
+release intentionally changes generated SEO content:
 
 ```bash
-node build-seo-wave1.mjs
 npm run build
 ```
 
@@ -27,9 +27,13 @@ npm run build
 ```bash
 node scripts/check-launch-readiness.mjs
 npm test
+node scripts/check-live-site-baseline.mjs
 ```
 
-3. Push `main` so Cloudflare Pages rebuilds production.
+3. Confirm the live Pages deployment has not changed since the baseline was
+captured, then publish only the guarded `dist` artifact and reviewed Functions.
+Follow [LIVE-SITE-BASELINE.md](LIVE-SITE-BASELINE.md); do not publish `.` or
+push the old `main` branch as a deployment shortcut.
 
 4. After the live domain is active, submit IndexNow:
 

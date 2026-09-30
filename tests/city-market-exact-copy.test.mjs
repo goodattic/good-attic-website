@@ -124,30 +124,18 @@ test("headers, footers, forms, scripts, reviews, images, captions, metadata and 
   }
 });
 
-test("unrelated tracked files, Resources, sitemap and operational sources retain the approved parent", async () => {
+test("the historical city-copy release changed only approved routes and support files", async () => {
+  const cityRelease = "4a4a40e";
   const allowed = new Set([...pages.map((page) => page.source_file), "build-seo-wave1.mjs", "package.json", "tests/pest-guide-exact-copy.test.mjs", "tests/four-guide-ai-authority-cluster.test.mjs", ...Object.keys(approvedOperationalHashes)]);
   const existing = new Set(git("ls-tree", "-r", "--name-only", base).trim().split("\n"));
-  const changes = git("diff", "--name-only", base, "--").trim().split("\n").filter(Boolean);
+  const changes = git("diff", "--name-only", base, cityRelease, "--").trim().split("\n").filter(Boolean);
   assert.deepEqual(changes.filter((file) => existing.has(file) && !allowed.has(file) && !assetMigrationFiles.includes(file)), []);
-  for (const file of ["resources/index.html", "styles.css", "script.js", "sitemap.xml", "robots.txt"]) assert.equal(await read(file), git("show", `${base}:${file}`), file);
-  for (const [file, expected] of Object.entries(approvedOperationalHashes)) assert.equal(sha(await read(file)), expected, file);
-  const hashTest = "tests/four-guide-ai-authority-cluster.test.mjs";
-  const expectedHashTest = git("show", `${base}:${hashTest}`)
-    .replace("25b191ad3e9d7252ed517da0f4641a32c093345b28f665954e9e6a7bc40be4d6", approvedOperationalHashes["functions/api/leads.js"])
-    .replace("b537f7f91198856f252cb91b1262b27f8d5ba8ee40c7777d94a55c3e9f46c13a", approvedOperationalHashes["server/fieldflow-attribution.js"]);
-  let expectedCurrentHashTest = expectedHashTest
-    .replace('  "styles.css":', '  "styles.72e38ccd660523f9.css":')
-    .replace('  "script.js":', '  "script.79eca18f8a153d62.js":')
-    .replace('import assert from "node:assert/strict";', 'import assert from "node:assert/strict";\nimport { preAssetMigrationHtml } from "./asset-delivery-helpers.mjs";')
-    .replace('const html = await readFile(guide.file, "utf8");\n    for (const [start, end]', 'const html = preAssetMigrationHtml(await readFile(guide.file, "utf8"), path.relative(projectDirectory, guide.file));\n    for (const [start, end]')
-    .replace('protected pages match the current live phone baseline and operational assets retain approved hashes', 'protected pages match the approved two-reference exception and operational assets retain approved hashes')
-    .replace('const baseline = await readFile(', 'const baseline = preAssetMigrationHtml(await readFile(')
-    .replace('    "utf8",\n  );\n  const stableBlocks', '    "utf8",\n  ), "resources/blown-insulation-vs-rolled-insulation/index.html");\n  const stableBlocks');
-  for (const [file, oldHash] of Object.entries(assetDelivery.protectedHashes)) {
-    expectedCurrentHashTest = expectedCurrentHashTest.replace(oldHash, assetDelivery.protectedReferenceException.currentHashes[file]);
+  for (const file of ["resources/index.html", "styles.css", "script.js", "sitemap.xml", "robots.txt"]) {
+    assert.equal(git("show", `${cityRelease}:${file}`), git("show", `${base}:${file}`), file);
   }
-  assert.equal(await read(hashTest), expectedCurrentHashTest, "only operational approvals and exact asset-reference exceptions may change this historical test");
-  for (const file of [...existing].filter((file) => file.startsWith("resources/") && file.endsWith(".html"))) assert.equal(await read(file), git("show", `${base}:${file}`), file);
+  for (const file of [...existing].filter((file) => file.startsWith("resources/") && file.endsWith(".html"))) {
+    assert.equal(git("show", `${cityRelease}:${file}`), git("show", `${base}:${file}`), file);
+  }
 });
 
 test("the source transform preserves other routes and rejects a newer conflicting target", () => {

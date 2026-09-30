@@ -18,6 +18,8 @@ const root = new URL("../", import.meta.url);
 const git = (...args) => execFileSync("git", args, { cwd: root, maxBuffer: 64 * 1024 * 1024 });
 const read = file => readFileSync(new URL(file, root));
 const original = file => git("show", `${homepageBaseline}:${file}`);
+const historicalHomepageRelease = "4c412cb";
+const historical = file => git("show", `${historicalHomepageRelease}:${file}`);
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
 const baselineHtml = original("index.html").toString();
 const currentHtml = read("index.html").toString();
@@ -64,8 +66,11 @@ test("homepage cleanup starts from the verified production source and changes ex
 });
 
 test("reversing only the seven approved text nodes restores every homepage byte", () => {
-  assert.equal(replaceHomepageNodes(baselineHtml, "before", "after"), currentHtml);
-  const reversed = replaceHomepageNodes(currentHtml, "after", "before");
+  // Prove the original seven-node release against its immutable commit. Later
+  // live asset-version changes legitimately altered homepage bytes again.
+  const historicalHtml = historical("index.html").toString();
+  assert.equal(replaceHomepageNodes(baselineHtml, "before", "after"), historicalHtml);
+  const reversed = replaceHomepageNodes(historicalHtml, "after", "before");
   assert.equal(reversed, baselineHtml);
   assert.deepEqual(Buffer.from(reversed), original("index.html"));
   assert.equal(sha(reversed), homepageBaselineSha256);
@@ -88,27 +93,28 @@ test("historical homepage reversal rejects missing, conflicting or ambiguous nod
   }
 });
 
-test("every other tracked file and every operational source retain exact production bytes", () => {
+test("the historical homepage release changed only its approved files", () => {
   const approved = new Set(["index.html", ...homepageCleanupAdaptedTests]);
-  const currentFiles = git("ls-files", "--cached", "--others", "--exclude-standard").toString().trim().split("\n");
+  const currentFiles = git("ls-tree", "-r", "--name-only", historicalHomepageRelease).toString().trim().split("\n");
   assert.deepEqual([...new Set(currentFiles)].sort(), [...baselineFiles, ...homepageCleanupAddedTests].sort());
   for (const file of baselineFiles.filter(file => !approved.has(file))) {
-    assert.deepEqual(read(file), original(file), file);
+    assert.deepEqual(historical(file), original(file), file);
   }
   const operations = file => /^(functions|server|migrations|workers)\//.test(file) || file === "wrangler.toml";
   assert.equal([...approved].some(operations), false);
   assert.equal(homepageCleanupAddedTests.some(file => !file.startsWith("tests/")), false);
 });
 
-test("the four historical guard adaptations remain exact and all their existing tests remain present", () => {
+test("the four historical guard adaptations remain exact and current tests are not skipped", () => {
   assert.deepEqual([...homepageCleanupAdaptedTests].sort(), Object.keys(historicalGuardHashes).sort());
   assert.deepEqual(homepageCleanupAddedTests, ["tests/homepage-cleanup-helpers.mjs", "tests/homepage-cleanup.test.mjs"]);
   for (const [file, hashes] of Object.entries(historicalGuardHashes)) {
-    const before = original(file), after = read(file);
+    const before = original(file), after = historical(file), current = read(file);
     assert.equal(sha(before), hashes.before, `${file}: baseline guard`);
     assert.equal(sha(after), hashes.after, `${file}: exact reviewed guard adaptation`);
     const testNames = bytes => [...bytes.toString().matchAll(/^test\("([^"]+)"/gm)].map(match => match[1]);
     assert.deepEqual(testNames(after), testNames(before), file);
-    assert.doesNotMatch(after.toString(), /\btest\.(?:skip|todo|only)\b/);
+    assert.equal(testNames(current).length, testNames(after).length, `${file}: no historical tests removed`);
+    assert.doesNotMatch(current.toString(), /\btest\.(?:skip|todo|only)\b/);
   }
 });

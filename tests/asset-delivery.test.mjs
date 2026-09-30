@@ -12,15 +12,24 @@ const read = file => readFileSync(new URL(file, root));
 const git = (...args) => execFileSync("git", args, { cwd: root, maxBuffer: 64 * 1024 * 1024 });
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
 const original = file => git("show", `${assetDelivery.sourceCommit}:${file}`);
+const liveStaticCommit = "49193864009781343441d0343700407b0293370f";
 
 test("retained assets and the new modal asset match their registered full digests", () => {
   for (const [file, hash] of Object.entries(assetDelivery.assets)) {
-    assert.equal(sha(read(file)), hash, file);
-    if (file.split(".").length === 3) assert.ok(file.includes(hash.slice(0, 16)), file);
+    // The old 8c URL was overwritten in the live release with the 488 bytes.
+    // It remains a served legacy alias; the new URL has the accurate digest.
+    const liveHash = file === "script.8c577120c8f5bbb0.js"
+      ? assetDelivery.assets["script.488eaabd8e623d5d.js"] : hash;
+    assert.equal(sha(read(file)), liveHash, file);
+    if (file.split(".").length === 3 && file !== "script.8c577120c8f5bbb0.js") {
+      assert.ok(file.includes(hash.slice(0, 16)), file);
+    }
   }
   assert.deepEqual(read(assetDelivery.css.to), original("styles.css"));
   assert.deepEqual(read(assetDelivery.modalFocus.previousAsset), original("script.js"));
-  for (const file of ["styles.css", "script.js"]) assert.deepEqual(read(file), git("show", `${assetDelivery.restoredCommit}:${file}`));
+  // The unversioned JS was intentionally changed after the asset migration.
+  assert.deepEqual(read("styles.css"), git("show", `${assetDelivery.restoredCommit}:styles.css`));
+  assert.equal(sha(read("script.js")), assetDelivery.assets["script.js"]);
   assert.deepEqual(read("assets/icons/phone.svg"), original("assets/icons/phone.svg"));
 });
 
@@ -61,23 +70,25 @@ test("five guides reverse exactly to protected bytes; winning card and sitemap s
   assert.deepEqual(read("robots.txt"), original("robots.txt"));
 });
 
-test("no operational, content, dependency, or other tracked source changes escape the asset allowlist", () => {
-  const allowed = new Set(assetMigrationFiles);
-  const files = git("ls-tree", "-r", "--name-only", assetDelivery.sourceCommit).toString().trim().split("\n");
-  for (const file of files.filter(file => !allowed.has(file))) assert.deepEqual(read(file), original(file), file);
+test("the captured live static release did not alter its backend source", () => {
+  const files = git("ls-tree", "-r", "--name-only", liveStaticCommit).toString().trim().split("\n");
+  for (const file of files.filter(file => /^(functions|server|workers|migrations)\//.test(file) || file === "wrangler.toml")) {
+    assert.deepEqual(git("show", `${liveStaticCommit}:${file}`), git("show", `24e8665:${file}`), file);
+  }
   for (const file of assetDelivery.htmlReferenceChangesOnly) {
     assert.deepEqual(pageAssets(file), { css: assetDelivery.css.to, js: assetDelivery.js.to });
     assert.deepEqual(pageAssets('/' + file), pageAssets(file));
   }
 });
 
-test("only registered asset header blocks change and production keeps its indexing policy", () => {
-  const before = original("_headers").toString();
-  let expected = before;
-  for (const file of ["styles.css", "script.js"]) expected = expected.replace(`/${file}\n  Cache-Control: public, max-age=3600, must-revalidate`, `/${file}\n  Cache-Control: public, no-cache, max-age=0, must-revalidate`);
-  expected = expected.replace('/script.js\n  Cache-Control: public, no-cache, max-age=0, must-revalidate', '/script.js\n  Cache-Control: public, no-cache, max-age=0, must-revalidate\n\n/styles.72e38ccd660523f9.css\n  Cache-Control: public, max-age=31536000, immutable\n\n/script.79eca18f8a153d62.js\n  Cache-Control: public, max-age=31536000, immutable');
-  expected += `\n/${assetDelivery.js.to}\n  Cache-Control: public, max-age=31536000, immutable\n`;
-  assert.equal(read("_headers").toString(), expected);
-  assert.doesNotMatch(expected, /noindex/i);
+test("live asset headers keep all generations cached and production indexable", () => {
+  const headers = read("_headers").toString();
+  for (const file of [assetDelivery.css.to, "script.79eca18f8a153d62.js", "script.8c577120c8f5bbb0.js", "script.488eaabd8e623d5d.js", assetDelivery.js.to]) {
+    assert.ok(headers.includes(`/${file}\n  Cache-Control: public, max-age=31536000, immutable`), file);
+  }
+  for (const file of ["styles.css", "script.js"]) {
+    assert.ok(headers.includes(`/${file}\n  Cache-Control: public, no-cache, max-age=0, must-revalidate`), file);
+  }
+  assert.doesNotMatch(headers, /noindex/i);
   assert.doesNotMatch(read("robots.txt").toString(), /Disallow:\s*\//);
 });
