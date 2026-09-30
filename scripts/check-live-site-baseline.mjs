@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -39,14 +40,28 @@ if (errors.length) {
 
 if (flags.has("--check-live-deployment") && !process.exitCode) {
   const token = process.env.CLOUDFLARE_API_TOKEN;
-  if (!token) throw new Error("CLOUDFLARE_API_TOKEN is required for live deployment preflight");
   const { accountId, projectName, id } = baseline.productionDeployment;
-  const url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/pages/projects/${encodeURIComponent(projectName)}/deployments?env=production&per_page=1`;
-  const response = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
-  if (!response.ok) throw new Error(`Cloudflare Pages deployment lookup failed: HTTP ${response.status}`);
-  const body = await response.json();
-  const latest = body?.result?.[0];
-  if (body?.success !== true || !latest?.id) throw new Error("Cloudflare Pages deployment lookup returned no production deployment");
-  if (latest.id !== id) throw new Error(`Production changed since baseline: expected ${id}; found ${latest.id}. Stop and re-baseline from the current live deployment.`);
+  let latestId;
+  if (token) {
+    const url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/pages/projects/${encodeURIComponent(projectName)}/deployments?env=production&per_page=1`;
+    const response = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
+    if (!response.ok) throw new Error(`Cloudflare Pages deployment lookup failed: HTTP ${response.status}`);
+    const body = await response.json();
+    if (body?.success !== true) throw new Error("Cloudflare Pages deployment lookup failed");
+    latestId = body?.result?.[0]?.id;
+  } else {
+    // Wrangler's existing OAuth login is sufficient for a read-only preflight.
+    // This avoids making release safety depend on another expiring API token.
+    const output = execFileSync("npx", [
+      "wrangler", "pages", "deployment", "list",
+      "--project-name", projectName,
+      "--environment", "production",
+      "--json",
+    ], { cwd: root, encoding: "utf8", timeout: 45_000 });
+    const deployments = JSON.parse(output);
+    latestId = deployments.find((entry) => entry.Environment === "Production")?.Id;
+  }
+  if (!latestId) throw new Error("Cloudflare Pages deployment lookup returned no production deployment");
+  if (latestId !== id) throw new Error(`Production changed since baseline: expected ${id}; found ${latestId}. Stop and re-baseline from the current live deployment.`);
   console.log(`Online deployment preflight passed: production still ${id}`);
 }

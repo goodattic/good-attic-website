@@ -22,11 +22,15 @@ npm run build
 node scripts/check-live-site-baseline.mjs
 ```
 
-For a final online preflight immediately before deployment, use a Cloudflare API token with **Pages Read** permission:
+For a final online preflight immediately before deployment, use the existing
+Wrangler login:
 
 ```sh
-CLOUDFLARE_API_TOKEN=... node scripts/check-live-site-baseline.mjs --check-live-deployment
+node scripts/check-live-site-baseline.mjs --check-live-deployment
 ```
+
+Alternatively, supply a Cloudflare API token with **Pages Read** permission as
+`CLOUDFLARE_API_TOKEN`. The command reads deployment metadata only.
 
 The online check aborts if the newest production deployment ID differs from the frozen baseline. It is read-only. It does not publish anything.
 

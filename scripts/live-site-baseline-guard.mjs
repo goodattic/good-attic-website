@@ -3,6 +3,7 @@ import { readFile, readdir, lstat } from "node:fs/promises";
 import path from "node:path";
 
 export const RUNTIME_PATHS = [
+  ".github/workflows/live-site-release-guard.yml",
   "functions",
   "server",
   "src",
@@ -12,6 +13,9 @@ export const RUNTIME_PATHS = [
   "package-lock.json",
   "scripts/build-pages-output.mjs",
   "scripts/asset-delivery-manifest.json",
+  "scripts/check-live-site-baseline.mjs",
+  "scripts/live-site-baseline-guard.mjs",
+  "tests/live-site-baseline-guard.test.mjs",
 ];
 
 export const sha256 = (content) => createHash("sha256").update(content).digest("hex");

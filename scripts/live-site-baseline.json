@@ -317,6 +317,7 @@
     "terms-of-service/index.html": "79237d9c5943983d895161a33e1dbf0d60fdc8e71e8913f4dfce33e4a34bc06d"
   },
   "runtime": {
+    ".github/workflows/live-site-release-guard.yml": "1b1a6f48548044d4c400cf4aec7cc364758fcdd4195b14ff78c4c783d5c466a9",
     "functions/_middleware.js": "5bf9a3775ef0b51cee589ed1808d40fb64d6169c4d7cc100a69e57ccbeddcd58",
     "functions/api/ghl/angi-utah-auth-check.js": "da7919b2e6467a0a66ab0b891507202225f85d3d7258171383500f58290fb2bb",
     "functions/api/ghl/angi-utah-drain.js": "37b9712d49830298d47f536b8ad9a2c6ae742fdfdd0aed74782958f0fd6071eb",
@@ -370,6 +371,9 @@
     "package.json": "a1e9d9f1c9097c7d0b460e7dc4b40965c9a1aa95fd7a9e6ea721bcf9509f1115",
     "package-lock.json": "6d57b3b20f23088e3b28cbc055bc9f8b58f7710c8510677ea6d29a92efdf4ceb",
     "scripts/build-pages-output.mjs": "c25b22e6225cb5d47ffb345c306c9b79692094bbfbc1e620b41975d8b349968b",
-    "scripts/asset-delivery-manifest.json": "fa298b27b5d6a2205c77f6b8c092666e354fa3a684e5656ecbb1b79849a078b6"
+    "scripts/asset-delivery-manifest.json": "fa298b27b5d6a2205c77f6b8c092666e354fa3a684e5656ecbb1b79849a078b6",
+    "scripts/check-live-site-baseline.mjs": "e6fe5f0a7109a4ee0e43bd40e17ee0909ce6d208b3d3e651410759e291e744bc",
+    "scripts/live-site-baseline-guard.mjs": "32f0fd6e3c3c4772c527fdb39d3c9f00dde3a6605469c040473f6703c0e2a0c2",
+    "tests/live-site-baseline-guard.test.mjs": "4257be051b6d88e1264104c3de81a55e9ce0a1aface3991ed94a1f49abfb76d1"
   }
 }
