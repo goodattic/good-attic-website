@@ -1,5 +1,10 @@
 {
   "schemaVersion": 1,
   "baselineDeploymentId": "d0acd4af-738d-4dee-9f4b-5df4612bd4b0",
-  "changes": {}
+  "changes": {
+    "runtime/.github/workflows/live-site-release-guard.yml": {
+      "expectedSha256": "cd87c86178d62b13612e3c3e559780321235590f88e68e16b17473eaf36b112f",
+      "reason": "Fetch complete Git history so historical release proof tests can run in GitHub Actions."
+    }
+  }
 }
