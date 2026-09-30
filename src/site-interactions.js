@@ -556,13 +556,13 @@ function setEnhancedConversionData(payload) {
   if (Object.keys(userData).length) window.gtag("set", "user_data", userData);
 }
 
-function trackLeadConversion(payload) {
+function trackLeadConversion(payload, transactionId) {
   ensureGoogleTag();
   setEnhancedConversionData(payload);
 
-  window.gtag("event", "conversion", {
-    send_to: googleAdsTracking.leadConversionSendTo
-  });
+  const conversion = { send_to: googleAdsTracking.leadConversionSendTo };
+  if (transactionId) conversion.transaction_id = transactionId;
+  window.gtag("event", "conversion", conversion);
 
   window.gtag("event", "generate_lead", {
     send_to: googleAdsTracking.analyticsMeasurementId,
@@ -1743,6 +1743,128 @@ function initAddressAutocomplete() {
   });
 }
 
+const formSubmissions = new WeakMap();
+const formSubmissionLookups = new WeakMap();
+const formSubmissionSaltKey = "good-attic-form-salt-v1";
+const formPendingLifetimeMs = 24 * 60 * 60_000;
+const formCompletedLifetimeMs = 5 * 60_000;
+
+function createSubmissionId() {
+  try {
+    if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  } catch {
+    // Tracking must never prevent an otherwise valid Jobber request.
+    return null;
+  }
+}
+
+function rememberSubmission(submission) {
+  if (!submission.storageKey || !submission.id) return;
+  try {
+    sessionStorage.setItem(submission.storageKey, JSON.stringify({
+      id: submission.id,
+      completedAt: submission.completedAt,
+      conversionSent: submission.conversionSent,
+      expiresAt: submission.completedAt
+        ? submission.completedAt + formCompletedLifetimeMs
+        : Date.now() + formPendingLifetimeMs,
+    }));
+  } catch { /* The in-page fence still works when browser storage is unavailable. */ }
+}
+
+async function submissionStorageKey(form, fingerprint) {
+  try {
+    let salt = sessionStorage.getItem(formSubmissionSaltKey);
+    if (!salt) {
+      salt = createSubmissionId();
+      if (!salt) return null;
+      sessionStorage.setItem(formSubmissionSaltKey, salt);
+    }
+    const scope = `${location.pathname}:${form.dataset.leadEndpoint || form.dataset.ghlWebhook || "/api/leads"}`;
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${salt}:${scope}:${fingerprint}`));
+    return `good-attic-form-v1:${Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
+  } catch { return null; }
+}
+
+async function submissionFor(form, formData) {
+  // Hidden attribution fields can change between attempts; only submitted
+  // answers define whether this is a retry of the same lead.
+  const fingerprint = JSON.stringify([...formData.entries()]
+    .filter(([key]) => !["lead_source", "form_name", "source_page"].includes(key))
+    .map(([key, value]) => [key, String(value)]).sort());
+  const previous = formSubmissions.get(form);
+  if (previous?.fingerprint === fingerprint && (
+    !previous.completedAt || Date.now() - previous.completedAt < formCompletedLifetimeMs
+  )) return previous;
+  const pending = formSubmissionLookups.get(form);
+  if (pending?.fingerprint === fingerprint) return pending.promise;
+  const promise = (async () => {
+    const storageKey = await submissionStorageKey(form, fingerprint);
+    let stored = null;
+    if (storageKey) {
+      try { stored = JSON.parse(sessionStorage.getItem(storageKey) || "null"); } catch { /* Use a new UUID. */ }
+    }
+    const reusable = stored && stored.expiresAt > Date.now()
+      && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(stored.id);
+    const submission = {
+      fingerprint,
+      storageKey,
+      id: reusable ? stored.id : createSubmissionId(),
+      inFlight: false,
+      conversionSent: reusable ? Boolean(stored.conversionSent) : false,
+      completedAt: reusable ? stored.completedAt || null : null,
+    };
+    formSubmissions.set(form, submission);
+    rememberSubmission(submission);
+    return submission;
+  })();
+  formSubmissionLookups.set(form, { fingerprint, promise });
+  try { return await promise; }
+  finally {
+    if (formSubmissionLookups.get(form)?.promise === promise) formSubmissionLookups.delete(form);
+  }
+}
+
+function claimSubmission(submission) {
+  if (submission.inFlight) return false;
+  submission.inFlight = true;
+  return true;
+}
+
+function finalizeSuccessfulLeadSubmission({ status, submission, payload, result }) {
+  if (status) status.textContent = "Thanks. Your quote request has been sent.";
+  submission.completedAt = Date.now();
+  rememberSubmission(submission);
+
+  const transactionId = submission.id && result?.transaction_id === submission.id ? submission.id : null;
+  if (!transactionId) console.warn("Lead accepted, but its transaction ID was missing or mismatched.");
+  if (!submission.conversionSent && (!transactionId || result?.conversion_state !== "client_signaled")) {
+    try {
+      trackLeadConversion(payload, transactionId);
+      submission.conversionSent = true;
+      rememberSubmission(submission);
+      if (transactionId) {
+        // This records browser invocation, not Google acceptance.
+        void fetch("/api/leads/conversion-signal", {
+          method: "POST",
+          credentials: "same-origin",
+          keepalive: true,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ submission_id: submission.id, transaction_id: transactionId }),
+        }).catch(() => {});
+      }
+    } catch {
+      // Analytics must not turn a successfully created Jobber Request
+      // into a customer-facing intake failure.
+    }
+  }
+}
+
 document.querySelectorAll("[data-lead-form]").forEach((form) => {
   const projectOptions = [...form.querySelectorAll('input[name="project_type"]')];
   const addressInputs = getAddressInputs(form);
@@ -1803,9 +1925,16 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
     }
 
     if (endpoint) {
+      let submission;
+      let ownsSubmission = false;
+      let leadAccepted = false;
       try {
         const formData = new FormData(form);
+        submission = await submissionFor(form, formData);
+        ownsSubmission = claimSubmission(submission);
+        if (!ownsSubmission) return;
         const payload = Object.fromEntries(formData.entries());
+        if (submission.id) payload.submission_id = submission.id;
         payload.project_type = formData.getAll("project_type");
         payload.project_type_label = payload.project_type.join(", ");
         payload.full_address = buildFullAddress(payload);
@@ -1831,16 +1960,23 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
           throw new Error(result?.message || "Form endpoint failed.");
         }
 
-        if (status) status.textContent = "Thanks. Your quote request has been sent.";
-        trackLeadConversion(payload);
+        leadAccepted = true;
         shouldShowThankYou = true;
+        finalizeSuccessfulLeadSubmission({ status, submission, payload, result });
       } catch (error) {
-        if (status) status.textContent = "Something went wrong. Please call or text us and we will help right away.";
-        if (submitButton) {
-          submitButton.disabled = false;
-          submitButton.removeAttribute("aria-busy");
+        if (!leadAccepted) {
+          if (status) status.textContent = "Something went wrong. Please call or text us and we will help right away.";
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.removeAttribute("aria-busy");
+          }
+          return;
         }
-        return;
+        // The API accepted the lead. Never report a submission failure because
+        // local tracking or UI work raised an unexpected error afterward.
+        if (status) status.textContent = "Thanks. Your quote request has been sent.";
+      } finally {
+        if (ownsSubmission) submission.inFlight = false;
       }
     } else if (status) {
       status.textContent = "Thanks. Your request is ready for lead routing.";

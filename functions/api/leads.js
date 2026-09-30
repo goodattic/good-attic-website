@@ -1,4 +1,13 @@
 import { getJobberOAuthRoute } from "./jobber/oauth/config.js";
+import {
+  completeFormTransaction,
+  flagFormTransactionForReconciliation,
+  markFormDeliveryUncertain,
+  recordFormReconciliationAttempt,
+  releaseUnstartedFormTransaction,
+  reserveFormTransaction,
+  validSubmissionId,
+} from "../../server/website-form-transactions.js";
 
 const JOBBER_API_URL = "https://api.getjobber.com/api/graphql";
 const JOBBER_TOKEN_URL = "https://api.getjobber.com/api/oauth/token";
@@ -8,6 +17,7 @@ const JOBBER_TOKEN_REQUEST_TIMEOUT_MS = 45 * 1000;
 const GHL_MAX_ATTEMPTS = 3;
 const ATTRIBUTION_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 const ATTRIBUTION_FUTURE_SKEW_MS = 5 * 60 * 1000;
+const FORM_TRACKING_TIMEOUT_MS = 2000;
 const GOOGLE_PAID_MEDIA = new Set(["cpc", "ppc", "paidsearch", "paid-search", "sem"]);
 const SELF_REPORTED_SOURCES = new Set([
   "google_search_maps",
@@ -1211,9 +1221,10 @@ function resolveLeadJobberRoute(env, lead) {
   return { ...googleRoute, attributionFallback: false };
 }
 
-async function submitLeadToJobber(env, lead) {
+async function submitLeadToJobber(env, lead, { onWriteAttempt = () => {}, onClientCreated = () => {} } = {}) {
   const route = resolveLeadJobberRoute(env, lead);
   const token = await refreshJobberAccessToken(env, route);
+  onWriteAttempt();
   const created = await createJobberClient(env, token.accessToken, lead);
   const client = created.result?.data?.clientCreate?.client || {};
   const property = client.clientProperties?.nodes?.[0] || null;
@@ -1223,6 +1234,7 @@ async function submitLeadToJobber(env, lead) {
       account: route.accountLabel,
     });
   }
+  onClientCreated({ client_id: client.id, account_id: route.expectedAccountId });
 
   const request = await createJobberRequest(
     env,
@@ -1308,6 +1320,87 @@ async function submitLeadToGhl(env, ghlLead) {
   };
 }
 
+// Transaction tracking adds identity to successful leads but is never an
+// availability dependency of the existing Jobber intake path.
+async function optionalFormTracking(env, lead, step, operation) {
+  const configured = Number(env?.FORM_TRANSACTION_TIMEOUT_MS);
+  const timeoutMs = Number.isFinite(configured) && configured > 0
+    ? Math.min(configured, FORM_TRACKING_TIMEOUT_MS)
+    : FORM_TRACKING_TIMEOUT_MS;
+  let timer;
+  try {
+    const value = await Promise.race([
+      Promise.resolve().then(operation),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("form_tracking_timeout")), timeoutMs);
+      }),
+    ]);
+    return { ok: true, value };
+  } catch (error) {
+    const timedOut = error?.message === "form_tracking_timeout";
+    console.error("Website form tracking failed open", {
+      submissionId: lead.submission_id,
+      market: lead.market_key,
+      step,
+      code: timedOut ? "timeout" : "tracking_unavailable",
+    });
+    return { ok: false, timedOut };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// A D1 reservation can commit after its fail-open deadline. Keep that
+// unfinished operation alive long enough to link (or release) the late row;
+// never make the Jobber result wait for it.
+function repairLateFormReservation(context, env, lead, reservationPromise, outcome) {
+  const repair = reservationPromise.then(async (reservation) => {
+    if (reservation?.claimed && reservation.state === "processing") {
+      if (!outcome.jobber) {
+        await optionalFormTracking(env, lead, "late_recover_failed_jobber_intake", () =>
+          outcome.jobberWriteAttempted
+            ? markFormDeliveryUncertain(env.ANGI_ROUTER_DB, lead.submission_id, outcome.partialJobber)
+            : releaseUnstartedFormTransaction(env.ANGI_ROUTER_DB, lead.submission_id));
+        return;
+      }
+      const completed = await optionalFormTracking(env, lead, "late_complete", () =>
+        completeFormTransaction(env.ANGI_ROUTER_DB, lead.submission_id, outcome.jobber));
+      if (!completed.ok) {
+        await optionalFormTracking(env, lead, "late_mark_delivery_uncertain", () =>
+          markFormDeliveryUncertain(env.ANGI_ROUTER_DB, lead.submission_id, outcome.jobber));
+      }
+      return;
+    }
+    if (reservation && outcome.jobber) {
+      const reason = `${reservation.state || "unknown"}_late_retry`;
+      const attemptId = crypto.randomUUID();
+      await optionalFormTracking(env, lead, "late_flag_reconciliation", () =>
+        flagFormTransactionForReconciliation(env.ANGI_ROUTER_DB, lead.submission_id, reason));
+      await optionalFormTracking(env, lead, "late_record_reconciliation_attempt", () =>
+        recordFormReconciliationAttempt(env.ANGI_ROUTER_DB, {
+          attemptId, submissionId: lead.submission_id, marketKey: lead.market_key,
+          reason, jobber: outcome.jobber,
+        }));
+    }
+  }).catch(() => {
+    console.error("Late website form reservation needs reconciliation", {
+      submissionId: lead.submission_id,
+      market: lead.market_key,
+      jobberRequestId: outcome.jobber?.request_id || null,
+      code: "late_reservation_failed",
+    });
+  });
+  try {
+    context.waitUntil?.(repair);
+  } catch {
+    console.error("Late website form reservation could not be registered for repair", {
+      submissionId: lead.submission_id,
+      market: lead.market_key,
+      code: "late_reservation_wait_until_unavailable",
+    });
+  }
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   let payload;
@@ -1318,8 +1411,15 @@ export async function onRequestPost(context) {
     return jsonResponse({ ok: false, message: "Invalid JSON payload." }, 400);
   }
 
+  const suppliedSubmissionId = payload?.submission_id;
+  if (suppliedSubmissionId != null && !validSubmissionId(suppliedSubmissionId)) {
+    console.error("Website form supplied an invalid tracking ID; Jobber intake continues.", {
+      code: "invalid_submission_id_replaced",
+    });
+  }
+  const submissionId = validSubmissionId(suppliedSubmissionId) ? suppliedSubmissionId : crypto.randomUUID();
   const source = classifyWebsiteLeadSource(payload || {});
-  const lead = buildLead(payload || {}, crypto.randomUUID(), source);
+  const lead = buildLead(payload || {}, submissionId, source);
   const missing = validateLead(lead);
   if (missing.length) {
     return jsonResponse({
@@ -1329,61 +1429,54 @@ export async function onRequestPost(context) {
     }, 400);
   }
 
-  try {
-    const jobber = await submitLeadToJobber(env, lead);
-    if (env.ACKNOWLEDGEMENT_SOURCE_ENABLED === 'true') {
-      // Proof is written only by this successful public form path, never by a
-      // manually created Jobber record or its editable marketing source label.
-      try {
-        const { recordWebsiteAcknowledgementSourceSafely } = await import('../../server/acknowledgement-source.js');
-        await recordWebsiteAcknowledgementSourceSafely(env, lead, jobber, console, context.waitUntil?.bind(context));
-      } catch {
-        console.error('Website acknowledgement proof hook unavailable after Jobber succeeded.');
-      }
-    }
-    // Attribution is intentionally loaded only for website lead submission.
-    // The private appointment resolver imports the Jobber helpers in this file
-    // without bringing Fieldflow into its execution path.
-    const {
-      buildWebsiteAttribution,
-      submitFieldflowAttribution,
-    } = await import("../../server/fieldflow-attribution.js");
-    const [ghl, fieldflow] = await Promise.all([
-      submitLeadToGhl(env, buildGhlLead(payload, lead, jobber)),
-      submitFieldflowAttribution(
-        env,
-        lead.market_key,
-        buildWebsiteAttribution(payload, lead, jobber),
-      ),
-    ]);
-
-    if (!ghl.ok) {
-      console.error("HighLevel lead delivery failed after Jobber succeeded.", {
-        submissionId: lead.submission_id,
-        market: lead.market_key,
-        attempts: ghl.attempts,
-        status: ghl.status,
-        reason: ghl.reason,
-      });
-    }
-    if (!fieldflow.ok) {
-      console.error("Fieldflow attribution delivery failed after Jobber succeeded.", {
-        submissionId: lead.submission_id,
-        market: lead.market_key,
-        attempts: fieldflow.attempts,
-        status: fieldflow.status,
-        reason: fieldflow.reason,
-      });
-    }
-
+  const reservationPromise = Promise.resolve().then(() =>
+    reserveFormTransaction(env.ANGI_ROUTER_DB, submissionId, lead.market_key));
+  const reserved = await optionalFormTracking(env, lead, "reserve", () => reservationPromise);
+  const reservation = reserved.ok ? reserved.value : null;
+  if (reservation?.state === "completed" && reservation.jobber_request_id) {
     return jsonResponse({
       ok: true,
-      message: ghl.ok ? "Lead sent to Jobber and HighLevel." : "Lead sent to Jobber.",
-      jobber,
-      ghl,
-      fieldflow,
+      duplicate: true,
+      transaction_id: reservation.transaction_id,
+      conversion_state: reservation.conversion_state,
+      jobber: {
+        request_id: reservation.jobber_request_id,
+        client_id: reservation.jobber_client_id,
+        account_id: reservation.jobber_account_id,
+        market_key: reservation.market_key,
+      },
+    });
+  }
+  // If a previous delivery is uncertain, create the Request on retry and
+  // retain both attempts for reconciliation; never reject a real lead.
+  const reconciliationReason = reservation && (!reservation.claimed || reservation.state !== "processing")
+    ? `${reservation.state || "unknown"}_retry`
+    : null;
+  const retryAttemptId = reconciliationReason ? crypto.randomUUID() : null;
+  if (reconciliationReason) {
+    await optionalFormTracking(env, lead, "flag_reconciliation", () =>
+      flagFormTransactionForReconciliation(env.ANGI_ROUTER_DB, submissionId, reconciliationReason));
+  }
+
+  let jobberWriteAttempted = false;
+  let partialJobber = null;
+  let jobber;
+  try {
+    jobber = await submitLeadToJobber(env, lead, {
+      onWriteAttempt: () => { jobberWriteAttempted = true; },
+      onClientCreated: client => { partialJobber = client; },
     });
   } catch (error) {
+    if (reservation?.claimed && reservation.state === "processing") {
+      await optionalFormTracking(env, lead, "recover_failed_jobber_intake", () =>
+        jobberWriteAttempted
+          ? markFormDeliveryUncertain(env.ANGI_ROUTER_DB, submissionId, partialJobber)
+          : releaseUnstartedFormTransaction(env.ANGI_ROUTER_DB, submissionId));
+    } else if (reserved.timedOut) {
+      repairLateFormReservation(context, env, lead, reservationPromise, {
+        jobberWriteAttempted, partialJobber,
+      });
+    }
     if (error instanceof LeadSubmissionError) {
       return jsonResponse({
         ok: false,
@@ -1397,6 +1490,74 @@ export async function onRequestPost(context) {
       message: "Unexpected lead routing error.",
     }, 500);
   }
+
+  if (reservation?.claimed && reservation.state === "processing") {
+    const completed = await optionalFormTracking(env, lead, "complete", () =>
+      completeFormTransaction(env.ANGI_ROUTER_DB, submissionId, jobber));
+    if (!completed.ok) {
+      await optionalFormTracking(env, lead, "mark_delivery_uncertain", () =>
+        markFormDeliveryUncertain(env.ANGI_ROUTER_DB, submissionId, jobber));
+    }
+  } else if (reconciliationReason) {
+    await optionalFormTracking(env, lead, "record_reconciliation_attempt", () =>
+      recordFormReconciliationAttempt(env.ANGI_ROUTER_DB, {
+        attemptId: retryAttemptId, submissionId, marketKey: lead.market_key,
+        reason: reconciliationReason, jobber,
+      }));
+  } else {
+    console.error("Website form Request needs transaction-ledger recovery", {
+      submissionId, market: lead.market_key, jobberRequestId: jobber.request_id,
+      code: "reservation_unavailable_jobber_succeeded",
+    });
+    if (reserved.timedOut) {
+      repairLateFormReservation(context, env, lead, reservationPromise, { jobber });
+    }
+  }
+
+  if (env.ACKNOWLEDGEMENT_SOURCE_ENABLED === 'true') {
+    // Proof is written only by this successful public form path, never by a
+    // manually created Jobber record or its editable marketing source label.
+    try {
+      const { recordWebsiteAcknowledgementSourceSafely } = await import('../../server/acknowledgement-source.js');
+      await recordWebsiteAcknowledgementSourceSafely(env, lead, jobber, console, context.waitUntil?.bind(context));
+    } catch {
+      console.error('Website acknowledgement proof hook unavailable after Jobber succeeded.');
+    }
+  }
+  // Optional downstream attribution must not turn a created Jobber Request
+  // into a customer-facing failure or cause the browser to retry intake.
+  const [ghlResult, fieldflowResult] = await Promise.allSettled([
+    Promise.resolve().then(() => submitLeadToGhl(env, buildGhlLead(payload, lead, jobber))),
+    import("../../server/fieldflow-attribution.js").then(({
+      buildWebsiteAttribution, submitFieldflowAttribution,
+    }) => submitFieldflowAttribution(
+      env, lead.market_key, buildWebsiteAttribution(payload, lead, jobber),
+    )),
+  ]);
+  const ghl = ghlResult.status === "fulfilled" ? ghlResult.value : { ok: false, reason: "delivery_exception" };
+  const fieldflow = fieldflowResult.status === "fulfilled" ? fieldflowResult.value : { ok: false, reason: "delivery_exception" };
+  if (!ghl?.ok) {
+    console.error("HighLevel lead delivery failed after Jobber succeeded.", {
+      submissionId, market: lead.market_key, attempts: ghl?.attempts,
+      status: ghl?.status, reason: ghl?.reason,
+    });
+  }
+  if (!fieldflow?.ok) {
+    console.error("Fieldflow attribution delivery failed after Jobber succeeded.", {
+      submissionId, market: lead.market_key, attempts: fieldflow?.attempts,
+      status: fieldflow?.status, reason: fieldflow?.reason,
+    });
+  }
+
+  return jsonResponse({
+    ok: true,
+    transaction_id: submissionId,
+    conversion_state: "not_confirmed",
+    message: ghl?.ok ? "Lead sent to Jobber and HighLevel." : "Lead sent to Jobber.",
+    jobber,
+    ghl,
+    fieldflow,
+  });
 }
 
 export const _private = {
