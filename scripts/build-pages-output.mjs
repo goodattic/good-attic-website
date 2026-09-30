@@ -33,6 +33,8 @@ const publicEntries = [
   "script.js",
   "script.79eca18f8a153d62.js",
   "script.8c577120c8f5bbb0.js",
+  "script.488eaabd8e623d5d.js",
+  "script.40559d41a6b61dc2.js",
   "services",
   "site.webmanifest",
   "sitemap.xml",

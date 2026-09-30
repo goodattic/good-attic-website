@@ -109,11 +109,11 @@
   "protectedReferenceException": {
     "parentCommit": "0e3703bb5606f3c7e30c7f576ac708dc37db01ed",
     "currentHashes": {
-      "resources/blown-insulation-vs-rolled-insulation/index.html": "7ff03ab7fad9e74a48dd9534c004425f0c586a46ad3782b69739d0ed9e4d5d55",
-      "resources/attic-air-sealing-vs-more-insulation/index.html": "6f81e9ad81cd54bf314fe85cd36e0c62347f6e90beb58d669d22000250b70126",
-      "resources/insulation-removal-vs-top-off/index.html": "70d062400d27376012ddddaafabeb4b56ea3335334ccab53eee29fdde2cb4f93",
-      "resources/spray-foam-vs-blown-in-attic-insulation/index.html": "2ab6869e588c6f4357d4ef6cac50ef79657705f9704628971f78be06eb66ef5d",
-      "resources/signs-of-attic-pest-contamination/index.html": "1f9b0c32c4824332d4f624648901a1f11d1f8e94607c861400d533daa90eddcb"
+      "resources/blown-insulation-vs-rolled-insulation/index.html": "8f6b49dc8140c1987d0e6e37b89858452513ed6e3af3945b013625c409f16257",
+      "resources/attic-air-sealing-vs-more-insulation/index.html": "32347edb131c2f5a7884a017b5906997203db5f5762880f99688d93183d59aeb",
+      "resources/insulation-removal-vs-top-off/index.html": "984728a57824d2c0d1958467be93d306712b46438c352bede13edde0c39ce219",
+      "resources/spray-foam-vs-blown-in-attic-insulation/index.html": "3eaa41add9d4dd6c4e2ebfa2573d3cd73c1a1fa00d97bc8dfb8e198d32b929b4",
+      "resources/signs-of-attic-pest-contamination/index.html": "3d03f876f463cb9698dd8c910fa4386889dc535a265f7650dac1e0be84da9b0f"
     }
   },
   "css": {
@@ -122,7 +122,7 @@
   },
   "js": {
     "from": "script.js?v=quo-numbers-20260907a",
-    "to": "script.8c577120c8f5bbb0.js"
+    "to": "script.40559d41a6b61dc2.js"
   },
   "referenceExceptions": {
     "404.html": {
@@ -132,9 +132,11 @@
   "assets": {
     "styles.css": "21a116f422beacd8692747b6e979f5b369f28d2de69ef1bd87123198ab929139",
     "styles.72e38ccd660523f9.css": "72e38ccd660523f9f7268153ebae7adc43d19d7479ea7d1534856b1aca8332fa",
-    "script.js": "336aee7b25a7c201a47e9940ca805cdbc805c9065bfe94254cb476c5f7233ad9",
+    "script.js": "56c5955af13585324a8cace4a3a29fc68ae9ba972a9a7ca54846d1ecb3865e7e",
     "script.79eca18f8a153d62.js": "79eca18f8a153d62622de56a1eff83d68f4650e4eebf12b2e2eb7c9fdacee44d",
-    "script.8c577120c8f5bbb0.js": "8c577120c8f5bbb045b00e2bf825a701952963304a1b231840e4acffb4391e58"
+    "script.8c577120c8f5bbb0.js": "8c577120c8f5bbb045b00e2bf825a701952963304a1b231840e4acffb4391e58",
+    "script.488eaabd8e623d5d.js": "488eaabd8e623d5de5341517a84e172fd31def13dc18aeae7a33f8c24f057b04",
+    "script.40559d41a6b61dc2.js": "40559d41a6b61dc2908f2eace20bad95eaf67035d99b644acf93677e84cb17d7"
   },
   "modalFocus": {
     "parentCommit": "6295efbc4fdc09a7770fdfdbb793e569757a02ab",

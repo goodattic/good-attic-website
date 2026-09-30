@@ -131,11 +131,6 @@ const serviceContextRules = [
   { service_context: "attic_pest_remediation", pattern: /\/attic-pest-remediation\/?$/ }
 ];
 
-function getPageMarketRule(pathname) {
-  const path = String(pathname || "").split(/[?#]/, 1)[0] || "/";
-  return pageContextRules.find((rule) => rule.pattern.test(path)) || null;
-}
-
 function getPageContext() {
   const path = window.location.pathname;
   const market = getPageMarketRule(path);
@@ -148,6 +143,11 @@ function getPageContext() {
     page_service_context: service?.service_context || "general",
     page_url: window.location.href
   };
+}
+
+function getPageMarketRule(pathname) {
+  const path = String(pathname || "").split(/[?#]/, 1)[0] || "/";
+  return pageContextRules.find((rule) => rule.pattern.test(path)) || null;
 }
 
 function getStoredLandingPageMarket(attribution) {
@@ -707,7 +707,82 @@ function updateModalProgress() {
   fill.style.setProperty("--modal-progress", String(Math.min(1, Math.max(0.25, progress))));
 }
 
-function openModal() {
+let modalInteractionState = null;
+
+function modalControlAvailable(control) {
+  return control instanceof HTMLElement && control.isConnected
+    && !control.matches(":disabled") && !control.closest("[inert], [hidden]")
+    && control.getClientRects().length > 0
+    && getComputedStyle(control).visibility !== "hidden";
+}
+
+function modalTabStops() {
+  return Array.from(modal.querySelectorAll("a[href], button, input, select, textarea, summary, [tabindex], [contenteditable]"))
+    .filter((control) => control.tabIndex >= 0 && modalControlAvailable(control));
+}
+
+function focusInsideModal() {
+  const state = modalInteractionState;
+  if (!state) return;
+  const target = modalTabStops()[0];
+  if (target) target.focus({ preventScroll: true });
+  // The existing visibility transition can hide controls until the next frame.
+  else if (!state.focusFrame) state.focusFrame = requestAnimationFrame(() => {
+    if (modalInteractionState !== state) return;
+    state.focusFrame = null;
+    focusInsideModal();
+  });
+}
+
+function isolateModalBackground() {
+  if (!modalInteractionState) return;
+  // Isolate sibling branches, never the dialog or an ancestor containing it.
+  for (let branch = modal; branch && branch !== body; branch = branch.parentElement) {
+    for (const sibling of branch.parentElement?.children || []) {
+      if (sibling === branch || !(sibling instanceof HTMLElement)) continue;
+      if (!modalInteractionState.background.has(sibling)) {
+        modalInteractionState.background.set(sibling, sibling.getAttribute("inert"));
+        sibling.setAttribute("inert", "");
+      }
+    }
+  }
+}
+
+function containModalFocus(event) {
+  if (modalInteractionState && !modal.contains(event.target)) focusInsideModal();
+}
+
+function containModalTab(event) {
+  if (!modalInteractionState || event.key !== "Tab" || event.defaultPrevented) return;
+  const controls = modalTabStops();
+  const first = controls[0], last = controls[controls.length - 1];
+  if (!first) { event.preventDefault(); return; }
+  const active = document.activeElement;
+  if (!modal.contains(active) || !controls.includes(active)
+    || (event.shiftKey && active === first) || (!event.shiftKey && active === last)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+  }
+}
+
+function openModal(event) {
+  if (!modal || modalInteractionState) return;
+  const opener = event?.currentTarget instanceof HTMLElement ? event.currentTarget : document.activeElement;
+  modalInteractionState = {
+    opener,
+    scrollX: window.scrollX,
+    scrollY: window.scrollY || window.pageYOffset || 0,
+    bodyWasLocked: body.classList.contains("modal-open"),
+    lockTop: body.style.getPropertyValue("--modal-scroll-lock-top"),
+    lockPriority: body.style.getPropertyPriority("--modal-scroll-lock-top"),
+    navWasOpen: body.classList.contains("nav-open"),
+    navExpanded: navToggle.getAttribute("aria-expanded"),
+    background: new Map(),
+    observer: new MutationObserver(() => {
+      isolateModalBackground();
+      if (!modal.contains(document.activeElement)) focusInsideModal();
+    })
+  };
   body.classList.remove("nav-open");
   navToggle.setAttribute("aria-expanded", "false");
   modalScrollY = window.scrollY || window.pageYOffset || 0;
@@ -718,15 +793,41 @@ function openModal() {
 
   const scrollContainer = getModalScrollContainer();
   if (scrollContainer) scrollContainer.scrollTop = 0;
+  isolateModalBackground();
+  modalInteractionState.observer.observe(body, {
+    childList: true, subtree: true, attributes: true, attributeFilter: ["disabled", "hidden"]
+  });
+  document.addEventListener("focusin", containModalFocus);
+  document.addEventListener("keydown", containModalTab);
+  focusInsideModal();
   requestAnimationFrame(updateModalProgress);
 }
 
 function closeModal() {
+  if (!modal || !modalInteractionState) return;
+  const prior = modalInteractionState;
+  modalInteractionState = null;
+  if (prior.focusFrame) cancelAnimationFrame(prior.focusFrame);
+  prior.observer.disconnect();
+  document.removeEventListener("focusin", containModalFocus);
+  document.removeEventListener("keydown", containModalTab);
   modal.classList.remove("is-open");
   modal.setAttribute("aria-hidden", "true");
-  body.classList.remove("modal-open");
-  body.style.removeProperty("--modal-scroll-lock-top");
-  window.scrollTo(0, modalScrollY);
+  for (const [element, value] of prior.background) {
+    if (value === null) element.removeAttribute("inert");
+    else element.setAttribute("inert", value);
+  }
+  body.classList.toggle("modal-open", prior.bodyWasLocked);
+  if (prior.lockTop) body.style.setProperty("--modal-scroll-lock-top", prior.lockTop, prior.lockPriority);
+  else body.style.removeProperty("--modal-scroll-lock-top");
+  body.classList.toggle("nav-open", prior.navWasOpen);
+  if (prior.navExpanded === null) navToggle.removeAttribute("aria-expanded");
+  else navToggle.setAttribute("aria-expanded", prior.navExpanded);
+  const target = [prior.opener, ...document.querySelectorAll("[data-open-modal]"), navToggle,
+    document.querySelector("header .brand[href]"), document.querySelector("main a[href]")]
+    .find(modalControlAvailable);
+  if (target) target.focus({ preventScroll: true });
+  window.scrollTo(prior.scrollX, prior.scrollY);
 }
 
 function getLeadThankYouModal() {
@@ -792,6 +893,40 @@ function closeLeadThankYou() {
   body.style.removeProperty("--modal-scroll-lock-top");
   window.scrollTo(0, leadThankYouScrollY);
 }
+
+function enhanceMobileHeader() {
+  const actions = document.querySelector(".mobile-header-actions");
+  const phone = actions?.querySelector(".mobile-header-phone");
+  const toggle = phone?.querySelector("[data-phone-dropdown-toggle]");
+  const menu = phone?.querySelector(".phone-dropdown__menu");
+  if (!actions || !toggle || !menu || !modal || actions.querySelector(".mobile-quote-button")) return;
+
+  const quote = document.createElement("button");
+  quote.type = "button";
+  quote.className = "nav-cta mobile-quote-button";
+  quote.textContent = "Get Quote";
+  quote.setAttribute("data-open-modal", "");
+  actions.prepend(quote);
+
+  // Move the existing number nodes; keep the market links and tracking listeners intact.
+  const number = document.createElement("p");
+  number.className = "mobile-phone-number";
+  number.append(...toggle.childNodes);
+  menu.prepend(number);
+  menu.id = "mobile-header-phone-menu";
+  toggle.classList.add("mobile-phone-button--icon");
+  toggle.setAttribute("aria-label", "Call or text Good Attic");
+  toggle.setAttribute("aria-controls", menu.id);
+  toggle.title = "Call or text";
+
+  phone.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !phone.classList.contains("is-open")) return;
+    closePhoneDropdowns();
+    toggle.focus();
+  });
+}
+
+enhanceMobileHeader();
 
 document.querySelectorAll("[data-open-modal]").forEach((button) => {
   button.addEventListener("click", openModal);
