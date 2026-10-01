@@ -4,7 +4,7 @@
 -- transaction ID. A completed Request can be reused; uncertain deliveries
 -- may create another Request and are retained for staff reconciliation.
 CREATE TABLE IF NOT EXISTS website_form_conversions (
-  submission_id TEXT PRIMARY KEY,
+  submission_id TEXT PRIMARY KEY NOT NULL,
   transaction_id TEXT NOT NULL UNIQUE,
   market_key TEXT NOT NULL CHECK (market_key IN ('ut', 'mo_stl', 'mo_kc', 'general')),
   jobber_account_id TEXT,
@@ -31,7 +31,7 @@ CREATE INDEX IF NOT EXISTS website_form_conversions_request_idx
 -- Successful fail-open retries are retained individually for staff review.
 -- A retry must never overwrite the original Request link on the conversion row.
 CREATE TABLE IF NOT EXISTS website_form_reconciliation_attempts (
-  attempt_id TEXT PRIMARY KEY,
+  attempt_id TEXT PRIMARY KEY NOT NULL,
   submission_id TEXT NOT NULL,
   market_key TEXT NOT NULL CHECK (market_key IN ('ut', 'mo_stl', 'mo_kc', 'general')),
   reason TEXT NOT NULL,
@@ -47,7 +47,7 @@ CREATE INDEX IF NOT EXISTS website_form_reconciliation_submission_idx
 -- Any future sender must atomically claim a row here before making a Google
 -- request and must not retry an ambiguous delivery automatically.
 CREATE TABLE IF NOT EXISTS website_form_retraction_outbox (
-  transaction_id TEXT PRIMARY KEY REFERENCES website_form_conversions(transaction_id),
+  transaction_id TEXT PRIMARY KEY NOT NULL REFERENCES website_form_conversions(transaction_id),
   market_key TEXT NOT NULL CHECK (market_key IN ('ut', 'mo_stl', 'mo_kc')),
   jobber_request_id TEXT NOT NULL,
   marker TEXT NOT NULL CHECK (marker IN ('junk', 'duplicate')),

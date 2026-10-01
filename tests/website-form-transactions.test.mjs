@@ -35,6 +35,30 @@ function database({ authRow = null } = {}) {
   };
 }
 
+test("0017 rejects null primary IDs in every new table", () => {
+  const db = database();
+  const now = new Date().toISOString();
+  try {
+    assert.throws(() => db.raw.prepare(`
+      INSERT INTO website_form_conversions
+        (submission_id, transaction_id, market_key, state, created_at, updated_at)
+      VALUES (NULL, ?, 'ut', 'processing', ?, ?)
+    `).run(ID, now, now), /NOT NULL constraint failed/);
+    assert.throws(() => db.raw.prepare(`
+      INSERT INTO website_form_reconciliation_attempts
+        (attempt_id, submission_id, market_key, reason, created_at)
+      VALUES (NULL, ?, 'ut', 'test', ?)
+    `).run(ID, now), /NOT NULL constraint failed/);
+    assert.throws(() => db.raw.prepare(`
+      INSERT INTO website_form_retraction_outbox
+        (transaction_id, market_key, jobber_request_id, marker, state, created_at, updated_at)
+      VALUES (NULL, 'ut', ?, 'junk', 'shadow', ?, ?)
+    `).run(REQUEST, now, now), /NOT NULL constraint failed/);
+  } finally {
+    db.raw.close();
+  }
+});
+
 test("one submission reserves one transaction across market and national forms; duplicate delivery never claims another", async () => {
   for (const market of ["ut", "mo_stl", "mo_kc", "general"]) {
     const db = database();
