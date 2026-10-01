@@ -14,6 +14,8 @@ const JOBBER_TOKEN_URL = "https://api.getjobber.com/api/oauth/token";
 const DEFAULT_JOBBER_GRAPHQL_VERSION = "2025-04-16";
 const JOBBER_REFRESH_LEASE_MS = 2 * 60 * 1000;
 const JOBBER_TOKEN_REQUEST_TIMEOUT_MS = 45 * 1000;
+const JOBBER_401_RECOVERY_WAIT_MS = 5000;
+const JOBBER_401_RECOVERY_POLL_MS = 100;
 const GHL_MAX_ATTEMPTS = 3;
 const ATTRIBUTION_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 const ATTRIBUTION_FUTURE_SKEW_MS = 5 * 60 * 1000;
@@ -627,6 +629,7 @@ async function refreshJobberAccessTokenViaD1(env, route) {
   ) {
     return {
       accessToken: clean(cached.access_token, 4000),
+      refreshRevision: Number(cached.refresh_revision || 0),
       tokenRotated: false,
       tokenPersisted: true,
     };
@@ -669,6 +672,7 @@ async function refreshJobberAccessTokenViaD1(env, route) {
   if (d1Changes(lock) !== 1) {
     throw new LeadSubmissionError("Jobber routing is temporarily busy.", 503, {
       account: route.accountLabel,
+      code: "jobber_refresh_process_busy",
     });
   }
 
@@ -697,6 +701,7 @@ async function refreshJobberAccessTokenViaD1(env, route) {
     ) {
       return {
         accessToken: clean(stored.access_token, 4000),
+        refreshRevision: Number(stored.refresh_revision || 0),
         tokenRotated: false,
         tokenPersisted: true,
       };
@@ -958,6 +963,7 @@ async function refreshJobberAccessTokenViaD1(env, route) {
     }
     return {
       accessToken: nextAccessToken,
+      refreshRevision,
       tokenRotated: nextRefreshToken !== refreshToken,
       tokenPersisted: true,
     };
@@ -990,6 +996,251 @@ async function refreshJobberAccessToken(env, route) {
       code: "jobber_authoritative_database_unavailable",
     },
   );
+}
+
+function rejectedJobberTokenSnapshot(token) {
+  const accessToken = clean(token?.accessToken, 4000);
+  const revision = Number(token?.refreshRevision);
+  if (!accessToken || !Number.isSafeInteger(revision) || revision < 0) return null;
+  return { accessToken, revision };
+}
+
+async function fenceJobberAccessToken(env, route, code = "jobber_http_401", rejectedToken) {
+  const database = env.ANGI_ROUTER_DB;
+  const accountKey = getJobberBrokerAccountKey(route);
+  const rejected = rejectedJobberTokenSnapshot(rejectedToken);
+  if (!database?.prepare || !accountKey || !rejected) return false;
+  const result = await database.prepare(`
+    /* jobber_token_authority:fence_unauthorized_access */
+    UPDATE angi_router_jobber_auth
+    SET access_expires_at = 0,
+        last_error_code = ?,
+        updated_at = ?
+    WHERE account_key = ?
+      AND access_token = ?
+      AND COALESCE(refresh_revision, 0) = ?
+      AND COALESCE(refresh_status, 'ready') = 'ready'
+  `).bind(clean(code, 120), new Date().toISOString(), accountKey, rejected.accessToken, rejected.revision).run();
+  return d1Changes(result) === 1;
+}
+
+async function markJobberAuthorizationBroken(env, route, code = "jobber_http_401", rejectedToken) {
+  const database = env.ANGI_ROUTER_DB;
+  const accountKey = getJobberBrokerAccountKey(route);
+  const rejected = rejectedJobberTokenSnapshot(rejectedToken);
+  if (!database?.prepare || !accountKey || !rejected) return false;
+  const result = await database.prepare(`
+    /* jobber_token_authority:mark_unauthorized_broken */
+    UPDATE angi_router_jobber_auth
+    SET access_expires_at = 0,
+        refresh_status = 'refresh_outcome_unknown',
+        refresh_lease_token = NULL,
+        refresh_lease_expires_at = NULL,
+        last_error_code = ?,
+        updated_at = ?
+    WHERE account_key = ?
+      AND access_token = ?
+      AND COALESCE(refresh_revision, 0) = ?
+      AND COALESCE(refresh_status, 'ready') = 'ready'
+  `).bind(clean(code, 120), new Date().toISOString(), accountKey, rejected.accessToken, rejected.revision).run();
+  return d1Changes(result) === 1;
+}
+
+async function recoverJobberTokenAfter401(env, route, rejectedToken) {
+  // Only the request whose exact token/revision is still authoritative may
+  // invalidate it. Others wait for the winner's refresh or reuse its result.
+  await fenceJobberAccessToken(env, route, "jobber_http_401", rejectedToken);
+  const deadline = Date.now() + JOBBER_401_RECOVERY_WAIT_MS;
+  while (true) {
+    try {
+      const current = await refreshJobberAccessToken(env, route);
+      if (
+        current.accessToken !== rejectedToken.accessToken
+        || current.refreshRevision !== rejectedToken.refreshRevision
+      ) return current;
+      throw new LeadSubmissionError("The rejected Jobber token is still authoritative.", 503, {
+        account: route.accountLabel,
+        code: "jobber_rejected_token_unchanged",
+      });
+    } catch (error) {
+      const busy = error instanceof LeadSubmissionError && [
+        "jobber_refresh_process_busy", "jobber_refresh_in_flight", "jobber_refresh_claim_conflict",
+      ].includes(error.details?.code);
+      if (!busy) throw error;
+      if (Date.now() >= deadline) {
+        throw new LeadSubmissionError("Jobber authorization refresh is still in progress.", 503, {
+          account: route.accountLabel,
+          code: "jobber_refresh_in_flight",
+        });
+      }
+      await new Promise(resolve => setTimeout(resolve, JOBBER_401_RECOVERY_POLL_MS));
+    }
+  }
+}
+
+async function failedJobberAuthorizationAfterRetry(env, route, rejectedToken, error) {
+  const broken = await markJobberAuthorizationBroken(env, route, "jobber_http_401_after_refresh", rejectedToken);
+  if (!broken) {
+    return new LeadSubmissionError("Jobber authorization changed during the retry.", 503, {
+      account: route.accountLabel,
+      code: "jobber_authorization_changed_during_retry",
+    });
+  }
+  error.details = { ...error.details, code: "jobber_http_401_after_refresh" };
+  return error;
+}
+
+async function jobberGraphqlWithAuthorizationRecovery(env, route, query, variables = {}) {
+  let token = await refreshJobberAccessToken(env, route);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      return await jobberGraphql(env, token.accessToken, query, variables);
+    } catch (error) {
+      const unauthorized = error instanceof LeadSubmissionError && Number(error.status) === 401;
+      if (!unauthorized || attempt === 1) {
+        if (unauthorized) throw await failedJobberAuthorizationAfterRetry(env, route, token, error);
+        throw error;
+      }
+      token = await recoverJobberTokenAfter401(env, route, token);
+    }
+  }
+  throw new LeadSubmissionError("Jobber read failed after authorization recovery.", 503, {
+    code: "jobber_authorization_recovery_failed",
+  });
+}
+
+async function jobberMutationWithAuthorizationRecovery(env, route, query, variables = {}) {
+  return jobberGraphqlWithAuthorizationRecovery(env, route, query, variables);
+}
+
+async function recordWebsiteLeadIntakeFailure(env, lead, error) {
+  const database = env.ANGI_ROUTER_DB;
+  if (!database?.prepare) return false;
+  const now = new Date();
+  const createdAt = now.toISOString();
+  const expiresAt = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString();
+  const code = clean(error?.details?.code, 120) || "jobber_lead_intake_failed";
+  const payload = {
+    first_name: lead.first_name,
+    last_name: lead.last_name,
+    full_name: lead.full_name,
+    phone: lead.phone,
+    email: lead.email,
+    address: lead.address,
+    city: lead.city,
+    state: lead.state,
+    zip: lead.zip,
+    message: lead.message,
+    submission_id: lead.submission_id,
+  };
+  const result = await database.prepare(`
+    /* website_lead_intake_failures:record */
+    INSERT INTO website_lead_intake_failures (
+      submission_id, market_key, source_key, payload_json, error_code,
+      error_status, attempt_count, state, next_retry_at, expires_at,
+      created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, 1, 'pending', ?, ?, ?, ?)
+    ON CONFLICT (submission_id) DO UPDATE SET
+      payload_json = excluded.payload_json,
+      error_code = excluded.error_code,
+      error_status = excluded.error_status,
+      attempt_count = website_lead_intake_failures.attempt_count + 1,
+      state = 'pending',
+      next_retry_at = excluded.next_retry_at,
+      expires_at = excluded.expires_at,
+      updated_at = excluded.updated_at
+  `).bind(
+    lead.submission_id,
+    lead.market_key,
+    lead.source_key,
+    JSON.stringify(payload),
+    code,
+    Number.isFinite(Number(error?.status)) ? Number(error.status) : null,
+    createdAt,
+    expiresAt,
+    createdAt,
+    createdAt,
+  ).run();
+  return d1Changes(result) === 1;
+}
+
+async function notifyWebsiteLeadIntakeFailure(env, lead, error) {
+  const service = env.CONTACT_SYNC_SERVICE;
+  const secret = clean(env.CONTACT_SYNC_BROKER_SECRET, 500);
+  if (!service?.fetch || !secret) return false;
+  const response = await service.fetch(new Request("https://contact-sync/internal/website-lead-failure", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${secret}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      id: lead.submission_id,
+      market: lead.market_key,
+      occurred_at: new Date().toISOString(),
+      reason: error?.details?.code || "intake_failed",
+      contact_name: lead.full_name,
+      phone: lead.phone,
+      email: lead.email,
+      message: lead.message,
+    }),
+  }));
+  if (response.status !== 202) {
+    console.error("Website lead failure alert was not accepted", {
+      submissionId: lead.submission_id,
+      market: lead.market_key,
+      status: response.status,
+      code: "lead_failure_alert_rejected",
+    });
+    return false;
+  }
+  return true;
+}
+
+async function withLeadRecoveryDeadline(env, operation) {
+  const configured = Number(env?.LEAD_INTAKE_RECOVERY_TIMEOUT_MS);
+  const timeoutMs = Number.isFinite(configured) && configured > 0
+    ? Math.min(configured, 5000)
+    : 2000;
+  let timer;
+  try {
+    return await Promise.race([
+      Promise.resolve().then(operation),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("lead_recovery_timeout")), timeoutMs);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function resolveWebsiteLeadIntakeFailure(env, submissionId) {
+  const database = env.ANGI_ROUTER_DB;
+  if (!database?.prepare) return false;
+  const result = await database.prepare(`
+    /* website_lead_intake_failures:resolve_after_jobber_request */
+    DELETE FROM website_lead_intake_failures
+    WHERE submission_id = ?
+  `).bind(submissionId).run();
+  return d1Changes(result) === 1;
+}
+
+async function clearWebsiteLeadFailureAfterSuccess(env, lead, jobber) {
+  if (!jobber?.request_id) return;
+  try {
+    await withLeadRecoveryDeadline(env, () =>
+      resolveWebsiteLeadIntakeFailure(env, lead.submission_id));
+  } catch (error) {
+    // A recovery-queue problem must never turn an accepted Jobber Request into
+    // a failed form submission. The pending row remains visible for review.
+    console.error("Website lead recovery queue could not clear a completed Request", {
+      submissionId: lead.submission_id,
+      market: lead.market_key,
+      jobberRequestId: jobber.request_id,
+      code: error?.message === "lead_recovery_timeout" ? "timeout" : "queue_unavailable",
+    });
+  }
 }
 
 async function safeJson(response) {
@@ -1223,26 +1474,47 @@ function resolveLeadJobberRoute(env, lead) {
 
 async function submitLeadToJobber(env, lead, { onWriteAttempt = () => {}, onClientCreated = () => {} } = {}) {
   const route = resolveLeadJobberRoute(env, lead);
-  const token = await refreshJobberAccessToken(env, route);
+  let token = await refreshJobberAccessToken(env, route);
   onWriteAttempt();
-  const created = await createJobberClient(env, token.accessToken, lead);
-  const client = created.result?.data?.clientCreate?.client || {};
-  const property = client.clientProperties?.nodes?.[0] || null;
-
-  if (!client.id) {
-    throw new LeadSubmissionError("Jobber did not return the created client.", 502, {
-      account: route.accountLabel,
-    });
+  let created;
+  let client;
+  let property;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      created = await createJobberClient(env, token.accessToken, lead);
+      client = created.result?.data?.clientCreate?.client || {};
+      property = client.clientProperties?.nodes?.[0] || null;
+      if (!client.id) {
+        throw new LeadSubmissionError("Jobber did not return the created client.", 502, {
+          account: route.accountLabel,
+        });
+      }
+      break;
+    } catch (error) {
+      const unauthorized = error instanceof LeadSubmissionError && Number(error.status) === 401;
+      if (!unauthorized || attempt === 1) {
+        if (unauthorized) throw await failedJobberAuthorizationAfterRetry(env, route, token, error);
+        throw error;
+      }
+      token = await recoverJobberTokenAfter401(env, route, token);
+    }
   }
   onClientCreated({ client_id: client.id, account_id: route.expectedAccountId });
 
-  const request = await createJobberRequest(
-    env,
-    token.accessToken,
-    lead,
-    client.id,
-    property?.id || null,
-  );
+  let request;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      request = await createJobberRequest(env, token.accessToken, lead, client.id, property?.id || null);
+      break;
+    } catch (error) {
+      const unauthorized = error instanceof LeadSubmissionError && Number(error.status) === 401;
+      if (!unauthorized || attempt === 1) {
+        if (unauthorized) throw await failedJobberAuthorizationAfterRetry(env, route, token, error);
+        throw error;
+      }
+      token = await recoverJobberTokenAfter401(env, route, token);
+    }
+  }
 
   return {
     account: route.accountLabel,
@@ -1434,10 +1706,14 @@ export async function onRequestPost(context) {
   const reserved = await optionalFormTracking(env, lead, "reserve", () => reservationPromise);
   const reservation = reserved.ok ? reserved.value : null;
   if (reservation?.state === "completed" && reservation.jobber_request_id) {
+    await clearWebsiteLeadFailureAfterSuccess(env, lead, {
+      request_id: reservation.jobber_request_id,
+    });
     return jsonResponse({
       ok: true,
       duplicate: true,
       transaction_id: reservation.transaction_id,
+      transaction_confirmed: true,
       conversion_state: reservation.conversion_state,
       jobber: {
         request_id: reservation.jobber_request_id,
@@ -1477,6 +1753,44 @@ export async function onRequestPost(context) {
         jobberWriteAttempted, partialJobber,
       });
     }
+    await Promise.allSettled([
+      (async () => {
+        try {
+          const queued = await withLeadRecoveryDeadline(env, () =>
+            recordWebsiteLeadIntakeFailure(env, lead, error));
+          if (!queued) console.error("Website lead recovery queue did not accept the failed intake", {
+            submissionId: lead.submission_id, market: lead.market_key, code: "lead_recovery_queue_unavailable",
+          });
+        } catch (queueError) {
+          console.error("Website lead recovery queue write failed", {
+            submissionId: lead.submission_id,
+            market: lead.market_key,
+            code: queueError?.message === "lead_recovery_timeout" ? "timeout" : "lead_recovery_queue_failed",
+          });
+        }
+      })(),
+      (async () => {
+        try {
+          const alerted = await withLeadRecoveryDeadline(env, () =>
+            notifyWebsiteLeadIntakeFailure(env, lead, error));
+          if (!alerted) console.error("Website lead failure alert was unavailable", {
+            submissionId: lead.submission_id, market: lead.market_key, code: "lead_failure_alert_unavailable",
+          });
+        } catch (alertError) {
+          console.error("Website lead failure alert delivery failed", {
+            submissionId: lead.submission_id,
+            market: lead.market_key,
+            code: alertError?.message === "lead_recovery_timeout" ? "timeout" : "lead_failure_alert_failed",
+          });
+        }
+      })(),
+    ]);
+    console.error("Jobber lead intake failed", {
+      submissionId: lead.submission_id,
+      market: lead.market_key,
+      status: Number.isFinite(Number(error?.status)) ? Number(error.status) : 500,
+      code: error?.details?.code || error?.code || "jobber_lead_intake_failed",
+    });
     if (error instanceof LeadSubmissionError) {
       return jsonResponse({
         ok: false,
@@ -1491,10 +1805,17 @@ export async function onRequestPost(context) {
     }, 500);
   }
 
+  await clearWebsiteLeadFailureAfterSuccess(env, lead, jobber);
+
+  let transactionConfirmed = false;
   if (reservation?.claimed && reservation.state === "processing") {
     const completed = await optionalFormTracking(env, lead, "complete", () =>
       completeFormTransaction(env.ANGI_ROUTER_DB, submissionId, jobber));
-    if (!completed.ok) {
+    transactionConfirmed = completed.ok
+      && completed.value?.state === "completed"
+      && completed.value?.transaction_id === submissionId
+      && completed.value?.jobber_request_id === jobber.request_id;
+    if (!transactionConfirmed) {
       await optionalFormTracking(env, lead, "mark_delivery_uncertain", () =>
         markFormDeliveryUncertain(env.ANGI_ROUTER_DB, submissionId, jobber));
     }
@@ -1552,6 +1873,7 @@ export async function onRequestPost(context) {
   return jsonResponse({
     ok: true,
     transaction_id: submissionId,
+    transaction_confirmed: transactionConfirmed,
     conversion_state: "not_confirmed",
     message: ghl?.ok ? "Lead sent to Jobber and HighLevel." : "Lead sent to Jobber.",
     jobber,
@@ -1577,6 +1899,12 @@ export const _private = {
   buildRequestInstructions,
   buildGhlLead,
   refreshJobberAccessToken,
+  fenceJobberAccessToken,
+  markJobberAuthorizationBroken,
+  jobberGraphqlWithAuthorizationRecovery,
+  jobberMutationWithAuthorizationRecovery,
+  recordWebsiteLeadIntakeFailure,
+  notifyWebsiteLeadIntakeFailure,
   jobberGraphql,
   createJobberClient,
   createJobberRequest,

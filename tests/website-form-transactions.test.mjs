@@ -141,6 +141,7 @@ test("transaction D1 failure or timeout never blocks an otherwise successful Job
       const result = await response.json();
       assert.equal(result.ok, true);
       assert.equal(result.transaction_id, ID);
+      assert.equal(result.transaction_confirmed, false);
       assert.equal(result.jobber.request_id, "request-new");
       assert.deepEqual(calls, ["clientCreate", "requestCreate"]);
     } finally { globalThis.fetch = previousFetch; }
@@ -167,6 +168,7 @@ test("a transaction completion failure after Jobber accepts still returns succes
     const result = await response.json();
     assert.equal(result.ok, true);
     assert.equal(result.transaction_id, ID);
+    assert.equal(result.transaction_confirmed, false);
     assert.equal(result.jobber.request_id, "request-new");
     assert.deepEqual(calls, ["clientCreate", "requestCreate"]);
     assert.equal(db.raw.prepare("SELECT state FROM website_form_conversions").get().state, "delivery_uncertain");
@@ -202,7 +204,9 @@ test("an uncertain Jobber mutation allows the same-ID retry and records reconcil
       env: { ANGI_ROUTER_DB: db, EXTERNAL_API_WRITES_ENABLED: "false" }, request: leadRequest(),
     });
     assert.equal(retry.status, 200);
-    assert.equal((await retry.json()).transaction_id, ID);
+    const retryResult = await retry.json();
+    assert.equal(retryResult.transaction_id, ID);
+    assert.equal(retryResult.transaction_confirmed, false);
     assert.deepEqual(calls, ["clientCreate", "requestCreate"]);
     assert.equal(mutations, 1);
     const row = db.raw.prepare("SELECT state, reconciliation_required, reconciliation_retry_count FROM website_form_conversions").get();
@@ -286,6 +290,7 @@ test("completed duplicate POST returns the original transaction and Request with
     const result = await response.json();
     assert.equal(result.duplicate, true);
     assert.equal(result.transaction_id, ID);
+    assert.equal(result.transaction_confirmed, true);
     assert.equal(result.jobber.request_id, REQUEST);
   } finally { globalThis.fetch = previousFetch; }
 });
@@ -355,7 +360,8 @@ test("an accepted lead thanks the customer and fires an unkeyed conversion when 
     context,
   );
 
-  for (const result of [null, {}, { transaction_id: "different-id", conversion_state: "client_signaled" }]) {
+  for (const result of [null, {}, { transaction_id: "different-id", conversion_state: "client_signaled" },
+    { transaction_id: ID, transaction_confirmed: false }]) {
     const status = {};
     const submission = { id: ID, conversionSent: false, completedAt: null };
     const eventCount = events.length;
@@ -368,12 +374,12 @@ test("an accepted lead thanks the customer and fires an unkeyed conversion when 
     assert.equal(Object.hasOwn(conversion[2], "transaction_id"), false);
   }
   assert.equal(signals.length, 0, "do not acknowledge a transaction ID the server did not confirm");
-  assert.equal(warnings.length, 3);
+  assert.equal(warnings.length, 4);
 
   const status = {};
   const submission = { id: ID, conversionSent: false, completedAt: null };
   const eventCount = events.length;
-  finalize({ status, submission, payload: { form_name: "Test" }, result: { transaction_id: ID } });
+  finalize({ status, submission, payload: { form_name: "Test" }, result: { transaction_id: ID, transaction_confirmed: true } });
   const conversion = events.slice(eventCount).find(event => event[1] === "conversion");
   assert.equal(conversion[2].transaction_id, ID);
   assert.equal(signals.length, 1);

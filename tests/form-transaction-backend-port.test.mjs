@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 import { DatabaseSync } from "node:sqlite";
 import { reserveFormTransaction, completeFormTransaction, markFormDeliveryUncertain } from "../server/website-form-transactions.js";
 import { onRequestPost } from "../functions/api/leads.js";
@@ -11,6 +12,7 @@ const REQUEST = "Z2lkOi8vSm9iYmVyL1JlcXVlc3QvOTk=";
 
 function database({ authRow = null } = {}) {
   const raw = new DatabaseSync(":memory:");
+  raw.exec(fs.readFileSync(new URL("../migrations/0011_website_lead_intake_failures.sql", import.meta.url), "utf8"));
   raw.exec(fs.readFileSync(new URL("../migrations/0017_website_form_transaction_ids.sql", import.meta.url), "utf8"));
   return {
     raw,
@@ -75,6 +77,33 @@ function leadRequest(submissionId = ID) {
   });
 }
 
+function browserConversionForResponse(result, submissionId = ID) {
+  const source = fs.readFileSync(new URL("../src/site-interactions.js", import.meta.url), "utf8");
+  const trackingStart = source.indexOf("function trackLeadConversion(");
+  const trackingEnd = source.indexOf("function trackPhoneClick(", trackingStart);
+  const successStart = source.indexOf("function finalizeSuccessfulLeadSubmission(");
+  const successEnd = source.indexOf("function showLeadSubmissionError(", successStart);
+  assert.ok(trackingStart >= 0 && trackingEnd > trackingStart && successStart >= 0 && successEnd > successStart);
+  const events = [];
+  const signals = [];
+  const finalize = vm.runInContext(
+    `${source.slice(trackingStart, trackingEnd)}\n${source.slice(successStart, successEnd)}\nfinalizeSuccessfulLeadSubmission`,
+    vm.createContext({
+      Date, JSON,
+      window: { gtag: (...event) => events.push(event) },
+      googleAdsTracking: { leadConversionSendTo: "AW-test/label", analyticsMeasurementId: "G-test" },
+      ensureGoogleTag() {}, setEnhancedConversionData() {}, rememberSubmission() {},
+      fetch: (...args) => { signals.push(args); return Promise.resolve({}); },
+      console: { warn() {} },
+    }),
+  );
+  const status = {};
+  const submission = { id: submissionId, conversionSent: false, completedAt: null };
+  finalize({ status, submission, payload: { form_name: "Test" }, result });
+  finalize({ status, submission, payload: { form_name: "Test" }, result });
+  return { status, signals, conversions: events.filter(event => event[1] === "conversion") };
+}
+
 test("an invalid tracking ID is replaced without rejecting a valid lead", async () => {
   const db = database({ authRow: readyAuth() });
   const calls = [];
@@ -88,6 +117,30 @@ test("an invalid tracking ID is replaced without rejecting a valid lead", async 
     assert.equal(response.status, 200);
     const result = await response.json();
     assert.match(result.transaction_id, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+    assert.equal(result.transaction_confirmed, true);
+    assert.equal(db.raw.prepare("SELECT transaction_id FROM website_form_conversions WHERE jobber_request_id = 'request-new'").get().transaction_id, result.transaction_id);
+    assert.deepEqual(calls, ["clientCreate", "requestCreate"]);
+  } finally { globalThis.fetch = previousFetch; }
+});
+
+test("a Jobber success with a confirmed D1 row uses the same browser transaction ID once", async () => {
+  const db = database({ authRow: readyAuth() });
+  const calls = [];
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = successfulJobberFetch(calls);
+  try {
+    const response = await onRequestPost({
+      env: { ANGI_ROUTER_DB: db, EXTERNAL_API_WRITES_ENABLED: "false" }, request: leadRequest(),
+    });
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.equal(result.transaction_confirmed, true);
+    assert.equal(db.raw.prepare("SELECT transaction_id FROM website_form_conversions WHERE jobber_request_id = 'request-new'").get().transaction_id, ID);
+    const browser = browserConversionForResponse(result);
+    assert.match(browser.status.textContent, /^Thanks\./);
+    assert.equal(browser.conversions.length, 1);
+    assert.equal(browser.conversions[0][2].transaction_id, ID);
+    assert.equal(browser.signals.length, 1);
     assert.deepEqual(calls, ["clientCreate", "requestCreate"]);
   } finally { globalThis.fetch = previousFetch; }
 });
@@ -156,7 +209,13 @@ test("transaction D1 failure or timeout never blocks an otherwise successful Job
       const result = await response.json();
       assert.equal(result.ok, true);
       assert.equal(result.transaction_id, ID);
+      assert.equal(result.transaction_confirmed, false);
       assert.equal(result.jobber.request_id, "request-new");
+      const browser = browserConversionForResponse(result);
+      assert.match(browser.status.textContent, /^Thanks\./);
+      assert.equal(browser.conversions.length, 1);
+      assert.equal(Object.hasOwn(browser.conversions[0][2], "transaction_id"), false);
+      assert.equal(browser.signals.length, 0);
       assert.deepEqual(calls, ["clientCreate", "requestCreate"]);
     } finally { globalThis.fetch = previousFetch; }
   }
@@ -176,7 +235,9 @@ test("a reservation that commits after the fail-open deadline links the accepted
       waitUntil(promise) { background.push(promise); },
     });
     assert.equal(response.status, 200);
-    assert.equal((await response.json()).jobber.request_id, "request-new");
+    const accepted = await response.json();
+    assert.equal(accepted.jobber.request_id, "request-new");
+    assert.equal(accepted.transaction_confirmed, false, "a late D1 repair cannot retroactively authorize a keyed browser conversion");
     assert.deepEqual(calls, ["clientCreate", "requestCreate"]);
     assert.equal(db.raw.prepare("SELECT COUNT(*) AS n FROM website_form_conversions").get().n, 0);
     assert.equal(background.length, 1);
@@ -253,6 +314,7 @@ test("a transaction completion failure after Jobber accepts still returns succes
     const result = await response.json();
     assert.equal(result.ok, true);
     assert.equal(result.transaction_id, ID);
+    assert.equal(result.transaction_confirmed, false);
     assert.equal(result.jobber.request_id, "request-new");
     assert.deepEqual(calls, ["clientCreate", "requestCreate"]);
     assert.equal(db.raw.prepare("SELECT state FROM website_form_conversions").get().state, "delivery_uncertain");
@@ -288,7 +350,9 @@ test("an uncertain Jobber mutation allows the same-ID retry and records reconcil
       env: { ANGI_ROUTER_DB: db, EXTERNAL_API_WRITES_ENABLED: "false" }, request: leadRequest(),
     });
     assert.equal(retry.status, 200);
-    assert.equal((await retry.json()).transaction_id, ID);
+    const retryResult = await retry.json();
+    assert.equal(retryResult.transaction_id, ID);
+    assert.equal(retryResult.transaction_confirmed, false);
     assert.deepEqual(calls, ["clientCreate", "requestCreate"]);
     assert.equal(mutations, 1);
     const row = db.raw.prepare("SELECT state, reconciliation_required, reconciliation_retry_count FROM website_form_conversions").get();
@@ -312,6 +376,7 @@ test("a still-processing submission retry creates a Request and flags the origin
       env: { ANGI_ROUTER_DB: db, EXTERNAL_API_WRITES_ENABLED: "false" }, request: leadRequest(),
     });
     assert.equal(response.status, 200);
+    assert.equal((await response.json()).transaction_confirmed, false);
     assert.deepEqual(calls, ["clientCreate", "requestCreate"]);
     assert.equal(db.raw.prepare("SELECT reconciliation_required FROM website_form_conversions").get().reconciliation_required, 1);
     assert.equal(db.raw.prepare("SELECT COUNT(*) AS n FROM website_form_reconciliation_attempts").get().n, 1);
@@ -372,6 +437,7 @@ test("completed duplicate POST returns the original transaction and Request with
     const result = await response.json();
     assert.equal(result.duplicate, true);
     assert.equal(result.transaction_id, ID);
+    assert.equal(result.transaction_confirmed, true);
     assert.equal(result.jobber.request_id, REQUEST);
   } finally { globalThis.fetch = previousFetch; }
 });

@@ -67,7 +67,7 @@ test("transaction tracking fails open when browser cryptography is unavailable",
   assert.equal(runtime.claimSubmission(submission), true);
 });
 
-test("accepted lead sends the confirmed transaction ID once, or an unkeyed conversion on missing or mismatched ID", () => {
+test("accepted lead sends the confirmed D1-linked transaction ID once, or an unkeyed conversion when tracking is unavailable", () => {
   const events = [];
   const signals = [];
   const warnings = [];
@@ -83,7 +83,8 @@ test("accepted lead sends the confirmed transaction ID once, or an unkeyed conve
     }),
   );
 
-  for (const result of [null, {}, { transaction_id: OTHER_UUID }]) {
+  for (const result of [null, {}, { transaction_id: OTHER_UUID, transaction_confirmed: true },
+    { transaction_id: UUID, transaction_confirmed: false }]) {
     const submission = { id: UUID, conversionSent: false, completedAt: null };
     const status = {};
     const before = events.length;
@@ -95,16 +96,38 @@ test("accepted lead sends the confirmed transaction ID once, or an unkeyed conve
     assert.ok(conversion);
     assert.equal(Object.hasOwn(conversion[2], "transaction_id"), false);
   }
-  assert.equal(warnings.length, 3);
+  assert.equal(warnings.length, 4);
   assert.equal(signals.length, 0);
 
   const submission = { id: UUID, conversionSent: false, completedAt: null };
   const before = events.length;
-  runtime({ status: {}, submission, payload: { form_name: "Test" }, result: { transaction_id: UUID } });
-  runtime({ status: {}, submission, payload: { form_name: "Test" }, result: { transaction_id: UUID } });
+  runtime({ status: {}, submission, payload: { form_name: "Test" }, result: { transaction_id: UUID, transaction_confirmed: true } });
+  runtime({ status: {}, submission, payload: { form_name: "Test" }, result: { transaction_id: UUID, transaction_confirmed: true } });
   const keyed = events.slice(before).filter((event) => event[1] === "conversion");
   assert.equal(keyed.length, 1);
   assert.equal(keyed[0][2].transaction_id, UUID);
   assert.equal(signals.length, 1);
   assert.equal(JSON.parse(signals[0][1].body).transaction_id, UUID);
+});
+
+test("failed intake shows the current market or swapped call number without changing phone routing", () => {
+  const start = source.indexOf("function showLeadSubmissionError(");
+  const end = source.indexOf('document.querySelectorAll("[data-lead-form]")', start);
+  assert.ok(start >= 0 && end > start);
+  let href = "tel:+13853364442";
+  const showError = vm.runInContext(
+    `${source.slice(start, end)}\nshowLeadSubmissionError`,
+    vm.createContext({
+      document: { querySelector: () => href ? { getAttribute: () => href } : null },
+    }),
+  );
+  const status = {};
+  showError(status);
+  assert.match(status.textContent, /385-336-4442/);
+  href = "tel:+18555128842";
+  showError(status);
+  assert.match(status.textContent, /855-512-8842/);
+  href = null;
+  showError(status);
+  assert.match(status.textContent, /number at the top of this page/);
 });

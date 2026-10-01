@@ -1841,8 +1841,9 @@ function finalizeSuccessfulLeadSubmission({ status, submission, payload, result 
   submission.completedAt = Date.now();
   rememberSubmission(submission);
 
-  const transactionId = submission.id && result?.transaction_id === submission.id ? submission.id : null;
-  if (!transactionId) console.warn("Lead accepted, but its transaction ID was missing or mismatched.");
+  const transactionId = submission.id && result?.transaction_id === submission.id
+    && result?.transaction_confirmed === true ? submission.id : null;
+  if (!transactionId) console.warn("Lead accepted, but its transaction ID was not confirmed in the lead ledger.");
   if (!submission.conversionSent && (!transactionId || result?.conversion_state !== "client_signaled")) {
     try {
       trackLeadConversion(payload, transactionId);
@@ -1863,6 +1864,21 @@ function finalizeSuccessfulLeadSubmission({ status, submission, payload, result 
       // into a customer-facing intake failure.
     }
   }
+}
+
+function showLeadSubmissionError(status) {
+  if (!status) return;
+  // Read the current call link so the fallback follows the market line (or
+  // Google's swapped number) without maintaining another number list here.
+  const callLink = document.querySelector('header a[href^="tel:"]') || document.querySelector('a[href^="tel:"]');
+  const rawDigits = callLink?.getAttribute?.("href")?.replace(/\D/g, "") || "";
+  const digits = rawDigits.length === 11 && rawDigits.startsWith("1") ? rawDigits.slice(1) : rawDigits;
+  const number = digits.length === 10
+    ? `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`
+    : null;
+  status.textContent = number
+    ? `Something went wrong. Please call or text us at ${number} and we will help right away.`
+    : "Something went wrong. Please call or text us using the number at the top of this page.";
 }
 
 document.querySelectorAll("[data-lead-form]").forEach((form) => {
@@ -1965,7 +1981,7 @@ document.querySelectorAll("[data-lead-form]").forEach((form) => {
         finalizeSuccessfulLeadSubmission({ status, submission, payload, result });
       } catch (error) {
         if (!leadAccepted) {
-          if (status) status.textContent = "Something went wrong. Please call or text us and we will help right away.";
+          showLeadSubmissionError(status);
           if (submitButton) {
             submitButton.disabled = false;
             submitButton.removeAttribute("aria-busy");
