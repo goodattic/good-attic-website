@@ -16,3 +16,13 @@ The candidate adds a stable form `transaction_id` for Google Ads action `7152833
 The fail-open path covers the **new transaction ledger**. Jobber authorization still depends on D1, so a complete D1 outage blocks Jobber intake. The form then shows an error with the current market or swapped call number read from the page. The failure alert can still use the contact-sync service if that binding is healthy, while the D1 recovery queue cannot be written during a full D1 outage. Queue and alert writes have a bounded wait, but a stalled authoritative D1 authentication read or stalled legacy downstream delivery can still delay the response; this release does not change those existing dependencies.
 
 Tracking reconciliation is also required for two fail-open cases. A timed-out D1 reservation may finish after intake has continued; a background repair links or releases that row, and a failed background repair is logged for manual review. A retry after delivery became uncertain can create a second Request, recorded in `website_form_reconciliation_attempts`; staff must resolve which Request owns the conversion before any retraction preview treats that ID as verified. Neither case may block the customer-facing submission.
+
+Gate 3 needs no operational rollback while the site still runs its prior Functions: the three new tables are empty and unused by the live site. If the schema itself must be removed **before any Gate 4 writer deploy**, first confirm that all three new tables still contain zero rows, then execute the following on the production D1; dropping the tables also removes their two indexes:
+
+```sql
+DROP TABLE IF EXISTS website_form_retraction_outbox;
+DROP TABLE IF EXISTS website_form_reconciliation_attempts;
+DROP TABLE IF EXISTS website_form_conversions;
+```
+
+Do not drop them after they contain lead data. The permission-restricted local D1 export is a disaster-recovery copy, not a routine in-place rollback: restoring the whole database to the pre-migration point would also undo unrelated writes made since the backup. The D1 migration registry was not altered by the single-file execute and still has no 0017 entry; do not use a blanket migration apply until that older registry gap is reconciled.
