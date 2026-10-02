@@ -446,6 +446,8 @@
     "migrations/0020_qualified_phone_request_claims.sql": "4648d594ecf17075fec393c21552f3df5156a894be50206bf0f9d2911e8a3236",
     "tests/qualified-phone-manual-match.test.mjs": "0e33cc99355bb0b9b4ed17426807a74184e88453c0cb03bb456ea26ed00e9f34",
     "tests/quo-call-attribution-kc-migration.test.mjs": "853e3edbf1ad369307a47cbe79b896485b8a683f8fb8a9f9bbff2b64e54f76da",
-    "migrations/0018_quo_call_capture_stage.sql": "f8279e72200d1bc1d8e6e818a2fa95be99650541c71e597821a5c1360264b765"
+    "migrations/0018_quo_call_capture_stage.sql": "f8279e72200d1bc1d8e6e818a2fa95be99650541c71e597821a5c1360264b765",
+    "server/quo-call-stage-merge.js": "8a90a0e3bd536296586a092bf5ad9b4af95494775e09720a0561a6e56d46e4e4",
+    "tests/quo-call-stage-merge.test.mjs": "25204bf00ec715ec95ba3f2de1720729b4e52a92a781fb78658e0220f1ed9270"
   }
 }
