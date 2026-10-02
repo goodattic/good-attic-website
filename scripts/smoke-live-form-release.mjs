@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // One real, isolated website submission. Never reuse a browser profile or ad-click cookie.
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import { chromium } from "/Users/patrickoloughlin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs";
 
 const [stage, market] = process.argv.slice(2);
@@ -24,6 +26,10 @@ try {
   const pageErrors = [];
   const siteRequestFailures = [];
   const conversionRequests = [];
+  const conversionSignalRequests = [];
+  const conversionSignalResponses = [];
+  const scriptAssetResponses = [];
+  let browserSubmissionId = "";
   page.on("pageerror", (error) => pageErrors.push(error.message));
   page.on("requestfailed", (request) => {
     if (new URL(request.url()).hostname === "goodattic.energy") {
@@ -32,8 +38,20 @@ try {
   });
   page.on("request", (request) => {
     const url = new URL(request.url());
-    if (/googleadservices\.com|google-analytics\.com|doubleclick\.net/.test(url.hostname)
-      && request.url().includes("7152833432")) {
+    if (url.pathname === "/api/leads" && request.method() === "POST") {
+      try { browserSubmissionId = JSON.parse(request.postData() || "{}").submission_id || ""; }
+      catch { browserSubmissionId = ""; }
+    }
+    if (url.pathname === "/api/leads/conversion-signal" && request.method() === "POST") {
+      try {
+        const body = JSON.parse(request.postData() || "{}");
+        conversionSignalRequests.push({ submissionId: body.submission_id, transactionId: body.transaction_id });
+      } catch { conversionSignalRequests.push({ submissionId: "", transactionId: "" }); }
+    }
+    // The Ads API action ID (7152833432) is not present in gtag pixel URLs;
+    // those use the AW tag ID and label. The conversion dataLayer check below
+    // verifies send_to, while this captures the outbound transaction ID.
+    if (/(^|\.)(?:google\.com|googleadservices\.com|google-analytics\.com|doubleclick\.net)$/.test(url.hostname)) {
       const postFields = new URLSearchParams(request.postData() || "");
       conversionRequests.push({
         host: url.hostname,
@@ -43,11 +61,37 @@ try {
       });
     }
   });
+  page.on("response", (response) => {
+    const url = new URL(response.url());
+    if (/\/script\.[a-f0-9]+\.js$/.test(url.pathname)) scriptAssetResponses.push(response);
+    if (url.pathname === "/api/leads/conversion-signal" && response.request().method() === "POST") {
+      conversionSignalResponses.push(response.status());
+    }
+  });
   const target = markets[market];
   const pageResponse = await page.goto(`https://goodattic.energy/${target.path}/`, {
     waitUntil: "domcontentloaded", timeout: 30_000,
   });
   assert.equal(pageResponse.status(), 200);
+  if (stage === "gate5") {
+    // Check the script actually loaded by this browser from the serving domain,
+    // before creating a Jobber Request. A deployment record alone cannot prove
+    // the custom domain has stopped serving the prior HTML/script at this edge.
+    const manifest = JSON.parse(await readFile(new URL("./live-site-gate5-reviewed-changes.json", import.meta.url)));
+    const expectedScript = manifest.activeScript;
+    const expectedHash = manifest.changes[`assets/${expectedScript}`]?.expectedSha256;
+    assert.ok(expectedScript && expectedHash, "Reviewed Gate 5 script and hash are required");
+    const loadedScriptUrl = await page.evaluate(() => Array.from(document.scripts)
+      .map((script) => script.src).find((src) => /\/script\.[a-f0-9]+\.js(?:\?|$)/.test(src)) || "");
+    assert.equal(new URL(loadedScriptUrl).pathname.split("/").pop(), expectedScript,
+      "Serving site must reference the reviewed Gate 5 form script before test intake");
+    const scriptResponse = scriptAssetResponses.find((response) => response.url() === loadedScriptUrl);
+    assert.ok(scriptResponse, "Reviewed form script must have loaded in this browser");
+    assert.equal(scriptResponse.status(), 200, "Reviewed form script must be fetchable from the serving site");
+    const loadedHash = createHash("sha256").update(await scriptResponse.body()).digest("hex");
+    assert.equal(loadedHash, expectedHash, "Serving form script bytes must match the reviewed Gate 5 asset");
+    console.log(JSON.stringify({ stage, market, active_script: expectedScript, script_hash_matched: true }));
+  }
   const adClickCookies = (await context.cookies()).filter(({ name }) =>
     /(?:^|_)(?:gclid|gbraid|wbraid|gcl_aw|gcl_gb|codxkc)(?:$|_)/i.test(name));
   assert.deepEqual(adClickCookies, [], "Fresh test browser must have no ad-click or prior-test cookies");
@@ -76,7 +120,10 @@ try {
     stage, market, http: response.status(), ok: result?.ok === true,
     request_id: requestId, account_id: result?.jobber?.account_id || "",
     submission_id: submissionId,
+    browser_submission_present: Boolean(browserSubmissionId),
+    browser_submission_matches_api: Boolean(browserSubmissionId && browserSubmissionId === submissionId),
     transaction_confirmed: result?.transaction_confirmed === true,
+    conversion_state: result?.conversion_state || "",
     fieldflow_ok: result?.fieldflow?.ok === true,
     fieldflow_http: result?.fieldflow?.status || 0,
     fieldflow_reason: result?.fieldflow?.reason || "",
@@ -94,12 +141,41 @@ try {
   assert.deepEqual(siteRequestFailures, [], "No failed first-party browser requests");
 
   if (stage === "gate5") {
-    const dataLayerIds = await page.evaluate(() => Array.from(window.dataLayer || [])
+    const dataLayerConversions = async () => page.evaluate(() => Array.from(window.dataLayer || [])
       .filter((entry) => entry?.[0] === "event" && entry?.[1] === "conversion")
-      .map((entry) => entry?.[2]?.transaction_id || ""));
-    assert.ok(dataLayerIds.includes(submissionId), "Browser conversion event must use the D1 ID");
-    await page.waitForTimeout(5_000);
-    assert.ok(conversionRequests.some((request) => request.transactionId === submissionId),
+      .map((entry) => ({
+        transactionId: entry?.[2]?.transaction_id || "",
+        sendTo: entry?.[2]?.send_to || "",
+      })));
+    let layerConversions = [];
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      layerConversions = await dataLayerConversions();
+      if (layerConversions.some((entry) => entry.transactionId === submissionId
+          && entry.sendTo === "AW-11103039262/SDRICJin3tIaEJ7eq64p")
+        && conversionRequests.some((request) => request.transactionId === submissionId)
+        && conversionSignalResponses.length) break;
+      await page.waitForTimeout(500);
+    }
+    const signalRequestMatched = conversionSignalRequests.some(
+      (request) => request.submissionId === submissionId && request.transactionId === submissionId);
+    const layerMatched = layerConversions.some((entry) => entry.transactionId === submissionId
+      && entry.sendTo === "AW-11103039262/SDRICJin3tIaEJ7eq64p");
+    const networkRequestMatched = conversionRequests.some((request) => request.transactionId === submissionId);
+    console.log(JSON.stringify({
+      stage, market,
+      browser_submission_matches_api: Boolean(browserSubmissionId && browserSubmissionId === submissionId),
+      data_layer_conversion_count: layerConversions.length,
+      data_layer_transaction_matched: layerMatched,
+      conversion_signal_request_matched: signalRequestMatched,
+      conversion_signal_http: conversionSignalResponses.at(-1) || 0,
+      google_conversion_request_count: conversionRequests.length,
+      google_conversion_transaction_matched: networkRequestMatched,
+    }));
+    assert.equal(browserSubmissionId, submissionId, "Browser submission ID must match the D1 transaction ID");
+    assert.ok(layerMatched, "Browser conversion event must target the reviewed action with the D1 ID");
+    assert.ok(signalRequestMatched && conversionSignalResponses.includes(204),
+      "Browser conversion signal must confirm the same transaction ID");
+    assert.ok(networkRequestMatched,
       "A Google conversion network request must carry the same transaction ID");
     console.log(JSON.stringify({
       stage, market, conversion_network_matched: true,
