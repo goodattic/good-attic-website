@@ -7,12 +7,12 @@
       "reason": "Fetch complete Git history so historical release proof tests can run in GitHub Actions."
     },
     "runtime/scripts/check-live-site-baseline.mjs": {
-      "expectedSha256": "8bed85d478405d48944084d55569616ccbf8926eabff0e5cbfd7ede4348a153d",
-      "reason": "Pin each release stage to its serving Pages deployment and capture the verified Gate 4 artifact."
+      "expectedSha256": "1ac14922e3f46c4646a57bf4f78acbe37b8648d6da97cc21d11af46b9f75c737",
+      "reason": "Pin each release stage to its serving Pages deployment and verify the exact inactive Gate 5 rollback."
     },
     "runtime/scripts/live-site-baseline-guard.mjs": {
-      "expectedSha256": "a3d10d8cb0877a45b509df66e729f1cd704cf3561b35a0c7cf9fc328639fb751",
-      "reason": "Validate Gate 4 artifact lineage and exact stage-specific static and runtime changes."
+      "expectedSha256": "38c5c44e5afeb53e367e10ca4afbffd193256b25871340a936f5d81f0c1ad642",
+      "reason": "Validate Gate 4 artifact lineage and the exact approved Gate 5 rollback static file map."
     },
     "runtime/tests/live-site-baseline-guard.test.mjs": {
       "expectedSha256": "5c451fa6cbfa2e0c9b58441046d2ecff99694cb2611ca6d5d2cdbcef7a946a07",
@@ -435,8 +435,8 @@
       "reason": "Project website attribution onto the Fieldflow receiver allowlist and map AI referral wire values while retaining complete D1 evidence."
     },
     "runtime/tests/staged-release-guard.test.mjs": {
-      "expectedSha256": "0a7cfae7b5a1d0330365aa2198b08744102f3bf66dec7155d64d25d61c397d59",
-      "reason": "Exercise stage-specific release invariants and fail-closed preflight options."
+      "expectedSha256": "462016f85e1bcb30d0e4b71438a5cc6a4b27178976a0cb93c60dfcba7a2f30a1",
+      "reason": "Exercise stage-specific release invariants and the exact Gate 5 rollback approval."
     },
     "runtime/functions/api/internal/fieldflow-attribution-backfill.js": {
       "expectedSha256": "daa05e868dec70ab4c244b4ecdcbdc6cab406d40a7826aceeb1ab042a731ad0d",

@@ -150,6 +150,24 @@ export function assertReviewedRollbackFiles(liveDeployment, rollbackDeployment, 
   }
 }
 
+export function assertReviewedGate5RollbackFiles(liveDeployment, rollbackDeployment, reviewedRollback, approvedAssetsSha256) {
+  if (reviewedRollback?.baselineDeploymentId !== liveDeployment?.id ||
+      reviewedRollback?.approvedAssetsSha256 !== approvedAssetsSha256 ||
+      rollbackDeployment?.id !== reviewedRollback?.id || rollbackDeployment?.aliases !== null ||
+      rollbackDeployment?.latest_stage?.status !== "success" ||
+      rollbackDeployment?.deployment_trigger?.type !== "ad_hoc" ||
+      rollbackDeployment?.deployment_trigger?.metadata?.commit_hash !== reviewedRollback?.sourceCommit ||
+      rollbackDeployment?.created_on !== reviewedRollback?.createdOn ||
+      !rollbackDeployment?.files ||
+      Object.keys(rollbackDeployment.files).length !== reviewedRollback?.publishedFilesCount) {
+    throw new Error("Reviewed Gate 5 rollback deployment detail does not match its approved identity and assets");
+  }
+  const publishedHash = snapshotFingerprint({ assets: rollbackDeployment.files, runtime: {} });
+  if (publishedHash !== reviewedRollback.publishedFilesSha256) {
+    throw new Error("Reviewed Gate 5 rollback published files differ from the approved static build");
+  }
+}
+
 export function assertMarketNumbers(pages, markets) {
   const errors = [];
   for (const [market, { page, display, e164 }] of Object.entries(markets)) {

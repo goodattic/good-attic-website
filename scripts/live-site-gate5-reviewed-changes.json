@@ -395,6 +395,28 @@
     "assets/script.e0b6cf2323b054a8.js": {
       "expectedSha256": "e0b6cf2323b054a829fabc791fa4ae35c634461c7a2655fa0d303663a0659726",
       "reason": "Reviewed fail-open transaction-ID form script; phone swap and unrelated website behavior remain identical to live."
+    },
+    "runtime/scripts/check-live-site-baseline.mjs": {
+      "expectedSha256": "1ac14922e3f46c4646a57bf4f78acbe37b8648d6da97cc21d11af46b9f75c737",
+      "reason": "Pin the exact inactive Gate 5 deployment during the online release preflight."
+    },
+    "runtime/scripts/live-site-baseline-guard.mjs": {
+      "expectedSha256": "38c5c44e5afeb53e367e10ca4afbffd193256b25871340a936f5d81f0c1ad642",
+      "reason": "Verify the reviewed Gate 5 rollback identity and its exact static manifest."
+    },
+    "runtime/tests/staged-release-guard.test.mjs": {
+      "expectedSha256": "462016f85e1bcb30d0e4b71438a5cc6a4b27178976a0cb93c60dfcba7a2f30a1",
+      "reason": "Exercise the exact Gate 5 rollback approval and reject changed deployments."
     }
+  },
+  "reviewedRolledBackGate5Deployment": {
+    "id": "d4eed4a1-bda6-4108-bd3b-e30e7691a14c",
+    "baselineDeploymentId": "15679105-b63d-41dc-b07a-a81e59151d56",
+    "createdOn": "2026-10-02T21:55:54.062028Z",
+    "sourceCommit": "cd8c3a12a2d3ec2961c0f1d1b1135eaca083cafd",
+    "approvedAssetsSha256": "c6e93754a654194a305bc21efa55659fbe4ada485a065edc16ce55a64a340ee7",
+    "publishedFilesSha256": "4ee8117865c543438f8a9d9c195c1d9218cd6e1eb3f7774ca44c56d39df5e8ff",
+    "publishedFilesCount": 287,
+    "reason": "This exact Gate 5 deployment was rolled back; its inactive Pages file map matches the approved 289-file static build after Pages excludes two routing files."
   }
 }

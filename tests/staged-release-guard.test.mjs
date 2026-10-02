@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   assertReviewedRollbackFiles,
+  assertReviewedGate5RollbackFiles,
   assertServedProductionDeployment,
   compareSnapshots,
   snapshotFingerprint,
@@ -107,6 +108,38 @@ test("only the exact reviewed rolled-back deployment can sit above the serving b
   assert.throws(() => assertServedProductionDeployment(project, [{ ...rolledBack, aliases: ["site-a.example"] }, live], "live", [reviewed, earlier]), /not idle or the exact reviewed rollback/);
   assert.throws(() => assertServedProductionDeployment({ ...project, canonical_deployment: { id: reviewed.id } }, [rolledBack, live], "live", [reviewed, earlier]), /Production changed/);
   assert.throws(() => assertReviewedRollbackFiles(live, { ...rolledBack, files: { ...files, "/index.html": "changed" } }, reviewed), /published files differ/);
+});
+
+test("Gate 5 permits only its exact inactive rollback with the approved static manifest", () => {
+  const files = { "/index.html": "new-page", "/script.new.js": "new-script" };
+  const approvedAssetsSha256 = "a".repeat(64);
+  const reviewed = {
+    id: "d4eed4a1-bda6-4108-bd3b-e30e7691a14c",
+    baselineDeploymentId: "15679105-b63d-41dc-b07a-a81e59151d56",
+    createdOn: "2026-10-02T21:55:54.062028Z",
+    sourceCommit: "cd8c3a12a2d3ec2961c0f1d1b1135eaca083cafd",
+    publishedFilesCount: 2,
+    publishedFilesSha256: snapshotFingerprint({ assets: files, runtime: {} }),
+    approvedAssetsSha256,
+  };
+  const project = {
+    id: "project-a", name: "site-a",
+    canonical_deployment: { id: reviewed.baselineDeploymentId },
+  };
+  const rollback = {
+    id: reviewed.id, project_id: project.id, project_name: project.name,
+    environment: "production", aliases: null, created_on: reviewed.createdOn,
+    latest_stage: { status: "success" },
+    deployment_trigger: { type: "ad_hoc", metadata: { commit_hash: reviewed.sourceCommit } },
+    files,
+  };
+  const live = { id: reviewed.baselineDeploymentId, files: { "/index.html": "old-page" } };
+  assert.equal(assertServedProductionDeployment(project, [rollback, live], live.id, [reviewed]), 0);
+  assert.doesNotThrow(() => assertReviewedGate5RollbackFiles(live, rollback, reviewed, approvedAssetsSha256));
+  assert.throws(() => assertReviewedGate5RollbackFiles(live, rollback, reviewed, "changed"), /approved identity/);
+  assert.throws(() => assertReviewedGate5RollbackFiles(live, { ...rollback, aliases: ["site-a.example"] }, reviewed, approvedAssetsSha256), /approved identity/);
+  assert.throws(() => assertReviewedGate5RollbackFiles(live, { ...rollback, files: { ...files, "/index.html": "changed" } }, reviewed, approvedAssetsSha256), /approved static build/);
+  assert.throws(() => assertServedProductionDeployment(project, [{ ...rollback, id: "another" }, live], live.id, [reviewed]), /not idle or the exact reviewed rollback/);
 });
 
 test("Gate 4 proof rejects wrong project, stale deployment, missing online evidence, and changed runtime", () => {

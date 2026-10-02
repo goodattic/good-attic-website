@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import {
   assertActiveScript,
   assertMarketNumbers,
+  assertReviewedGate5RollbackFiles,
   assertReviewedRollbackFiles,
   assertServedProductionDeployment,
   compareSnapshots,
@@ -65,10 +66,16 @@ function checkReview(review, stage, baseline, keyPrefix) {
     assert.equal(review.baselineDeploymentId, baseline.productionDeployment.id);
     assert.equal(review.activeScript, baseline.activeScript);
   } else assert.equal(review.baselineStage, "gate4");
-  assert.ok(Object.keys(review.changes || {}).every((key) => key.startsWith(keyPrefix)), `${stage} contains changes outside ${keyPrefix}`);
+  const gate5Tooling = new Set([
+    "runtime/scripts/check-live-site-baseline.mjs",
+    "runtime/scripts/live-site-baseline-guard.mjs",
+    "runtime/tests/staged-release-guard.test.mjs",
+  ]);
+  assert.ok(Object.keys(review.changes || {}).every((key) => key.startsWith(keyPrefix) ||
+    (stage === "gate5" && gate5Tooling.has(key))), `${stage} contains changes outside reviewed release files`);
 }
 
-async function productionState(baseline, expectedId) {
+async function productionState(baseline, expectedId, reviewedGate5Rollback = null, approvedAssetsSha256 = null) {
   let token = process.env.CLOUDFLARE_API_TOKEN;
   const { accountId, projectName } = baseline.productionDeployment;
   if (!token) {
@@ -100,7 +107,10 @@ async function productionState(baseline, expectedId) {
     deployments.push(...batch);
     if (batch.some((deployment) => deployment.id === expectedId) || batch.length < 10) break;
   }
-  const reviewedRollbacks = baseline.reviewedRolledBackDeployments || [];
+  const reviewedRollbacks = [
+    ...(baseline.reviewedRolledBackDeployments || []),
+    ...(reviewedGate5Rollback ? [reviewedGate5Rollback] : []),
+  ];
   if (!Array.isArray(reviewedRollbacks)) throw new Error("Reviewed rollback records must be an array");
   const idleCount = assertServedProductionDeployment(project, deployments, expectedId, reviewedRollbacks);
   const deployment = (await getBody(`${projectUrl}/deployments/${encodeURIComponent(expectedId)}`)).result;
@@ -118,7 +128,11 @@ async function productionState(baseline, expectedId) {
   for (const reviewedRollback of reviewedRollbacks) {
     if (!deployments.slice(0, canonicalIndex).some((entry) => entry.id === reviewedRollback.id)) continue;
     const rollbackDeployment = await deploymentDetail(reviewedRollback.id);
-    assertReviewedRollbackFiles(deployment, rollbackDeployment, reviewedRollback);
+    if (reviewedGate5Rollback?.id === reviewedRollback.id) {
+      assertReviewedGate5RollbackFiles(deployment, rollbackDeployment, reviewedRollback, approvedAssetsSha256);
+    } else {
+      assertReviewedRollbackFiles(deployment, rollbackDeployment, reviewedRollback);
+    }
   }
   return { project, deployment, idleCount, deploymentDetail };
 }
@@ -165,7 +179,14 @@ if (errors.length) {
 }
 
 if (options.checkLiveDeployment && !process.exitCode) {
-  const { idleCount, deployment } = await productionState(baseline, baseline.productionDeployment.id);
+  const reviewedGate5Rollback = options.stage === "gate5" ? review.reviewedRolledBackGate5Deployment : null;
+  if (options.stage === "gate5") {
+    assert.ok(reviewedGate5Rollback, "Gate 5 requires its exact reviewed rollback deployment");
+  }
+  const approvedAssetsSha256 = snapshotFingerprint({ assets: candidate.assets, runtime: {} });
+  const { idleCount, deployment } = await productionState(
+    baseline, baseline.productionDeployment.id, reviewedGate5Rollback, approvedAssetsSha256,
+  );
   if (options.stage === "gate5") {
     const expectedFilesHash = baseline.capture?.publishedFilesSha256;
     const actualFilesHash = snapshotFingerprint({ assets: deployment.files || {}, runtime: {} });
