@@ -375,5 +375,21 @@
     "scripts/check-live-site-baseline.mjs": "e6fe5f0a7109a4ee0e43bd40e17ee0909ce6d208b3d3e651410759e291e744bc",
     "scripts/live-site-baseline-guard.mjs": "32f0fd6e3c3c4772c527fdb39d3c9f00dde3a6605469c040473f6703c0e2a0c2",
     "tests/live-site-baseline-guard.test.mjs": "4257be051b6d88e1264104c3de81a55e9ce0a1aface3991ed94a1f49abfb76d1"
-  }
+  },
+  "reviewedRolledBackDeployments": [
+    {
+      "id": "ef63fcc3-e242-46dd-b782-05ab9d45194e",
+      "createdOn": "2026-10-02T21:13:02.490682Z",
+      "sourceCommit": "f15e39198965e64c617f8e145617a62616009b8d",
+      "publishedFilesSha256": "230904c90534f508cdcc66ee8fe3bbfec4ab1cd27179cbf5eb110963c58447d1",
+      "reason": "First Gate 4 attempt was rolled back; this exact deployment has no live aliases and its published files match restored d0."
+    },
+    {
+      "id": "c46d8778-34b6-42a6-8031-50c0ac11d222",
+      "createdOn": "2026-10-02T21:14:09.459743Z",
+      "sourceCommit": "f15e3914d82ec62a79c1d171512f6e0f1c1b7c2b",
+      "publishedFilesSha256": "230904c90534f508cdcc66ee8fe3bbfec4ab1cd27179cbf5eb110963c58447d1",
+      "reason": "Gate 4 attempt was rolled back; this exact deployment has no live aliases and its published files match the restored d0 serving deployment."
+    }
+  ]
 }

@@ -7,12 +7,12 @@
       "reason": "Fetch complete Git history so historical release proof tests can run in GitHub Actions."
     },
     "runtime/scripts/check-live-site-baseline.mjs": {
-      "expectedSha256": "b634f00572ca770050a599cd8b890c671f2ee1f5d67a7786d23c0269cef61df7",
-      "reason": "Compare the Cloudflare serving deployment rather than inert Git push records during online preflight."
+      "expectedSha256": "8bed85d478405d48944084d55569616ccbf8926eabff0e5cbfd7ede4348a153d",
+      "reason": "Pin each release stage to its serving Pages deployment and capture the verified Gate 4 artifact."
     },
     "runtime/scripts/live-site-baseline-guard.mjs": {
-      "expectedSha256": "dc52ffc6b48293281f29e80b040cb1186b5520bad8545aa178c6f4f1589e3cbf",
-      "reason": "Reject active production changes while allowing never-started deployment records."
+      "expectedSha256": "a3d10d8cb0877a45b509df66e729f1cd704cf3561b35a0c7cf9fc328639fb751",
+      "reason": "Validate Gate 4 artifact lineage and exact stage-specific static and runtime changes."
     },
     "runtime/tests/live-site-baseline-guard.test.mjs": {
       "expectedSha256": "5c451fa6cbfa2e0c9b58441046d2ecff99694cb2611ca6d5d2cdbcef7a946a07",
@@ -429,6 +429,18 @@
     "assets/script.e0b6cf2323b054a8.js": {
       "expectedSha256": "e0b6cf2323b054a829fabc791fa4ae35c634461c7a2655fa0d303663a0659726",
       "reason": "Reviewed fail-open transaction-ID form script; phone swap and unrelated website behavior remain identical to live."
+    },
+    "runtime/server/fieldflow-attribution.js": {
+      "expectedSha256": "a7bf050f8e348bb0d15ee69397df69534c82e911e4675b7f9f4cb17c8a76a336",
+      "reason": "Project website attribution onto the Fieldflow receiver allowlist and map AI referral wire values while retaining complete D1 evidence."
+    },
+    "runtime/tests/staged-release-guard.test.mjs": {
+      "expectedSha256": "0a7cfae7b5a1d0330365aa2198b08744102f3bf66dec7155d64d25d61c397d59",
+      "reason": "Exercise stage-specific release invariants and fail-closed preflight options."
+    },
+    "runtime/functions/api/internal/fieldflow-attribution-backfill.js": {
+      "expectedSha256": "daa05e868dec70ab4c244b4ecdcbdc6cab406d40a7826aceeb1ab042a731ad0d",
+      "reason": "Allow one-time authenticated replay of approved historical website attributions with D1 proof and no Jobber writes."
     }
   },
   "activeScript": "script.e0b6cf2323b054a8.js"

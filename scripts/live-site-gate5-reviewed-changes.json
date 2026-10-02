@@ -1,0 +1,400 @@
+{
+  "schemaVersion": 1,
+  "stage": "gate5",
+  "baselineStage": "gate4",
+  "activeScript": "script.e0b6cf2323b054a8.js",
+  "changes": {
+    "assets/404.html": {
+      "expectedSha256": "74e8705e73689321b6f4a61feb4ffb671886a745e7f19f61f11371f6a4c33661",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/about/index.html": {
+      "expectedSha256": "d44bcfb9ee8a4613d9b76e8dd818d247883e87ea8fcca31f61f26f30b48f0dfa",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/contact/index.html": {
+      "expectedSha256": "c86c31b89dfb235fcde866acf318c97ffd86f324e0333414530b213347cbb9e8",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/financing/index.html": {
+      "expectedSha256": "5d144ac98d2f51f6b518d6dfd66b603273b928292ad8bb64862919df2575ae2a",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/index.html": {
+      "expectedSha256": "fe3a4e951256fbc6fc572467012b5ac18d32f5721733c00cd564f30edef753a9",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/attic-air-sealing/index.html": {
+      "expectedSha256": "dfe910ce6541b62069486e979e4318f5e425f51fee992b62ce97e2c552df16ea",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/attic-fans/index.html": {
+      "expectedSha256": "159fd5ba5b0fd08eb68153ced6e3fb049dd00334de0645e1dd1c3d777c04d58b",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/attic-insulation/index.html": {
+      "expectedSha256": "6d7806e740bc728e954eade3e6d1d90ed4db65ef8331177770236d77044ca5aa",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/attic-pest-remediation/index.html": {
+      "expectedSha256": "eafda42da154599f8401628057b1fc5090890c1f0edc6422e25b9ffcf1c859a8",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/index.html": {
+      "expectedSha256": "64d994088a89aed2a894198d1b1d2c307a7021f7e054891b8079496eeaf827cd",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/insulation-removal/index.html": {
+      "expectedSha256": "433a3437c00213944d7c0f894b2ba42036c0dc5d5a677934677eee95fefb2c6f",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/service-areas/blue-springs-mo/index.html": {
+      "expectedSha256": "695b5511edededfdbfcccccfec4f6b976c1569c098405890c1adf0b17f9ee544",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/service-areas/leawood-ks/index.html": {
+      "expectedSha256": "d0cc33afc8dc7d75457823c493dd1ab4e66acec4c48c843d9c7e4d3902d02113",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/service-areas/lee-s-summit-mo/index.html": {
+      "expectedSha256": "aa5e154188a93b0fce7ccd9f579ec483e933c995f545986cee7fe49dde76d2d8",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/service-areas/lenexa-ks/index.html": {
+      "expectedSha256": "e8e4b3ea6f975f82862470a9f53547c6f13978f697d35a98e0a3ca6110eb3cf0",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/service-areas/liberty-mo/index.html": {
+      "expectedSha256": "2ebeba90528d13cdc128845e36f451ab9428c72935fbf88c90c8959174eb1202",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/service-areas/olathe-ks/index.html": {
+      "expectedSha256": "4df35546f811d344edfe12d9da4afaf096221fdadf7ae8b90b0ff5f4e665519b",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/service-areas/overland-park-ks/index.html": {
+      "expectedSha256": "e33d12df5c16139f4c392b0943b4aa498c70ef5b4bb2569f5268aa14a18c4e4f",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/service-areas/parkville-mo/index.html": {
+      "expectedSha256": "a3fde551e4465f42cf83f86cd8138ef637466b511e5a6696c04901acf303bcc7",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/service-areas/prairie-village-ks/index.html": {
+      "expectedSha256": "329d39809753b23fb58f536bb4b6bd3692f45b7298c7ee8051eb5d9e05ff5a29",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/kansas-city-mo/service-areas/shawnee-ks/index.html": {
+      "expectedSha256": "695410c3c21df1fb4662e51b01b73069ba6529db088e87177a7e0d51816a232e",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/locations/index.html": {
+      "expectedSha256": "688e452dfb9a3d09df3f5223ec579cd0bed73aa15a6722a2b2037165f8ab739f",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/privacy-policy/index.html": {
+      "expectedSha256": "611642b87bca3dc2b8bfdcb0df4c1640d63d41b9c95e1fc89c1b4604fea5eec5",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-air-sealing-kansas-city-mo/index.html": {
+      "expectedSha256": "3e2a10a9e91ed2a01bbc224cc1d2fd1b3fe0729d3d65a05eb4d78695467cd9aa",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-air-sealing-salt-lake-city-ut/index.html": {
+      "expectedSha256": "e744df29d5e7adcdbc6e35081c9d0683f086c1514e719a0adbbac7696aa1dc08",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-air-sealing-st-louis-mo/index.html": {
+      "expectedSha256": "8eee82a4cffb09ad60cc0ed13a8178b120ac5cb69ce86c824884beb5a5f33903",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-air-sealing-vs-more-insulation/index.html": {
+      "expectedSha256": "94c9dbfc40fc924d2f6fa690f7cd02b0d6a39873261ade2c060bbe3dde7bd924",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-cleanup-restoration-kansas-city-mo/index.html": {
+      "expectedSha256": "667b6af1366f98bf21e0f75ce5669640c57f3acf37a95e4fca52372650d90fa4",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-cleanup-restoration-salt-lake-city-ut/index.html": {
+      "expectedSha256": "91819e5381fee8dcf35f9005c76a94e0d38e1f54007584f7da8966ac23617a54",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-cleanup-restoration-st-louis-mo/index.html": {
+      "expectedSha256": "faad83b1a0b5e04323a679dbed9c0dae126de04d7a050e40dc422f9f4e55fcfb",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-fan-vs-ventilation-fix/index.html": {
+      "expectedSha256": "3d87b76fb6978d9bdb29091a7b1f856a793278e87ab09154dca2b25dcbd6b510",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-insulation-cost-kansas-city-mo/index.html": {
+      "expectedSha256": "8d469ddc49e57c246e9e9e0ced08a22b4d13a7ae979d849ad02eaec7360dadbb",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-insulation-cost-salt-lake-city-ut/index.html": {
+      "expectedSha256": "c03e821f7ea3b0f087a0ee68376c7c4b38c6b03677518957657c522e8260a3fb",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-insulation-cost-st-louis-mo/index.html": {
+      "expectedSha256": "4830c427864a70c8039f8ffeed3584668940b0d46c31c6f082cc3f973ef9cf2c",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-insulation-removal-after-mice/index.html": {
+      "expectedSha256": "8231390a4ea7a13483e3d354e59422805e69efadd6df529a81775a99ad80b737",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-pest-contamination-kansas-city-mo/index.html": {
+      "expectedSha256": "9610eab53ad075c71eb215221f913eb9e7eeed138ee6e4f7263f1be440d60322",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-pest-contamination-salt-lake-city-ut/index.html": {
+      "expectedSha256": "98e64e860f62d664e3ef496e3fb1878b3b7f645917dcceb1569604bdc54968a7",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/attic-pest-contamination-st-louis-mo/index.html": {
+      "expectedSha256": "ee3812499b744b729687d07f496da75b0a4426800d0c9dfa06ac05ac073cddf6",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/bat-guano-attic-insulation-removal/index.html": {
+      "expectedSha256": "83ba968934ebae5eeaa8c88c0213d2cac3ffca779dc4fc5781d8598b5ae83dfa",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/blown-insulation-vs-rolled-insulation/index.html": {
+      "expectedSha256": "371402596b6ccc020cfc03ff480d0d98169d7d55133ceb6d7b4cb53234759841",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/cellulose-vs-fiberglass-attic-insulation/index.html": {
+      "expectedSha256": "f34de559f53adc805de3a4d915eed830111af506b6dc79f1a405ad2177d969ca",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/diy-vs-professional-attic-insulation/index.html": {
+      "expectedSha256": "d5d0cfff7d24162ff77633d51fc9288e884884347b02674e313e384097e79041",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/hot-upstairs-rooms-kansas-city-mo/index.html": {
+      "expectedSha256": "bcfa0eeac509c7b8dc4cbe24fd2f968fe7851998693a3932b775ab443bb34a09",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/hot-upstairs-rooms-salt-lake-city-ut/index.html": {
+      "expectedSha256": "7d4c347145bb566f768945598093299a12149777f1a529a714b591c6cedd568c",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/hot-upstairs-rooms-st-louis-mo/index.html": {
+      "expectedSha256": "971ccea15cb6e85e0b6c0550ccf32924344a088ff6e029eda7c7d677a013efe9",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/index.html": {
+      "expectedSha256": "8b887f42e11323707410568e14e0a0019a88dfbd30980cb01d62520027adbc25",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/insulation-removal-vs-top-off/index.html": {
+      "expectedSha256": "67097a4358589721c9467bad22abc88730d320bee24d3436a6bd8c4d9f9128b7",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/radiant-barrier-vs-attic-insulation/index.html": {
+      "expectedSha256": "2d6c3c5dac44c415dfdc4fa3acc742fa3a1bd2d17df9bf5a155fd63a89214d15",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/replace-attic-insulation-when-replacing-roof/index.html": {
+      "expectedSha256": "e096da9e9e17b22f954017cbdcfec2bab413229eb0f5cea83f249535b2af4eb3",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/signs-of-attic-pest-contamination/index.html": {
+      "expectedSha256": "b314ee35213690c5e9e511b231ebf9ff0e2b60826280e37746568f16259eaddd",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/spray-foam-vs-blown-in-attic-insulation/index.html": {
+      "expectedSha256": "6ce2c1aff2bbe1b4bf7ee791f305775be13cadea61076ef412a264725c2125c6",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/wet-attic-insulation-remove-or-dry/index.html": {
+      "expectedSha256": "56bb9fd78fb3b207f5454595aa9c6085a438f5295123509cc48dbfd921a142bf",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/what-happens-during-an-attic-inspection/index.html": {
+      "expectedSha256": "7dd13df6f7b1cd8869e8021068ef37205873f69f1dfa991478fab518e27b01b8",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/what-r-value-means-for-an-attic/index.html": {
+      "expectedSha256": "4ddafc9f2bcf22c7ba69c2879ac1dc9ba49bc167bfbf3647a2fc7576220e37e5",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/when-attic-cleanup-becomes-restoration/index.html": {
+      "expectedSha256": "c73c1758668c6c1297b04eab19cf6dd10132cf954725b9769a478fdc0e363842",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/resources/why-upstairs-rooms-stay-hot/index.html": {
+      "expectedSha256": "3160fbe54b1c15e6e9c71635ac41ffb11849ac21ffcbb16f8a2ad3e4cff5f182",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/reviews/index.html": {
+      "expectedSha256": "88d87ffb5981189f526ca53f4932d6865a48491fd64c2ac463975456c14f3e66",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/attic-air-sealing/index.html": {
+      "expectedSha256": "a9d2ee4bdea6be4e429e9f623b925358f89f32f52772474d6acafa582f4feea3",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/attic-fans/index.html": {
+      "expectedSha256": "faf357a1210924806636fd8b2a9bb7bdf57c0777603b57cb84e18887f32a2da7",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/attic-insulation/index.html": {
+      "expectedSha256": "be77f138e75590abb9ed5b8f2baed255a018c8cb2ef14a78b41c7b17571b4457",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/attic-pest-remediation/index.html": {
+      "expectedSha256": "eb071c053ca63ec9c32acfbcbdf12006eeefa1227f07dd49874a6d5d0548dcf0",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/index.html": {
+      "expectedSha256": "bfe392018f90d3bd7d7a08f3da4ce5931220d1c928267cbc3ec1b6eaa1702a53",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/insulation-removal/index.html": {
+      "expectedSha256": "a7598e0bed3fe29ffac448f62f6d3e08c764e9478bd54d7fa752dce3bc57d0a0",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/service-areas/american-fork-ut/index.html": {
+      "expectedSha256": "e31ec167ca5bbe8fb0db919d83713806c414189d6e2ad360f4ae9ee7a8ffb2e3",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/service-areas/cottonwood-heights-ut/index.html": {
+      "expectedSha256": "9959658fe7147de163b11ab1aa1b02297b48bc45c2aea467b785a8ef68bdb37d",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/service-areas/draper-ut/index.html": {
+      "expectedSha256": "30abeaca7faed1a337006d96fcd65fd4c6e9e219d3e67a70eda53452869f95ac",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/service-areas/herriman-ut/index.html": {
+      "expectedSha256": "c000305704f98e3809a857f07693b18ea683188c25c37d246e172fb91bc7082a",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/service-areas/holladay-ut/index.html": {
+      "expectedSha256": "d836b2bdaaa9c3ed070cee54784129aa73f2695f7453d934d499901fbf25470d",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/service-areas/millcreek-ut/index.html": {
+      "expectedSha256": "361be3c535c78962a1f15f5b0d78f5752fa2c65edf8d39083d2eb86a082f1fbe",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/service-areas/sandy-ut/index.html": {
+      "expectedSha256": "9725f6855193bd20fa839efa5a416637d450864cd395fe0e3ed36b84cc6339cd",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/service-areas/south-jordan-ut/index.html": {
+      "expectedSha256": "8b55f0d2998e6fc75c425840fdf4bb1c85341bbc1af7184f7c87bf777400b95d",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/service-areas/sugar-house-ut/index.html": {
+      "expectedSha256": "ecb16213654bcf5b4302cee11af6576bb28d7dc2e4553871970d7fd64616e333",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/salt-lake-city-ut/service-areas/west-jordan-ut/index.html": {
+      "expectedSha256": "4f45fb9a57ae9eea6222f4f31ba9088ba58740559556f394a24141a3ff01d89a",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/services/attic-air-sealing/index.html": {
+      "expectedSha256": "d3a26fadfaf3fb0d1d98c22783547fad5bda198fa139bc0403d7b94ca43c262b",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/services/attic-fans/index.html": {
+      "expectedSha256": "febdfb278bc080bd3184d4d973c03660424524963c7e261f8fe84f9f85acca60",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/services/attic-insulation/index.html": {
+      "expectedSha256": "fd3d4569f1322a43903a55ef41632c5f590ee38ac47fb2d74204c95d42d5fc18",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/services/attic-pest-remediation/index.html": {
+      "expectedSha256": "9bc55a44ee6026e5332ade5138ed93f86d75c29bb990d3185a4d18c1b164e48b",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/services/index.html": {
+      "expectedSha256": "6165a124731c741f4a9c23f361bcd7d5a40100fd2a4ab79e81537f5880785db2",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/services/insulation-removal/index.html": {
+      "expectedSha256": "d6dbdb3429a13e893edf667455e8d03a3a4394aa863a7a6cc87e23e069dc4ff1",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/attic-air-sealing/index.html": {
+      "expectedSha256": "46c19d2ac9da94fb4c62aef9620a1da6c955e0b63ca00bf86b778cb4c1dcc9e8",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/attic-fans/index.html": {
+      "expectedSha256": "69fd45a75c0d24bb9e06624eb18baca7cdac4e1114d4682884f66e575f289457",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/attic-insulation/index.html": {
+      "expectedSha256": "4e9064f52c911638e3f1dfb5d599ed6cad1100564fad096197b1038869d0993e",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/attic-pest-remediation/index.html": {
+      "expectedSha256": "f216f7d9b5a922893aaea92aedf58d9818d9aac94679ec93baf65a5be6236d97",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/index.html": {
+      "expectedSha256": "3b777be5b0ddd9a8f78a11da049d4aff6418e345d558d74ae72904c45c65db02",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/insulation-removal/index.html": {
+      "expectedSha256": "3f6ae38e3bb10d042a233ea41c1d0e323f9e5ac0179eb7938cce6279fd27a600",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/service-areas/ballwin-mo/index.html": {
+      "expectedSha256": "bac20abe9d4f9eae996e2ec6de1554916dcd8b4fe1ff6be347a10193751c0622",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/service-areas/chesterfield-mo/index.html": {
+      "expectedSha256": "356a1b07a72f29a6390ea0459d3ea6bec985904577d09b5060a3f7a3f53e5947",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/service-areas/clayton-mo/index.html": {
+      "expectedSha256": "0f72dcc881253781a2cb51eb928b4cfeea4b5507274163d4137cc0b8f315e3d7",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/service-areas/des-peres-mo/index.html": {
+      "expectedSha256": "a5e31af69de0acd92f477dceed22774be8a27c83d8ad011049169fe1e05e212d",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/service-areas/frontenac-mo/index.html": {
+      "expectedSha256": "7b8d2ac8df631b95159cff45fd47298e62245095a1077bb281848944e07a4b8b",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/service-areas/o-fallon-mo/index.html": {
+      "expectedSha256": "3fba0b997e94a427fab8b0cc70d3090f5bfb52c70cd7b98776e1f2e64fb6f4b7",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/service-areas/st-charles-mo/index.html": {
+      "expectedSha256": "35c652220453afd2b29024ff105ca4a0540653605b2911dbb9a355a373024be6",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/service-areas/st-peters-mo/index.html": {
+      "expectedSha256": "f0300b85141ba7120fab3078b2851aa58c173d5229e3b88e9961ce8e357d0baa",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/service-areas/town-and-country-mo/index.html": {
+      "expectedSha256": "fdb5e48189fd45c53028835cb4a96d3596ba13ed356dd24d95e58dd8520af675",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/st-louis-mo/service-areas/wildwood-mo/index.html": {
+      "expectedSha256": "3f8563cc1c2942fced8acacddea1ec299d1c3ae309f5aeb6da810ae7deb18769",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/terms-of-service/index.html": {
+      "expectedSha256": "550c073368f113474f98a0ff5b3289de9b37047a6bda193a8e18ff2381760392",
+      "reason": "Only replace the reviewed active form script reference; page content and market phone numbers remain unchanged."
+    },
+    "assets/_headers": {
+      "expectedSha256": "044538bb7455f1b707d505c1e19668508dbb0acc84692fa7bea97b44492b01cd",
+      "reason": "Add immutable caching for the new content-addressed form script without changing existing header directives."
+    },
+    "assets/script.e0b6cf2323b054a8.js": {
+      "expectedSha256": "e0b6cf2323b054a829fabc791fa4ae35c634461c7a2655fa0d303663a0659726",
+      "reason": "Reviewed fail-open transaction-ID form script; phone swap and unrelated website behavior remain identical to live."
+    }
+  }
+}
