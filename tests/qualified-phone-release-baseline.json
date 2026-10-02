@@ -436,10 +436,16 @@
     "workers/jobber-phase2-backfill.wrangler.toml": "12310041dcf1760a496c2e853777a72eaedfa6dbdf1a72ca9c421d0485b9e5be",
     "migrations/0016_qualified_phone_calls.sql": "cc7e8b7b8eede3e6f97f295a2d6ab2efcba313f34209f399b805f88ac72263c2",
     "server/google-qualified-phone-collector.js": "3270d44a9fbaf4a758c7fbec1cf483c54c3d92408fc0d3d5ea4391ff7769997a",
-    "server/qualified-phone-runtime.js": "fccdf1e4a6b2171551715284cfa13b4af57f2bf5e7d3e0157ca890d6139a1971",
+    "server/qualified-phone-runtime.js": "847b4287c9b54f6d48f501025553803d1bea7f84d1cfefa9a45d73e1e7007e13",
     "tests/google-qualified-phone-collector.test.mjs": "deb3be4653730707356b24daa3a7e7326ead1b69b14256c82a4ba4b7ecff2478",
-    "tests/qualified-phone-runtime.test.mjs": "113d34d429050efefccf49fc61332c69b183fd9d8cf1f5f6616b38e915e53aaf",
+    "tests/qualified-phone-runtime.test.mjs": "a87dae2d1d3321afb0b4944f6ffae6062495461253c9dc8c374a4d38b32bef0d",
     "outputs/qualified-phone-2026-09-29/shadow-table.csv": "859993b06f5f59029d99b603f7f2173f0c73a9994e3adfb284b458bf0f20eba5",
-    "outputs/qualified-phone-2026-09-29/validation.txt": "4d4b0f0a78e7458fd1afc1f5d338d635fd970ef8f27488515b4ba90c153e50be"
+    "outputs/qualified-phone-2026-09-29/validation.txt": "4d4b0f0a78e7458fd1afc1f5d338d635fd970ef8f27488515b4ba90c153e50be",
+    "server/qualified-phone-manual-match.js": "a2c6bbe8ff47769459555535fc7acb7a50700526f8bdb97a7918489d0458f220",
+    "migrations/0019_quo_call_attributions_kc.sql": "3a763f11a0e7a46cb55914fa663d277b539aaaa1b4820fb028c62f1087af125a",
+    "migrations/0020_qualified_phone_request_claims.sql": "4648d594ecf17075fec393c21552f3df5156a894be50206bf0f9d2911e8a3236",
+    "tests/qualified-phone-manual-match.test.mjs": "0e33cc99355bb0b9b4ed17426807a74184e88453c0cb03bb456ea26ed00e9f34",
+    "tests/quo-call-attribution-kc-migration.test.mjs": "853e3edbf1ad369307a47cbe79b896485b8a683f8fb8a9f9bbff2b64e54f76da",
+    "migrations/0018_quo_call_capture_stage.sql": "f8279e72200d1bc1d8e6e818a2fa95be99650541c71e597821a5c1360264b765"
   }
 }

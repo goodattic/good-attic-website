@@ -1,8 +1,14 @@
 import { _private as leads } from '../functions/api/leads.js';
 import { getJobberOAuthRoute } from '../functions/api/jobber/oauth/config.js';
 import { googleCallEligible, matchQuoCallToGoogleCall, matchJobberLead, JOBBER_ACCOUNTS } from './google-qualified-phone-collector.js';
+import {
+ MANUAL_MATCH_FLAG, MANUAL_UPLOAD_FLAG, manualConversationEligible, resolveManualJobberRequest,
+ persistManualCallLink, claimQualifiedPhoneRequest,
+} from './qualified-phone-manual-match.js';
 
 export const PHONE_FLAG = 'QUALIFIED_PHONE_UPLOAD_ENABLED';
+export const MANUAL_SHADOW_START_FLAG = 'QUALIFIED_PHONE_MANUAL_SHADOW_STARTED_AT';
+export const MANUAL_SHADOW_MS = 7 * 24 * 60 * 60 * 1000;
 export const API_VERSION = 'v24';
 const CUSTOMER = '4800890529';
 const ACTION = '7742989654';
@@ -11,6 +17,16 @@ const all = async(db,sql,...args)=>(await db.prepare(sql).bind(...args).all()).r
 const run = (db,sql,...args)=>db.prepare(sql).bind(...args).run();
 const endpoint = suffix=>`https://googleads.googleapis.com/${API_VERSION}/customers/${CUSTOMER}${suffix}`;
 const CLIENT = 'id createdAt phones { number } jobs(first:100) { nodes { id jobStatus createdAt startAt endAt } pageInfo { hasNextPage } }';
+
+function manualShadowStart(env) {
+ const at=Date.parse(env[MANUAL_SHADOW_START_FLAG]||'');
+ return Number.isFinite(at)?at:null;
+}
+export function manualUploadReady(env,at=Date.now()) {
+ const started=manualShadowStart(env);
+ return env[MANUAL_MATCH_FLAG]==='true'&&env[MANUAL_UPLOAD_FLAG]==='true'
+  &&started!==null&&at>=started+MANUAL_SHADOW_MS;
+}
 
 export function denverTime(value) {
  const d=new Date(value);
@@ -60,8 +76,23 @@ export async function readGoogleCalls(token,since,fetcher=fetch) {
  const b=await r.json();if(!Array.isArray(b))throw Error('GOOGLE_CALL_READ_INVALID');
  return b.flatMap(x=>x.results||[]).map(x=>({google_resource:x.callView.resourceName,campaign_id:x.campaign.id,market_key:campaignMarket(x.campaign.name),start_call_date_time:fromDenver(x.callView.startCallDateTime),call_duration_seconds:Number(x.callView.callDurationSeconds||0),caller_area_code:x.callView.callerAreaCode||'',call_status:x.callView.callStatus}));
 }
-async function verifyJobber(env,call,quo,fetcher) {
+async function verifyJobber(env,call,quo,fetcher,manualCandidate=false) {
  const route=getJobberOAuthRoute(call.market_key,'website');
+ if(!route)return {ok:false,reason:'jobber_account_mismatch'};
+ if(manualCandidate){
+  try {
+   const {accessToken}=await leads.refreshJobberAccessToken(env,route);
+   const read=async(query,variables)=>{
+    const r=await fetcher('https://api.getjobber.com/api/graphql',{method:'POST',headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json','X-JOBBER-GRAPHQL-VERSION':'2025-04-16'},body:JSON.stringify({query,variables}),signal:AbortSignal.timeout(25000)});
+    if(!r.ok)throw Error('jobber_read_unavailable');
+    const body=await r.json();
+    if(body.errors?.length||!body.data)throw Error('jobber_read_unavailable');
+    return body.data;
+   };
+   return resolveManualJobberRequest({callerPhone:quo.caller_phone,callAt:call.start_call_date_time,
+    marketKey:call.market_key,accountId:route.expectedAccountId,read,db:env.ANGI_ROUTER_DB});
+  }catch{return {ok:false,reason:'jobber_read_unavailable'};}
+ }
  const {accessToken}=await leads.refreshJobberAccessToken(env,route);
  const isRequest=Boolean(quo.jobber_request_id),id=quo.jobber_request_id||quo.jobber_client_id;
  if(!id)return {ok:false,reason:'jobber_link_missing'};
@@ -92,8 +123,20 @@ async function identity(call) {
 export async function submitPhone(env,token,resource,fetcher=fetch) {
  const db=env.ANGI_ROUTER_DB;
  if(env[PHONE_FLAG]!=='true')return {state:'held',code:'phone_upload_disabled'};
- const row=await db.prepare('SELECT o.*,p.state AS phone_state FROM qualified_phone_calls p JOIN google_ads_outcome_outbox o ON o.outcome_id=p.outcome_id WHERE p.google_resource=?').bind(resource).first();
+ const row=await db.prepare('SELECT o.*,p.state AS phone_state,p.google_call_json AS phone_call_json FROM qualified_phone_calls p JOIN google_ads_outcome_outbox o ON o.outcome_id=p.outcome_id WHERE p.google_resource=?').bind(resource).first();
  if(!row)return {state:'held',code:'candidate_missing'};
+ let manualMarker=false;
+ try{manualMarker=JSON.parse(row.phone_call_json)?.match_origin==='manual';}catch{}
+ if(manualMarker&&!manualUploadReady(env)){
+  return {state:'held',code:'manual_phone_upload_disabled'};
+ }
+ // No claims-table dependency is introduced while manual matching is off;
+ // the existing phone stage can keep running before migration 0020 is applied.
+ if(env[MANUAL_MATCH_FLAG]==='true'){
+  const requestClaim=await db.prepare('SELECT match_origin FROM qualified_phone_request_claims WHERE google_resource=?').bind(resource).first();
+  if((requestClaim?.match_origin==='manual')!==manualMarker)return {state:'held',code:'phone_origin_conflict'};
+  if(requestClaim?.match_origin==='manual'&&!manualUploadReady(env))return {state:'held',code:'manual_phone_upload_disabled'};
+ }
  const body=uploadBody(row),at=now();
  // Claim before the network. Unknown delivery stays fenced across restarts.
  const claim=await run(db,"UPDATE qualified_phone_calls SET state='submitting',attempt_count=attempt_count+1,updated_at=? WHERE google_resource=? AND (state='ready' OR (state='retryable' AND next_retry_at<=? AND attempt_count<5))",at,resource,at);
@@ -122,19 +165,82 @@ export async function phoneCycle(env,{scheduledTime=Date.now(),since,fetcher=fet
   const start=since||denverTime(scheduledTime-14*86400000).slice(0,10);
   const calls=await readGoogleCalls(token,start,fetcher);
   const quo=await all(db,'SELECT * FROM quo_call_attributions WHERE call_started_at_utc>=?',start);
-  for(const call of calls){
-   const old=await db.prepare('SELECT state FROM qualified_phone_calls WHERE google_resource=?').bind(call.google_resource).first();
-   if(old&&['uploaded','submitting','failed'].includes(old.state))continue;
+  const shadowStart=manualShadowStart(env);
+  const manualClaimRows=env[MANUAL_MATCH_FLAG]==='true'
+   ? await all(db,"SELECT google_resource FROM qualified_phone_request_claims WHERE match_origin='manual'") : [];
+  const manualClaims=new Set(manualClaimRows.map(row=>row.google_resource));
+  const prepared=calls.map(call=>{
    const match=matchQuoCallToGoogleCall(call,quo);
-   const eligible=googleCallEligible(call);
-   let reason=!call.market_key?'unmapped_campaign':!eligible?'duration_at_least_60s':!match.ok?match.reason:null;
-   let record;
-   if(!reason){const proof=await verify(env,call,match.call,fetcher);if(!proof.ok)reason=proof.reason;else record=proof.record;}
-   const id=record?await identity(call):null;
-   await run(db,`INSERT INTO qualified_phone_calls(google_resource,market_key,google_call_json,outcome_id,state,diagnostic_code,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(google_resource) DO UPDATE SET outcome_id=COALESCE(excluded.outcome_id,qualified_phone_calls.outcome_id),state=CASE WHEN qualified_phone_calls.state='retryable' THEN 'retryable' ELSE excluded.state END,diagnostic_code=excluded.diagnostic_code,updated_at=excluded.updated_at WHERE qualified_phone_calls.state IN ('held','excluded','ready','retryable')`,call.google_resource,call.market_key,JSON.stringify(call),id,reason?(eligible?'held':'excluded'):'ready',reason,at,at);
+   const manualUnlinkedOrClaimed=env[MANUAL_MATCH_FLAG]==='true'&&match.ok
+    &&(!match.call.jobber_request_id||manualClaims.has(call.google_resource));
+   const callAt=Date.parse(call.start_call_date_time);
+   const manualBlockedReason=manualUnlinkedOrClaimed&&shadowStart===null?'manual_shadow_start_missing'
+    :manualUnlinkedOrClaimed&&callAt<shadowStart?'manual_before_shadow_start':null;
+   const manualCandidate=env[MANUAL_MATCH_FLAG]==='true'&&shadowStart!==null
+    &&callAt>=shadowStart&&manualUnlinkedOrClaimed;
+   const conversation=manualCandidate?manualConversationEligible(match.call,call):null;
+   return {call,match,manualCandidate,manualBlockedReason,conversation,
+    eligible:manualCandidate?conversation.ok:googleCallEligible(call)};
+  });
+  const ambiguous=new Set();
+  for(let i=0;i<prepared.length;i++)for(let j=i+1;j<prepared.length;j++){
+   const a=prepared[i],b=prepared[j];
+   const manualPair=a.manualCandidate||b.manualCandidate;
+   if(manualPair&&a.eligible&&b.eligible&&a.match.ok&&b.match.ok&&a.call.market_key===b.call.market_key
+    &&a.match.call.caller_phone===b.match.call.caller_phone
+    &&Math.abs(Date.parse(a.call.start_call_date_time)-Date.parse(b.call.start_call_date_time))<=7*86400000+3600000){
+    ambiguous.add(a.call.google_resource);ambiguous.add(b.call.google_resource);
+   }
+  }
+  for(const {call,eligible,match,manualCandidate,manualBlockedReason,conversation} of prepared){
+   const old=await db.prepare('SELECT state,diagnostic_code FROM qualified_phone_calls WHERE google_resource=?').bind(call.google_resource).first();
+   if(old&&(['uploaded','submitting','failed'].includes(old.state)
+    ||old.diagnostic_code==='ambiguous_google_calls_same_caller'))continue;
+   let reason=!call.market_key?'unmapped_campaign':!match.ok?match.reason:manualBlockedReason?manualBlockedReason
+    :!eligible?(manualCandidate?conversation.reason:'duration_at_least_60s')
+    :ambiguous.has(call.google_resource)?'ambiguous_google_calls_same_caller':null;
+   let record,manualHold=false,matchOrigin=null;
+   if(!reason){
+    const proof=await verify(env,call,match.call,fetcher,manualCandidate);
+    if(!proof.ok)reason=proof.reason;
+    else {
+     record=proof.record;
+     if(proof.manual){
+      const route=getJobberOAuthRoute(call.market_key,'website');
+      const linked=await persistManualCallLink(db,{accountId:route.expectedAccountId,marketKey:call.market_key,quoCall:match.call,record});
+      if(!linked.ok)reason=linked.reason;
+     }
+     // Apply the Request-level fence to both newly linked manual Requests and
+     // prelinked auto-created Requests. 0020 reserves existing live outcomes.
+     if(!reason&&manualCandidate&&!proof.manual)reason='manual_request_proof_missing';
+     if(!reason&&env[MANUAL_MATCH_FLAG]==='true'&&record?.jobber_request_id){
+      const claimed=await claimQualifiedPhoneRequest(db,{marketKey:call.market_key,requestId:record.jobber_request_id,
+       googleResource:call.google_resource,quoCallId:match.call.quo_call_id,manual:Boolean(proof.manual)});
+      if(!claimed.ok)reason=claimed.reason;
+      else {
+       matchOrigin=claimed.match_origin;
+       manualHold=matchOrigin==='manual'&&!manualUploadReady(env);
+      }
+     }
+     if(reason)record=null;
+    }
+   }
+   let id=record?await identity(call):null;
+   if(record?.jobber_request_id){
+    const existing=await db.prepare('SELECT quo_call_id,jobber_request_id,jobber_client_id FROM google_ads_outcome_outbox WHERE outcome_id=?').bind(id).first();
+    if(existing&&(existing.quo_call_id!==match.call.quo_call_id||existing.jobber_request_id!==record.jobber_request_id||existing.jobber_client_id!==record.jobber_client_id)){
+     reason='phone_outbox_identity_conflict';record=null;id=null;
+    }
+   }
+   const callEvidence=manualCandidate?{...call,match_origin:'manual',
+    start_call_date_time_utc:new Date(call.start_call_date_time).toISOString(),quo_call_id:match.call.quo_call_id,
+    quo_final_status:match.call.final_status,quo_duration_seconds:match.call.duration_seconds,
+    quo_answered_at:match.call.answered_at}:call;
+   await run(db,`INSERT INTO qualified_phone_calls(google_resource,market_key,google_call_json,outcome_id,state,diagnostic_code,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(google_resource) DO UPDATE SET outcome_id=COALESCE(excluded.outcome_id,qualified_phone_calls.outcome_id),google_call_json=CASE WHEN json_extract(qualified_phone_calls.google_call_json,'$.match_origin')='manual' AND COALESCE(json_extract(excluded.google_call_json,'$.match_origin'),'')!='manual' THEN qualified_phone_calls.google_call_json ELSE excluded.google_call_json END,state=CASE WHEN excluded.diagnostic_code='manual_phone_upload_disabled' THEN 'held' WHEN qualified_phone_calls.state='retryable' THEN 'retryable' ELSE excluded.state END,diagnostic_code=excluded.diagnostic_code,updated_at=excluded.updated_at WHERE qualified_phone_calls.state IN ('held','excluded','ready','retryable')`,call.google_resource,call.market_key,JSON.stringify(callEvidence),id,reason?(eligible?'held':'excluded'):manualHold?'held':'ready',reason|| (manualHold?'manual_phone_upload_disabled':null),at,at);
    if(!record)continue;
    const q=match.call;
    await run(db,`INSERT OR IGNORE INTO google_ads_outcome_outbox(outcome_id,event_name,market_key,attribution_path,attribution_status,quo_call_id,google_call_key,caller_phone,call_started_at_original,call_started_at_utc,call_timezone,jobber_account_id,jobber_request_id,jobber_client_id,google_account_id,google_conversion_action,milestone_at,conversion_at,value_micros,currency_code,consent_status,upload_state,created_at,updated_at) VALUES(?,'qualified_lead',?,'quo_call','pending',?,?,?,?,?,'America/Denver',?,?,?,?,?,?,?,0,'USD','unknown','held',?,?)`,id,call.market_key,q.quo_call_id,call.google_resource,q.caller_phone,call.start_call_date_time,new Date(call.start_call_date_time).toISOString(),JOBBER_ACCOUNTS[call.market_key],record.jobber_request_id,record.jobber_client_id,CUSTOMER,ACTION,record.created_at,record.created_at,at,at);
+   if(manualHold)continue;
    await submitPhone(env,token,call.google_resource,fetcher);
   }
   await run(db,"UPDATE qualified_phone_runs SET status='completed',completed_at=? WHERE run_key=?",now(),key);
@@ -149,6 +255,41 @@ export async function phoneHealth(env) {
   const rows=await all(env.ANGI_ROUTER_DB,'SELECT state,count(*) AS n FROM qualified_phone_calls GROUP BY state');
   const counts=Object.fromEntries(rows.map(r=>[r.state,r.n]));
   const last=await env.ANGI_ROUTER_DB.prepare('SELECT started_at,completed_at,status,diagnostic_code FROM qualified_phone_runs ORDER BY started_at DESC LIMIT 1').first();
-  return {enabled:env[PHONE_FLAG]==='true',lookback_days:14,interval_hours:3,candidates:Object.values(counts).reduce((a,b)=>a+b,0)-(counts.excluded||0),uploaded:counts.uploaded||0,held:(counts.held||0)+(counts.ready||0)+(counts.retryable||0),failed:(counts.failed||0)+(counts.submitting||0),excluded:counts.excluded||0,last_run:last||null};
- }catch{return {enabled:env[PHONE_FLAG]==='true',status:'schema_unavailable'};}
+  return {enabled:env[PHONE_FLAG]==='true',manual_match_enabled:env[MANUAL_MATCH_FLAG]==='true',
+   manual_upload_enabled:manualUploadReady(env),manual_shadow_started_at:env[MANUAL_SHADOW_START_FLAG]||null,
+   lookback_days:14,interval_hours:3,
+   candidates:Object.values(counts).reduce((a,b)=>a+b,0)-(counts.excluded||0),uploaded:counts.uploaded||0,
+   held:(counts.held||0)+(counts.ready||0)+(counts.retryable||0),failed:(counts.failed||0)+(counts.submitting||0),
+   excluded:counts.excluded||0,last_run:last||null};
+ }catch{return {enabled:env[PHONE_FLAG]==='true',manual_match_enabled:env[MANUAL_MATCH_FLAG]==='true',
+  manual_upload_enabled:manualUploadReady(env),manual_shadow_started_at:env[MANUAL_SHADOW_START_FLAG]||null,
+  status:'schema_unavailable'};}
+}
+
+/** Read-only, no-PII evidence for the first seven days of manual matching. */
+export async function manualShadowReport(env,at=Date.now()) {
+ const started=manualShadowStart(env);
+ if(started===null)return {configured:false,candidates:[]};
+ const ended=started+MANUAL_SHADOW_MS;
+ const rows=await all(env.ANGI_ROUTER_DB,`SELECT p.google_resource,p.market_key,p.state,p.diagnostic_code,
+  p.created_at AS first_seen_at,
+  json_extract(p.google_call_json,'$.start_call_date_time_utc') AS google_call_at,
+  json_extract(p.google_call_json,'$.quo_call_id') AS quo_call_id,
+  json_extract(p.google_call_json,'$.quo_final_status') AS quo_final_status,
+  json_extract(p.google_call_json,'$.quo_duration_seconds') AS quo_duration_seconds,
+  json_extract(p.google_call_json,'$.quo_answered_at') AS quo_answered_at,
+  o.jobber_request_id
+  FROM qualified_phone_calls p
+  LEFT JOIN google_ads_outcome_outbox o ON o.outcome_id=p.outcome_id
+  WHERE json_extract(p.google_call_json,'$.match_origin')='manual'
+   AND json_extract(p.google_call_json,'$.start_call_date_time_utc')>=?
+   AND json_extract(p.google_call_json,'$.start_call_date_time_utc')<?
+  ORDER BY google_call_at,p.google_resource`,new Date(started).toISOString(),new Date(ended).toISOString());
+ return {configured:true,shadow_started_at:new Date(started).toISOString(),
+  shadow_ends_at:new Date(ended).toISOString(),ready_for_review:at>=ended,
+  google_may_already_count_answered_calls:true,
+  candidates:rows.map(row=>({...row,would_upload_after_approval:
+   row.state==='held'&&row.diagnostic_code==='manual_phone_upload_disabled'
+   &&row.quo_final_status==='completed'&&Number(row.quo_duration_seconds)>=60
+   &&Number.isFinite(Date.parse(row.quo_answered_at||''))&&Boolean(row.jobber_request_id)}))};
 }
