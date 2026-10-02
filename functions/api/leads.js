@@ -1164,6 +1164,19 @@ async function recordWebsiteLeadIntakeFailure(env, lead, error) {
   return d1Changes(result) === 1;
 }
 
+function buildWebsiteLeadIntakeFailureAlert(lead, error, occurredAt = new Date()) {
+  return {
+    id: lead.submission_id,
+    market: lead.market_key,
+    occurred_at: occurredAt.toISOString(),
+    reason: error?.details?.code || "intake_failed",
+    contact_name: lead.full_name,
+    phone: lead.phone,
+    email: lead.email,
+    message: lead.message,
+  };
+}
+
 async function notifyWebsiteLeadIntakeFailure(env, lead, error) {
   const service = env.CONTACT_SYNC_SERVICE;
   const secret = clean(env.CONTACT_SYNC_BROKER_SECRET, 500);
@@ -1174,16 +1187,7 @@ async function notifyWebsiteLeadIntakeFailure(env, lead, error) {
       authorization: `Bearer ${secret}`,
       "content-type": "application/json",
     },
-    body: JSON.stringify({
-      id: lead.submission_id,
-      market: lead.market_key,
-      occurred_at: new Date().toISOString(),
-      reason: error?.details?.code || "intake_failed",
-      contact_name: lead.full_name,
-      phone: lead.phone,
-      email: lead.email,
-      message: lead.message,
-    }),
+    body: JSON.stringify(buildWebsiteLeadIntakeFailureAlert(lead, error)),
   }));
   if (response.status !== 202) {
     console.error("Website lead failure alert was not accepted", {
@@ -1904,6 +1908,7 @@ export const _private = {
   jobberGraphqlWithAuthorizationRecovery,
   jobberMutationWithAuthorizationRecovery,
   recordWebsiteLeadIntakeFailure,
+  buildWebsiteLeadIntakeFailureAlert,
   notifyWebsiteLeadIntakeFailure,
   jobberGraphql,
   createJobberClient,

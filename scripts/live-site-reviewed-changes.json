@@ -407,8 +407,8 @@
       "reason": "Add immutable caching for the new content-addressed form script without changing existing header directives."
     },
     "runtime/functions/api/leads.js": {
-      "expectedSha256": "383d673b3369a77179094206b81749f81a5f1767a321816f7ccf489db04ce576",
-      "reason": "Restore Jobber 401 refresh and Request-only retry, durable failed-lead queue and alert while retaining fail-open transaction identity."
+      "expectedSha256": "78b3838a91e96c43de860187d8c84bce5beabea94670ebe350924ad3f5ea9b4f",
+      "reason": "Restore Jobber 401 refresh and Request-only retry, durable failed-lead queue and alert while retaining fail-open transaction identity; extract the same alert payload for an exact contact-sync contract test."
     },
     "runtime/src/site-interactions.js": {
       "expectedSha256": "e0b6cf2323b054a829fabc791fa4ae35c634461c7a2655fa0d303663a0659726",

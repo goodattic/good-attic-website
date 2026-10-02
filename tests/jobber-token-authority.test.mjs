@@ -620,6 +620,49 @@ function envWithAlerts(database, alerts, status = 202) {
   };
 }
 
+test("website failure alert builder preserves the exact worker contract for every market", () => {
+  const occurredAt = new Date("2026-10-02T12:34:56.000Z");
+  const submissionId = "f559167d-4b0a-4a2c-9e35-8980f67feae2";
+  for (const market of ["ut", "mo_stl", "mo_kc", "general"]) {
+    const lead = { ...intakeLead(submissionId), market_key: market };
+    assert.deepEqual(leads.buildWebsiteLeadIntakeFailureAlert(
+      lead, new leads.LeadSubmissionError("Failed", 503, { code: "jobber_unavailable" }), occurredAt,
+    ), {
+      id: submissionId,
+      market,
+      occurred_at: "2026-10-02T12:34:56.000Z",
+      reason: "jobber_unavailable",
+      contact_name: "Flow Test",
+      phone: "8015550123",
+      email: "flow@example.test",
+      message: "Please call",
+    });
+  }
+});
+
+test("website failure alert sends the builder's payload to the worker route", async () => {
+  const lead = intakeLead("failure-alert-delivery");
+  let delivered;
+  const env = envWithAlerts(null, []);
+  env.CONTACT_SYNC_SERVICE = {
+    async fetch(request) {
+      assert.equal(new URL(request.url).pathname, "/internal/website-lead-failure");
+      assert.equal(request.headers.get("authorization"), "Bearer test-broker-secret");
+      delivered = await request.json();
+      return new Response(null, { status: 202 });
+    },
+  };
+  const before = Date.now();
+  const sent = await leads.notifyWebsiteLeadIntakeFailure(env, lead, new Error("network interrupted"));
+  const after = Date.now();
+  assert.equal(sent, true);
+  assert.ok(Date.parse(delivered.occurred_at) >= before);
+  assert.ok(Date.parse(delivered.occurred_at) <= after);
+  assert.deepEqual({ ...delivered, occurred_at: "2026-10-02T12:34:56.000Z" },
+    leads.buildWebsiteLeadIntakeFailureAlert(lead, new Error("network interrupted"),
+      new Date("2026-10-02T12:34:56.000Z")));
+});
+
 function deferred() {
   let resolve;
   const promise = new Promise(value => { resolve = value; });
