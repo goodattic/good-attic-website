@@ -329,17 +329,55 @@ test("all six previews use the shipped form handler to create a Jobber request a
   }
 });
 
-test('Google forwarding-number callback swaps calls but leaves SMS destinations unchanged', async () => {
+test('existing market phone config callback swaps every Call link, before or after landing script loads', async () => {
   const vm = await import('node:vm');
-  const source = fs.readFileSync(new URL('../assets/ad-landing.js', import.meta.url),'utf8');
-  const start = source.indexOf('  const normalize =');
-  const end = source.indexOf('  const waitForGoogleCallTracking', start);
-  for (const phone of ['+13853364442','+13149312620','+18164340308']) {
-    const call = {href:'tel:'+phone}, sms = {href:'sms:'+phone}, label = {};
-    vm.runInNewContext(source.slice(start,end)+'\nupdateCallNumber("800-555-0199", "+18005550199");',{
-      document:{querySelectorAll:selector=>selector==='[data-lp-call]'?[call]:selector==='[data-lp-text]'?[sms]:[label]},
-    });
-    assert.equal(call.href,'tel:+18005550199'); assert.equal(sms.href,'sms:'+phone);
+  const landing = fs.readFileSync(new URL('../assets/ad-landing.js', import.meta.url), 'utf8');
+  const cases = [
+    ['salt-lake-city-ut', 'ut', '+13853364442'],
+    ['st-louis-mo', 'mo_stl', '+13149312620'],
+    ['kansas-city-mo', 'mo_kc', '+18164340308'],
+  ];
+  for (const [slug, market, original] of cases) {
+    for (const service of ['attic-insulation', 'insulation-removal']) {
+      const html = fs.readFileSync(new URL(`../${slug}/lp/${service}/index.html`, import.meta.url), 'utf8');
+      const inline = html.match(/<script>\s*window\.dataLayer[\s\S]*?<\/script>/)?.[0]
+        .replace(/^<script>/, '').replace(/<\/script>$/, '');
+      assert.ok(inline, `${slug}/${service} has a Google phone snippet`);
+      const number = {textContent: original.slice(2)};
+      const calls = Array.from({length: 3}, () => ({href: `tel:${original}`}));
+      const sms = {href: `sms:${original}`};
+      const context = {
+        document: {
+          documentElement: {dataset: {lpMarket: market, lpPhone: original.slice(2)}},
+          querySelectorAll: selector => selector === '[data-service-picker]' ? []
+            : selector === '[data-lp-call]' ? calls
+            : selector === '[data-lp-call-number]' ? [number]
+            : selector === '[data-lp-text]' ? [sms] : [],
+          querySelector: () => null,
+        },
+        location: {search: ''}, URLSearchParams, Date,
+      };
+      context.window = context;
+      vm.runInNewContext(inline, context);
+      const configs = context.dataLayer.filter(entry => entry[0] === 'config'
+        && String(entry[1]).startsWith('AW-11103039262/'));
+      assert.equal(configs.length, 3, `${slug}/${service} retains three phone configs once each`);
+      assert.deepEqual(Array.from(configs, entry => entry[2].phone_conversion_number),
+        ['385-336-4442', '314-931-2620', '816-434-0308']);
+      const active = configs.filter(entry => typeof entry[2].phone_conversion_callback === 'function');
+      assert.equal(active.length, 1, 'only the page market owns the callback');
+      active[0][2].phone_conversion_callback('800-555-0199', '+18005550199');
+      assert.equal(context.goodAtticLpPendingCallNumber[0], '800-555-0199');
+      vm.runInNewContext(landing, context);
+      assert.equal(number.textContent, '800-555-0199');
+      assert.ok(calls.every(link => link.href === 'tel:+18005550199'));
+      assert.equal(sms.href, `sms:${original}`);
+      active[0][2].phone_conversion_callback('888-555-0123', '+18885550123');
+      assert.equal(number.textContent, '888-555-0123');
+      assert.ok(calls.every(link => link.href === 'tel:+18885550123'));
+      assert.equal(sms.href, `sms:${original}`);
+      assert.equal(context.dataLayer.filter(entry => entry[0] === 'event' && entry[1] === 'conversion').length, 0);
+    }
   }
 });
 

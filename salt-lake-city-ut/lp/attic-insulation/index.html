@@ -9,7 +9,19 @@
   <title>Attic Insulation in Salt Lake City | Good Attic</title>
   <link rel="icon" type="image/png" sizes="32x32" href="../../../assets/favicon-32.png">
   <link rel="stylesheet" href="../../../styles.72e38ccd660523f9.css">
-  <link rel="stylesheet" href="../../../assets/ad-landing.css?v=c810d366">
+  <link rel="stylesheet" href="../../../assets/ad-landing.css?v=8b24c596">
+  <script>
+    // Static lookup runs during parsing, before the headline exists or paints.
+    window.goodAtticLpTownResolution = (function () {
+      const map = {"city":{"1026902":"Alpine","1026903":"American Fork","1026920":"Draper","1026935":"Heber City","1026949":"Lehi","1026951":"Lindon","1026953":"Magna","1026957":"Midvale","1026971":"Orem","1026973":"Park City","1026975":"Payson","1026977":"Pleasant Grove","1026980":"Provo","1026984":"Riverton","1026989":"Salem","1026990":"Salt Lake City","1026991":"Sandy","1026995":"South Jordan","1026998":"Springville","1027010":"West Jordan","9051610":"Bluffdale","9051706":"Cedar Hills","9051778":"Cottonwood Heights","9051856":"Eagle Mountain","9052124":"Herriman","9052128":"Highland","9052142":"Holladay","9052388":"Mapleton","9052441":"Millcreek","9052497":"Murray","9052809":"Saratoga Springs","9052882":"South Salt Lake","9052883":"Snyderville","9052962":"Taylorsville","9053130":"West Valley City","9190044":"Granite","9191341":"Vineyard","9214837":"Benjamin","9216792":"Alta","9218018":"Daniel","9218387":"Elk Ridge","9229077":"Genola"},"postal_code":{"9029362":"Evanston","9029671":"American Fork","9029672":"Alpine","9029673":"Eagle Mountain","9029674":"Bingham Canyon","9029677":"Eagle Mountain","9029681":"Coalville","9029683":"Draper","9029687":"Echo","9029694":"Heber City","9029695":"Henefer","9029698":"Kamas","9029704":"Lindon","9029705":"Lehi","9029706":"Magna","9029707":"Saratoga Springs","9029709":"Midvale","9029710":"Midway","9029715":"Oakley","9029717":"Orem","9029718":"Orem","9029719":"Park City","9029720":"Peoa","9029721":"Pleasant Grove","9029724":"Bluffdale","9029729":"Sandy","9029738":"West Jordan","9029739":"Wallsburg","9029741":"West Jordan","9029745":"West Jordan","9029746":"Sandy","9029747":"Sandy","9029748":"Sandy","9029749":"South Jordan","9029750":"Herriman","9029751":"Orem","9029752":"Snyderville","9029753":"Salt Lake City","9029754":"Salt Lake City","9029755":"Salt Lake City","9029756":"Salt Lake City","9029757":"Salt Lake City","9029758":"Salt Lake City","9029759":"Murray","9029760":"Salt Lake City","9029761":"Millcreek","9029763":"Salt Lake City","9029764":"Salt Lake City","9029765":"Salt Lake City","9029766":"South Salt Lake","9029767":"Salt Lake City","9029768":"Holladay","9029769":"West Valley City","9029770":"West Valley City","9029771":"West Valley City","9029772":"Cottonwood Heights","9029774":"Taylorsville","9029775":"Millcreek","9029776":"West Valley City","9029777":"Salt Lake City","9029778":"Salt Lake City","9029779":"Salt Lake City","9029781":"Salt Lake City","9029783":"Salt Lake City","9029784":"Salt Lake City","9029785":"Salt Lake City","9029855":"Provo","9029857":"Provo","9029858":"Provo","9029864":"Elberta","9029867":"Fairview","9029871":"Goshen","9029885":"Payson","9029887":"Salem","9029889":"Genola","9029892":"Benjamin","9029894":"Springville","9029895":"Mapleton","9053858":"Salt Lake City","9196758":"South Jordan"},"other_city":{"9223606":"Oakley"},"fallback":"Utah"};
+      const id = new URLSearchParams(location.search).get('utm_location') || '';
+      for (const type of ['city', 'postal_code', 'other_city']) {
+        if (Object.prototype.hasOwnProperty.call(map[type], id))
+          return { id, type, town: map[type][id] };
+      }
+      return { id, type: 'fallback', town: map.fallback };
+    })();
+  </script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-10789892066"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -17,7 +29,11 @@
     gtag('js', new Date());
     gtag('config', 'AW-10789892066');
     gtag('config', 'G-P7T219JFV6');
-    gtag('config', 'AW-11103039262/_4E-CN313tIaEJ7eq64p', { 'phone_conversion_number': '385-336-4442' });
+    gtag('config', 'AW-11103039262/_4E-CN313tIaEJ7eq64p', { 'phone_conversion_number': '385-336-4442', 'phone_conversion_callback': function(formattedNumber, mobileNumber) {
+      window.goodAtticLpPendingCallNumber = [formattedNumber, mobileNumber];
+      if (typeof window.goodAtticLpApplyForwardingNumber === 'function')
+        window.goodAtticLpApplyForwardingNumber(formattedNumber, mobileNumber);
+    } });
     gtag('config', 'AW-11103039262/-7syCOa6-e0aEJ7eq64p', { 'phone_conversion_number': '314-931-2620' });
     gtag('config', 'AW-11103039262/35RYCNWL7bgcEJ7eq64p', { 'phone_conversion_number': '816-434-0308' });
     window.goodAtticPhoneConversionNumbersConfigured = true;
@@ -25,7 +41,7 @@
     window.goodAtticGa4Configured = true;
   </script>
   <script src="../../../script.40559d41a6b61dc2.js" defer></script>
-  <script src="../../../assets/ad-landing.js?v=c810d366" defer></script>
+  <script src="../../../assets/ad-landing.js?v=8b24c596" defer></script>
 </head>
 <body>
   <!-- Compatibility nodes required by the unchanged live script; never rendered or interactive. -->
@@ -43,7 +59,7 @@
     <section class="lp-hero lp-hero--after-floating-header"><div class="lp-shell lp-hero__inner">
       <div class="lp-hero-copy">
         <p class="lp-first-proof lp-first-proof--reviews"><svg class="lp-first-proof__google" viewBox="0 0 24 24" role="img" aria-label="Google"><path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-2 3.02v2.51h3.24c1.9-1.75 2.98-4.33 2.98-7.36Z"/><path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.62-2.41l-3.24-2.51c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.07v2.59A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.41 13.92a6 6 0 0 1 0-3.84V7.49H3.07a10 10 0 0 0 0 9.02l3.34-2.59Z"/><path fill="#EA4335" d="M12 5.96c1.47 0 2.79.51 3.82 1.51l2.87-2.87A9.61 9.61 0 0 0 12 2a10 10 0 0 0-8.93 5.49l3.34 2.59C7.2 7.72 9.4 5.96 12 5.96Z"/></svg><span class="lp-first-proof__stars" aria-label="5 stars">★★★★★</span><span>Over 100 five-star reviews</span></p>
-        <h1 data-lp-fit-headline>Attic insulation that keeps your <span data-lp-town>Salt Lake City</span> home comfortable</h1>
+        <h1 data-lp-fit-headline>Attic insulation that keeps your <span data-lp-town><script>document.currentScript.replaceWith(document.createTextNode(window.goodAtticLpTownResolution?.town || "Utah"));</script></span> home comfortable</h1>
         <p class="lp-hero-support">Lower energy bills. No more hot and cold rooms.</p>
         <p class="lp-hero-subhead">Free attic inspection, air sealing and blown-in insulation. Clear, honest pricing.</p>
       </div>

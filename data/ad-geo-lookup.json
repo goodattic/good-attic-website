@@ -1,0 +1,3919 @@
+{
+  "provenance": {
+    "generatedFrom": {
+      "google": "https://developers.google.com/static/google-ads/api/data/geo/geotargets-2026-08-12.csv.zip",
+      "censusCounty": "https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_county20_natl.txt",
+      "censusPlace": "https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_place20_natl.txt",
+      "censusPlaceCounty": "https://www2.census.gov/geo/docs/reference/codes2020/national_place_by_county2020.txt",
+      "geoNames": "https://download.geonames.org/export/zip/US.zip"
+    },
+    "targetConfig": "data/ad-target-towns.json (copied from user-provided good-attic-ad-towns.json, 2026-10-07)",
+    "googleGeoTargetVersion": "2026-08-12",
+    "geoNamesAttribution": "GeoNames postal code data: https://www.geonames.org/ (CC BY 4.0)",
+    "policy": "Include active Google postal-code IDs whose 2020 Census ZCTA intersects a listed county or whose GeoNames ZIP county matches it. If a ZIP spans two targeted places, choose the larger targeted place. Otherwise prefer a targeted Census place covering >=15% of ZIP land; then a targeted postal town, then the postal town. Known observed non-target cities are included only with Census or GeoNames county evidence. Other IDs use the market fallback.",
+    "limitation": "A ZIP can cross town and county lines. One town per ZIP cannot identify an individual home; Census ZCTAs approximate USPS ZIP boundaries."
+  },
+  "markets": {
+    "ut": {
+      "fallback": "Utah",
+      "cities": {
+        "1026902": "Alpine",
+        "1026903": "American Fork",
+        "1026920": "Draper",
+        "1026935": "Heber City",
+        "1026949": "Lehi",
+        "1026951": "Lindon",
+        "1026953": "Magna",
+        "1026957": "Midvale",
+        "1026971": "Orem",
+        "1026973": "Park City",
+        "1026975": "Payson",
+        "1026977": "Pleasant Grove",
+        "1026980": "Provo",
+        "1026984": "Riverton",
+        "1026989": "Salem",
+        "1026990": "Salt Lake City",
+        "1026991": "Sandy",
+        "1026995": "South Jordan",
+        "1026998": "Springville",
+        "1027010": "West Jordan",
+        "9051610": "Bluffdale",
+        "9051706": "Cedar Hills",
+        "9051778": "Cottonwood Heights",
+        "9051856": "Eagle Mountain",
+        "9052124": "Herriman",
+        "9052128": "Highland",
+        "9052142": "Holladay",
+        "9052388": "Mapleton",
+        "9052441": "Millcreek",
+        "9052497": "Murray",
+        "9052809": "Saratoga Springs",
+        "9052882": "South Salt Lake",
+        "9052883": "Snyderville",
+        "9052962": "Taylorsville",
+        "9053130": "West Valley City",
+        "9190044": "Granite",
+        "9191341": "Vineyard",
+        "9214837": "Benjamin",
+        "9216792": "Alta",
+        "9218018": "Daniel",
+        "9218387": "Elk Ridge",
+        "9229077": "Genola"
+      },
+      "postalCodes": {
+        "9029362": "Evanston",
+        "9029671": "American Fork",
+        "9029672": "Alpine",
+        "9029673": "Eagle Mountain",
+        "9029674": "Bingham Canyon",
+        "9029677": "Eagle Mountain",
+        "9029681": "Coalville",
+        "9029683": "Draper",
+        "9029687": "Echo",
+        "9029694": "Heber City",
+        "9029695": "Henefer",
+        "9029698": "Kamas",
+        "9029704": "Lindon",
+        "9029705": "Lehi",
+        "9029706": "Magna",
+        "9029707": "Saratoga Springs",
+        "9029709": "Midvale",
+        "9029710": "Midway",
+        "9029715": "Oakley",
+        "9029717": "Orem",
+        "9029718": "Orem",
+        "9029719": "Park City",
+        "9029720": "Peoa",
+        "9029721": "Pleasant Grove",
+        "9029724": "Bluffdale",
+        "9029729": "Sandy",
+        "9029738": "West Jordan",
+        "9029739": "Wallsburg",
+        "9029741": "West Jordan",
+        "9029745": "West Jordan",
+        "9029746": "Sandy",
+        "9029747": "Sandy",
+        "9029748": "Sandy",
+        "9029749": "South Jordan",
+        "9029750": "Herriman",
+        "9029751": "Orem",
+        "9029752": "Snyderville",
+        "9029753": "Salt Lake City",
+        "9029754": "Salt Lake City",
+        "9029755": "Salt Lake City",
+        "9029756": "Salt Lake City",
+        "9029757": "Salt Lake City",
+        "9029758": "Salt Lake City",
+        "9029759": "Murray",
+        "9029760": "Salt Lake City",
+        "9029761": "Millcreek",
+        "9029763": "Salt Lake City",
+        "9029764": "Salt Lake City",
+        "9029765": "Salt Lake City",
+        "9029766": "South Salt Lake",
+        "9029767": "Salt Lake City",
+        "9029768": "Holladay",
+        "9029769": "West Valley City",
+        "9029770": "West Valley City",
+        "9029771": "West Valley City",
+        "9029772": "Cottonwood Heights",
+        "9029774": "Taylorsville",
+        "9029775": "Millcreek",
+        "9029776": "West Valley City",
+        "9029777": "Salt Lake City",
+        "9029778": "Salt Lake City",
+        "9029779": "Salt Lake City",
+        "9029781": "Salt Lake City",
+        "9029783": "Salt Lake City",
+        "9029784": "Salt Lake City",
+        "9029785": "Salt Lake City",
+        "9029855": "Provo",
+        "9029857": "Provo",
+        "9029858": "Provo",
+        "9029864": "Elberta",
+        "9029867": "Fairview",
+        "9029871": "Goshen",
+        "9029885": "Payson",
+        "9029887": "Salem",
+        "9029889": "Genola",
+        "9029892": "Benjamin",
+        "9029894": "Springville",
+        "9029895": "Mapleton",
+        "9053858": "Salt Lake City",
+        "9196758": "South Jordan"
+      },
+      "otherObservedCities": {
+        "9223606": "Oakley"
+      },
+      "counts": {
+        "targetedCities": 42,
+        "postalCodes": 80,
+        "otherObservedCities": 1
+      }
+    },
+    "mo_stl": {
+      "fallback": "St. Louis area",
+      "cities": {
+        "1020183": "Ballwin",
+        "1020256": "Chesterfield",
+        "1020315": "Eureka",
+        "1020328": "Fenton",
+        "1020331": "Florissant",
+        "1020377": "Hazelwood",
+        "1020433": "Lake St. Louis",
+        "1020476": "Maryland Heights",
+        "1020519": "O'Fallon",
+        "1020612": "St. Ann",
+        "1020613": "St. Charles",
+        "1020619": "St. Peters",
+        "1020676": "Wentzville",
+        "9051497": "Affton",
+        "9051635": "Brentwood",
+        "9051738": "Clayton",
+        "9051761": "Concord",
+        "9051787": "Crestwood",
+        "9051789": "Creve Coeur",
+        "9051830": "Des Peres",
+        "9052245": "Kirkwood",
+        "9052256": "Ladue",
+        "9052375": "Manchester",
+        "9052390": "Maplewood",
+        "9052416": "Mehlville",
+        "9052587": "Oakville",
+        "9052598": "Olivette",
+        "9052616": "Overland",
+        "9052744": "Richmond Heights",
+        "9052946": "Sunset Hills",
+        "9052999": "Town and Country",
+        "9053026": "University City",
+        "9053090": "Webster Groves",
+        "9053096": "Weldon Spring",
+        "9053163": "Wildwood",
+        "9189369": "Ellisville",
+        "9190124": "Cottleville",
+        "9191871": "Black Jack",
+        "9192213": "Dardenne Prairie",
+        "9192416": "Frontenac",
+        "9193984": "Glendale",
+        "9194086": "St. Paul",
+        "9195515": "Sappington"
+      },
+      "postalCodes": {
+        "9022803": "Wildwood",
+        "9022805": "Ballwin",
+        "9022811": "Chesterfield",
+        "9022814": "Ballwin",
+        "9022816": "Eureka",
+        "9022817": "Fenton",
+        "9022820": "Florissant",
+        "9022821": "Florissant",
+        "9022822": "Florissant",
+        "9022825": "Wildwood",
+        "9022827": "Wildwood",
+        "9022829": "Hazelwood",
+        "9022830": "Maryland Heights",
+        "9022831": "Hazelwood",
+        "9022832": "Earth City",
+        "9022834": "High Ridge",
+        "9022843": "Wildwood",
+        "9022847": "St. Ann",
+        "9022852": "Valley Park",
+        "9022860": "Clayton",
+        "9022869": "Overland",
+        "9022872": "Richmond Heights",
+        "9022874": "Webster Groves",
+        "9022875": "St. Louis",
+        "9022876": "Normandy",
+        "9022877": "Kirkwood",
+        "9022878": "Affton",
+        "9022879": "Ladue",
+        "9022880": "Mehlville",
+        "9022881": "Crestwood",
+        "9022882": "Sunset Hills",
+        "9022883": "Concord",
+        "9022884": "Oakville",
+        "9022885": "University City",
+        "9022886": "Town and Country",
+        "9022887": "Olivette",
+        "9022888": "Pagedale",
+        "9022889": "Hazelwood",
+        "9022890": "Ferguson",
+        "9022891": "Jennings",
+        "9022892": "Bellefontaine Neighbors",
+        "9022893": "Spanish Lake",
+        "9022895": "Kinloch",
+        "9022896": "Creve Coeur",
+        "9022897": "Maplewood",
+        "9022898": "Brentwood",
+        "9022899": "St. Louis",
+        "9022900": "Maryland Heights",
+        "9022902": "St. Louis",
+        "9022904": "St. Charles",
+        "9022905": "St. Charles",
+        "9022906": "Weldon Spring",
+        "9022908": "Augusta",
+        "9022913": "Defiance",
+        "9022919": "Foristell",
+        "9022925": "Marthasville",
+        "9022931": "O'Fallon",
+        "9022932": "Lake St. Louis",
+        "9022933": "O'Fallon",
+        "9022935": "Portage des Sioux",
+        "9022936": "St. Peters",
+        "9022943": "Wentzville",
+        "9022944": "West Alton",
+        "9053963": "Fenton",
+        "9053971": "Flinthill"
+      },
+      "otherObservedCities": {
+        "9052894": "Spanish Lake"
+      },
+      "counts": {
+        "targetedCities": 43,
+        "postalCodes": 65,
+        "otherObservedCities": 1
+      }
+    },
+    "mo_kc": {
+      "fallback": "Kansas City area",
+      "cities": {
+        "1017414": "Bonner Springs",
+        "1017483": "Gardner",
+        "1017527": "Kansas City",
+        "1017535": "Lansing",
+        "1017538": "Leavenworth",
+        "1017539": "Leawood",
+        "1017542": "Lenexa",
+        "1017571": "Mission",
+        "1017588": "Olathe",
+        "1017596": "Overland Park",
+        "1017631": "Shawnee",
+        "1020203": "Blue Springs",
+        "1020356": "Grain Valley",
+        "1020358": "Grandview",
+        "1020403": "Independence",
+        "1020414": "Kansas City",
+        "1020444": "Lee's Summit",
+        "1020450": "Liberty",
+        "1020578": "Riverside",
+        "1020605": "Smithville",
+        "9052025": "Gladstone",
+        "9052423": "Merriam",
+        "9052542": "North Kansas City",
+        "9052642": "Parkville",
+        "9052714": "Prairie Village",
+        "9052731": "Raytown"
+      },
+      "postalCodes": {
+        "9023159": "Blue Springs",
+        "9023160": "Blue Springs",
+        "9023161": "Independence",
+        "9023163": "Camden Point",
+        "9023168": "Excelsior Springs",
+        "9023169": "Farley",
+        "9023170": "Grain Valley",
+        "9023171": "Grandview",
+        "9023172": "Greenwood",
+        "9023177": "Holt",
+        "9023178": "Independence",
+        "9023179": "Independence",
+        "9023180": "Independence",
+        "9023181": "Independence",
+        "9023182": "Independence",
+        "9023183": "Independence",
+        "9023184": "Independence",
+        "9023185": "Independence",
+        "9023186": "Kearney",
+        "9023187": "Kingsville",
+        "9023188": "Lawson",
+        "9023189": "Lee's Summit",
+        "9023190": "Lee's Summit",
+        "9023193": "Liberty",
+        "9023194": "Lone Jack",
+        "9023196": "Missouri City",
+        "9023198": "Oak Grove",
+        "9023200": "Orrick",
+        "9023202": "Platte City",
+        "9023203": "Pleasant Hill",
+        "9023204": "Lee's Summit",
+        "9023205": "Lee's Summit",
+        "9023209": "Lee's Summit",
+        "9023210": "Sibley",
+        "9023211": "Smithville",
+        "9023216": "Weston",
+        "9023217": "Kansas City",
+        "9023218": "Kansas City",
+        "9023219": "Kansas City",
+        "9023220": "Kansas City",
+        "9023221": "Kansas City",
+        "9023222": "Kansas City",
+        "9023223": "Kansas City",
+        "9023224": "Kansas City",
+        "9023225": "Kansas City",
+        "9023226": "Kansas City",
+        "9023227": "Kansas City",
+        "9023228": "Kansas City",
+        "9023229": "Kansas City",
+        "9023230": "Kansas City",
+        "9023231": "Kansas City",
+        "9023232": "Kansas City",
+        "9023234": "Kansas City",
+        "9023235": "Kansas City",
+        "9023236": "Kansas City",
+        "9023237": "Kansas City",
+        "9023238": "Kansas City",
+        "9023239": "Kansas City",
+        "9023240": "Kansas City",
+        "9023241": "Kansas City",
+        "9023242": "Kansas City",
+        "9023243": "Kansas City",
+        "9023244": "Kansas City",
+        "9023245": "Kansas City",
+        "9023246": "Kansas City",
+        "9023247": "Kansas City",
+        "9023248": "Kansas City",
+        "9023249": "Kansas City",
+        "9023250": "Kansas City",
+        "9023251": "Kansas City",
+        "9023252": "Kansas City",
+        "9023253": "Kansas City",
+        "9023254": "Riverside",
+        "9023255": "Kansas City",
+        "9023256": "Parkville",
+        "9023257": "Kansas City",
+        "9023258": "Kansas City",
+        "9023259": "Kansas City",
+        "9023260": "Kansas City",
+        "9023261": "Kansas City",
+        "9023262": "Kansas City",
+        "9023263": "Kansas City",
+        "9023264": "Kansas City",
+        "9023265": "Kansas City",
+        "9023266": "Kansas City",
+        "9023267": "Kansas City",
+        "9023268": "Kansas City",
+        "9023269": "Kansas City",
+        "9023272": "Kansas City",
+        "9023291": "Dearborn",
+        "9023292": "De Kalb",
+        "9023296": "Edgerton",
+        "9023328": "Rushville",
+        "9023335": "Trimble",
+        "9023816": "Atchison",
+        "9023818": "Basehor",
+        "9023821": "Bonner Springs",
+        "9023822": "Bucyrus",
+        "9023827": "De Soto",
+        "9023828": "Easton",
+        "9023829": "Edgerton",
+        "9023832": "Eudora",
+        "9023834": "Leavenworth",
+        "9023835": "Gardner",
+        "9023836": "New Century",
+        "9023844": "Lansing",
+        "9023845": "Lawrence",
+        "9023849": "Leavenworth",
+        "9023852": "Linwood",
+        "9023854": "McLouth",
+        "9023858": "Olathe",
+        "9023859": "Olathe",
+        "9023872": "Spring Hill",
+        "9023873": "Overland Park",
+        "9023874": "Tonganoxie",
+        "9023883": "Winchester",
+        "9023884": "Kansas City",
+        "9023885": "Kansas City",
+        "9023886": "Kansas City",
+        "9023887": "Kansas City",
+        "9023888": "Kansas City",
+        "9023889": "Kansas City",
+        "9023890": "Kansas City",
+        "9023891": "Kansas City",
+        "9023892": "Kansas City",
+        "9023893": "Kansas City",
+        "9023894": "Kansas City",
+        "9023896": "Mission",
+        "9023897": "Shawnee",
+        "9023898": "Overland Park",
+        "9023899": "Mission",
+        "9023900": "Leawood",
+        "9023901": "Overland Park",
+        "9023902": "Prairie Village",
+        "9023903": "Leawood",
+        "9023904": "Overland Park",
+        "9023905": "Leawood",
+        "9023906": "Overland Park",
+        "9023907": "Overland Park",
+        "9023908": "Overland Park",
+        "9023909": "Lenexa",
+        "9023910": "Shawnee",
+        "9023911": "Shawnee",
+        "9023912": "Shawnee",
+        "9023913": "Lenexa",
+        "9023914": "Lenexa",
+        "9023915": "Overland Park",
+        "9023916": "Overland Park",
+        "9023917": "Leawood",
+        "9023918": "Shawnee",
+        "9023919": "Lenexa",
+        "9023920": "Lenexa",
+        "9053926": "Kansas City",
+        "9053927": "Kansas City"
+      },
+      "otherObservedCities": {
+        "1017477": "Fort Leavenworth"
+      },
+      "counts": {
+        "targetedCities": 26,
+        "postalCodes": 154,
+        "otherObservedCities": 1
+      }
+    }
+  },
+  "observed": [
+    {
+      "market": "ut",
+      "id": "9029705",
+      "type": "Postal Code",
+      "googleName": "84043",
+      "town": "Lehi",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "ut",
+      "id": "9029707",
+      "type": "Postal Code",
+      "googleName": "84045",
+      "town": "Saratoga Springs",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "ut",
+      "id": "9029721",
+      "type": "Postal Code",
+      "googleName": "84062",
+      "town": "Pleasant Grove",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "ut",
+      "id": "9029766",
+      "type": "Postal Code",
+      "googleName": "84115",
+      "town": "South Salt Lake",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "ut",
+      "id": "9029749",
+      "type": "Postal Code",
+      "googleName": "84095",
+      "town": "South Jordan",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "ut",
+      "id": "9029751",
+      "type": "Postal Code",
+      "googleName": "84097",
+      "town": "Orem",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "ut",
+      "id": "9029771",
+      "type": "Postal Code",
+      "googleName": "84120",
+      "town": "West Valley City",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "ut",
+      "id": "9029676",
+      "type": "Postal Code",
+      "googleName": "84010",
+      "town": "Utah",
+      "source": "fallback"
+    },
+    {
+      "market": "ut",
+      "id": "9029774",
+      "type": "Postal Code",
+      "googleName": "84123",
+      "town": "Taylorsville",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "ut",
+      "id": "9029776",
+      "type": "Postal Code",
+      "googleName": "84128",
+      "town": "West Valley City",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "ut",
+      "id": "9051856",
+      "type": "City",
+      "googleName": "Eagle Mountain",
+      "town": "Eagle Mountain",
+      "source": "targeted-city"
+    },
+    {
+      "market": "ut",
+      "id": "9053130",
+      "type": "City",
+      "googleName": "West Valley City",
+      "town": "West Valley City",
+      "source": "targeted-city"
+    },
+    {
+      "market": "ut",
+      "id": "9052124",
+      "type": "City",
+      "googleName": "Herriman",
+      "town": "Herriman",
+      "source": "targeted-city"
+    },
+    {
+      "market": "ut",
+      "id": "9052441",
+      "type": "City",
+      "googleName": "Millcreek",
+      "town": "Millcreek",
+      "source": "targeted-city"
+    },
+    {
+      "market": "ut",
+      "id": "1026991",
+      "type": "City",
+      "googleName": "Sandy",
+      "town": "Sandy",
+      "source": "targeted-city"
+    },
+    {
+      "market": "ut",
+      "id": "9051778",
+      "type": "City",
+      "googleName": "Cottonwood Heights",
+      "town": "Cottonwood Heights",
+      "source": "targeted-city"
+    },
+    {
+      "market": "ut",
+      "id": "1026953",
+      "type": "City",
+      "googleName": "Magna",
+      "town": "Magna",
+      "source": "targeted-city"
+    },
+    {
+      "market": "ut",
+      "id": "1026989",
+      "type": "City",
+      "googleName": "Salem",
+      "town": "Salem",
+      "source": "targeted-city"
+    },
+    {
+      "market": "ut",
+      "id": "9195189",
+      "type": "Neighborhood",
+      "googleName": "Cedar Pass Ranch",
+      "town": "Utah",
+      "source": "fallback"
+    },
+    {
+      "market": "ut",
+      "id": "9191829",
+      "type": "Neighborhood",
+      "googleName": "Canyon Rim",
+      "town": "Utah",
+      "source": "fallback"
+    },
+    {
+      "market": "ut",
+      "id": "9223606",
+      "type": "City",
+      "googleName": "Oakley",
+      "town": "Oakley",
+      "source": "verified-local-city"
+    },
+    {
+      "market": "ut",
+      "id": "9196758",
+      "type": "Postal Code",
+      "googleName": "84009",
+      "town": "South Jordan",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "ut",
+      "id": "9197915",
+      "type": "Neighborhood",
+      "googleName": "University",
+      "town": "Utah",
+      "source": "fallback"
+    },
+    {
+      "market": "ut",
+      "id": "9210838",
+      "type": "City",
+      "googleName": "Como",
+      "town": "Utah",
+      "source": "fallback"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022936",
+      "type": "Postal Code",
+      "googleName": "63376",
+      "town": "St. Peters",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022896",
+      "type": "Postal Code",
+      "googleName": "63141",
+      "town": "Creve Coeur",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022817",
+      "type": "Postal Code",
+      "googleName": "63026",
+      "town": "Fenton",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022865",
+      "type": "Postal Code",
+      "googleName": "63110",
+      "town": "St. Louis area",
+      "source": "fallback"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022885",
+      "type": "Postal Code",
+      "googleName": "63130",
+      "town": "University City",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022880",
+      "type": "Postal Code",
+      "googleName": "63125",
+      "town": "Mehlville",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022905",
+      "type": "Postal Code",
+      "googleName": "63303",
+      "town": "St. Charles",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022906",
+      "type": "Postal Code",
+      "googleName": "63304",
+      "town": "Weldon Spring",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022825",
+      "type": "Postal Code",
+      "googleName": "63038",
+      "town": "Wildwood",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022821",
+      "type": "Postal Code",
+      "googleName": "63033",
+      "town": "Florissant",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022877",
+      "type": "Postal Code",
+      "googleName": "63122",
+      "town": "Kirkwood",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022878",
+      "type": "Postal Code",
+      "googleName": "63123",
+      "town": "Affton",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022883",
+      "type": "Postal Code",
+      "googleName": "63128",
+      "town": "Concord",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9010255",
+      "type": "Postal Code",
+      "googleName": "28694",
+      "town": "St. Louis area",
+      "source": "fallback"
+    },
+    {
+      "market": "mo_stl",
+      "id": "1020613",
+      "type": "City",
+      "googleName": "Saint Charles",
+      "town": "St. Charles",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_stl",
+      "id": "1020618",
+      "type": "City",
+      "googleName": "St. Louis",
+      "town": "St. Louis area",
+      "source": "fallback"
+    },
+    {
+      "market": "mo_stl",
+      "id": "1020519",
+      "type": "City",
+      "googleName": "O'Fallon",
+      "town": "O'Fallon",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_stl",
+      "id": "1020183",
+      "type": "City",
+      "googleName": "Ballwin",
+      "town": "Ballwin",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_stl",
+      "id": "1020256",
+      "type": "City",
+      "googleName": "Chesterfield",
+      "town": "Chesterfield",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9052587",
+      "type": "City",
+      "googleName": "Oakville",
+      "town": "Oakville",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9052946",
+      "type": "City",
+      "googleName": "Sunset Hills",
+      "town": "Sunset Hills",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9052894",
+      "type": "City",
+      "googleName": "Spanish Lake",
+      "town": "Spanish Lake",
+      "source": "verified-local-city"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9195515",
+      "type": "City",
+      "googleName": "Sappington",
+      "town": "Sappington",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_stl",
+      "id": "9192802",
+      "type": "Neighborhood",
+      "googleName": "Tower Grove South",
+      "town": "St. Louis area",
+      "source": "fallback"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023170",
+      "type": "Postal Code",
+      "googleName": "64029",
+      "town": "Grain Valley",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023209",
+      "type": "Postal Code",
+      "googleName": "64086",
+      "town": "Lee's Summit",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023242",
+      "type": "Postal Code",
+      "googleName": "64131",
+      "town": "Kansas City",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023247",
+      "type": "Postal Code",
+      "googleName": "64137",
+      "town": "Kansas City",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023221",
+      "type": "Postal Code",
+      "googleName": "64108",
+      "town": "Kansas City",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023179",
+      "type": "Postal Code",
+      "googleName": "64052",
+      "town": "Independence",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023158",
+      "type": "Postal Code",
+      "googleName": "64012",
+      "town": "Kansas City area",
+      "source": "fallback"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023257",
+      "type": "Postal Code",
+      "googleName": "64153",
+      "town": "Kansas City",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023193",
+      "type": "Postal Code",
+      "googleName": "64068",
+      "town": "Liberty",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023911",
+      "type": "Postal Code",
+      "googleName": "66217",
+      "town": "Shawnee",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023918",
+      "type": "Postal Code",
+      "googleName": "66226",
+      "town": "Shawnee",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023900",
+      "type": "Postal Code",
+      "googleName": "66206",
+      "town": "Leawood",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023858",
+      "type": "Postal Code",
+      "googleName": "66061",
+      "town": "Olathe",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023859",
+      "type": "Postal Code",
+      "googleName": "66062",
+      "town": "Olathe",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023913",
+      "type": "Postal Code",
+      "googleName": "66219",
+      "town": "Lenexa",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023898",
+      "type": "Postal Code",
+      "googleName": "66204",
+      "town": "Overland Park",
+      "source": "county-postal-code"
+    },
+    {
+      "market": "mo_kc",
+      "id": "1020414",
+      "type": "City",
+      "googleName": "Kansas City",
+      "town": "Kansas City",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_kc",
+      "id": "1017596",
+      "type": "City",
+      "googleName": "Overland Park",
+      "town": "Overland Park",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_kc",
+      "id": "1017631",
+      "type": "City",
+      "googleName": "Shawnee",
+      "town": "Shawnee",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_kc",
+      "id": "1017542",
+      "type": "City",
+      "googleName": "Lenexa",
+      "town": "Lenexa",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_kc",
+      "id": "1017477",
+      "type": "City",
+      "googleName": "Fort Leavenworth",
+      "town": "Fort Leavenworth",
+      "source": "verified-local-city"
+    },
+    {
+      "market": "mo_kc",
+      "id": "1017538",
+      "type": "City",
+      "googleName": "Leavenworth",
+      "town": "Leavenworth",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9052025",
+      "type": "City",
+      "googleName": "Gladstone",
+      "town": "Gladstone",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9052423",
+      "type": "City",
+      "googleName": "Merriam",
+      "town": "Merriam",
+      "source": "targeted-city"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9192235",
+      "type": "Neighborhood",
+      "googleName": "New Mark",
+      "town": "Kansas City area",
+      "source": "fallback"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9198121",
+      "type": "Neighborhood",
+      "googleName": "South Kansas City",
+      "town": "Kansas City area",
+      "source": "fallback"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9197872",
+      "type": "Neighborhood",
+      "googleName": "Downtown Kansas City",
+      "town": "Kansas City area",
+      "source": "fallback"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9192575",
+      "type": "Neighborhood",
+      "googleName": "The Coves",
+      "town": "Kansas City area",
+      "source": "fallback"
+    },
+    {
+      "market": "mo_kc",
+      "id": "9189421",
+      "type": "Neighborhood",
+      "googleName": "Swope Parkway - Elmwood",
+      "town": "Kansas City area",
+      "source": "fallback"
+    }
+  ],
+  "ambiguities": [
+    {
+      "market": "ut",
+      "id": "9029671",
+      "zip": "84003",
+      "chosen": "American Fork",
+      "postalTown": "American Fork",
+      "targetedPlaces": [
+        {
+          "town": "American Fork",
+          "areaPercent": 15.2
+        },
+        {
+          "town": "Highland",
+          "areaPercent": 11.5
+        },
+        {
+          "town": "Lehi",
+          "areaPercent": 2
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029672",
+      "zip": "84004",
+      "chosen": "Alpine",
+      "postalTown": "Alpine",
+      "targetedPlaces": [
+        {
+          "town": "Alpine",
+          "areaPercent": 25.7
+        },
+        {
+          "town": "Draper",
+          "areaPercent": 2.5
+        },
+        {
+          "town": "Highland",
+          "areaPercent": 0.3
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029673",
+      "zip": "84005",
+      "chosen": "Eagle Mountain",
+      "postalTown": "Eagle Mountain",
+      "targetedPlaces": [
+        {
+          "town": "Eagle Mountain",
+          "areaPercent": 93.5
+        },
+        {
+          "town": "Saratoga Springs",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029674",
+      "zip": "84006",
+      "chosen": "Bingham Canyon",
+      "postalTown": "Bingham Canyon",
+      "targetedPlaces": [
+        {
+          "town": "West Jordan",
+          "areaPercent": 6.1
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029677",
+      "zip": "84013",
+      "chosen": "Eagle Mountain",
+      "postalTown": "Cedar Valley",
+      "targetedPlaces": [
+        {
+          "town": "Eagle Mountain",
+          "areaPercent": 15.6
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029683",
+      "zip": "84020",
+      "chosen": "Draper",
+      "postalTown": "Draper",
+      "targetedPlaces": [
+        {
+          "town": "Draper",
+          "areaPercent": 99.6
+        },
+        {
+          "town": "Sandy",
+          "areaPercent": 0.1
+        },
+        {
+          "town": "Highland",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029694",
+      "zip": "84032",
+      "chosen": "Heber City",
+      "postalTown": "Heber City",
+      "targetedPlaces": [
+        {
+          "town": "Heber City",
+          "areaPercent": 2.7
+        },
+        {
+          "town": "Daniel",
+          "areaPercent": 1
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029704",
+      "zip": "84042",
+      "chosen": "Lindon",
+      "postalTown": "Lindon",
+      "targetedPlaces": [
+        {
+          "town": "Lindon",
+          "areaPercent": 95
+        },
+        {
+          "town": "Vineyard",
+          "areaPercent": 2.8
+        },
+        {
+          "town": "Pleasant Grove",
+          "areaPercent": 2.1
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029705",
+      "zip": "84043",
+      "chosen": "Lehi",
+      "postalTown": "Lehi",
+      "targetedPlaces": [
+        {
+          "town": "Lehi",
+          "areaPercent": 84
+        },
+        {
+          "town": "Saratoga Springs",
+          "areaPercent": 5.2
+        },
+        {
+          "town": "Draper",
+          "areaPercent": 2.8
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029706",
+      "zip": "84044",
+      "chosen": "Magna",
+      "postalTown": "Magna",
+      "targetedPlaces": [
+        {
+          "town": "Magna",
+          "areaPercent": 20.6
+        },
+        {
+          "town": "Salt Lake City",
+          "areaPercent": 3.3
+        },
+        {
+          "town": "West Valley City",
+          "areaPercent": 1.3
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029707",
+      "zip": "84045",
+      "chosen": "Saratoga Springs",
+      "postalTown": "Saratoga Springs",
+      "targetedPlaces": [
+        {
+          "town": "Saratoga Springs",
+          "areaPercent": 39.6
+        },
+        {
+          "town": "Lehi",
+          "areaPercent": 1
+        },
+        {
+          "town": "Eagle Mountain",
+          "areaPercent": 0.1
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029709",
+      "zip": "84047",
+      "chosen": "Midvale",
+      "postalTown": "Midvale",
+      "targetedPlaces": [
+        {
+          "town": "Midvale",
+          "areaPercent": 88.9
+        },
+        {
+          "town": "Sandy",
+          "areaPercent": 3.8
+        },
+        {
+          "town": "West Jordan",
+          "areaPercent": 3.5
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029717",
+      "zip": "84057",
+      "chosen": "Orem",
+      "postalTown": "Orem",
+      "targetedPlaces": [
+        {
+          "town": "Orem",
+          "areaPercent": 99.9
+        },
+        {
+          "town": "Lindon",
+          "areaPercent": 0.1
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029718",
+      "zip": "84058",
+      "chosen": "Orem",
+      "postalTown": "Orem",
+      "targetedPlaces": [
+        {
+          "town": "Orem",
+          "areaPercent": 75.7
+        },
+        {
+          "town": "Vineyard",
+          "areaPercent": 0.1
+        },
+        {
+          "town": "Provo",
+          "areaPercent": 0.1
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029719",
+      "zip": "84060",
+      "chosen": "Park City",
+      "postalTown": "Park City",
+      "targetedPlaces": [
+        {
+          "town": "Park City",
+          "areaPercent": 45.3
+        },
+        {
+          "town": "Snyderville",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029721",
+      "zip": "84062",
+      "chosen": "Pleasant Grove",
+      "postalTown": "Pleasant Grove",
+      "targetedPlaces": [
+        {
+          "town": "Pleasant Grove",
+          "areaPercent": 17.8
+        },
+        {
+          "town": "Cedar Hills",
+          "areaPercent": 5.3
+        },
+        {
+          "town": "Lindon",
+          "areaPercent": 1.6
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029724",
+      "zip": "84065",
+      "chosen": "Bluffdale",
+      "postalTown": "Riverton",
+      "targetedPlaces": [
+        {
+          "town": "Bluffdale",
+          "areaPercent": 50.6
+        },
+        {
+          "town": "Riverton",
+          "areaPercent": 45
+        },
+        {
+          "town": "Herriman",
+          "areaPercent": 4.3
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029729",
+      "zip": "84070",
+      "chosen": "Sandy",
+      "postalTown": "Sandy",
+      "targetedPlaces": [
+        {
+          "town": "Sandy",
+          "areaPercent": 95.8
+        },
+        {
+          "town": "Midvale",
+          "areaPercent": 3.2
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029738",
+      "zip": "84081",
+      "chosen": "West Jordan",
+      "postalTown": "West Jordan",
+      "targetedPlaces": [
+        {
+          "town": "West Jordan",
+          "areaPercent": 91.6
+        },
+        {
+          "town": "West Valley City",
+          "areaPercent": 2.7
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029739",
+      "zip": "84082",
+      "chosen": "Wallsburg",
+      "postalTown": "Wallsburg",
+      "targetedPlaces": [
+        {
+          "town": "Daniel",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029741",
+      "zip": "84084",
+      "chosen": "West Jordan",
+      "postalTown": "West Jordan",
+      "targetedPlaces": [
+        {
+          "town": "West Jordan",
+          "areaPercent": 97.4
+        },
+        {
+          "town": "Taylorsville",
+          "areaPercent": 2.6
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029746",
+      "zip": "84092",
+      "chosen": "Sandy",
+      "postalTown": "Sandy",
+      "targetedPlaces": [
+        {
+          "town": "Sandy",
+          "areaPercent": 17
+        },
+        {
+          "town": "Alta",
+          "areaPercent": 8.4
+        },
+        {
+          "town": "Granite",
+          "areaPercent": 1.9
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029747",
+      "zip": "84093",
+      "chosen": "Sandy",
+      "postalTown": "Sandy",
+      "targetedPlaces": [
+        {
+          "town": "Sandy",
+          "areaPercent": 64
+        },
+        {
+          "town": "Cottonwood Heights",
+          "areaPercent": 24.2
+        },
+        {
+          "town": "Granite",
+          "areaPercent": 0.6
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029749",
+      "zip": "84095",
+      "chosen": "South Jordan",
+      "postalTown": "South Jordan",
+      "targetedPlaces": [
+        {
+          "town": "South Jordan",
+          "areaPercent": 99.7
+        },
+        {
+          "town": "Riverton",
+          "areaPercent": 0.3
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029750",
+      "zip": "84096",
+      "chosen": "Herriman",
+      "postalTown": "Herriman",
+      "targetedPlaces": [
+        {
+          "town": "Herriman",
+          "areaPercent": 28.5
+        },
+        {
+          "town": "Riverton",
+          "areaPercent": 4.6
+        },
+        {
+          "town": "South Jordan",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029751",
+      "zip": "84097",
+      "chosen": "Orem",
+      "postalTown": "Orem",
+      "targetedPlaces": [
+        {
+          "town": "Orem",
+          "areaPercent": 91
+        },
+        {
+          "town": "Provo",
+          "areaPercent": 0.2
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029752",
+      "zip": "84098",
+      "chosen": "Snyderville",
+      "postalTown": "Park City",
+      "targetedPlaces": [
+        {
+          "town": "Snyderville",
+          "areaPercent": 15.1
+        },
+        {
+          "town": "Park City",
+          "areaPercent": 0.8
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029758",
+      "zip": "84106",
+      "chosen": "Salt Lake City",
+      "postalTown": "Salt Lake City",
+      "targetedPlaces": [
+        {
+          "town": "Salt Lake City",
+          "areaPercent": 51
+        },
+        {
+          "town": "Millcreek",
+          "areaPercent": 40.7
+        },
+        {
+          "town": "South Salt Lake",
+          "areaPercent": 8.3
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029759",
+      "zip": "84107",
+      "chosen": "Murray",
+      "postalTown": "Salt Lake City",
+      "targetedPlaces": [
+        {
+          "town": "Murray",
+          "areaPercent": 81.1
+        },
+        {
+          "town": "Millcreek",
+          "areaPercent": 18.6
+        },
+        {
+          "town": "South Salt Lake",
+          "areaPercent": 0.3
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029760",
+      "zip": "84108",
+      "chosen": "Salt Lake City",
+      "postalTown": "Salt Lake City",
+      "targetedPlaces": [
+        {
+          "town": "Salt Lake City",
+          "areaPercent": 16
+        },
+        {
+          "town": "Millcreek",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029761",
+      "zip": "84109",
+      "chosen": "Millcreek",
+      "postalTown": "Salt Lake City",
+      "targetedPlaces": [
+        {
+          "town": "Millcreek",
+          "areaPercent": 8.2
+        },
+        {
+          "town": "Salt Lake City",
+          "areaPercent": 2.8
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029766",
+      "zip": "84115",
+      "chosen": "South Salt Lake",
+      "postalTown": "Salt Lake City",
+      "targetedPlaces": [
+        {
+          "town": "South Salt Lake",
+          "areaPercent": 69.3
+        },
+        {
+          "town": "Salt Lake City",
+          "areaPercent": 30.7
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029768",
+      "zip": "84117",
+      "chosen": "Holladay",
+      "postalTown": "Salt Lake City",
+      "targetedPlaces": [
+        {
+          "town": "Holladay",
+          "areaPercent": 71.7
+        },
+        {
+          "town": "Millcreek",
+          "areaPercent": 13.1
+        },
+        {
+          "town": "Murray",
+          "areaPercent": 11.1
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029769",
+      "zip": "84118",
+      "chosen": "West Valley City",
+      "postalTown": "Salt Lake City",
+      "targetedPlaces": [
+        {
+          "town": "West Valley City",
+          "areaPercent": 61.2
+        },
+        {
+          "town": "West Jordan",
+          "areaPercent": 3.1
+        },
+        {
+          "town": "Taylorsville",
+          "areaPercent": 0.2
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029770",
+      "zip": "84119",
+      "chosen": "West Valley City",
+      "postalTown": "West Valley City",
+      "targetedPlaces": [
+        {
+          "town": "West Valley City",
+          "areaPercent": 79
+        },
+        {
+          "town": "South Salt Lake",
+          "areaPercent": 19.2
+        },
+        {
+          "town": "Salt Lake City",
+          "areaPercent": 1.8
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029772",
+      "zip": "84121",
+      "chosen": "Cottonwood Heights",
+      "postalTown": "Salt Lake City",
+      "targetedPlaces": [
+        {
+          "town": "Cottonwood Heights",
+          "areaPercent": 11.7
+        },
+        {
+          "town": "Holladay",
+          "areaPercent": 3.8
+        },
+        {
+          "town": "Murray",
+          "areaPercent": 3
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029774",
+      "zip": "84123",
+      "chosen": "Taylorsville",
+      "postalTown": "Salt Lake City",
+      "targetedPlaces": [
+        {
+          "town": "Taylorsville",
+          "areaPercent": 49.3
+        },
+        {
+          "town": "Murray",
+          "areaPercent": 43.9
+        },
+        {
+          "town": "West Valley City",
+          "areaPercent": 3.2
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029775",
+      "zip": "84124",
+      "chosen": "Millcreek",
+      "postalTown": "Salt Lake City",
+      "targetedPlaces": [
+        {
+          "town": "Millcreek",
+          "areaPercent": 42.4
+        },
+        {
+          "town": "Holladay",
+          "areaPercent": 26.3
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029776",
+      "zip": "84128",
+      "chosen": "West Valley City",
+      "postalTown": "West Valley City",
+      "targetedPlaces": [
+        {
+          "town": "West Valley City",
+          "areaPercent": 83.3
+        },
+        {
+          "town": "Salt Lake City",
+          "areaPercent": 16.7
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029855",
+      "zip": "84601",
+      "chosen": "Provo",
+      "postalTown": "Provo",
+      "targetedPlaces": [
+        {
+          "town": "Provo",
+          "areaPercent": 91.4
+        },
+        {
+          "town": "Springville",
+          "areaPercent": 0.8
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029857",
+      "zip": "84604",
+      "chosen": "Provo",
+      "postalTown": "Provo",
+      "targetedPlaces": [
+        {
+          "town": "Provo",
+          "areaPercent": 22.4
+        },
+        {
+          "town": "Orem",
+          "areaPercent": 0.2
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029858",
+      "zip": "84606",
+      "chosen": "Provo",
+      "postalTown": "Provo",
+      "targetedPlaces": [
+        {
+          "town": "Provo",
+          "areaPercent": 59.4
+        },
+        {
+          "town": "Springville",
+          "areaPercent": 1.4
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029885",
+      "zip": "84651",
+      "chosen": "Payson",
+      "postalTown": "Payson",
+      "targetedPlaces": [
+        {
+          "town": "Payson",
+          "areaPercent": 9.7
+        },
+        {
+          "town": "Elk Ridge",
+          "areaPercent": 2.2
+        },
+        {
+          "town": "Salem",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029887",
+      "zip": "84653",
+      "chosen": "Salem",
+      "postalTown": "Salem",
+      "targetedPlaces": [
+        {
+          "town": "Salem",
+          "areaPercent": 64.6
+        },
+        {
+          "town": "Payson",
+          "areaPercent": 5
+        },
+        {
+          "town": "Elk Ridge",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029889",
+      "zip": "84655",
+      "chosen": "Genola",
+      "postalTown": "Santaquin",
+      "targetedPlaces": [
+        {
+          "town": "Genola",
+          "areaPercent": 29.5
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029892",
+      "zip": "84660",
+      "chosen": "Benjamin",
+      "postalTown": "Spanish Fork",
+      "targetedPlaces": [
+        {
+          "town": "Benjamin",
+          "areaPercent": 2.4
+        },
+        {
+          "town": "Mapleton",
+          "areaPercent": 1.1
+        },
+        {
+          "town": "Salem",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9029894",
+      "zip": "84663",
+      "chosen": "Springville",
+      "postalTown": "Springville",
+      "targetedPlaces": [
+        {
+          "town": "Springville",
+          "areaPercent": 12.8
+        },
+        {
+          "town": "Provo",
+          "areaPercent": 1.1
+        },
+        {
+          "town": "Mapleton",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "ut",
+      "id": "9196758",
+      "zip": "84009",
+      "chosen": "South Jordan",
+      "postalTown": "South Jordan",
+      "targetedPlaces": [
+        {
+          "town": "South Jordan",
+          "areaPercent": 99.9
+        },
+        {
+          "town": "West Jordan",
+          "areaPercent": 0.1
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022803",
+      "zip": "63005",
+      "chosen": "Wildwood",
+      "postalTown": "Chesterfield",
+      "targetedPlaces": [
+        {
+          "town": "Wildwood",
+          "areaPercent": 49.4
+        },
+        {
+          "town": "Chesterfield",
+          "areaPercent": 41.1
+        },
+        {
+          "town": "Ellisville",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022805",
+      "zip": "63011",
+      "chosen": "Ballwin",
+      "postalTown": "Ballwin",
+      "targetedPlaces": [
+        {
+          "town": "Ballwin",
+          "areaPercent": 35.5
+        },
+        {
+          "town": "Wildwood",
+          "areaPercent": 22.2
+        },
+        {
+          "town": "Ellisville",
+          "areaPercent": 15.4
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022811",
+      "zip": "63017",
+      "chosen": "Chesterfield",
+      "postalTown": "Chesterfield",
+      "targetedPlaces": [
+        {
+          "town": "Chesterfield",
+          "areaPercent": 82.6
+        },
+        {
+          "town": "Town and Country",
+          "areaPercent": 11.5
+        },
+        {
+          "town": "Maryland Heights",
+          "areaPercent": 3.8
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022814",
+      "zip": "63021",
+      "chosen": "Ballwin",
+      "postalTown": "Ballwin",
+      "targetedPlaces": [
+        {
+          "town": "Ballwin",
+          "areaPercent": 17.2
+        },
+        {
+          "town": "Manchester",
+          "areaPercent": 15.8
+        },
+        {
+          "town": "Wildwood",
+          "areaPercent": 14.6
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022816",
+      "zip": "63025",
+      "chosen": "Eureka",
+      "postalTown": "Eureka",
+      "targetedPlaces": [
+        {
+          "town": "Eureka",
+          "areaPercent": 20.7
+        },
+        {
+          "town": "Wildwood",
+          "areaPercent": 10.3
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022820",
+      "zip": "63031",
+      "chosen": "Florissant",
+      "postalTown": "Florissant",
+      "targetedPlaces": [
+        {
+          "town": "Florissant",
+          "areaPercent": 53.3
+        },
+        {
+          "town": "Hazelwood",
+          "areaPercent": 21.6
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022821",
+      "zip": "63033",
+      "chosen": "Florissant",
+      "postalTown": "Florissant",
+      "targetedPlaces": [
+        {
+          "town": "Florissant",
+          "areaPercent": 37.2
+        },
+        {
+          "town": "Black Jack",
+          "areaPercent": 21.4
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022825",
+      "zip": "63038",
+      "chosen": "Wildwood",
+      "postalTown": "Glencoe",
+      "targetedPlaces": [
+        {
+          "town": "Wildwood",
+          "areaPercent": 99.6
+        },
+        {
+          "town": "Ellisville",
+          "areaPercent": 0.4
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022827",
+      "zip": "63040",
+      "chosen": "Wildwood",
+      "postalTown": "Grover",
+      "targetedPlaces": [
+        {
+          "town": "Wildwood",
+          "areaPercent": 100
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022829",
+      "zip": "63042",
+      "chosen": "Hazelwood",
+      "postalTown": "Hazelwood",
+      "targetedPlaces": [
+        {
+          "town": "Hazelwood",
+          "areaPercent": 97.6
+        },
+        {
+          "town": "Florissant",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022831",
+      "zip": "63044",
+      "chosen": "Hazelwood",
+      "postalTown": "Bridgeton",
+      "targetedPlaces": [
+        {
+          "town": "Hazelwood",
+          "areaPercent": 14.4
+        },
+        {
+          "town": "St. Ann",
+          "areaPercent": 0.7
+        },
+        {
+          "town": "Maryland Heights",
+          "areaPercent": 0.1
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022843",
+      "zip": "63069",
+      "chosen": "Wildwood",
+      "postalTown": "Pacific",
+      "targetedPlaces": [
+        {
+          "town": "Wildwood",
+          "areaPercent": 18.7
+        },
+        {
+          "town": "Eureka",
+          "areaPercent": 3.6
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022847",
+      "zip": "63074",
+      "chosen": "St. Ann",
+      "postalTown": "St. Ann",
+      "targetedPlaces": [
+        {
+          "town": "St. Ann",
+          "areaPercent": 77
+        },
+        {
+          "town": "Overland",
+          "areaPercent": 0.1
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022852",
+      "zip": "63088",
+      "chosen": "Valley Park",
+      "postalTown": "Valley Park",
+      "targetedPlaces": [
+        {
+          "town": "Manchester",
+          "areaPercent": 4.8
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022860",
+      "zip": "63105",
+      "chosen": "Clayton",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Clayton",
+          "areaPercent": 91.2
+        },
+        {
+          "town": "University City",
+          "areaPercent": 4.5
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022869",
+      "zip": "63114",
+      "chosen": "Overland",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Overland",
+          "areaPercent": 43.7
+        },
+        {
+          "town": "St. Ann",
+          "areaPercent": 0.2
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022872",
+      "zip": "63117",
+      "chosen": "Richmond Heights",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Richmond Heights",
+          "areaPercent": 90.7
+        },
+        {
+          "town": "Clayton",
+          "areaPercent": 2.5
+        },
+        {
+          "town": "Maplewood",
+          "areaPercent": 0.7
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022874",
+      "zip": "63119",
+      "chosen": "Webster Groves",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Webster Groves",
+          "areaPercent": 69.9
+        },
+        {
+          "town": "Brentwood",
+          "areaPercent": 0.5
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022876",
+      "zip": "63121",
+      "chosen": "Normandy",
+      "postalTown": "St. Louis",
+      "targetedPlaces": []
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022877",
+      "zip": "63122",
+      "chosen": "Kirkwood",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Kirkwood",
+          "areaPercent": 63.4
+        },
+        {
+          "town": "Glendale",
+          "areaPercent": 9
+        },
+        {
+          "town": "Des Peres",
+          "areaPercent": 5.1
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022878",
+      "zip": "63123",
+      "chosen": "Affton",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Affton",
+          "areaPercent": 36.7
+        },
+        {
+          "town": "Concord",
+          "areaPercent": 10.4
+        },
+        {
+          "town": "Crestwood",
+          "areaPercent": 4
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022879",
+      "zip": "63124",
+      "chosen": "Ladue",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Ladue",
+          "areaPercent": 95.4
+        },
+        {
+          "town": "University City",
+          "areaPercent": 2.3
+        },
+        {
+          "town": "Clayton",
+          "areaPercent": 1.7
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022880",
+      "zip": "63125",
+      "chosen": "Mehlville",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Mehlville",
+          "areaPercent": 37.1
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022881",
+      "zip": "63126",
+      "chosen": "Crestwood",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Crestwood",
+          "areaPercent": 66.1
+        },
+        {
+          "town": "Sappington",
+          "areaPercent": 25.2
+        },
+        {
+          "town": "Sunset Hills",
+          "areaPercent": 8.6
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022882",
+      "zip": "63127",
+      "chosen": "Sunset Hills",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Sunset Hills",
+          "areaPercent": 99.8
+        },
+        {
+          "town": "Crestwood",
+          "areaPercent": 0.1
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022883",
+      "zip": "63128",
+      "chosen": "Concord",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Concord",
+          "areaPercent": 26.8
+        },
+        {
+          "town": "Sunset Hills",
+          "areaPercent": 15.3
+        },
+        {
+          "town": "Sappington",
+          "areaPercent": 7.9
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022884",
+      "zip": "63129",
+      "chosen": "Oakville",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Oakville",
+          "areaPercent": 75.9
+        },
+        {
+          "town": "Mehlville",
+          "areaPercent": 18.1
+        },
+        {
+          "town": "Concord",
+          "areaPercent": 0.1
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022885",
+      "zip": "63130",
+      "chosen": "University City",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "University City",
+          "areaPercent": 90.7
+        },
+        {
+          "town": "Clayton",
+          "areaPercent": 0.1
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022886",
+      "zip": "63131",
+      "chosen": "Town and Country",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Town and Country",
+          "areaPercent": 37.7
+        },
+        {
+          "town": "Des Peres",
+          "areaPercent": 26.2
+        },
+        {
+          "town": "Frontenac",
+          "areaPercent": 21.1
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022887",
+      "zip": "63132",
+      "chosen": "Olivette",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Olivette",
+          "areaPercent": 53.2
+        },
+        {
+          "town": "University City",
+          "areaPercent": 18.6
+        },
+        {
+          "town": "Overland",
+          "areaPercent": 10
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022888",
+      "zip": "63133",
+      "chosen": "Pagedale",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "University City",
+          "areaPercent": 0.5
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022889",
+      "zip": "63134",
+      "chosen": "Hazelwood",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Hazelwood",
+          "areaPercent": 0.7
+        },
+        {
+          "town": "St. Ann",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022890",
+      "zip": "63135",
+      "chosen": "Ferguson",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Hazelwood",
+          "areaPercent": 3.4
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022891",
+      "zip": "63136",
+      "chosen": "Jennings",
+      "postalTown": "St. Louis",
+      "targetedPlaces": []
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022892",
+      "zip": "63137",
+      "chosen": "Bellefontaine Neighbors",
+      "postalTown": "St. Louis",
+      "targetedPlaces": []
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022893",
+      "zip": "63138",
+      "chosen": "Spanish Lake",
+      "postalTown": "St. Louis",
+      "targetedPlaces": []
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022895",
+      "zip": "63140",
+      "chosen": "Kinloch",
+      "postalTown": "St. Louis",
+      "targetedPlaces": []
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022896",
+      "zip": "63141",
+      "chosen": "Creve Coeur",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Creve Coeur",
+          "areaPercent": 66.1
+        },
+        {
+          "town": "Town and Country",
+          "areaPercent": 28.1
+        },
+        {
+          "town": "Chesterfield",
+          "areaPercent": 5.1
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022897",
+      "zip": "63143",
+      "chosen": "Maplewood",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Maplewood",
+          "areaPercent": 73.8
+        },
+        {
+          "town": "Webster Groves",
+          "areaPercent": 0.4
+        },
+        {
+          "town": "Richmond Heights",
+          "areaPercent": 0.2
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022898",
+      "zip": "63144",
+      "chosen": "Brentwood",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Brentwood",
+          "areaPercent": 83.7
+        },
+        {
+          "town": "Richmond Heights",
+          "areaPercent": 4.4
+        },
+        {
+          "town": "Webster Groves",
+          "areaPercent": 1.9
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022900",
+      "zip": "63146",
+      "chosen": "Maryland Heights",
+      "postalTown": "St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Maryland Heights",
+          "areaPercent": 60.8
+        },
+        {
+          "town": "Creve Coeur",
+          "areaPercent": 1.2
+        },
+        {
+          "town": "Chesterfield",
+          "areaPercent": 0.5
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022904",
+      "zip": "63301",
+      "chosen": "St. Charles",
+      "postalTown": "St. Charles",
+      "targetedPlaces": [
+        {
+          "town": "St. Charles",
+          "areaPercent": 20.5
+        },
+        {
+          "town": "St. Peters",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022905",
+      "zip": "63303",
+      "chosen": "St. Charles",
+      "postalTown": "St. Charles",
+      "targetedPlaces": [
+        {
+          "town": "St. Charles",
+          "areaPercent": 36.6
+        },
+        {
+          "town": "St. Peters",
+          "areaPercent": 3.8
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022906",
+      "zip": "63304",
+      "chosen": "Weldon Spring",
+      "postalTown": "St. Charles",
+      "targetedPlaces": [
+        {
+          "town": "Weldon Spring",
+          "areaPercent": 13.9
+        },
+        {
+          "town": "Cottleville",
+          "areaPercent": 5.5
+        },
+        {
+          "town": "St. Peters",
+          "areaPercent": 4.5
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022919",
+      "zip": "63348",
+      "chosen": "Foristell",
+      "postalTown": "Foristell",
+      "targetedPlaces": [
+        {
+          "town": "Wentzville",
+          "areaPercent": 3.4
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022931",
+      "zip": "63366",
+      "chosen": "O'Fallon",
+      "postalTown": "O Fallon",
+      "targetedPlaces": [
+        {
+          "town": "O'Fallon",
+          "areaPercent": 23.2
+        },
+        {
+          "town": "St. Paul",
+          "areaPercent": 10.3
+        },
+        {
+          "town": "Wentzville",
+          "areaPercent": 0.7
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022932",
+      "zip": "63367",
+      "chosen": "Lake St. Louis",
+      "postalTown": "Lake St. Louis",
+      "targetedPlaces": [
+        {
+          "town": "Lake St. Louis",
+          "areaPercent": 64.9
+        },
+        {
+          "town": "O'Fallon",
+          "areaPercent": 12.5
+        },
+        {
+          "town": "Wentzville",
+          "areaPercent": 1.7
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022933",
+      "zip": "63368",
+      "chosen": "O'Fallon",
+      "postalTown": "O Fallon",
+      "targetedPlaces": [
+        {
+          "town": "O'Fallon",
+          "areaPercent": 55
+        },
+        {
+          "town": "Dardenne Prairie",
+          "areaPercent": 31.9
+        },
+        {
+          "town": "Cottleville",
+          "areaPercent": 1.2
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022936",
+      "zip": "63376",
+      "chosen": "St. Peters",
+      "postalTown": "St. Peters",
+      "targetedPlaces": [
+        {
+          "town": "St. Peters",
+          "areaPercent": 47.7
+        },
+        {
+          "town": "O'Fallon",
+          "areaPercent": 5.1
+        },
+        {
+          "town": "Cottleville",
+          "areaPercent": 3.4
+        }
+      ]
+    },
+    {
+      "market": "mo_stl",
+      "id": "9022943",
+      "zip": "63385",
+      "chosen": "Wentzville",
+      "postalTown": "Wentzville",
+      "targetedPlaces": [
+        {
+          "town": "Wentzville",
+          "areaPercent": 26.2
+        },
+        {
+          "town": "O'Fallon",
+          "areaPercent": 0.7
+        },
+        {
+          "town": "Lake St. Louis",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023160",
+      "zip": "64015",
+      "chosen": "Blue Springs",
+      "postalTown": "Blue Springs",
+      "targetedPlaces": [
+        {
+          "town": "Blue Springs",
+          "areaPercent": 50.6
+        },
+        {
+          "town": "Independence",
+          "areaPercent": 25.1
+        },
+        {
+          "town": "Lee's Summit",
+          "areaPercent": 0.3
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023161",
+      "zip": "64016",
+      "chosen": "Independence",
+      "postalTown": "Buckner",
+      "targetedPlaces": [
+        {
+          "town": "Independence",
+          "areaPercent": 33.2
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023170",
+      "zip": "64029",
+      "chosen": "Grain Valley",
+      "postalTown": "Grain Valley",
+      "targetedPlaces": [
+        {
+          "town": "Grain Valley",
+          "areaPercent": 19
+        },
+        {
+          "town": "Blue Springs",
+          "areaPercent": 5.6
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023180",
+      "zip": "64053",
+      "chosen": "Independence",
+      "postalTown": "Independence",
+      "targetedPlaces": [
+        {
+          "town": "Independence",
+          "areaPercent": 79.4
+        },
+        {
+          "town": "Kansas City",
+          "areaPercent": 19.4
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023181",
+      "zip": "64054",
+      "chosen": "Independence",
+      "postalTown": "Independence",
+      "targetedPlaces": [
+        {
+          "town": "Independence",
+          "areaPercent": 13.2
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023182",
+      "zip": "64055",
+      "chosen": "Independence",
+      "postalTown": "Independence",
+      "targetedPlaces": [
+        {
+          "town": "Independence",
+          "areaPercent": 99.7
+        },
+        {
+          "town": "Kansas City",
+          "areaPercent": 0.3
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023184",
+      "zip": "64057",
+      "chosen": "Independence",
+      "postalTown": "Independence",
+      "targetedPlaces": [
+        {
+          "town": "Independence",
+          "areaPercent": 79.4
+        },
+        {
+          "town": "Blue Springs",
+          "areaPercent": 3.2
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023185",
+      "zip": "64058",
+      "chosen": "Independence",
+      "postalTown": "Independence",
+      "targetedPlaces": [
+        {
+          "town": "Independence",
+          "areaPercent": 0.3
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023186",
+      "zip": "64060",
+      "chosen": "Kearney",
+      "postalTown": "Kearney",
+      "targetedPlaces": [
+        {
+          "town": "Liberty",
+          "areaPercent": 0.2
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023190",
+      "zip": "64064",
+      "chosen": "Lee's Summit",
+      "postalTown": "Lee's Summit",
+      "targetedPlaces": [
+        {
+          "town": "Lee's Summit",
+          "areaPercent": 68.8
+        },
+        {
+          "town": "Blue Springs",
+          "areaPercent": 6.5
+        },
+        {
+          "town": "Kansas City",
+          "areaPercent": 0.8
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023193",
+      "zip": "64068",
+      "chosen": "Liberty",
+      "postalTown": "Liberty",
+      "targetedPlaces": [
+        {
+          "town": "Liberty",
+          "areaPercent": 33.8
+        },
+        {
+          "town": "Kansas City",
+          "areaPercent": 0.1
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023198",
+      "zip": "64075",
+      "chosen": "Oak Grove",
+      "postalTown": "Oak Grove",
+      "targetedPlaces": [
+        {
+          "town": "Grain Valley",
+          "areaPercent": 0.3
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023202",
+      "zip": "64079",
+      "chosen": "Platte City",
+      "postalTown": "Platte City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 1.8
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023204",
+      "zip": "64081",
+      "chosen": "Lee's Summit",
+      "postalTown": "Lee's Summit",
+      "targetedPlaces": [
+        {
+          "town": "Lee's Summit",
+          "areaPercent": 99.9
+        },
+        {
+          "town": "Kansas City",
+          "areaPercent": 0.1
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023205",
+      "zip": "64082",
+      "chosen": "Lee's Summit",
+      "postalTown": "Lee's Summit",
+      "targetedPlaces": [
+        {
+          "town": "Lee's Summit",
+          "areaPercent": 94.3
+        },
+        {
+          "town": "Kansas City",
+          "areaPercent": 0.2
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023228",
+      "zip": "64116",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 60
+        },
+        {
+          "town": "North Kansas City",
+          "areaPercent": 38
+        },
+        {
+          "town": "Gladstone",
+          "areaPercent": 2
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023229",
+      "zip": "64117",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 93.2
+        },
+        {
+          "town": "North Kansas City",
+          "areaPercent": 4.2
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023230",
+      "zip": "64118",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 55
+        },
+        {
+          "town": "Gladstone",
+          "areaPercent": 40.9
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023231",
+      "zip": "64119",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 76.5
+        },
+        {
+          "town": "Gladstone",
+          "areaPercent": 18.2
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023240",
+      "zip": "64129",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 100
+        },
+        {
+          "town": "Raytown",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023244",
+      "zip": "64133",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 65.6
+        },
+        {
+          "town": "Raytown",
+          "areaPercent": 34.3
+        },
+        {
+          "town": "Independence",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023247",
+      "zip": "64137",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 99.7
+        },
+        {
+          "town": "Grandview",
+          "areaPercent": 0.3
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023248",
+      "zip": "64138",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 69.3
+        },
+        {
+          "town": "Raytown",
+          "areaPercent": 30.7
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023253",
+      "zip": "64149",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 96.3
+        },
+        {
+          "town": "Grandview",
+          "areaPercent": 2.1
+        },
+        {
+          "town": "Lee's Summit",
+          "areaPercent": 1.5
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023254",
+      "zip": "64150",
+      "chosen": "Riverside",
+      "postalTown": "Riverside",
+      "targetedPlaces": [
+        {
+          "town": "Riverside",
+          "areaPercent": 97.2
+        },
+        {
+          "town": "Kansas City",
+          "areaPercent": 0.5
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023255",
+      "zip": "64151",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 85.8
+        },
+        {
+          "town": "Parkville",
+          "areaPercent": 0.4
+        },
+        {
+          "town": "Riverside",
+          "areaPercent": 0.4
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023256",
+      "zip": "64152",
+      "chosen": "Parkville",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Parkville",
+          "areaPercent": 45.6
+        },
+        {
+          "town": "Kansas City",
+          "areaPercent": 7.7
+        },
+        {
+          "town": "Riverside",
+          "areaPercent": 0
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023257",
+      "zip": "64153",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 74.3
+        },
+        {
+          "town": "Parkville",
+          "areaPercent": 1.9
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023261",
+      "zip": "64157",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 97.8
+        },
+        {
+          "town": "Liberty",
+          "areaPercent": 0.2
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023263",
+      "zip": "64161",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 93
+        },
+        {
+          "town": "Independence",
+          "areaPercent": 1.3
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023265",
+      "zip": "64164",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 60.2
+        },
+        {
+          "town": "Smithville",
+          "areaPercent": 0.8
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023821",
+      "zip": "66012",
+      "chosen": "Bonner Springs",
+      "postalTown": "Bonner Springs",
+      "targetedPlaces": [
+        {
+          "town": "Bonner Springs",
+          "areaPercent": 36.1
+        },
+        {
+          "town": "Kansas City",
+          "areaPercent": 2.2
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023822",
+      "zip": "66013",
+      "chosen": "Bucyrus",
+      "postalTown": "Bucyrus",
+      "targetedPlaces": [
+        {
+          "town": "Overland Park",
+          "areaPercent": 12.7
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023827",
+      "zip": "66018",
+      "chosen": "De Soto",
+      "postalTown": "De Soto",
+      "targetedPlaces": [
+        {
+          "town": "Olathe",
+          "areaPercent": 0.7
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023834",
+      "zip": "66027",
+      "chosen": "Leavenworth",
+      "postalTown": "Fort Leavenworth",
+      "targetedPlaces": [
+        {
+          "town": "Leavenworth",
+          "areaPercent": 100
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023836",
+      "zip": "66031",
+      "chosen": "New Century",
+      "postalTown": "New Century",
+      "targetedPlaces": [
+        {
+          "town": "Gardner",
+          "areaPercent": 7.9
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023849",
+      "zip": "66048",
+      "chosen": "Leavenworth",
+      "postalTown": "Leavenworth",
+      "targetedPlaces": [
+        {
+          "town": "Leavenworth",
+          "areaPercent": 11
+        },
+        {
+          "town": "Lansing",
+          "areaPercent": 4.3
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023859",
+      "zip": "66062",
+      "chosen": "Olathe",
+      "postalTown": "Olathe",
+      "targetedPlaces": [
+        {
+          "town": "Olathe",
+          "areaPercent": 57.9
+        },
+        {
+          "town": "Overland Park",
+          "areaPercent": 5.2
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023872",
+      "zip": "66083",
+      "chosen": "Spring Hill",
+      "postalTown": "Spring Hill",
+      "targetedPlaces": [
+        {
+          "town": "Overland Park",
+          "areaPercent": 0.9
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023873",
+      "zip": "66085",
+      "chosen": "Overland Park",
+      "postalTown": "Stilwell",
+      "targetedPlaces": [
+        {
+          "town": "Overland Park",
+          "areaPercent": 34.5
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023891",
+      "zip": "66111",
+      "chosen": "Kansas City",
+      "postalTown": "Kansas City",
+      "targetedPlaces": [
+        {
+          "town": "Kansas City",
+          "areaPercent": 57.6
+        },
+        {
+          "town": "Bonner Springs",
+          "areaPercent": 3.4
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023896",
+      "zip": "66202",
+      "chosen": "Mission",
+      "postalTown": "Mission",
+      "targetedPlaces": [
+        {
+          "town": "Mission",
+          "areaPercent": 43.6
+        },
+        {
+          "town": "Overland Park",
+          "areaPercent": 30.2
+        },
+        {
+          "town": "Merriam",
+          "areaPercent": 24.7
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023897",
+      "zip": "66203",
+      "chosen": "Shawnee",
+      "postalTown": "Shawnee",
+      "targetedPlaces": [
+        {
+          "town": "Shawnee",
+          "areaPercent": 53.7
+        },
+        {
+          "town": "Merriam",
+          "areaPercent": 40.7
+        },
+        {
+          "town": "Overland Park",
+          "areaPercent": 4.9
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023898",
+      "zip": "66204",
+      "chosen": "Overland Park",
+      "postalTown": "Overland Park",
+      "targetedPlaces": [
+        {
+          "town": "Overland Park",
+          "areaPercent": 89.6
+        },
+        {
+          "town": "Merriam",
+          "areaPercent": 9.5
+        },
+        {
+          "town": "Prairie Village",
+          "areaPercent": 0.9
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023899",
+      "zip": "66205",
+      "chosen": "Mission",
+      "postalTown": "Mission",
+      "targetedPlaces": [
+        {
+          "town": "Mission",
+          "areaPercent": 8.7
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023900",
+      "zip": "66206",
+      "chosen": "Leawood",
+      "postalTown": "Leawood",
+      "targetedPlaces": [
+        {
+          "town": "Leawood",
+          "areaPercent": 90.7
+        },
+        {
+          "town": "Overland Park",
+          "areaPercent": 6.7
+        },
+        {
+          "town": "Prairie Village",
+          "areaPercent": 2.6
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023901",
+      "zip": "66207",
+      "chosen": "Overland Park",
+      "postalTown": "Overland Park",
+      "targetedPlaces": [
+        {
+          "town": "Overland Park",
+          "areaPercent": 68.1
+        },
+        {
+          "town": "Prairie Village",
+          "areaPercent": 31.9
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023902",
+      "zip": "66208",
+      "chosen": "Prairie Village",
+      "postalTown": "Prairie Village",
+      "targetedPlaces": [
+        {
+          "town": "Prairie Village",
+          "areaPercent": 70.3
+        },
+        {
+          "town": "Overland Park",
+          "areaPercent": 0.6
+        },
+        {
+          "town": "Mission",
+          "areaPercent": 0.1
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023903",
+      "zip": "66209",
+      "chosen": "Leawood",
+      "postalTown": "Leawood",
+      "targetedPlaces": [
+        {
+          "town": "Leawood",
+          "areaPercent": 62.5
+        },
+        {
+          "town": "Overland Park",
+          "areaPercent": 37.5
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023904",
+      "zip": "66210",
+      "chosen": "Overland Park",
+      "postalTown": "Overland Park",
+      "targetedPlaces": [
+        {
+          "town": "Overland Park",
+          "areaPercent": 97.8
+        },
+        {
+          "town": "Lenexa",
+          "areaPercent": 2.2
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023905",
+      "zip": "66211",
+      "chosen": "Leawood",
+      "postalTown": "Leawood",
+      "targetedPlaces": [
+        {
+          "town": "Leawood",
+          "areaPercent": 63
+        },
+        {
+          "town": "Overland Park",
+          "areaPercent": 37
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023908",
+      "zip": "66214",
+      "chosen": "Overland Park",
+      "postalTown": "Overland Park",
+      "targetedPlaces": [
+        {
+          "town": "Overland Park",
+          "areaPercent": 64.3
+        },
+        {
+          "town": "Lenexa",
+          "areaPercent": 24.8
+        },
+        {
+          "town": "Shawnee",
+          "areaPercent": 10.9
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023909",
+      "zip": "66215",
+      "chosen": "Lenexa",
+      "postalTown": "Lenexa",
+      "targetedPlaces": [
+        {
+          "town": "Lenexa",
+          "areaPercent": 91.7
+        },
+        {
+          "town": "Overland Park",
+          "areaPercent": 5.7
+        },
+        {
+          "town": "Olathe",
+          "areaPercent": 2.6
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023910",
+      "zip": "66216",
+      "chosen": "Shawnee",
+      "postalTown": "Shawnee",
+      "targetedPlaces": [
+        {
+          "town": "Shawnee",
+          "areaPercent": 87.7
+        },
+        {
+          "town": "Lenexa",
+          "areaPercent": 12.1
+        },
+        {
+          "town": "Kansas City",
+          "areaPercent": 0.2
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023911",
+      "zip": "66217",
+      "chosen": "Shawnee",
+      "postalTown": "Shawnee",
+      "targetedPlaces": [
+        {
+          "town": "Shawnee",
+          "areaPercent": 75.8
+        },
+        {
+          "town": "Lenexa",
+          "areaPercent": 9.7
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023912",
+      "zip": "66218",
+      "chosen": "Shawnee",
+      "postalTown": "Shawnee",
+      "targetedPlaces": [
+        {
+          "town": "Shawnee",
+          "areaPercent": 97
+        },
+        {
+          "town": "Lenexa",
+          "areaPercent": 3
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023913",
+      "zip": "66219",
+      "chosen": "Lenexa",
+      "postalTown": "Lenexa",
+      "targetedPlaces": [
+        {
+          "town": "Lenexa",
+          "areaPercent": 99.7
+        },
+        {
+          "town": "Olathe",
+          "areaPercent": 0.3
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023914",
+      "zip": "66220",
+      "chosen": "Lenexa",
+      "postalTown": "Lenexa",
+      "targetedPlaces": [
+        {
+          "town": "Lenexa",
+          "areaPercent": 99.7
+        },
+        {
+          "town": "Olathe",
+          "areaPercent": 0.3
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023917",
+      "zip": "66224",
+      "chosen": "Leawood",
+      "postalTown": "Overland Park",
+      "targetedPlaces": [
+        {
+          "town": "Leawood",
+          "areaPercent": 70.6
+        },
+        {
+          "town": "Overland Park",
+          "areaPercent": 27.1
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023918",
+      "zip": "66226",
+      "chosen": "Shawnee",
+      "postalTown": "Shawnee",
+      "targetedPlaces": [
+        {
+          "town": "Shawnee",
+          "areaPercent": 95.7
+        },
+        {
+          "town": "Bonner Springs",
+          "areaPercent": 4.3
+        }
+      ]
+    },
+    {
+      "market": "mo_kc",
+      "id": "9023919",
+      "zip": "66227",
+      "chosen": "Lenexa",
+      "postalTown": "Lenexa",
+      "targetedPlaces": [
+        {
+          "town": "Lenexa",
+          "areaPercent": 66.8
+        },
+        {
+          "town": "Shawnee",
+          "areaPercent": 32.8
+        },
+        {
+          "town": "Olathe",
+          "areaPercent": 0.4
+        }
+      ]
+    }
+  ]
+}

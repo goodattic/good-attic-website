@@ -38,28 +38,6 @@
     sync();
   });
 
-  const market = document.documentElement.dataset.lpMarket;
-  const towns = {
-    ut: {
-      "1026990": "Salt Lake City", "1026991": "Sandy", "9051778": "Cottonwood Heights",
-      "9052441": "Millcreek", "1026920": "Draper", "9052142": "Holladay",
-      "1026902": "Alpine", "9052128": "Highland"
-    },
-    mo_stl: {
-      "9053163": "Wildwood", "1020183": "Ballwin", "1020256": "Chesterfield",
-      "9051789": "Creve Coeur", "1020476": "Maryland Heights",
-      "9052999": "Town and Country", "9051738": "Clayton"
-    },
-    mo_kc: {
-      "1020414": "Kansas City", "1017596": "Overland Park",
-      "9052714": "Prairie Village", "1017539": "Leawood", "1017571": "Mission",
-      "1017631": "Shawnee", "1017588": "Olathe", "1020444": "Lee's Summit"
-    }
-  };
-  const locationId = new URLSearchParams(location.search).get("utm_location");
-  const town = towns[market]?.[locationId];
-  if (town) document.querySelectorAll("[data-lp-town]").forEach((node) => { node.textContent = town; });
-
   // Match the market pages' Google Ads call-number configuration while keeping
   // each market number usable in the HTML before any tracking script loads.
   const originalNumber = document.documentElement.dataset.lpPhone;
@@ -76,41 +54,11 @@
     document.querySelectorAll("[data-lp-call]").forEach((link) => { link.href = `tel:${href}`; });
     document.querySelectorAll("[data-lp-call-number]").forEach((node) => { node.textContent = formattedNumber; });
   };
-  const waitForGoogleCallTracking = () => {
-    const deadline = Date.now() + 10000;
-    const poll = () => {
-      if (typeof window._googWcmGet === "function") {
-        try { window._googWcmGet(updateCallNumber, originalNumber); return; }
-        catch { /* Google tag may still be initializing. */ }
-      }
-      if (Date.now() < deadline) window.setTimeout(poll, 250);
-    };
-    poll();
-  };
-  if (document.readyState === "complete") waitForGoogleCallTracking();
-  else window.addEventListener("load", waitForGoogleCallTracking, { once: true });
-})();
-
-// Fit only the display headline; market/town lookup and form logic stay untouched.
-(() => {
-  const headline = document.querySelector('[data-lp-fit-headline]');
-  if (!headline) return;
-  const fit = () => {
-    headline.style.removeProperty('font-size');
-    if (innerWidth > 640) return;
-    for (let size = 32; size >= 26; size -= 0.5) {
-      headline.style.fontSize = `${size}px`;
-      if (headline.getBoundingClientRect().height <= parseFloat(getComputedStyle(headline).lineHeight) * 3 + 1) break;
-    }
-  };
-  fit();
-  document.fonts.ready.then(fit);
-  // Resizing the headline changes its parent's height. Only width changes
-  // require another fit; schedule it outside the observer delivery cycle.
-  let lastWidth = headline.parentElement.getBoundingClientRect().width;
-  new ResizeObserver(([entry]) => {
-    if (entry.contentRect.width === lastWidth) return;
-    lastWidth = entry.contentRect.width;
-    requestAnimationFrame(fit);
-  }).observe(headline.parentElement);
+  // Google's supported phone snippet invokes phone_conversion_callback. It
+  // may run before this deferred script, so the inline snippet caches its
+  // result and we replay it here. No extra gtag config or conversion is sent.
+  window.goodAtticLpApplyForwardingNumber = updateCallNumber;
+  if (Array.isArray(window.goodAtticLpPendingCallNumber)) {
+    updateCallNumber(...window.goodAtticLpPendingCallNumber);
+  }
 })();

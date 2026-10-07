@@ -9,6 +9,7 @@ execFileSync("python3", [path.join(root, "scripts/process-lp-collage.py")], { st
 const collage = JSON.parse(await readFile(path.join(root, "data/lp-collage-manifest.json"), "utf8"));
 const assetRoot = "../../../assets/";
 const landingReviews = JSON.parse(await readFile(path.join(root, "data/proof/ad-landing-review-selection.json"), "utf8"));
+const geoLookup = JSON.parse(await readFile(path.join(root, "data/ad-geo-lookup.json"), "utf8"));
 const assetVersion = createHash("sha256")
   .update(await readFile(path.join(root, "assets/ad-landing.css")))
   .update(await readFile(path.join(root, "assets/ad-landing.js")))
@@ -65,6 +66,41 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
 
+function safeInlineJson(value) {
+  return JSON.stringify(value).replaceAll('<', '\\u003c');
+}
+
+function townLookupScript(market) {
+  const entry = geoLookup.markets[market.key];
+  if (!entry || !entry.fallback || !entry.cities || !entry.postalCodes || !entry.otherObservedCities)
+    throw new Error(`Missing reviewed geo lookup for ${market.key}`);
+  const maps = safeInlineJson({city: entry.cities, postal_code: entry.postalCodes,
+    other_city: entry.otherObservedCities, fallback: entry.fallback});
+  return `<script>
+    // Static lookup runs during parsing, before the headline exists or paints.
+    window.goodAtticLpTownResolution = (function () {
+      const map = ${maps};
+      const id = new URLSearchParams(location.search).get('utm_location') || '';
+      for (const type of ['city', 'postal_code', 'other_city']) {
+        if (Object.prototype.hasOwnProperty.call(map[type], id))
+          return { id, type, town: map[type][id] };
+      }
+      return { id, type: 'fallback', town: map.fallback };
+    })();
+  </script>`;
+}
+
+function phoneSnippet(market, configMarket, sendTo, number) {
+  const callback = market.key === configMarket
+    ? `, 'phone_conversion_callback': function(formattedNumber, mobileNumber) {
+      window.goodAtticLpPendingCallNumber = [formattedNumber, mobileNumber];
+      if (typeof window.goodAtticLpApplyForwardingNumber === 'function')
+        window.goodAtticLpApplyForwardingNumber(formattedNumber, mobileNumber);
+    }`
+    : '';
+  return `gtag('config', '${sendTo}', { 'phone_conversion_number': '${number}'${callback} });`;
+}
+
 function form(market, service, suffix) {
   const formName = `${market.name} ${service.title} short ad form ${suffix}`;
   return `<form class="lp-form" aria-label="Request a free attic inspection" data-lead-form data-form-name="${escapeHtml(formName)}" data-lead-endpoint="/api/leads" action="/api/leads" method="post">
@@ -105,7 +141,8 @@ function jobPhoto(market, service) {
 function page(market, service) {
   const heading = `${service.title} in ${market.name}`;
   const removal = service.slug === "insulation-removal";
-  const townMarkup = `<span data-lp-town>${escapeHtml(market.name)}</span>`;
+  const fallbackTown = geoLookup.markets[market.key].fallback;
+  const townMarkup = `<span data-lp-town><script>document.currentScript.replaceWith(document.createTextNode(window.goodAtticLpTownResolution?.town || ${safeInlineJson(fallbackTown)}));</script></span>`;
   const headline = removal ? `Old or pest-damaged insulation in ${townMarkup}? We remove and replace it.` : `Attic insulation that keeps your ${townMarkup} home comfortable`;
   const support = removal ? "A clean, sealed, freshly insulated attic." : "Lower energy bills. No more hot and cold rooms.";
   const subhead = removal ? "Free attic inspection. We remove old insulation, seal pest entry points, sanitize and re-insulate." : "Free attic inspection, air sealing and blown-in insulation. Clear, honest pricing.";
@@ -122,6 +159,7 @@ function page(market, service) {
   <link rel="icon" type="image/png" sizes="32x32" href="${assetRoot}favicon-32.png">
   <link rel="stylesheet" href="../../../styles.72e38ccd660523f9.css">
   <link rel="stylesheet" href="${assetRoot}ad-landing.css?v=${assetVersion}">
+  ${townLookupScript(market)}
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-10789892066"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -129,9 +167,9 @@ function page(market, service) {
     gtag('js', new Date());
     gtag('config', 'AW-10789892066');
     gtag('config', 'G-P7T219JFV6');
-    gtag('config', 'AW-11103039262/_4E-CN313tIaEJ7eq64p', { 'phone_conversion_number': '385-336-4442' });
-    gtag('config', 'AW-11103039262/-7syCOa6-e0aEJ7eq64p', { 'phone_conversion_number': '314-931-2620' });
-    gtag('config', 'AW-11103039262/35RYCNWL7bgcEJ7eq64p', { 'phone_conversion_number': '816-434-0308' });
+    ${phoneSnippet(market, 'ut', 'AW-11103039262/_4E-CN313tIaEJ7eq64p', '385-336-4442')}
+    ${phoneSnippet(market, 'mo_stl', 'AW-11103039262/-7syCOa6-e0aEJ7eq64p', '314-931-2620')}
+    ${phoneSnippet(market, 'mo_kc', 'AW-11103039262/35RYCNWL7bgcEJ7eq64p', '816-434-0308')}
     window.goodAtticPhoneConversionNumbersConfigured = true;
     window.goodAtticGoogleTagConfigured = true;
     window.goodAtticGa4Configured = true;

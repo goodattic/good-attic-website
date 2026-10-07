@@ -9,7 +9,19 @@
   <title>Insulation Removal &amp; Replacement in St. Louis | Good Attic</title>
   <link rel="icon" type="image/png" sizes="32x32" href="../../../assets/favicon-32.png">
   <link rel="stylesheet" href="../../../styles.72e38ccd660523f9.css">
-  <link rel="stylesheet" href="../../../assets/ad-landing.css?v=c810d366">
+  <link rel="stylesheet" href="../../../assets/ad-landing.css?v=8b24c596">
+  <script>
+    // Static lookup runs during parsing, before the headline exists or paints.
+    window.goodAtticLpTownResolution = (function () {
+      const map = {"city":{"1020183":"Ballwin","1020256":"Chesterfield","1020315":"Eureka","1020328":"Fenton","1020331":"Florissant","1020377":"Hazelwood","1020433":"Lake St. Louis","1020476":"Maryland Heights","1020519":"O'Fallon","1020612":"St. Ann","1020613":"St. Charles","1020619":"St. Peters","1020676":"Wentzville","9051497":"Affton","9051635":"Brentwood","9051738":"Clayton","9051761":"Concord","9051787":"Crestwood","9051789":"Creve Coeur","9051830":"Des Peres","9052245":"Kirkwood","9052256":"Ladue","9052375":"Manchester","9052390":"Maplewood","9052416":"Mehlville","9052587":"Oakville","9052598":"Olivette","9052616":"Overland","9052744":"Richmond Heights","9052946":"Sunset Hills","9052999":"Town and Country","9053026":"University City","9053090":"Webster Groves","9053096":"Weldon Spring","9053163":"Wildwood","9189369":"Ellisville","9190124":"Cottleville","9191871":"Black Jack","9192213":"Dardenne Prairie","9192416":"Frontenac","9193984":"Glendale","9194086":"St. Paul","9195515":"Sappington"},"postal_code":{"9022803":"Wildwood","9022805":"Ballwin","9022811":"Chesterfield","9022814":"Ballwin","9022816":"Eureka","9022817":"Fenton","9022820":"Florissant","9022821":"Florissant","9022822":"Florissant","9022825":"Wildwood","9022827":"Wildwood","9022829":"Hazelwood","9022830":"Maryland Heights","9022831":"Hazelwood","9022832":"Earth City","9022834":"High Ridge","9022843":"Wildwood","9022847":"St. Ann","9022852":"Valley Park","9022860":"Clayton","9022869":"Overland","9022872":"Richmond Heights","9022874":"Webster Groves","9022875":"St. Louis","9022876":"Normandy","9022877":"Kirkwood","9022878":"Affton","9022879":"Ladue","9022880":"Mehlville","9022881":"Crestwood","9022882":"Sunset Hills","9022883":"Concord","9022884":"Oakville","9022885":"University City","9022886":"Town and Country","9022887":"Olivette","9022888":"Pagedale","9022889":"Hazelwood","9022890":"Ferguson","9022891":"Jennings","9022892":"Bellefontaine Neighbors","9022893":"Spanish Lake","9022895":"Kinloch","9022896":"Creve Coeur","9022897":"Maplewood","9022898":"Brentwood","9022899":"St. Louis","9022900":"Maryland Heights","9022902":"St. Louis","9022904":"St. Charles","9022905":"St. Charles","9022906":"Weldon Spring","9022908":"Augusta","9022913":"Defiance","9022919":"Foristell","9022925":"Marthasville","9022931":"O'Fallon","9022932":"Lake St. Louis","9022933":"O'Fallon","9022935":"Portage des Sioux","9022936":"St. Peters","9022943":"Wentzville","9022944":"West Alton","9053963":"Fenton","9053971":"Flinthill"},"other_city":{"9052894":"Spanish Lake"},"fallback":"St. Louis area"};
+      const id = new URLSearchParams(location.search).get('utm_location') || '';
+      for (const type of ['city', 'postal_code', 'other_city']) {
+        if (Object.prototype.hasOwnProperty.call(map[type], id))
+          return { id, type, town: map[type][id] };
+      }
+      return { id, type: 'fallback', town: map.fallback };
+    })();
+  </script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-10789892066"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -18,14 +30,18 @@
     gtag('config', 'AW-10789892066');
     gtag('config', 'G-P7T219JFV6');
     gtag('config', 'AW-11103039262/_4E-CN313tIaEJ7eq64p', { 'phone_conversion_number': '385-336-4442' });
-    gtag('config', 'AW-11103039262/-7syCOa6-e0aEJ7eq64p', { 'phone_conversion_number': '314-931-2620' });
+    gtag('config', 'AW-11103039262/-7syCOa6-e0aEJ7eq64p', { 'phone_conversion_number': '314-931-2620', 'phone_conversion_callback': function(formattedNumber, mobileNumber) {
+      window.goodAtticLpPendingCallNumber = [formattedNumber, mobileNumber];
+      if (typeof window.goodAtticLpApplyForwardingNumber === 'function')
+        window.goodAtticLpApplyForwardingNumber(formattedNumber, mobileNumber);
+    } });
     gtag('config', 'AW-11103039262/35RYCNWL7bgcEJ7eq64p', { 'phone_conversion_number': '816-434-0308' });
     window.goodAtticPhoneConversionNumbersConfigured = true;
     window.goodAtticGoogleTagConfigured = true;
     window.goodAtticGa4Configured = true;
   </script>
   <script src="../../../script.40559d41a6b61dc2.js" defer></script>
-  <script src="../../../assets/ad-landing.js?v=c810d366" defer></script>
+  <script src="../../../assets/ad-landing.js?v=8b24c596" defer></script>
 </head>
 <body>
   <!-- Compatibility nodes required by the unchanged live script; never rendered or interactive. -->
@@ -43,7 +59,7 @@
     <section class="lp-hero lp-hero--after-floating-header"><div class="lp-shell lp-hero__inner">
       <div class="lp-hero-copy">
         <p class="lp-first-proof lp-first-proof--reviews"><svg class="lp-first-proof__google" viewBox="0 0 24 24" role="img" aria-label="Google"><path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-2 3.02v2.51h3.24c1.9-1.75 2.98-4.33 2.98-7.36Z"/><path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.62-2.41l-3.24-2.51c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.07v2.59A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.41 13.92a6 6 0 0 1 0-3.84V7.49H3.07a10 10 0 0 0 0 9.02l3.34-2.59Z"/><path fill="#EA4335" d="M12 5.96c1.47 0 2.79.51 3.82 1.51l2.87-2.87A9.61 9.61 0 0 0 12 2a10 10 0 0 0-8.93 5.49l3.34 2.59C7.2 7.72 9.4 5.96 12 5.96Z"/></svg><span class="lp-first-proof__stars" aria-label="5 stars">★★★★★</span><span>Numerous 5-star reviews</span></p>
-        <h1 data-lp-fit-headline>Old or pest-damaged insulation in <span data-lp-town>St. Louis</span>? We remove and replace it.</h1>
+        <h1 data-lp-fit-headline>Old or pest-damaged insulation in <span data-lp-town><script>document.currentScript.replaceWith(document.createTextNode(window.goodAtticLpTownResolution?.town || "St. Louis area"));</script></span>? We remove and replace it.</h1>
         <p class="lp-hero-support">A clean, sealed, freshly insulated attic.</p>
         <p class="lp-hero-subhead">Free attic inspection. We remove old insulation, seal pest entry points, sanitize and re-insulate.</p>
       </div>

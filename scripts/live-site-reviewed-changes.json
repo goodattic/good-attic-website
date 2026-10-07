@@ -1,182 +1,38 @@
 {
   "schemaVersion": 1,
-  "baselineDeploymentId": "061a5a74-e8a7-4221-bd71-bbd32a17eae4",
+  "baselineDeploymentId": "d2d9c1d5-0e5e-4b03-a104-471369dc4c73",
   "changes": {
     "assets/assets/ad-landing.css": {
-      "expectedSha256": "b3aa0428b9dc7c51f3722d6b238fe40a2c4ba52eaa226a96aacf3bc59df1d4c6",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
+      "expectedSha256": "168a6ec70c3906a37536ffcaf4a55135b82d7c9d9e695b0312b2f4b8220ddb53",
+      "reason": "Keep long local town headlines stable before paint at mobile widths."
     },
     "assets/assets/ad-landing.js": {
-      "expectedSha256": "82d6f08695e066320a34e4045365499c31e914a19c13be6dccaae90fb92627b7",
-      "reason": "LP interactions: preserve SMS numbers and avoid headline ResizeObserver feedback."
-    },
-    "assets/assets/good-attic-white-logo-lp.webp": {
-      "expectedSha256": "4f310db02468df0b6738073e7b8635a8f17e7b9b321a64ef17da93b5d9ab2802",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/after/01.webp": {
-      "expectedSha256": "e0298687da4ee952a81bdd07c09269369e545718647490d157507f8dd3beb621",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/after/02.webp": {
-      "expectedSha256": "a153e1c207f20c2dd037165b3111c29d5fe6cac2a9d678ddafc22cabfb817e23",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/after/03.webp": {
-      "expectedSha256": "c91c3fcb7ff3164127bd1f1b63444438d33f33156b138a14acf7ec5cca343db0",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/after/04.webp": {
-      "expectedSha256": "2b5e7727c4f77c3c3949cdf97dae613877002434be4fa556af1815a5efd55494",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/after/05.webp": {
-      "expectedSha256": "a7ab09f00409fb42033eab2a3b8a8f03ba01c69ce5321abbd5cbe33cdcb3650b",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/after/06.webp": {
-      "expectedSha256": "cddf14ac3df5c15429f03864802dd7889b61a7d1869801aa85291770932a9c49",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/after/07.webp": {
-      "expectedSha256": "d5a2cb6e41a055106a267a565186ccb56cdb04d107edc7afe850318b435c8f99",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/after/08.webp": {
-      "expectedSha256": "577d5566d13bc764961907be062c13ad8987992f59a99f9d2838c680e21c1399",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/before/01.webp": {
-      "expectedSha256": "68e9ac0ba04bed75ff9866e3053c25d0fd96791fe3ebb66b53a9a59c8f62af01",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/before/02.webp": {
-      "expectedSha256": "ab8d351c3beeead1ddfa346d80cb8830df34c06b3840c622c452ea74806c6acb",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/before/03.webp": {
-      "expectedSha256": "4b464380ead2f4ccea6537c86fe029c6a21078f479c732a1c0172198a6eda294",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/before/04.webp": {
-      "expectedSha256": "66b830add089361384195336757473610354c3f9c5999a263c363dbcca278a6c",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/before/05.webp": {
-      "expectedSha256": "e97e4f02cac913a8cfb6e7c8e3b57eac9c3ff8fb366d1813540f89162e40127f",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/before/06.webp": {
-      "expectedSha256": "d6b96d5513eee5bb0f98af2ce972ed834793c374b8a84f4be757ac715b31cd2d",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/before/07.webp": {
-      "expectedSha256": "969766699b3d8b048a38c902cd834fa08f863dc07b3e4fd1945611b6e7684eb8",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/attic-insulation/before/08.webp": {
-      "expectedSha256": "a744c4de10f1c144924bd4c979ab82860d6d36e500c7999ee7c37a2fefdf7057",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/after/01.webp": {
-      "expectedSha256": "c24de92b06b43779aa7f3e4bcb4f4df4da9606e6ca43fc450ccf06875b3cabe3",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/after/02.webp": {
-      "expectedSha256": "8993a3b219a6c2f8d24569367ba51d27a42a126b8a86e8195808c4ef2e00f9d7",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/after/03.webp": {
-      "expectedSha256": "f399d190f274e2d05e81a3c54bba425fb33cc2120241bd121ba548b180a6aef7",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/after/04.webp": {
-      "expectedSha256": "81126664caca3c5f5b3193fdbe35a07b48a70f7be585384cd198d1981ade35d0",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/after/05.webp": {
-      "expectedSha256": "8461561c73e8980e92d02642d1c441ec34779bb68e1ea59d576c7cd0e54b7cdd",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/after/06.webp": {
-      "expectedSha256": "4720e5615f6aa0bbc82a9f65af9ad821e1fab631dab0722bcf064fe46d46aa4b",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/after/07.webp": {
-      "expectedSha256": "14b7fcf7f8428059fb46e39933976cbfa8e833cc727c56cb081c28d7fce5386c",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/after/08.webp": {
-      "expectedSha256": "d2000124432649aec4eb68614ef44791ce0e4752c37cc0e0fc03fb70d1d2a9d5",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/before/01.webp": {
-      "expectedSha256": "5c9cf9c652fcfbe385258c99c391da827843e189ede607b08aef564282072686",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/before/02.webp": {
-      "expectedSha256": "eb5489a9d18af1200f7b1afecb645e4745bd6e982a53b8a62828f0dfb3bf2dfc",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/before/03.webp": {
-      "expectedSha256": "51bcdb109f8a6b42b86423d32e320aea42030e61acb918a77114403cbdbfbff2",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/before/04.webp": {
-      "expectedSha256": "aca6ca50cdfa88ccf081707e5f3f8328da2acea36dd144b5754e94f88fb6e85b",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/before/05.webp": {
-      "expectedSha256": "0db213b2684ba785a7395fccfcd107154d0929a0ce101cc781d09785ff95d87d",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/before/06.webp": {
-      "expectedSha256": "b01a55242e4c3c8a172382fddf5c339e56f6f248603d1f5e38c492540b2bbf58",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/before/07.webp": {
-      "expectedSha256": "8d0cbe76881583a33950024163e075bd8f56a926f393a16f79dd5e704d1ee45a",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "assets/assets/lp/collage/generated/removal/before/08.webp": {
-      "expectedSha256": "aa7dfdfbe637b91da706d57d8f832aa9bb60df2d71d990fe6e536babf0a7596c",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
+      "expectedSha256": "311572d032ccd59a008fe9754f986ff9df2f911dccaefdcf6904edfed71174d8",
+      "reason": "Use the documented Google phone callback and remove late headline resizing."
     },
     "assets/kansas-city-mo/lp/attic-insulation/index.html": {
-      "expectedSha256": "82038f3f18982d2bf5aa0581906a1742b0bd1ab419f6ccb41a9f7f244c82eb8a",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
+      "expectedSha256": "31734f8625674430cb2dc7a25c39704855ebdc93a5c363539acbb6871ebb8aa2",
+      "reason": "Resolve Google city and postal IDs before paint and wire one existing market phone callback."
     },
     "assets/kansas-city-mo/lp/insulation-removal/index.html": {
-      "expectedSha256": "a79fced00a8ed5097357d048510c1aeeea2c02f77b2c941c64f8f34f0d4ba0a7",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
+      "expectedSha256": "de84fad27b55422a3b9c6d70d5a99e2a8bdb765c2adb1885a0b4d90ca711ddd1",
+      "reason": "Resolve Google city and postal IDs before paint and wire one existing market phone callback."
     },
     "assets/salt-lake-city-ut/lp/attic-insulation/index.html": {
-      "expectedSha256": "3f038f5705baa3716e0dc0137577406acb14152dff6d40a7659ce35e138b006b",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
+      "expectedSha256": "f58775fdeff5f53c07395013e814708379441e284c28b21bb23c42d21b8655ec",
+      "reason": "Resolve Google city and postal IDs before paint and wire one existing market phone callback."
     },
     "assets/salt-lake-city-ut/lp/insulation-removal/index.html": {
-      "expectedSha256": "0f32f4ddc86677d8d4c7f65095138c1795a88bff9fb9d0f098a3b72f5191f3bc",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
+      "expectedSha256": "df4126051e24f8c80d6c305cdc75cbb7586856690f355cde087687f40dacbd77",
+      "reason": "Resolve Google city and postal IDs before paint and wire one existing market phone callback."
     },
     "assets/st-louis-mo/lp/attic-insulation/index.html": {
-      "expectedSha256": "b61841f11ca81e61a8da25def9be0f3df834acac91577e642735e595c871c3d0",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
+      "expectedSha256": "420b483b60b4edca2de05f1467fdb83971b13719e0daf26b022ee72005872943",
+      "reason": "Resolve Google city and postal IDs before paint and wire one existing market phone callback."
     },
     "assets/st-louis-mo/lp/insulation-removal/index.html": {
-      "expectedSha256": "f9a93539fefbe9fadc088fde985090bcaea72bf873c633b530c053ca83a81077",
-      "reason": "Add approved ad landing page or its dedicated visual assets."
-    },
-    "runtime/functions/api/leads.js": {
-      "expectedSha256": "a544ef1876725c44a42db0f5409dc5a2ffbaf818a32c4912e4ef2ce929024e2f",
-      "reason": "Allow only six marked short forms and add durable team-visible customer notes. Populate short-ad Overview Service Details with note, services, ZIP and address reminder; retain normal-form mapping."
-    },
-    "runtime/package.json": {
-      "expectedSha256": "370e0dcbfa7b4051ff0d04c6da360739bec36ced57e1d64fd5521d340ee53936",
-      "reason": "Add landing-page generator preview command."
-    },
-    "runtime/scripts/build-pages-output.mjs": {
-      "expectedSha256": "c6cf26998c675bacfcb90729f03c9ac71dc30d79dfe0f538341b77598ba7522b",
-      "reason": "Exclude uncompressed collage sources from published output."
+      "expectedSha256": "0ec4cb7efcfde28cc968e1e84d3c328009a40cb8e5804b9ab3520493e1c67218",
+      "reason": "Resolve Google city and postal IDs before paint and wire one existing market phone callback."
     }
   }
 }
