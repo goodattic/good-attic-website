@@ -9,7 +9,7 @@
   <title>Attic Insulation in Kansas City | Good Attic</title>
   <link rel="icon" type="image/png" sizes="32x32" href="../../../assets/favicon-32.png">
   <link rel="stylesheet" href="../../../styles.72e38ccd660523f9.css">
-  <link rel="stylesheet" href="../../../assets/ad-landing.css?v=8b24c596">
+  <link rel="stylesheet" href="../../../assets/ad-landing.css?v=d9ebd677">
   <script>
     // Static lookup runs during parsing, before the headline exists or paints.
     window.goodAtticLpTownResolution = (function () {
@@ -41,7 +41,7 @@
     window.goodAtticGa4Configured = true;
   </script>
   <script src="../../../script.40559d41a6b61dc2.js" defer></script>
-  <script src="../../../assets/ad-landing.js?v=8b24c596" defer></script>
+  <script src="../../../assets/ad-landing.js?v=d9ebd677" defer></script>
 </head>
 <body>
   <!-- Compatibility nodes required by the unchanged live script; never rendered or interactive. -->
@@ -60,6 +60,27 @@
       <div class="lp-hero-copy">
         <p class="lp-first-proof"><span>Family-owned · Free photo-documented attic inspection</span></p>
         <h1 data-lp-fit-headline>Attic insulation that keeps your <span data-lp-town><script>document.currentScript.replaceWith(document.createTextNode(window.goodAtticLpTownResolution?.town || "Kansas City area"));</script></span> home comfortable</h1>
+        <script>
+    // Match the approved mobile headline fit before the next content parses.
+    (function () {
+      const headline = document.currentScript.previousElementSibling;
+      const fit = () => {
+        headline.style.removeProperty('font-size');
+        if (innerWidth > 640) return;
+        for (let size = 32; size >= 26; size -= 0.5) {
+          headline.style.fontSize = size + 'px';
+          if (headline.getBoundingClientRect().height <= parseFloat(getComputedStyle(headline).lineHeight) * 3 + 1) break;
+        }
+      };
+      fit();
+      let lastWidth = innerWidth;
+      addEventListener('resize', () => {
+        if (innerWidth === lastWidth) return;
+        lastWidth = innerWidth;
+        requestAnimationFrame(fit);
+      }, { passive: true });
+    })();
+  </script>
         <p class="lp-hero-support">Lower energy bills. No more hot and cold rooms.</p>
         <p class="lp-hero-subhead">Free attic inspection, air sealing and blown-in insulation. Clear, honest pricing.</p>
       </div>

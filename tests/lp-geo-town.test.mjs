@@ -66,3 +66,19 @@ test('Kansas City landing pages still make no review claim', () => {
     assert.doesNotMatch(html, /five-star reviews|5-star reviews|Google review/i);
   }
 });
+
+test('the approved 32px mobile headline fit runs synchronously after every resolved headline', () => {
+  const css = fs.readFileSync(new URL('assets/ad-landing.css', root), 'utf8');
+  assert.match(css, /\.lp-hero h1\{font-size:32px;line-height:1\.05/);
+  for (const market of Object.keys(markets)) {
+    for (const service of services) {
+      const html = page(market, service);
+      const headlineEnd = html.indexOf('</h1>');
+      const fitStart = html.indexOf('const headline = document.currentScript.previousElementSibling;', headlineEnd);
+      const supportStart = html.indexOf('class="lp-hero-support"', headlineEnd);
+      assert.ok(headlineEnd >= 0 && fitStart > headlineEnd && supportStart > fitStart,
+        `${market}/${service} fits after the town resolves and before following content parses`);
+      assert.match(html.slice(fitStart, supportStart), /for \(let size = 32; size >= 26; size -= 0\.5\)/);
+    }
+  }
+});
