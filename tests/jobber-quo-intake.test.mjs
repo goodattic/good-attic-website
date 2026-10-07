@@ -11,15 +11,18 @@ const PHONE='+18165550105';
 const NOW=Date.parse('2026-09-08T04:00:00Z');
 const CLIENT=enc('Client',111),REQUEST=enc('Request',222),NOTE=enc('RequestNote',333);
 const ACCOUNTS={utah:enc('Account',2498432),stl:enc('Account',2498453),kc:enc('Account',1919824)};
-function database() {
+function database({kcLedger=false}={}) {
   const db=new DatabaseSync(':memory:');
   db.exec(fs.readFileSync(new URL('fixtures/quo-intake-operations.sql',import.meta.url),'utf8'));
   db.exec(fs.readFileSync(new URL('fixtures/acknowledgement-sources.sql',import.meta.url),'utf8'));
-  db.exec(fs.readFileSync(new URL('../migrations/0008_quo_call_attributions.sql',import.meta.url),'utf8'));
+  const callSchema=fs.readFileSync(new URL('../migrations/0008_quo_call_attributions.sql',import.meta.url),'utf8');
+  // Model the additive market-check relaxation from migration 0018 without
+  // changing the pre-migration fixture used by all existing tests.
+  db.exec(kcLedger?callSchema.replace("CHECK (market IN ('utah','stl'))","CHECK (market IN ('utah','stl','kc'))"):callSchema);
   return {raw:db,prepare(sql){return {bind(...args){return {async run(){const r=db.prepare(sql).run(...args);return {success:true,meta:{changes:Number(r.changes)}};},async first(){return db.prepare(sql).get(...args)||null;},async all(){return {success:true,results:db.prepare(sql).all(...args)};}};}};}};
 }
 function fixture(options={}) {
-  const market=options.market||'utah',account=ACCOUNTS[market],db=database();
+  const market=options.market||'utah',account=ACCOUNTS[market],db=database(options);
   const env={ANGI_ROUTER_DB:db,CONTACT_SYNC_BROKER_SECRET:SECRET,QUO_INTAKE_WRITE_ENABLED:'true',QUO_INTAKE_LIVE_SINCE:'2026-09-08T03:00:00Z'};
   const calls=[];
   const state={clients:options.clients||[],requests:options.requests||[],jobs:options.jobs||[],now:NOW};
@@ -70,13 +73,98 @@ for(const market of Object.keys(ACCOUNTS))test(`${market}: reuses token authorit
   assert.deepEqual(await bodyOf(write,f,f.body),result);assert.deepEqual(f.counts(),{client:1,request:1,note:1});
   assert.equal((await bodyOf(status,f,{account_id:ACCOUNTS[market],operation_id:f.body.operation_id})).operation_state,'completed');
 });
-test('distinct Quo call IDs remain separate ledger records and retries only update links',async()=>{
+test('disabled call auto-request suppresses every market before operation reservation or Jobber writes',async()=>{
+  for(const market of Object.keys(ACCOUNTS)){
+    const f=fixture({market});f.env.QUO_CALL_AUTO_REQUEST_ENABLED='false';
+    const result=await bodyOf(write,f,f.body);
+    assert.equal(result.http,200);assert.equal(result.operation_state,'suppressed');
+    assert.equal(result.reason,'quo_call_auto_request_disabled');assert.equal(result.retryable,false);
+    assert.equal(result.uncertain,false);assert.equal(result.operation_id,f.body.operation_id);
+    assert.deepEqual(f.counts(),{client:0,request:0,note:0});assert.equal(f.calls.length,0);
+    for(const table of ['quo_intake_operations','quo_intake_source_guards','quo_intake_phone_guards','quo_call_attributions'])
+      assert.equal(f.db.raw.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get().n,0,`${market} ${table}`);
+  }
+});
+test('disabled call auto-request does not disable Quo text intake',async()=>{
+  const f=fixture();f.env.QUO_CALL_AUTO_REQUEST_ENABLED='false';
+  const body={...f.body,source:{...f.source,type:'message',id:'MSfixture1',event_id:'EVtext',status:'received',text:'Please schedule an attic assessment.'}};
+  const result=await bodyOf(write,f,body);
+  assert.equal(result.operation_state,'completed');assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+  assert.equal(f.db.raw.prepare('SELECT COUNT(*) AS n FROM quo_call_attributions').get().n,0);
+});
+test('call gate catches a flag change before Client or Request mutation',async()=>{
+  const beforeClient=fixture();
+  const refresh=beforeClient.deps.refreshJobberAccessToken;
+  beforeClient.deps.refreshJobberAccessToken=async(...args)=>{
+    const token=await refresh(...args);beforeClient.env.QUO_CALL_AUTO_REQUEST_ENABLED='false';return token;
+  };
+  const heldBeforeClient=await bodyOf(write,beforeClient,beforeClient.body);
+  assert.equal(heldBeforeClient.operation_state,'held');assert.equal(heldBeforeClient.reason,'quo_call_auto_request_disabled');
+  assert.deepEqual(beforeClient.counts(),{client:0,request:0,note:0});
+
+  const beforeRequest=fixture();const graphql=beforeRequest.deps.jobberGraphql;
+  beforeRequest.deps.jobberGraphql=async(...args)=>{
+    const result=await graphql(...args);
+    if(args[2]===_private.MUTATIONS.client)beforeRequest.env.QUO_CALL_AUTO_REQUEST_ENABLED='false';
+    return result;
+  };
+  const heldBeforeRequest=await bodyOf(write,beforeRequest,beforeRequest.body);
+  assert.equal(heldBeforeRequest.operation_state,'held');assert.equal(heldBeforeRequest.reason,'quo_call_auto_request_disabled');
+  assert.equal(heldBeforeRequest.client_id,CLIENT);assert.equal(heldBeforeRequest.request_id,null);
+  assert.deepEqual(beforeRequest.counts(),{client:1,request:0,note:0});
+});
+test('distinct Quo call IDs remain separate and duplicate writes preserve nonnull Jobber links',async()=>{
   const f=fixture({market:'utah'}), row={operation_kind:'intake',account_id:f.identity.account_id,market:'utah',phone:f.identity.phone,phone_number_id:f.identity.phone_number_id,request_id:REQUEST,client_id:CLIENT};
   await _private.upsertCallAttribution(f.db,row,{...f.source,id:'CAone'},NOW);
   await _private.upsertCallAttribution(f.db,row,{...f.source,id:'CAtwo'},NOW);
-  await _private.upsertCallAttribution(f.db,{...row,request_id:enc('Request',223)},{...f.source,id:'CAone'},NOW);
+  await _private.upsertCallAttribution(f.db,{...row,request_id:null,client_id:null},{...f.source,id:'CAone'},NOW);
   const rows=f.db.raw.prepare('SELECT quo_call_id,jobber_request_id FROM quo_call_attributions ORDER BY quo_call_id').all().map(row=>({...row}));
-  assert.deepEqual(rows,[{quo_call_id:'CAone',jobber_request_id:enc('Request',223)},{quo_call_id:'CAtwo',jobber_request_id:REQUEST}]);
+  assert.deepEqual(rows,[{quo_call_id:'CAone',jobber_request_id:REQUEST},{quo_call_id:'CAtwo',jobber_request_id:REQUEST}]);
+});
+test('broker enriches Worker-first call row without clearing attribution, consent or links',async()=>{
+  const f=fixture(),row={operation_kind:'intake',account_id:f.identity.account_id,market:'utah',phone:f.identity.phone,phone_number_id:f.identity.phone_number_id,request_id:null,client_id:null};
+  const first='2026-09-07T21:59:00-06:00';
+  await _private.upsertCallAttribution(f.db,row,{...f.source,occurred_at_original:first,status:'ringing',duration:0,event_id:'EVworker'},NOW);
+  f.db.raw.prepare("UPDATE quo_call_attributions SET attribution_status='google_matched', consent_evidence='verified', quote_id='quote-fixture' WHERE quo_call_id='CAfixture1'").run();
+  await _private.upsertCallAttribution(f.db,{...row,request_id:REQUEST,client_id:CLIENT},{...f.source,status:'completed',duration:42,event_id:'EVbroker'},NOW+1000);
+  const linked=f.db.raw.prepare('SELECT * FROM quo_call_attributions WHERE quo_call_id=?').get(f.source.id);
+  assert.equal(linked.call_started_at_original,first);assert.equal(linked.final_status,'completed');assert.equal(linked.duration_seconds,42);
+  assert.equal(linked.source_event_id,'EVbroker');assert.equal(linked.jobber_request_id,REQUEST);assert.equal(linked.jobber_client_id,CLIENT);
+  assert.equal(linked.attribution_status,'google_matched');assert.equal(linked.consent_evidence,'verified');assert.equal(linked.quote_id,'quote-fixture');
+  await _private.upsertCallAttribution(f.db,row,{...f.source,status:'completed',duration:20,event_id:'EVduplicate'},NOW+2000);
+  const repeated=f.db.raw.prepare('SELECT * FROM quo_call_attributions WHERE quo_call_id=?').get(f.source.id);
+  assert.equal(repeated.duration_seconds,42);assert.equal(repeated.jobber_request_id,REQUEST);assert.equal(repeated.jobber_client_id,CLIENT);
+  assert.equal(repeated.source_event_id,'EVbroker');assert.equal(repeated.attribution_status,'google_matched');assert.equal(repeated.consent_evidence,'verified');
+});
+test('older broker terminal event links Worker-final call without replacing its status, duration or event ID',async()=>{
+  const f=fixture(),row={operation_kind:'intake',account_id:f.identity.account_id,market:'utah',phone:f.identity.phone,phone_number_id:f.identity.phone_number_id,request_id:null,client_id:null};
+  await _private.upsertCallAttribution(f.db,row,{...f.source,status:'no-answer',event_id:'EVworker',duration:20},NOW);
+  const result=await bodyOf(write,f,{...f.body,source:{...f.source,status:'completed',duration:42,event_id:'EVolder'}});
+  assert.equal(result.operation_state,'completed');assert.deepEqual(f.counts(),{client:1,request:1,note:1});
+  const linked=f.db.raw.prepare('SELECT final_status,duration_seconds,jobber_request_id,jobber_client_id,source_event_id FROM quo_call_attributions WHERE quo_call_id=?').get(f.source.id);
+  assert.equal(linked.final_status,'no-answer');assert.equal(linked.duration_seconds,20);assert.equal(linked.source_event_id,'EVworker');
+  assert.equal(linked.jobber_request_id,REQUEST);assert.equal(linked.jobber_client_id,CLIENT);
+});
+test('broker refuses conflicting nonnull call identity and Jobber links',async()=>{
+  const f=fixture(),row={operation_kind:'intake',account_id:f.identity.account_id,market:'utah',phone:f.identity.phone,phone_number_id:f.identity.phone_number_id,request_id:REQUEST,client_id:CLIENT};
+  await _private.upsertCallAttribution(f.db,row,f.source,NOW);
+  for(const conflicting of [{row:{...row,request_id:enc('Request',223)},source:f.source,code:'call_attribution_link_conflict'},
+    {row:{...row,client_id:enc('Client',112)},source:f.source,code:'call_attribution_link_conflict'},
+    {row:{...row,phone:'+18015550106'},source:f.source,code:'call_attribution_identity_conflict'}]){
+    await assert.rejects(_private.upsertCallAttribution(f.db,conflicting.row,conflicting.source,NOW+1000),error=>error.code===conflicting.code);
+  }
+  const retained=f.db.raw.prepare('SELECT * FROM quo_call_attributions WHERE quo_call_id=?').get(f.source.id);
+  assert.equal(retained.jobber_request_id,REQUEST);assert.equal(retained.jobber_client_id,CLIENT);assert.equal(retained.caller_phone,f.identity.phone);
+});
+test('KC call ledger stays off before migration and captures when upgraded schema and flag are enabled',async()=>{
+  const before=fixture({market:'kc'}),row={operation_kind:'intake',account_id:ACCOUNTS.kc,market:'kc',phone:PHONE,phone_number_id:_private.NUMBERS.kc.id,request_id:REQUEST,client_id:CLIENT};
+  await _private.upsertCallAttribution(before.db,row,before.source,NOW,before.env);
+  assert.equal(before.db.raw.prepare('SELECT COUNT(*) AS n FROM quo_call_attributions').get().n,0);
+  const after=fixture({market:'kc',kcLedger:true});after.env.QUO_CALL_LEDGER_KC_ENABLED='true';
+  const result=await bodyOf(write,after,after.body);
+  assert.equal(result.operation_state,'completed');
+  const captured=after.db.raw.prepare('SELECT market,jobber_request_id,jobber_client_id FROM quo_call_attributions').get();
+  assert.equal(captured.market,'kc');assert.equal(captured.jobber_request_id,REQUEST);assert.equal(captured.jobber_client_id,CLIENT);
 });
 test('call source keeps the original offset timestamp alongside UTC',()=>{
   const f=fixture(), original='2026-09-07T21:59:00-06:00';
@@ -244,6 +332,17 @@ test('operator recovery uses the original held client/source/guards and creates 
  assert.deepEqual(f.db.raw.prepare('SELECT source_json,intent_sha256,client_id FROM quo_intake_operations').get(),before);
  assert.equal(f.db.raw.prepare('SELECT operation_id FROM quo_intake_phone_guards').get().operation_id,f.body.operation_id);
  assert.equal(f.db.raw.prepare('SELECT operation_id FROM quo_intake_source_guards').get().operation_id,f.body.operation_id);
+});
+
+test('disabled call auto-request refuses held partial Client recovery while status remains readable',async()=>{
+ const f=await legacyHeldPartial();f.env.QUO_CALL_AUTO_REQUEST_ENABLED='false';
+ const before=f.db.raw.prepare('SELECT operation_state,client_id,request_id FROM quo_intake_operations WHERE operation_id=?').get(f.body.operation_id);
+ const result=await bodyOf(resume,f,f.recovery);
+ assert.equal(result.http,409);assert.equal(result.code,'quo_call_auto_request_disabled');
+ assert.deepEqual(f.counts(),{client:1,request:0,note:0});
+ assert.deepEqual(f.db.raw.prepare('SELECT operation_state,client_id,request_id FROM quo_intake_operations WHERE operation_id=?').get(f.body.operation_id),before);
+ const read=await bodyOf(status,f,{account_id:f.identity.account_id,operation_id:f.body.operation_id});
+ assert.equal(read.http,200);assert.equal(read.operation_state,'held');assert.equal(read.client_id,CLIENT);
 });
 
 test('operator recovery rejects wrong identity, overrides, uncertain phases, altered intent and missing guards',async()=>{

@@ -51,7 +51,10 @@ const MUTATIONS = {
 };
 const FINAL_STATES = new Set(['completed','held','suppressed']);
 const WRITE_STATES = new Set(['client_creating','request_creating','note_creating']);
-const CALL_ATTRIBUTION_MARKETS = new Set(['utah','stl']);
+const CALL_ATTRIBUTION_MARKETS = new Set(['utah','stl','kc']);
+const FINAL_CALL_STATUSES = new Set(['completed','missed','no-answer','busy','failed','canceled','cancelled','abandoned','voicemail']);
+const FINAL_CALL_STATUS_SQL=[...FINAL_CALL_STATUSES].map(status=>`'${status}'`).join(',');
+const callAutoRequestDisabled = (env,source) => source?.type==='call' && env.QUO_CALL_AUTO_REQUEST_ENABLED==='false';
 const json = (body,status=200) => Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 const canonical = (v,type) => canonicalJobberId(v,type);
 const validOperation = v => typeof v==='string' && /^[A-Za-z0-9:_-]{1,240}$/.test(v);
@@ -326,24 +329,54 @@ function noteMessage(row,source) {
   if(source.media?.length)lines.push(`Media:\n${source.media.join('\n')}`);
   return lines.join('\n');
 }
-async function upsertCallAttribution(db,row,source,now) {
-  if(row.operation_kind!=='intake'||source.type!=='call'||!CALL_ATTRIBUTION_MARKETS.has(row.market))return;
+async function upsertCallAttribution(db,row,source,now,env={}) {
+  if(row.operation_kind!=='intake'||source.type!=='call'||!CALL_ATTRIBUTION_MARKETS.has(row.market)
+    ||(row.market==='kc'&&env.QUO_CALL_LEDGER_KC_ENABLED!=='true'))return;
   const original=source.occurred_at_original||source.occurred_at;
   const utc=new Date(source.occurred_at).toISOString();
-  const existing=await db.prepare('SELECT * FROM quo_call_attributions WHERE account_id = ? AND quo_call_id = ?').bind(row.account_id,source.id).first();
-  if(existing) {
-    for(const [key,value] of [['market',row.market],['phone_number_id',row.phone_number_id],['caller_phone',row.phone],['call_started_at_original',original],['call_started_at_utc',utc],['destination_number',source.to],['direction',source.direction],['final_status',source.status],['source_event_id',source.event_id],['conversation_id',source.conversation_id]]) {
-      if(existing[key]!==value)throw new IntakeError('call_attribution_identity_conflict',409);
-    }
-    await run(db,`UPDATE quo_call_attributions SET duration_seconds = ?, first_time_caller_status = ?, jobber_request_id = ?, jobber_client_id = ?, updated_at = ?
-      WHERE account_id = ? AND quo_call_id = ?`,[source.duration??null,source.first_time_caller_status??null,row.request_id||null,row.client_id||null,new Date(now).toISOString(),row.account_id,source.id]);
-    return;
-  }
-  await run(db,`INSERT INTO quo_call_attributions
+  // The Worker can capture the call before an in-flight broker operation
+  // reaches this point. Insert first and reconcile the existing call on a
+  // unique-key conflict, without replacing attribution or consent fields.
+  const inserted=await run(db,`INSERT INTO quo_call_attributions
     (attribution_id,account_id,market,phone_number_id,quo_call_id,caller_phone,call_started_at_original,call_started_at_utc,destination_number,direction,final_status,duration_seconds,first_time_caller_status,jobber_request_id,jobber_client_id,source_event_id,conversation_id,created_at,updated_at)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,[
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(account_id,quo_call_id) DO NOTHING`,[
       `quo-call:${row.account_id}:${source.id}`,row.account_id,row.market,row.phone_number_id,source.id,row.phone,original,utc,source.to,source.direction,source.status,source.duration??null,source.first_time_caller_status??null,row.request_id||null,row.client_id||null,source.event_id,source.conversation_id,new Date(now).toISOString(),new Date(now).toISOString()
     ]);
+  if(inserted===1)return;
+  const existing=await db.prepare('SELECT * FROM quo_call_attributions WHERE account_id = ? AND quo_call_id = ?').bind(row.account_id,source.id).first();
+  if(!existing)throw new IntakeError('call_attribution_insert_failed');
+  for(const [key,value] of [['market',row.market],['phone_number_id',row.phone_number_id],['caller_phone',row.phone],['call_started_at_utc',utc],['destination_number',source.to],['direction',source.direction]]) {
+    if(existing[key]!==value)throw new IntakeError('call_attribution_identity_conflict',409);
+  }
+  // Equivalent offset strings represent the same call start; retain the
+  // first Quo original string. A later conversation ID may fill a blank.
+  if(Date.parse(existing.call_started_at_original)!==Date.parse(original)
+    ||(existing.conversation_id&&source.conversation_id&&existing.conversation_id!==source.conversation_id))throw new IntakeError('call_attribution_identity_conflict',409);
+  const requestId=row.request_id||null,clientId=row.client_id||null;
+  if((existing.jobber_request_id&&requestId&&existing.jobber_request_id!==requestId)
+    ||(existing.jobber_client_id&&clientId&&existing.jobber_client_id!==clientId))throw new IntakeError('call_attribution_link_conflict',409);
+  // Evaluate against the current row inside UPDATE: the Worker's terminal
+  // evidence may race this broker's older event, even another terminal one.
+  // The broker has no event chronology that could safely replace it.
+  const terminalIncoming=FINAL_CALL_STATUSES.has(source.status.toLowerCase());
+  const preserveFinal=`lower(final_status) IN (${FINAL_CALL_STATUS_SQL})${terminalIncoming?'':" OR (lower(final_status) = 'in-progress' AND ? = 'ringing')"}`;
+  const statusSql=`CASE WHEN ${preserveFinal} THEN final_status ELSE ? END`;
+  const eventSql=`CASE WHEN ${preserveFinal} THEN source_event_id ELSE ? END`;
+  const statusArgs=terminalIncoming?[source.status]:[source.status.toLowerCase(),source.status];
+  const eventArgs=terminalIncoming?[source.event_id]:[source.status.toLowerCase(),source.event_id];
+  const updated=await run(db,`UPDATE quo_call_attributions SET final_status = ${statusSql},
+    duration_seconds = CASE WHEN duration_seconds IS NULL THEN ? WHEN lower(final_status) IN (${FINAL_CALL_STATUS_SQL}) OR ? IS NULL THEN duration_seconds ELSE MAX(duration_seconds, ?) END,
+    first_time_caller_status = COALESCE(first_time_caller_status, ?),
+    source_event_id = ${eventSql}, conversation_id = COALESCE(conversation_id, ?),
+    jobber_request_id = COALESCE(jobber_request_id, ?), jobber_client_id = COALESCE(jobber_client_id, ?), updated_at = ?
+    WHERE account_id = ? AND quo_call_id = ?
+      AND (jobber_request_id IS NULL OR ? IS NULL OR jobber_request_id = ?)
+      AND (jobber_client_id IS NULL OR ? IS NULL OR jobber_client_id = ?)`,[
+      ...statusArgs,source.duration??null,source.duration??null,source.duration??null,
+      source.first_time_caller_status??null,...eventArgs,source.conversation_id||null,
+      requestId,clientId,new Date(now).toISOString(),row.account_id,source.id,
+      requestId,requestId,clientId,clientId]);
+  if(updated!==1)throw new IntakeError('call_attribution_link_conflict',409);
 }
 async function createNote(env,deps,token,row,lease) {
   const db=env.ANGI_ROUTER_DB;
@@ -376,10 +409,12 @@ async function verifyMessageNoteParent(env,deps,token,route,identity,row) {
 }
 async function processIntake(env,deps,token,route,identity,input,row,lease) {
   const db=env.ANGI_ROUTER_DB;
+  const source=JSON.parse(row.source_json);
   if(row.operation_state==='request_created') {
-    await upsertCallAttribution(db,row,JSON.parse(row.source_json),nowFor(deps));
+    await upsertCallAttribution(db,row,source,nowFor(deps),env);
     return createNote(env,deps,token,row,lease);
   }
+  if(callAutoRequestDisabled(env,source))return hold(db,row,lease,'quo_call_auto_request_disabled',nowFor(deps));
   let classification;
   try{classification=await classify(env,deps,token,route,identity,row.client_id);}catch(error){
     if(error instanceof IntakeError&&error.status===409)return hold(db,row,lease,error.code,nowFor(deps));
@@ -398,6 +433,7 @@ async function processIntake(env,deps,token,route,identity,input,row,lease) {
     if(classification.client_id) {
       await checkpoint(db,row,lease,'client_created',{client_id:classification.client_id},nowFor(deps));
     }else {
+      if(callAutoRequestDisabled(env,source))return hold(db,row,lease,'quo_call_auto_request_disabled',nowFor(deps));
       await checkpoint(db,row,lease,'client_creating',{},nowFor(deps));
       try {
         // Jobber requires a name. Use a visibly generic system placeholder only
@@ -427,8 +463,8 @@ async function processIntake(env,deps,token,route,identity,input,row,lease) {
     throw error;
   }
   if(fresh.classification!=='eligible_unused_client'||fresh.client_id!==row.client_id) return hold(db,row,lease,'inquiry_or_identity_changed_before_request',nowFor(deps));
+  if(callAutoRequestDisabled(env,source))return hold(db,row,lease,'quo_call_auto_request_disabled',nowFor(deps));
   await checkpoint(db,row,lease,'request_creating',{},nowFor(deps));
-  const source=JSON.parse(row.source_json);
   try {
     const result=await deps.jobberGraphql(env,token.accessToken,MUTATIONS.request,{input:{clientId:row.client_id,title:`Quo ${source.type==='message'?'text':'call'} inquiry [${source.id}]`}});
     const request=mutationData(result,'requestCreate','request','Request');
@@ -441,7 +477,7 @@ async function processIntake(env,deps,token,route,identity,input,row,lease) {
   }
   // The Request checkpoint remains authoritative if the local ledger is
   // temporarily unavailable; retrying can attach it without replaying Jobber.
-  await upsertCallAttribution(db,row,source,nowFor(deps));
+  await upsertCallAttribution(db,row,source,nowFor(deps),env);
   return createNote(env,deps,token,row,lease);
 }
 async function handleWrite(context,deps,kind) {
@@ -455,6 +491,13 @@ async function handleWrite(context,deps,kind) {
       if(input.expected_client_id!==null&&!canonical(input.expected_client_id,'Client'))throw new IntakeError('invalid_input',400);
       input.expected_client_id=input.expected_client_id===null?null:canonical(input.expected_client_id,'Client');
     }else if(!validOperation(input.parent_operation_id)||input.parent_operation_id===input.operation_id||!canonical(input.request_id,'Request'))throw new IntakeError('invalid_input',400);
+    // A call disabled at cutover cannot reserve a new intake operation or
+    // reach a Jobber Client/Request mutation. Text intake remains independent.
+    if(kind==='intake'&&callAutoRequestDisabled(context.env,source))return json({
+      ok:true,...identity,operation_id:input.operation_id,operation_state:'suppressed',classification:null,
+      reason:'quo_call_auto_request_disabled',client_id:null,request_id:null,note_id:null,
+      jobberWebUri:null,retryable:false,uncertain:false,
+    });
     if(context.env.QUO_INTAKE_WRITE_ENABLED!=='true')throw new IntakeError('quo_intake_writes_disabled',503);
     const cutoff=Date.parse(context.env.QUO_INTAKE_LIVE_SINCE);
     if(!Number.isFinite(cutoff)||Date.parse(source.occurred_at)<cutoff)throw new IntakeError('quo_intake_before_cutover',409);
@@ -570,10 +613,12 @@ export async function handleJobberQuoIntakeResume(context,deps=leadHelpers) {
     if(row.operation_state==='completed')return json(publicOperation(row,nowFor(deps)));
     // A repeated request during active work is a status read, not another write.
     if(!FINAL_STATES.has(row.operation_state))return json(publicOperation(row,nowFor(deps)));
+    let originalSource;try{originalSource=JSON.parse(row.source_json);}catch{throw new IntakeError('intake_recovery_source_invalid',409);}
+    if(callAutoRequestDisabled(context.env,originalSource))throw new IntakeError('quo_call_auto_request_disabled',409);
     if(row.operation_state!=='held'||row.reason!=='inquiry_or_identity_changed_before_request'
       ||row.classification!=='eligible_new_client'||row.uncertain||row.request_id||row.note_id||row.jobber_web_uri)throw new IntakeError('intake_recovery_not_safe',409);
     if(context.env.QUO_INTAKE_WRITE_ENABLED!=='true')throw new IntakeError('quo_intake_writes_disabled',503);
-    let source;try{source=cleanSource(JSON.parse(row.source_json),identity,nowFor(deps));}catch{throw new IntakeError('intake_recovery_source_invalid',409);}
+    let source;try{source=cleanSource(originalSource,identity,nowFor(deps));}catch{throw new IntakeError('intake_recovery_source_invalid',409);}
     const sourceTime=Date.parse(source.occurred_at),cutoff=Date.parse(context.env.QUO_INTAKE_LIVE_SINCE);
     if(!Number.isFinite(cutoff)||sourceTime<cutoff||nowFor(deps)-sourceTime>24*60*60*1000)throw new IntakeError('intake_recovery_outside_cutover',409);
     const original={kind:'intake',...identity,source,expected_client_id:null,parent_operation_id:null,request_id:null};
