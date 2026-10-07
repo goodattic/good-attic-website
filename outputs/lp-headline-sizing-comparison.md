@@ -1,10 +1,10 @@
-# Live production versus local preview candidate: mobile LP headline
+# Live production versus hosted preview: mobile LP headline
 
-Measured with headless Chrome against `https://goodattic.energy` and the current local `dist/` candidate. Each requested town replaced only the `[data-lp-town]` HTML span in the browser response before parsing; normal live/candidate styles and scripts then ran. Google analytics and images were blocked. No form, call, text, or production write occurred.
+Measured with headless Chrome against `https://goodattic.energy` and the hosted preview `https://2afdd83b.good-attic-website.pages.dev`. Where needed, the requested town replaced only the `[data-lp-town]` HTML span in the browser response before parsing; normal live/preview styles and scripts then ran. Google analytics and images were blocked. No form, call, text, or production write occurred.
 
-The table gives the first form submit button’s lower edge relative to viewport top. All 52 candidate font sizes, line counts, and button bottoms matched live exactly. The largest submit bottom was 612.1px in a 360×640 viewport. A layout-shift observer recorded zero entries in all candidate cases; headline font at `DOMContentLoaded` matched its settled font in all cases.
+The table gives the first form submit button’s lower edge relative to viewport top. All 52 hosted preview font sizes, line counts, and button bottoms matched live exactly. The largest submit bottom was 612.1px in a 360×640 viewport. A separate local build run of the byte-identical preview recorded zero layout shifts in all 52 cases; headline font at `DOMContentLoaded` matched its settled font in all cases.
 
-| Page type | Viewport | Town shown | Live font | Candidate font | Lines live / candidate | Submit bottom live / candidate |
+| Page type | Viewport | Town shown | Live font | Preview font | Lines live / preview | Submit bottom live / preview |
 |---|---:|---|---:|---:|---:|---:|
 | attic-insulation | 360×640 | Lehi | 32px | 32px | 3 / 3 | 585.5px / 585.5px |
 | attic-insulation | 360×640 | Draper | 32px | 32px | 3 / 3 | 585.5px / 585.5px |
