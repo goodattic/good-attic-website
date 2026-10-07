@@ -6,29 +6,37 @@
       "expectedSha256": "311572d032ccd59a008fe9754f986ff9df2f911dccaefdcf6904edfed71174d8",
       "reason": "Use the documented Google phone callback and remove late headline resizing."
     },
+    "assets/assets/lp/collage/generated/removal/after/01.webp": {
+      "expectedSha256": "9616f123328de1b586879f9aa7c9d1dfed2714fb21e8fb34e816174131352792",
+      "reason": "Replace the specified After removal tile with the reviewed, cropped Good Attic photo."
+    },
+    "assets/assets/lp/collage/generated/removal/after/02.webp": {
+      "expectedSha256": "6f4cfd0b051fbaf509775fcc24438116f48455e000eea63ce58bd91324988521",
+      "reason": "Replace the specified After removal tile with the reviewed, cropped Good Attic photo."
+    },
     "assets/kansas-city-mo/lp/attic-insulation/index.html": {
       "expectedSha256": "7b8a6c2db842d6e727cddf34f988fb01eb2443719d3cf7071de1860df67b8ec9",
       "reason": "Resolve Google city and postal IDs and fit the approved mobile headline before paint; keep the existing market phone callback."
     },
     "assets/kansas-city-mo/lp/insulation-removal/index.html": {
-      "expectedSha256": "1e2c85bd3a47ba56e2fb0c57f0d9e98c16df36aac076df7d4640d69a6ed8b923",
-      "reason": "Resolve Google city and postal IDs and fit the approved mobile headline before paint; keep the existing market phone callback."
+      "expectedSha256": "6da2add09bdcc362ab8d0aab5f5f277d7e5012a5359a49f588feba018c358868",
+      "reason": "Reviewed LP call/town/approved headline behavior plus versioned refs for the two new After removal photos."
     },
     "assets/salt-lake-city-ut/lp/attic-insulation/index.html": {
       "expectedSha256": "96c04bf56df695872ff8925ab2cd3be3264bc622652dd12df996a3dec653593e",
       "reason": "Resolve Google city and postal IDs and fit the approved mobile headline before paint; keep the existing market phone callback."
     },
     "assets/salt-lake-city-ut/lp/insulation-removal/index.html": {
-      "expectedSha256": "06aaf8fab1a91112dcd17e73afc0823c0365221e479945556b24a16dbae1e16b",
-      "reason": "Resolve Google city and postal IDs and fit the approved mobile headline before paint; keep the existing market phone callback."
+      "expectedSha256": "973c4af0911d4e7b735f83851678cacbd1d9ca019304eb020ce6fa5ed01162a8",
+      "reason": "Reviewed LP call/town/approved headline behavior plus versioned refs for the two new After removal photos."
     },
     "assets/st-louis-mo/lp/attic-insulation/index.html": {
       "expectedSha256": "58dd948d2bcba497475a628c58870140eef4dc18327b08c44bdc7ffeff2d2bf0",
       "reason": "Resolve Google city and postal IDs and fit the approved mobile headline before paint; keep the existing market phone callback."
     },
     "assets/st-louis-mo/lp/insulation-removal/index.html": {
-      "expectedSha256": "985a399d9486708119b6aa45fa34a2b4de7fccbc432c5811f3d5e52bf5ed79a4",
-      "reason": "Resolve Google city and postal IDs and fit the approved mobile headline before paint; keep the existing market phone callback."
+      "expectedSha256": "8c5d5bc1b4aa7e743fb51c09c920d679b4a4ca6adf33f68abf3986d61b1d8734",
+      "reason": "Reviewed LP call/town/approved headline behavior plus versioned refs for the two new After removal photos."
     }
   }
 }

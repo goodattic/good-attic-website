@@ -10,6 +10,11 @@ const collage = JSON.parse(await readFile(path.join(root, "data/lp-collage-manif
 const assetRoot = "../../../assets/";
 const landingReviews = JSON.parse(await readFile(path.join(root, "data/proof/ad-landing-review-selection.json"), "utf8"));
 const geoLookup = JSON.parse(await readFile(path.join(root, "data/ad-geo-lookup.json"), "utf8"));
+const refreshedRemovalTileVersions = new Map(await Promise.all(["01", "02"].map(async (stem) => {
+  const image = `lp/collage/generated/removal/after/${stem}.webp`;
+  const hash = createHash("sha256").update(await readFile(path.join(root, "assets", image))).digest("hex");
+  return [image, hash.slice(0, 12)];
+})));
 const assetVersion = createHash("sha256")
   .update(await readFile(path.join(root, "assets/ad-landing.css")))
   .update(await readFile(path.join(root, "assets/ad-landing.js")))
@@ -157,7 +162,10 @@ function closingBlock(market) {
 function jobPhoto(market, service) {
   const tiles = (group, description) => {
     const set = collage[group];
-    return `<div class="lp-collage-grid">${set.images.map((src, i) => `<img src="${assetRoot}${src}" alt="${description} — Good Attic job photo ${i + 1}" width="240" height="240" loading="lazy" decoding="async">`).join("")}${Array.from({length: set.placeholder}, () => '<div class="lp-collage-placeholder" role="img" aria-label="Job photo placeholder"></div>').join("")}</div>`;
+    return `<div class="lp-collage-grid">${set.images.map((src, i) => {
+      const version = group === "removal/after" ? refreshedRemovalTileVersions.get(src) : null;
+      return `<img src="${assetRoot}${src}${version ? `?v=${version}` : ""}" alt="${description} — Good Attic job photo ${i + 1}" width="240" height="240" loading="lazy" decoding="async">`;
+    }).join("")}${Array.from({length: set.placeholder}, () => '<div class="lp-collage-placeholder" role="img" aria-label="Job photo placeholder"></div>').join("")}</div>`;
   };
   return `<figure class="lp-collage">${service.slug === "insulation-removal" ? `<div class="lp-collage-block"><p>Before</p>${tiles("removal/before", "Attic before insulation removal")}</div><div class="lp-collage-block"><p>After removal</p>${tiles("removal/after", "Cleaned-out attic after insulation removal")}</div><div class="lp-collage-block"><p>After new insulation</p>${tiles("attic-insulation/after", "Attic after new blown-in insulation")}</div>` : `<div class="lp-collage-block"><p>Before</p>${tiles("attic-insulation/before", "Attic before insulation work")}</div><div class="lp-collage-block"><p>After</p>${tiles("attic-insulation/after", "Attic after insulation work")}</div>`}<figcaption>Recent Good Attic jobs</figcaption></figure>`;
 }

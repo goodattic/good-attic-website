@@ -1,12 +1,12 @@
 {
-  "capturedAt": "2026-10-07T18:12:09.773Z",
+  "capturedAt": "2026-10-07T18:41:53.003Z",
   "fingerprint": {
     "dist/salt-lake-city-ut/lp/attic-insulation/index.html": "96c04bf56df695872ff8925ab2cd3be3264bc622652dd12df996a3dec653593e",
-    "dist/salt-lake-city-ut/lp/insulation-removal/index.html": "06aaf8fab1a91112dcd17e73afc0823c0365221e479945556b24a16dbae1e16b",
+    "dist/salt-lake-city-ut/lp/insulation-removal/index.html": "973c4af0911d4e7b735f83851678cacbd1d9ca019304eb020ce6fa5ed01162a8",
     "dist/st-louis-mo/lp/attic-insulation/index.html": "58dd948d2bcba497475a628c58870140eef4dc18327b08c44bdc7ffeff2d2bf0",
-    "dist/st-louis-mo/lp/insulation-removal/index.html": "985a399d9486708119b6aa45fa34a2b4de7fccbc432c5811f3d5e52bf5ed79a4",
+    "dist/st-louis-mo/lp/insulation-removal/index.html": "8c5d5bc1b4aa7e743fb51c09c920d679b4a4ca6adf33f68abf3986d61b1d8734",
     "dist/kansas-city-mo/lp/attic-insulation/index.html": "7b8a6c2db842d6e727cddf34f988fb01eb2443719d3cf7071de1860df67b8ec9",
-    "dist/kansas-city-mo/lp/insulation-removal/index.html": "1e2c85bd3a47ba56e2fb0c57f0d9e98c16df36aac076df7d4640d69a6ed8b923",
+    "dist/kansas-city-mo/lp/insulation-removal/index.html": "6da2add09bdcc362ab8d0aab5f5f277d7e5012a5359a49f588feba018c358868",
     "dist/script.e0b6cf2323b054a8.js": "e0b6cf2323b054a829fabc791fa4ae35c634461c7a2655fa0d303663a0659726",
     "assets/ad-landing.js": "311572d032ccd59a008fe9754f986ff9df2f911dccaefdcf6904edfed71174d8",
     "tests/browser/lp-runtime.js": "d9ad3a5d336d7d4ae01a9939fc5581ca97f955dd30ad1bacc58028781ac08116"
@@ -51,7 +51,7 @@
             "Insulation Removal"
           ],
           "additional_notes": "Mock note preserved",
-          "submission_id": "e2e306ef-6eb7-4095-8ddb-b873b05af683",
+          "submission_id": "568436fb-86d3-49ed-8946-4c77a7e4c359",
           "project_type_label": "Attic Insulation, Insulation Removal",
           "full_address": "84020",
           "ad_landing_page": "http://127.0.0.1:4186/salt-lake-city-ut/lp/attic-insulation/",
@@ -67,8 +67,8 @@
       ],
       "signals": [
         {
-          "submission_id": "e2e306ef-6eb7-4095-8ddb-b873b05af683",
-          "transaction_id": "e2e306ef-6eb7-4095-8ddb-b873b05af683"
+          "submission_id": "568436fb-86d3-49ed-8946-4c77a7e4c359",
+          "transaction_id": "568436fb-86d3-49ed-8946-4c77a7e4c359"
         }
       ],
       "pass": true
@@ -112,7 +112,7 @@
             "Insulation Removal"
           ],
           "additional_notes": "Mock note preserved",
-          "submission_id": "4e171d5c-3752-4ca3-9dd9-091213288426",
+          "submission_id": "acce2e0c-fa7b-48d9-a3b6-58d16b7d6a08",
           "project_type_label": "Attic Insulation, Insulation Removal",
           "full_address": "84020",
           "ad_landing_page": "http://127.0.0.1:4186/salt-lake-city-ut/lp/insulation-removal/",
@@ -128,8 +128,8 @@
       ],
       "signals": [
         {
-          "submission_id": "4e171d5c-3752-4ca3-9dd9-091213288426",
-          "transaction_id": "4e171d5c-3752-4ca3-9dd9-091213288426"
+          "submission_id": "acce2e0c-fa7b-48d9-a3b6-58d16b7d6a08",
+          "transaction_id": "acce2e0c-fa7b-48d9-a3b6-58d16b7d6a08"
         }
       ],
       "pass": true
@@ -173,7 +173,7 @@
             "Insulation Removal"
           ],
           "additional_notes": "Mock note preserved",
-          "submission_id": "6b1a0b31-e17d-4614-bff2-738398a729b4",
+          "submission_id": "94535cef-01e2-435d-a524-6ebd0275fd89",
           "project_type_label": "Attic Insulation, Insulation Removal",
           "full_address": "84020",
           "ad_landing_page": "http://127.0.0.1:4186/st-louis-mo/lp/attic-insulation/",
@@ -189,8 +189,8 @@
       ],
       "signals": [
         {
-          "submission_id": "6b1a0b31-e17d-4614-bff2-738398a729b4",
-          "transaction_id": "6b1a0b31-e17d-4614-bff2-738398a729b4"
+          "submission_id": "94535cef-01e2-435d-a524-6ebd0275fd89",
+          "transaction_id": "94535cef-01e2-435d-a524-6ebd0275fd89"
         }
       ],
       "pass": true
@@ -234,7 +234,7 @@
             "Insulation Removal"
           ],
           "additional_notes": "Mock note preserved",
-          "submission_id": "839854cd-a91c-465b-b443-f395f6d55a00",
+          "submission_id": "90074f4f-02d0-493b-9486-abcb01db034f",
           "project_type_label": "Attic Insulation, Insulation Removal",
           "full_address": "84020",
           "ad_landing_page": "http://127.0.0.1:4186/st-louis-mo/lp/insulation-removal/",
@@ -250,8 +250,8 @@
       ],
       "signals": [
         {
-          "submission_id": "839854cd-a91c-465b-b443-f395f6d55a00",
-          "transaction_id": "839854cd-a91c-465b-b443-f395f6d55a00"
+          "submission_id": "90074f4f-02d0-493b-9486-abcb01db034f",
+          "transaction_id": "90074f4f-02d0-493b-9486-abcb01db034f"
         }
       ],
       "pass": true
@@ -295,7 +295,7 @@
             "Insulation Removal"
           ],
           "additional_notes": "Mock note preserved",
-          "submission_id": "0c772b7a-a597-4c93-a1c9-75561b2dc62f",
+          "submission_id": "63d0c4ee-e140-4301-9645-be6523c40c8a",
           "project_type_label": "Attic Insulation, Insulation Removal",
           "full_address": "84020",
           "ad_landing_page": "http://127.0.0.1:4186/kansas-city-mo/lp/attic-insulation/",
@@ -311,8 +311,8 @@
       ],
       "signals": [
         {
-          "submission_id": "0c772b7a-a597-4c93-a1c9-75561b2dc62f",
-          "transaction_id": "0c772b7a-a597-4c93-a1c9-75561b2dc62f"
+          "submission_id": "63d0c4ee-e140-4301-9645-be6523c40c8a",
+          "transaction_id": "63d0c4ee-e140-4301-9645-be6523c40c8a"
         }
       ],
       "pass": true
@@ -356,7 +356,7 @@
             "Insulation Removal"
           ],
           "additional_notes": "Mock note preserved",
-          "submission_id": "13942e8b-37cb-43a2-b2ab-5d663ecb8fb1",
+          "submission_id": "c67f8518-4504-4ee4-bc29-ab51708514ba",
           "project_type_label": "Attic Insulation, Insulation Removal",
           "full_address": "84020",
           "ad_landing_page": "http://127.0.0.1:4186/kansas-city-mo/lp/insulation-removal/",
@@ -372,8 +372,8 @@
       ],
       "signals": [
         {
-          "submission_id": "13942e8b-37cb-43a2-b2ab-5d663ecb8fb1",
-          "transaction_id": "13942e8b-37cb-43a2-b2ab-5d663ecb8fb1"
+          "submission_id": "c67f8518-4504-4ee4-bc29-ab51708514ba",
+          "transaction_id": "c67f8518-4504-4ee4-bc29-ab51708514ba"
         }
       ],
       "pass": true
@@ -418,7 +418,7 @@
             "Insulation Removal"
           ],
           "additional_notes": "Mock note preserved",
-          "submission_id": "c3f0b22b-3f66-4aad-b786-68680100e486",
+          "submission_id": "f1d86ff7-fbaa-4852-beaa-100143eccc03",
           "project_type_label": "Attic Insulation, Insulation Removal",
           "full_address": "84020",
           "ad_landing_page": "http://127.0.0.1:4186/salt-lake-city-ut/lp/attic-insulation/?utm_location=1026920",
@@ -434,8 +434,8 @@
       ],
       "signals": [
         {
-          "submission_id": "c3f0b22b-3f66-4aad-b786-68680100e486",
-          "transaction_id": "c3f0b22b-3f66-4aad-b786-68680100e486"
+          "submission_id": "f1d86ff7-fbaa-4852-beaa-100143eccc03",
+          "transaction_id": "f1d86ff7-fbaa-4852-beaa-100143eccc03"
         }
       ],
       "pass": true
