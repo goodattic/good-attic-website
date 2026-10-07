@@ -5,7 +5,8 @@
   "scripts": {
     "build": "node scripts/build-pages-output.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "npm run build && npm test"
+    "check": "npm run build && npm test",
+    "preview:lp": "node scripts/generate-ad-landing-pages.mjs && npm run build"
   },
   "devDependencies": {
     "css-select": "7.0.0",

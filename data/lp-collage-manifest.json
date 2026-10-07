@@ -1,0 +1,54 @@
+{
+  "attic-insulation/before": {
+    "placeholder": 0,
+    "images": [
+      "lp/collage/generated/attic-insulation/before/01.webp",
+      "lp/collage/generated/attic-insulation/before/02.webp",
+      "lp/collage/generated/attic-insulation/before/03.webp",
+      "lp/collage/generated/attic-insulation/before/04.webp",
+      "lp/collage/generated/attic-insulation/before/05.webp",
+      "lp/collage/generated/attic-insulation/before/06.webp",
+      "lp/collage/generated/attic-insulation/before/07.webp",
+      "lp/collage/generated/attic-insulation/before/08.webp"
+    ]
+  },
+  "attic-insulation/after": {
+    "placeholder": 0,
+    "images": [
+      "lp/collage/generated/attic-insulation/after/01.webp",
+      "lp/collage/generated/attic-insulation/after/02.webp",
+      "lp/collage/generated/attic-insulation/after/03.webp",
+      "lp/collage/generated/attic-insulation/after/04.webp",
+      "lp/collage/generated/attic-insulation/after/05.webp",
+      "lp/collage/generated/attic-insulation/after/06.webp",
+      "lp/collage/generated/attic-insulation/after/07.webp",
+      "lp/collage/generated/attic-insulation/after/08.webp"
+    ]
+  },
+  "removal/before": {
+    "placeholder": 0,
+    "images": [
+      "lp/collage/generated/removal/before/01.webp",
+      "lp/collage/generated/removal/before/02.webp",
+      "lp/collage/generated/removal/before/03.webp",
+      "lp/collage/generated/removal/before/04.webp",
+      "lp/collage/generated/removal/before/05.webp",
+      "lp/collage/generated/removal/before/06.webp",
+      "lp/collage/generated/removal/before/07.webp",
+      "lp/collage/generated/removal/before/08.webp"
+    ]
+  },
+  "removal/after": {
+    "placeholder": 0,
+    "images": [
+      "lp/collage/generated/removal/after/01.webp",
+      "lp/collage/generated/removal/after/02.webp",
+      "lp/collage/generated/removal/after/03.webp",
+      "lp/collage/generated/removal/after/04.webp",
+      "lp/collage/generated/removal/after/05.webp",
+      "lp/collage/generated/removal/after/06.webp",
+      "lp/collage/generated/removal/after/07.webp",
+      "lp/collage/generated/removal/after/08.webp"
+    ]
+  }
+}

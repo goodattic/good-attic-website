@@ -21,6 +21,28 @@ const ATTRIBUTION_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 const ATTRIBUTION_FUTURE_SKEW_MS = 5 * 60 * 1000;
 const FORM_TRACKING_TIMEOUT_MS = 2000;
 const GOOGLE_PAID_MEDIA = new Set(["cpc", "ppc", "paidsearch", "paid-search", "sem"]);
+const SHORT_AD_FORM_MARKER = "short_ad_landing";
+const SHORT_AD_REQUEST_NOTE = "SHORT AD FORM - get address on the call";
+const SHORT_AD_PATH_MARKETS = new Map([
+  ["/salt-lake-city-ut/lp/attic-insulation/", "ut"],
+  ["/salt-lake-city-ut/lp/insulation-removal/", "ut"],
+  ["/st-louis-mo/lp/attic-insulation/", "mo_stl"],
+  ["/st-louis-mo/lp/insulation-removal/", "mo_stl"],
+  ["/kansas-city-mo/lp/attic-insulation/", "mo_kc"],
+  ["/kansas-city-mo/lp/insulation-removal/", "mo_kc"],
+]);
+const SHORT_AD_NEEDS = new Set([
+  "Attic Insulation",
+  "Insulation Removal",
+  "Attic Pest Issues",
+  "Attic Air Sealing",
+  "Attic Fans",
+  "Other",
+  "Insulation removal & replacement",
+  "New or added attic insulation",
+  "Rodent or pest damage cleanup",
+  "Not sure, I'd like an inspection",
+]);
 const SELF_REPORTED_SOURCES = new Set([
   "google_search_maps",
   "google_ads",
@@ -230,6 +252,17 @@ function normalizePhone(phone) {
   return digits || clean(phone, 32);
 }
 
+function shortAdMarketFor(payload) {
+  if (payload?.form_variant !== SHORT_AD_FORM_MARKER) return "";
+  return SHORT_AD_PATH_MARKETS.get(payload?.page_path) || "";
+}
+
+function shortAdNeedFor(payload) {
+  const values = Array.isArray(payload?.project_type) ? payload.project_type : [payload?.project_type];
+  return values.length > 0 && values.every((value) => SHORT_AD_NEEDS.has(value))
+    ? [...new Set(values)].join(", ") : "";
+}
+
 function extractPathname(url) {
   try {
     return new URL(url).pathname;
@@ -429,13 +462,13 @@ function inferMarket(payload) {
   return "general";
 }
 
-function buildLead(payload, submissionId = crypto.randomUUID(), source = null) {
+function buildLead(payload, submissionId = crypto.randomUUID(), source = null, shortAdMarket = "") {
   const suppliedFirstName = clean(payload.first_name, 80);
   const suppliedLastName = clean(payload.last_name, 80);
   const suppliedFullName = clean(payload.name, 160);
   const derivedFullName = [suppliedFirstName, suppliedLastName].filter(Boolean).join(" ");
   const { firstName, lastName } = splitName(suppliedFullName || derivedFullName);
-  const marketKey = inferMarket(payload);
+  const marketKey = shortAdMarket || inferMarket(payload);
   const route = MARKET_ROUTES[marketKey] || MARKET_ROUTES.general;
   const leadSource = source || {
     key: "website",
@@ -450,11 +483,13 @@ function buildLead(payload, submissionId = crypto.randomUUID(), source = null) {
     full_name: suppliedFullName || derivedFullName,
     phone: normalizePhone(payload.phone),
     email: clean(payload.email, 160),
-    address: clean(payload.street_address || payload.address || payload.full_address, 240),
-    city: clean(payload.city, 120),
-    state: clean(payload.state, 10).toUpperCase(),
+    address: shortAdMarket ? "" : clean(payload.street_address || payload.address || payload.full_address, 240),
+    city: shortAdMarket ? "" : clean(payload.city, 120),
+    state: shortAdMarket ? "" : clean(payload.state, 10).toUpperCase(),
     zip: normalizeZip(payload.zip),
-    service: cleanList(payload.project_type_label || payload.project_type || payload.service || "Attic insulation assessment", 160),
+    service: shortAdMarket
+      ? shortAdNeedFor(payload)
+      : cleanList(payload.project_type_label || payload.project_type || payload.service || "Attic insulation assessment", 160),
     message: clean(payload.additional_notes || payload.message || payload.notes, 2000),
     source_url: clean(payload.source_url || payload.page_url || payload.ad_landing_page, 500),
     page_path: clean(payload.page_path, 500),
@@ -463,6 +498,7 @@ function buildLead(payload, submissionId = crypto.randomUUID(), source = null) {
     submitted_at: new Date().toISOString(),
     submission_id: submissionId,
     market_key: marketKey,
+    ...(shortAdMarket ? { short_ad_form: true } : {}),
     market_label: route.accountLabel,
     source_key: leadSource.key,
     source_detail: leadSource.detail,
@@ -577,8 +613,15 @@ function buildGhlLead(payload, lead, jobber) {
   };
 }
 
-function validateLead(lead) {
+function validateLead(lead, payload = {}) {
   const missing = [];
+  if (lead.short_ad_form) {
+    if (!clean(payload.name, 160)) missing.push("name");
+    if (!clean(payload.phone, 32)) missing.push("phone");
+    if (!/^\d{5}$/.test(clean(payload.zip, 16))) missing.push("zip");
+    if (!shortAdNeedFor(payload)) missing.push("project_type");
+    return missing;
+  }
   if (!lead.full_name) missing.push("name");
   if (!lead.phone) missing.push("phone");
   if (!lead.email) missing.push("email");
@@ -1290,7 +1333,10 @@ function buildClientInput(lead, { includePhone = true } = {}) {
   const input = {
     firstName: lead.first_name || lead.full_name,
     lastName: lead.last_name,
-    properties: [
+  };
+
+  if (!lead.short_ad_form) {
+    input.properties = [
       {
         name: "Service address",
         address: {
@@ -1301,8 +1347,8 @@ function buildClientInput(lead, { includePhone = true } = {}) {
           country: "United States",
         },
       },
-    ],
-  };
+    ];
+  }
 
   if (lead.email) {
     input.emails = [
@@ -1356,10 +1402,27 @@ function buildRequestInstructions(lead) {
 function buildRequestInput(lead, clientId, propertyId) {
   const input = {
     clientId,
-    title: clean(lead.service || "Website attic assessment", 240),
+    title: lead.short_ad_form
+      ? clean(`${SHORT_AD_REQUEST_NOTE} | ZIP ${lead.zip} | ${lead.service}`, 240)
+      : clean(lead.service || "Website attic assessment", 240),
   };
 
-  if (propertyId) input.propertyId = propertyId;
+  if (lead.short_ad_form) {
+    input.requestDetails = { form: { sections: [{
+      label: "Service Details",
+      items: [{
+        label: "Please provide as much information as you can",
+        answerText: [
+          lead.message,
+          `Services: ${lead.service}`,
+          `ZIP: ${lead.zip}`,
+          "Short ad form: get the address on the call.",
+        ].filter(Boolean).join("\n"),
+      }],
+    }] } };
+  }
+
+  if (propertyId && !lead.short_ad_form) input.propertyId = propertyId;
   return input;
 }
 
@@ -1391,7 +1454,7 @@ async function createJobberClient(env, accessToken, lead) {
       phoneIncluded: true,
     };
   } catch (error) {
-    if (!(error instanceof LeadSubmissionError) || !shouldRetryWithoutPhone(error)) {
+    if (lead.short_ad_form || !(error instanceof LeadSubmissionError) || !shouldRetryWithoutPhone(error)) {
       throw error;
     }
 
@@ -1520,7 +1583,33 @@ async function submitLeadToJobber(env, lead, { onWriteAttempt = () => {}, onClie
     }
   }
 
+  // Only short ad forms add a team-visible note. Record its outcome separately:
+  // a note failure must never trigger another client/Request creation.
+  let customerNote = null;
+  if (lead.short_ad_form && lead.message) {
+    try {
+      await env.ANGI_ROUTER_DB.prepare(`INSERT INTO short_ad_request_notes
+        (submission_id, request_id, message, status) VALUES (?, ?, ?, 'pending')
+        ON CONFLICT(submission_id) DO NOTHING`)
+        .bind(lead.submission_id, request.id, buildRequestInstructions(lead)).run();
+      const result = await jobberGraphql(env, token.accessToken, `mutation GoodAtticShortAdNote($requestId: EncodedId!, $input: RequestCreateNoteInput!) {
+        requestCreateNote(requestId: $requestId, input: $input) { requestNote { id } userErrors { message path } }
+      }`, { requestId: request.id, input: { message: buildRequestInstructions(lead) } });
+      const note = result?.data?.requestCreateNote;
+      if (note?.userErrors?.length || !note?.requestNote?.id) throw new Error('short_ad_note_not_confirmed');
+      customerNote = { status: 'completed', id: note.requestNote.id };
+      await env.ANGI_ROUTER_DB.prepare(`UPDATE short_ad_request_notes SET status = 'completed', note_id = ? WHERE submission_id = ?`)
+        .bind(note.requestNote.id, lead.submission_id).run();
+    } catch {
+      customerNote = { status: 'needs_reconciliation' };
+      console.error('Short ad customer note needs reconciliation', {
+        submissionId: lead.submission_id, requestId: request.id,
+      });
+    }
+  }
+
   return {
+    ...(customerNote ? { customer_note: customerNote } : {}),
     account: route.accountLabel,
     account_id: route.expectedAccountId,
     market_key: lead.market_key,
@@ -1695,8 +1784,9 @@ export async function onRequestPost(context) {
   }
   const submissionId = validSubmissionId(suppliedSubmissionId) ? suppliedSubmissionId : crypto.randomUUID();
   const source = classifyWebsiteLeadSource(payload || {});
-  const lead = buildLead(payload || {}, submissionId, source);
-  const missing = validateLead(lead);
+  const shortAdMarket = shortAdMarketFor(payload || {});
+  const lead = buildLead(payload || {}, submissionId, source, shortAdMarket);
+  const missing = validateLead(lead, payload || {});
   if (missing.length) {
     return jsonResponse({
       ok: false,
@@ -1890,6 +1980,8 @@ export const _private = {
   LeadSubmissionError,
   MARKET_ROUTES,
   buildLead,
+  shortAdMarketFor,
+  shortAdNeedFor,
   classifyWebsiteLeadSource,
   hasFreshAttribution,
   isGoogleSearchHost,

@@ -1,0 +1,48 @@
+{
+  "salt-lake-city-ut": [
+    {
+      "name": "Melanie Marier",
+      "town": "Salt Lake City",
+      "quote": "They did a great job of cleaning, installing vents and re-insulating two attic spaces of our house just before the winter and we can easily feel a difference. Can\u2019t wait to see the difference in the summer too. Everyone was very professional and attentive to details.",
+      "source": "Google review",
+      "verification": "google-5-star-review-intake.csv: crm exact match: Melanie MARIER | normalized cities: Salt Lake City"
+    },
+    {
+      "name": "Tyson Yates",
+      "town": "South Jordan",
+      "quote": "They did a fantastic job, were professional and helpful. Mason was a great sales guy and made the whole process easy!",
+      "source": "Google review",
+      "verification": "google-5-star-review-intake.csv: crm exact match: Tyson Yates | normalized cities: South Jordan"
+    },
+    {
+      "name": "Larry Litchfield",
+      "town": "Pleasant Grove",
+      "quote": "The team was very quick and professional. They cleaned everything up after they were finished. They did a great job. I would definitely recommend the Good Attic team for any insulation job.",
+      "source": "Google review",
+      "verification": "google-5-star-review-intake.csv: crm exact match: Larry Litchfield | normalized cities: Pleasant Grove | future city page candidate: Pleasant Grove"
+    }
+  ],
+  "st-louis-mo": [
+    {
+      "name": "Bruce Petersen",
+      "town": null,
+      "quote": "Easy to work with. Very knowledgeable.",
+      "source": "Google review",
+      "verification": "approved-review-excerpts.json; town not recorded"
+    },
+    {
+      "name": "Teresa Kusgen",
+      "town": null,
+      "quote": "After speaking with Jim several times, I was impressed with his professionalism and attention to detail. His knowledge and kindness were so appreciated! The whole team impressed me from start to finish. Thank you Good Attic!",
+      "source": "Google review",
+      "verification": "approved-review-excerpts.json; town not recorded"
+    },
+    {
+      "name": "Ken Keirsey",
+      "town": null,
+      "quote": "These guys are the real deal. This is a family run local business. They were genuinely friendly. Everything is up front. They answered every question. They cleaned up nicely. Even before we check our utility bills, the house is notably quieter. I would recommend Good Attic Insulation to anybody.",
+      "source": "Google review",
+      "verification": "approved-review-excerpts.json; town not recorded"
+    }
+  ]
+}
