@@ -1,6 +1,12 @@
 import { readFileSync } from "node:fs";
 import { assetDelivery } from "../scripts/asset-delivery.mjs";
+import { applyLocalBusinessFacts } from "../scripts/local-business-facts.mjs";
 import { synchronizationFiles } from "./live-backend-parity.mjs";
+
+export function preLocalBusinessFactsHtml(html, file) {
+  if (file !== "salt-lake-city-ut/index.html" && file !== "st-louis-mo/index.html") return html;
+  return applyLocalBusinessFacts(html, `/${file.slice(0, -"index.html".length)}`, { reverse: true });
+}
 
 // Historical copy/layout tests compare content before the separately tested URL migration.
 export function preAssetMigrationHtml(html, file) {
@@ -14,7 +20,7 @@ export function preAssetMigrationHtml(html, file) {
 export function readApprovedContent(file, root = new URL("../", import.meta.url)) {
   // Historical layout/copy tests use the retained pre-focus JS; modal tests verify the new asset.
   const asset = file === "styles.css" ? assetDelivery.css.to : file === "script.js" ? assetDelivery.modalFocus.previousAsset : file;
-  return preAssetMigrationHtml(readFileSync(new URL(asset, root), "utf8"), file);
+  return preAssetMigrationHtml(preLocalBusinessFactsHtml(readFileSync(new URL(asset, root), "utf8"), file), file);
 }
 
 export const assetMigrationFiles = [

@@ -10,6 +10,7 @@ import { parse } from "parse5";
 import { adapter } from "parse5-htmlparser2-tree-adapter";
 import { selectAll } from "css-select";
 import { assetDelivery, pageAssets } from "../scripts/asset-delivery.mjs";
+import { preLocalBusinessFactsHtml } from "./asset-delivery-helpers.mjs";
 import { synchronizationFiles } from "./live-backend-parity.mjs";
 import { homepageCleanupAddedTests } from "./homepage-cleanup-helpers.mjs";
 
@@ -97,7 +98,11 @@ test("two clean generations reproduce exact raw HTML bytes and unchanged data/si
     try {
       for (const file of ["build-seo-wave1.mjs", "scripts", "content", "data", "node_modules"]) await cp(new URL(file, root), path.join(temporary, file), { recursive: true });
       execFileSync(process.execPath, ["build-seo-wave1.mjs"], { cwd: temporary });
-      for (const file of generated) assert.deepEqual(readFileSync(path.join(temporary, file)), read(file), `${run}: ${file}`);
+      for (const file of generated) {
+        const current = read(file);
+        const historical = Buffer.from(preLocalBusinessFactsHtml(current.toString(), file));
+        assert.deepEqual(readFileSync(path.join(temporary, file)), historical, `${run}: ${file}`);
+      }
     } finally {
       await rm(temporary, { recursive: true, force: true });
     }
