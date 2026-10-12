@@ -1,30 +1,5 @@
 {
   "schemaVersion": 1,
-  "baselineDeploymentId": "6b5f831b-a6bc-410f-82ba-4d32ef44b88d",
-  "changes": {
-    "runtime/functions/api/jobber/quote-history-backfill.js": {
-      "expectedSha256": "f13e2265221cb88687049bbaa0cf940c1c145fc4d33f92be2c325926c39d5ae7",
-      "reason": "Expose the bounded historical call Quote audit only through the authenticated internal broker."
-    },
-    "runtime/server/jobber-custom-fields.js": {
-      "expectedSha256": "28d48653695b75b46c75782374d97ac12fa7b81711072971edf63a425fc91433",
-      "reason": "Hold historical Quote attribution when existing staff values conflict and require blank paid fields before writing a campaign."
-    },
-    "runtime/server/jobber-quote-attribution.js": {
-      "expectedSha256": "17ebfa34913180c37e2d1bbc2bc1c06b2cb1e79532ebc48a6da491023243a7ff",
-      "reason": "Backfill old call-origin Quotes with fresh Jobber and current Quo lineage checks, website lead precedence, an audit lease, and a three-Quote batch cap."
-    },
-    "runtime/workers/jobber-quote-consumer.js": {
-      "expectedSha256": "960b935e5af15aa8b486fd43150a967c1edd682c75819e7a870ae0c485763460",
-      "reason": "Call the authenticated historical Quote backfill from the existing thirty-minute consumer cron only when enabled."
-    },
-    "runtime/workers/jobber-quote-consumer.wrangler.toml": {
-      "expectedSha256": "b0033a5be6dab96ffa124a96aef0ef5a34c89d85a027511aeb38e8a7a92e8c6e",
-      "reason": "Keep the historical Quote backfill disabled by default in the consumer deployment."
-    },
-    "runtime/wrangler.toml": {
-      "expectedSha256": "15e4ffa531e17dfbff96d811f8e3215aaeaf0b1f99a624b35da3dd17004585a1",
-      "reason": "Enable the authenticated, three-Quote historical call attribution backfill in production after migration 0028 and live lineage verification; keep preview disabled."
-    }
-  }
+  "baselineDeploymentId": "9703281f-e1bd-4917-8c0c-d2c1a4df9ae8",
+  "changes": {}
 }
