@@ -8,3 +8,6 @@ dist/
 .gate3-backups/
 
 preview/.test-access.json
+
+# Local audit snapshots / bundles; never credentials.
+.stage1-private/

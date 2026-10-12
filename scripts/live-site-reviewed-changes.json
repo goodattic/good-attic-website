@@ -1,5 +1,118 @@
 {
   "schemaVersion": 1,
-  "baselineDeploymentId": "6b5f831b-a6bc-410f-82ba-4d32ef44b88d",
-  "changes": {}
+  "baselineDeploymentId": "9703281f-e1bd-4917-8c0c-d2c1a4df9ae8",
+  "changes": {
+    "runtime/functions/api/jobber/webhooks/phase2-outcome.js": {
+      "expectedSha256": "daa8808a39cc1051864db3ad57f358169fdba6c4aa1bed6b669557638b8b4b81",
+      "reason": "Route signed Jobber milestone webhooks into the read-only outcome collector."
+    },
+    "runtime/server/call-origin-stage3c-shadow.js": {
+      "expectedSha256": "7c4accbb48634cb95b60344f1b426f6495d05712e42f56c4e147f0aa0a51f933",
+      "reason": "Observe verified call-origin milestones in a separate ledger without changing website uploads."
+    },
+    "runtime/server/call-request-lineage-review-api.js": {
+      "expectedSha256": "bb95a49e3cf08a24113b4d56d95cc2064910b32a10f7d8bdd725e62fb4d73684",
+      "reason": "Require authenticated, evidence-backed review before linking a Quo call to an operational Request."
+    },
+    "runtime/server/call-request-lineage.js": {
+      "expectedSha256": "33d7534d47e7a0e0dff8b12e3e6982d4668b3c7f4cbb009a0f33efcb4745952e",
+      "reason": "Record audited call-to-Request links and reject ambiguous or conflicting account and Client data."
+    },
+    "runtime/server/data-manager-live.js": {
+      "expectedSha256": "25d59f18868b2760673597a15869f8ae2b8cf4b247ac632d2ae5341be81b61f1",
+      "reason": "Mirror the deployed Data Manager transport and diagnostic handling for existing website outcomes."
+    },
+    "runtime/server/google-ads-outcome-collection.js": {
+      "expectedSha256": "0370cfaf42ec0149269e82d1182c5aac6878b3959cb3254d2b893fc84395e937",
+      "reason": "Collect Jobber Request, assessment, Quote, and Job outcomes for the existing website path."
+    },
+    "runtime/server/google-ads-outcome-watcher.js": {
+      "expectedSha256": "8aa0504e0205ae49bb52f1bd184b7bc759295cc1e10bd251a2bbc1cd248a31e3",
+      "reason": "Preserve the deployed website outcome reconciliation and upload-state handling."
+    },
+    "runtime/server/google-call-match-shadow.js": {
+      "expectedSha256": "cfb1e94f9337d2f90c5c6b3da7c4514d839872d1723e8d3601f1e81e417eb16f",
+      "reason": "Match Quo calls to unique Google forwarding call records in a shadow ledger only."
+    },
+    "runtime/server/google-qualified-phone-collector.js": {
+      "expectedSha256": "3270d44a9fbaf4a758c7fbec1cf483c54c3d92408fc0d3d5ea4391ff7769997a",
+      "reason": "Apply market, caller, and duration checks before qualified phone call attribution."
+    },
+    "runtime/server/invoice-lineage-runtime.js": {
+      "expectedSha256": "8aa900fbda5eff7c7a4da7433bf078a47c4bb7df3aa446d57acaba41ebaf21e8",
+      "reason": "Ingest signed invoice events and perform bounded read-only Jobber invoice discovery."
+    },
+    "runtime/server/invoice-lineage-shadow.js": {
+      "expectedSha256": "943953146a8735a2e2af80ccb96af6b0158e096b98a4082b9ea89db646b347cb",
+      "reason": "Track invoice and payment lineage through active call links without editing Jobber records."
+    },
+    "runtime/server/jobber-phase2-reader.js": {
+      "expectedSha256": "d816a4aa39b63fd2a5fb7057da3c79eb607887d75cebf106c7af00477beb5f09",
+      "reason": "Read Jobber milestone objects for the bounded outcome backfill."
+    },
+    "runtime/server/jobber-phase2-webhook.js": {
+      "expectedSha256": "4831847963dba9062028ef900be3f3c0e1a627ea584af3df40d7561839ce7be4",
+      "reason": "Validate Jobber outcome webhook events before adding them to the shadow collector."
+    },
+    "runtime/server/qualified-phone-proof.js": {
+      "expectedSha256": "70fe211de68a4854eef3de4dcd467e2fb570e281817055a01d1d5db15b0a6451",
+      "reason": "Require independent Jobber or Quo lead proof before a short call qualifies for upload."
+    },
+    "runtime/server/qualified-phone-runtime.js": {
+      "expectedSha256": "e8613ba1a75a2b752513a0bb7ad3e36c7347dd42776cf6ae14b038ec654682e0",
+      "reason": "Report verified operational Request lineage for qualified phone calls and hold ambiguous Google-to-Quo matches before upload."
+    },
+    "runtime/server/sold-job-call-shadow.js": {
+      "expectedSha256": "91f632e19a533e9611683482501874b768c950d3cd24ed599eacd3db83931df9",
+      "reason": "Build held, read-only sold-call candidates with current Request and Google source evidence."
+    },
+    "runtime/server/stage1-model.js": {
+      "expectedSha256": "8a6329577ebeecb45ff1deba4d0ac888fc0bc285a1f7cf360c0466927507347f",
+      "reason": "Derive website milestone conversions from Jobber objects using the deployed stage model."
+    },
+    "runtime/server/stage2-health.js": {
+      "expectedSha256": "78a0950229b4090bdeb8d078e2657e95a7e406023ad9f97bbaba7857a86de992",
+      "reason": "Expose read-only outcome processing health and assessment observation details."
+    },
+    "runtime/server/stage2-validation.js": {
+      "expectedSha256": "2b97e9b3461d628f4dbb6319b7b7c0b6fc23bf0673304a5abb964cd310632b16",
+      "reason": "Validate Data Manager request shapes without sending new conversion events."
+    },
+    "runtime/server/stage3a-canary.js": {
+      "expectedSha256": "8991c355915a782b2d47847c4662a73f4212fbbff59eb171528a7bfc99b2b9b7",
+      "reason": "Retain the historical one-time canary audit with its upload route closed."
+    },
+    "runtime/workers/google-ads-outcome-uploader.js": {
+      "expectedSha256": "2d3f484d973c1dee882fa4ed3729f844f89c9b7cedee60cd8589a14f4217265d",
+      "reason": "Mirror the existing bounded Google Ads website outcome uploader Worker."
+    },
+    "runtime/workers/google-ads-outcome-uploader.wrangler.toml": {
+      "expectedSha256": "43e112f703cd5592a83d52b5b6d5b2744ac5e08d6eaeb7b37e0a824149614aed",
+      "reason": "Record the existing uploader Worker bindings and schedule for source parity."
+    },
+    "runtime/workers/jobber-phase2-backfill.js": {
+      "expectedSha256": "f4129152b2ec7df0567470c8489e5631e2de533109cc020976e510d4b39e4c82",
+      "reason": "Run the opt-in read-only Jobber outcome backfill for website milestones."
+    },
+    "runtime/workers/jobber-phase2-backfill.wrangler.toml": {
+      "expectedSha256": "b0763929f3fb84d7a22543fbf6770ad27edb5fa88f9c346ccfc9d25b6ae088d9",
+      "reason": "Record the deployed Stage 3c Worker bindings, schedule, and explicit shadow flags."
+    },
+    "runtime/workers/jobber-quote-consumer.wrangler.toml": {
+      "expectedSha256": "7d488464840d65a1c2a2a7fb8606a0459077fa219bcd8f8bad83b9703cf7d51f",
+      "reason": "Keep verified late Google call replay enabled and start bounded, authenticated historical call-origin Quote backfill after Pages release and migration 0028."
+    },
+    "runtime/workers/stage1-shadow.js": {
+      "expectedSha256": "048f7923a6bdfc32d5768781efbf14107396dbe50ce11c054c0b8ae87e9bac98",
+      "reason": "Mirror the deployed website outcome observer and isolated call-origin shadow processing."
+    },
+    "runtime/workers/stage3a-canary.js": {
+      "expectedSha256": "25a8834f0c48498c0f45c4bde1951452d4b24cae01d501d7ec4bc635a2e48bec",
+      "reason": "Keep the historical canary route permanently closed while retaining status reads."
+    },
+    "runtime/workers/stage3c-live.js": {
+      "expectedSha256": "49ee95803cf1592d80ca2e796e7960eecbce79cce0fa37a0cb3bd5938eed5108",
+      "reason": "Route the deployed website uploader, qualified calls, lineage review, and shadow observers."
+    }
+  }
 }

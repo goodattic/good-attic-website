@@ -108,6 +108,18 @@ test("does not overwrite a staff-corrected value and omits a missing campaign", 
   assert.deepEqual(result.missingValues, ["Campaign"]);
 });
 
+test("historical paid call backfill holds a preexisting source so a later demotion stays safe", () => {
+  const definitions = new Map([
+    ["Original Lead ID", "lead-id"], ["Original Source", "source-id"], ["Campaign", "campaign-id"],
+  ]);
+  const built = buildQuoteCustomFieldAttributes(definitions,
+    { source_label: "Google Ads call", campaign: "Search | UT | Attic" },
+    "request-1", [{ valueText: "Google Ads call",
+      customFieldConfiguration: { id: "source-id", name: "Original Source" } }],
+    { strictExistingValues: true, requireBlankPaidFields: true });
+  assert.deepEqual(built.conflictingExisting, ["Original Source"]);
+});
+
 test("late Google call replay upgrades only the same Quote's generic source", () => {
   const definitions = new Map([
     ["Original Lead ID", "lead-id"], ["Original Source", "source-id"], ["Campaign", "campaign-id"],
@@ -215,7 +227,7 @@ test("a unique Google forwarding call match supplies the actual campaign to a ca
   const at = "2026-10-12T19:45:45.000Z";
   sqlite.prepare(`INSERT INTO quo_call_attributions VALUES (?,?,?,?,?,?,?,?)`).run(
     UTAH_ACCOUNT_ID, "utah", "ACfirstCall", requestId, clientId,
-    "incoming", at, "+16142166149",
+    "incoming", at, "+16145550149",
   );
   sqlite.prepare(`INSERT INTO google_call_match_shadow VALUES (?,?,?,?,?,?,?,?)`).run(
     "customers/4800890529/callViews/123", "ut", "Search | UT | Attic",
