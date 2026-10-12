@@ -1,14 +1,5 @@
 {
   "schemaVersion": 1,
-  "baselineDeploymentId": "fbcb84ff-a1bd-4878-b90d-00500ae6434b",
-  "changes": {
-    "assets/salt-lake-city-ut/index.html": {
-      "reason": "Add the verified Utah office address and 24-hour hours to the local team panel and matching HomeAndConstructionBusiness structured data.",
-      "expectedSha256": "352b7a122438b053189f21600538b1237c64985e7ef688a095cc44d044beea76"
-    },
-    "assets/st-louis-mo/index.html": {
-      "reason": "Add the verified St. Louis office address and 24-hour hours to the local team panel and matching HomeAndConstructionBusiness structured data.",
-      "expectedSha256": "c767575124549318596b39fb76dff429e6a7564b6fb5be8c89f06c1e7403de05"
-    }
-  }
+  "baselineDeploymentId": "2954e9d8-b084-4138-b4d7-b74c77be3424",
+  "changes": {}
 }

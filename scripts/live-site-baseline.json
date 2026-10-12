@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "description": "Serving Good Attic Pages deployment fbcb84ff, direct-uploaded from clean commit 8ae1d56 and verified 2026-10-12: the 328 published static files match this build; runtime source is the committed 8ae1d56 tree.",
+  "description": "Serving Good Attic Pages deployment 2954e9d8, direct-uploaded from clean canonical commit 9f4d560 and verified 2026-10-12: its 328 published static files match this build; only the Salt Lake City and St. Louis hubs changed from the prior deployment, and runtime source is the committed 9f4d560 tree.",
   "productionDeployment": {
-    "id": "fbcb84ff-a1bd-4878-b90d-00500ae6434b",
-    "sourceCommit": "8ae1d564816270a006b5beacc9004379755e9e00",
-    "capturedStaticCommit": "8ae1d564816270a006b5beacc9004379755e9e00",
+    "id": "2954e9d8-b084-4138-b4d7-b74c77be3424",
+    "sourceCommit": "9f4d560062cd69660590acbb829b60c0841f154e",
+    "capturedStaticCommit": "9f4d560062cd69660590acbb829b60c0841f154e",
     "accountId": "944914746b7fbc8cd91cd7d0d9d1940c",
     "projectName": "good-attic-website"
   },
@@ -308,7 +308,7 @@
     "salt-lake-city-ut/attic-fans/index.html": "faf357a1210924806636fd8b2a9bb7bdf57c0777603b57cb84e18887f32a2da7",
     "salt-lake-city-ut/attic-insulation/index.html": "be77f138e75590abb9ed5b8f2baed255a018c8cb2ef14a78b41c7b17571b4457",
     "salt-lake-city-ut/attic-pest-remediation/index.html": "eb071c053ca63ec9c32acfbcbdf12006eeefa1227f07dd49874a6d5d0548dcf0",
-    "salt-lake-city-ut/index.html": "bfe392018f90d3bd7d7a08f3da4ce5931220d1c928267cbc3ec1b6eaa1702a53",
+    "salt-lake-city-ut/index.html": "352b7a122438b053189f21600538b1237c64985e7ef688a095cc44d044beea76",
     "salt-lake-city-ut/insulation-removal/index.html": "a7598e0bed3fe29ffac448f62f6d3e08c764e9478bd54d7fa752dce3bc57d0a0",
     "salt-lake-city-ut/lp/attic-insulation/index.html": "96c04bf56df695872ff8925ab2cd3be3264bc622652dd12df996a3dec653593e",
     "salt-lake-city-ut/lp/insulation-removal/index.html": "973c4af0911d4e7b735f83851678cacbd1d9ca019304eb020ce6fa5ed01162a8",
@@ -340,7 +340,7 @@
     "st-louis-mo/attic-fans/index.html": "69fd45a75c0d24bb9e06624eb18baca7cdac4e1114d4682884f66e575f289457",
     "st-louis-mo/attic-insulation/index.html": "4e9064f52c911638e3f1dfb5d599ed6cad1100564fad096197b1038869d0993e",
     "st-louis-mo/attic-pest-remediation/index.html": "f216f7d9b5a922893aaea92aedf58d9818d9aac94679ec93baf65a5be6236d97",
-    "st-louis-mo/index.html": "3b777be5b0ddd9a8f78a11da049d4aff6418e345d558d74ae72904c45c65db02",
+    "st-louis-mo/index.html": "c767575124549318596b39fb76dff429e6a7564b6fb5be8c89f06c1e7403de05",
     "st-louis-mo/insulation-removal/index.html": "3f6ae38e3bb10d042a233ea41c1d0e323f9e5ac0179eb7938cce6279fd27a600",
     "st-louis-mo/lp/attic-insulation/index.html": "58dd948d2bcba497475a628c58870140eef4dc18327b08c44bdc7ffeff2d2bf0",
     "st-louis-mo/lp/insulation-removal/index.html": "8c5d5bc1b4aa7e743fb51c09c920d679b4a4ca6adf33f68abf3986d61b1d8734",

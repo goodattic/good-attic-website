@@ -1,6 +1,6 @@
 # Live-site release baseline
 
-`scripts/live-site-baseline.json` freezes the public build and runtime source for Cloudflare Pages production deployment `fbcb84ff-a1bd-4878-b90d-00500ae6434b`. Cloudflare identifies it as a direct upload from clean Git commit `8ae1d564816270a006b5beacc9004379755e9e00` on 2026-10-07. Its 328 published static files match that commit's build; the local guard also hashes `_headers` and `_redirects`, for 330 build files total. The live HTML references `script.e0b6cf2323b054a8.js`; the guard checks that every page references the reviewed active script and that all regional pages retain the correct Quo call links and displayed numbers.
+`scripts/live-site-baseline.json` freezes the public build and runtime source for Cloudflare Pages production deployment `2954e9d8-b084-4138-b4d7-b74c77be3424`. Cloudflare identifies it as a direct upload from clean canonical Git commit `9f4d560062cd69660590acbb829b60c0841f154e` on 2026-10-12. Its 328 published static files match that commit's build; only the Salt Lake City and St. Louis hub pages differ from the prior `fbcb84ff` deployment. The local guard also hashes `_headers` and `_redirects`, for 330 build files total. The live HTML references `script.e0b6cf2323b054a8.js`; the guard checks that every page references the reviewed active script and that all regional pages retain the correct Quo call links and displayed numbers.
 
 The active JavaScript source is `src/site-interactions.js`, which is byte-for-byte
 identical to the live hashed script in this baseline. The public `script.js` is a
