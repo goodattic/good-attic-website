@@ -107,7 +107,7 @@
       "reason": "Hold historical Quote attribution when existing staff values conflict and require blank paid fields before writing a campaign."
     },
     "runtime/server/jobber-quote-attribution.js": {
-      "expectedSha256": "94cc0ac95fd39db7a4be06fe0f52461c48ed34f050f07e39e6870ca1a7f78d62",
+      "expectedSha256": "17ebfa34913180c37e2d1bbc2bc1c06b2cb1e79532ebc48a6da491023243a7ff",
       "reason": "Backfill old call-origin Quotes with fresh Jobber and current Quo lineage checks, website lead precedence, an audit lease, and a three-Quote batch cap."
     },
     "runtime/workers/jobber-quote-consumer.js": {

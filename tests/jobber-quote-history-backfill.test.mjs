@@ -155,6 +155,31 @@ test("a staff edited Quote is held without any mutation", async () => {
   assert.equal(sqlite.prepare(`SELECT status FROM closed_loop_quote_attributions`).get().status, "manual_review");
 });
 
+test("a transient Jobber write failure resumes its exact call checkpoint on the next eligible run", async () => {
+  const { sqlite, request, env } = fixture();
+  const candidate = addDirect(sqlite, 12);
+  const { mutations } = mockJobber(new Map([[candidate.quoteId, candidate]]));
+  const successfulFetch = globalThis.fetch;
+  let failedOnce = false;
+  globalThis.fetch = async (url, options) => {
+    if (!failedOnce && JSON.parse(options.body).query.includes("GoodAtticQuoteCustomFields")) {
+      failedOnce = true;
+      return Response.json({ errors: [{ message: "temporary failure" }] }, { status: 503 });
+    }
+    return successfulFetch(url, options);
+  };
+  const first = await backfillHistoricalCallQuotes({ request, env });
+  assert.equal((await first.json()).retryable, 1);
+  assert.equal(sqlite.prepare(`SELECT status FROM closed_loop_quote_attributions`).get().status, "retryable");
+  assert.equal(sqlite.prepare(`SELECT state FROM quote_call_history_backfill`).get().state, "retryable");
+  sqlite.prepare(`UPDATE quote_call_history_backfill SET next_attempt_at = 0`).run();
+  const second = await backfillHistoricalCallQuotes({ request, env });
+  assert.equal((await second.json()).applied, 1);
+  assert.equal(sqlite.prepare(`SELECT status FROM closed_loop_quote_attributions`).get().status, "applied");
+  assert.equal(sqlite.prepare(`SELECT attempt_count FROM quote_call_history_backfill`).get().attempt_count, 2);
+  assert.equal(mutations.length, 1);
+});
+
 test("live Jobber Request changes and website precedence block a stale shadow Quote", async () => {
   const { sqlite, request, env } = fixture();
   const changed = addDirect(sqlite, 21);

@@ -220,6 +220,7 @@ async function findHistoricalCallQuoteCandidates(database, nowMs) {
       AND l.operational_request_id = c.operational_request_id
       AND l.client_id = o.client_id AND l.decision_id = c.link_decision_id
     LEFT JOIN quote_call_history_backfill b ON b.quote_id = c.object_id
+    LEFT JOIN closed_loop_quote_attributions a ON a.quote_id = c.object_id
     WHERE c.object_type = 'quote' AND c.check_status = 'resolved'
       AND o.client_id IS NOT NULL
       AND CAST(strftime('%s', o.source_created_at) AS INTEGER) <= ?
@@ -227,8 +228,13 @@ async function findHistoricalCallQuoteCandidates(database, nowMs) {
           AND c.direct_max_call_id IS NOT NULL)
         OR (c.link_decision_id IS NOT NULL AND c.direct_call_count = 0
           AND l.quo_call_id IS NOT NULL))
-      AND NOT EXISTS (SELECT 1 FROM closed_loop_quote_attributions a
-        WHERE a.quote_id = c.object_id)
+      AND (a.quote_id IS NULL OR (b.quote_id IS NOT NULL
+        AND a.status IN ('pending', 'retryable')
+        AND a.lead_id = ('quo-call:' || CASE WHEN c.link_decision_id IS NULL
+          THEN c.direct_max_call_id ELSE l.quo_call_id END)
+        AND a.market_key = c.market_key
+        AND a.jobber_request_id = c.operational_request_id
+        AND (a.claim_token IS NULL OR a.claim_expires_at <= ?)))
       AND NOT EXISTS (SELECT 1 FROM closed_loop_leads w
         WHERE w.jobber_request_id IN (o.request_id, COALESCE(l.original_request_id, o.request_id)))
       AND NOT EXISTS (SELECT 1 FROM closed_loop_stage1_leads w
@@ -242,7 +248,8 @@ async function findHistoricalCallQuoteCandidates(database, nowMs) {
         AND (b.next_attempt_at IS NULL OR b.next_attempt_at <= ?)
         AND (b.claim_token IS NULL OR b.claim_expires_at <= ?)))
     ORDER BY o.source_created_at ASC, c.object_id ASC LIMIT 12
-  `).bind(Math.floor((nowMs - HISTORY_BACKFILL_MIN_AGE_MS) / 1000), nowMs, nowMs).all();
+  `).bind(Math.floor((nowMs - HISTORY_BACKFILL_MIN_AGE_MS) / 1000),
+    nowMs, nowMs, nowMs).all();
   return rows?.results || [];
 }
 
@@ -258,7 +265,7 @@ async function claimHistoricalCallQuote(database, candidate, nowMs) {
   const token = crypto.randomUUID();
   const result = await database.prepare(`
     UPDATE quote_call_history_backfill
-    SET claim_token = ?, claim_expires_at = ?, attempt_count = attempt_count + 1,
+    SET state = 'pending', claim_token = ?, claim_expires_at = ?, attempt_count = attempt_count + 1,
       updated_at = ?
     WHERE quote_id = ? AND market_key = ? AND account_id = ?
       AND request_id = ? AND client_id = ? AND quo_call_id = ?
@@ -650,7 +657,7 @@ async function beginAttribution(database, quoteId, lead) {
   const claimed = await database.prepare(`
     /* jobber_quote_attribution:claim */
     UPDATE closed_loop_quote_attributions
-    SET claim_token = ?, claim_expires_at = ?, attempt_count = attempt_count + 1,
+    SET status = 'pending', claim_token = ?, claim_expires_at = ?, attempt_count = attempt_count + 1,
       last_error_code = NULL, updated_at = ?
     WHERE quote_id = ?
       AND status IN ('pending', 'retryable')
