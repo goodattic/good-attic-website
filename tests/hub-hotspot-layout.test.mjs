@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { applyHubHotspotLayout, hubHotspotStyle } from "../scripts/hub-hotspot-layout.mjs";
 import { applyLocalBusinessFacts } from "../scripts/local-business-facts.mjs";
-import { readApprovedContent, preLocalBusinessFactsHtml } from "./asset-delivery-helpers.mjs";
+import { readApprovedContent, preGoogleReviewFactsHtml, preLocalBusinessFactsHtml } from "./asset-delivery-helpers.mjs";
 
 const root = new URL("../", import.meta.url);
 const parent = "f982edd88b52931ef29be4b1f89958ad22f48e9b";
@@ -32,7 +32,7 @@ test("two hub office and hours additions preserve every other baseline byte and 
   for (const route of ["/salt-lake-city-ut/", "/st-louis-mo/"]) {
     const file = route.slice(1) + "index.html";
     const original = execFileSync("git", ["show", `${localBusinessBase}:${file}`], { cwd: root, encoding: "utf8" });
-    const current = readFileSync(new URL(file, root), "utf8");
+    const current = preGoogleReviewFactsHtml(readFileSync(new URL(file, root), "utf8"), file);
     assert.equal(applyLocalBusinessFacts(original, route), current, route);
     assert.equal(applyLocalBusinessFacts(current, route), current, `${route} forward idempotence`);
     assert.equal(preLocalBusinessFactsHtml(current, file), original, `${route} exact reversal`);
