@@ -1,5 +1,102 @@
 {
   "schemaVersion": 1,
   "baselineDeploymentId": "2954e9d8-b084-4138-b4d7-b74c77be3424",
-  "changes": {}
+  "changes": {
+    "assets/index.html": {
+      "reason": "Show the combined current Google review rating and count on the homepage, with direct links to both market profiles.",
+      "expectedSha256": "75abe8fabdfbbf27bcf23f5ff2e2fc78bf69621185891032e92e6f8297985f1e"
+    },
+    "assets/reviews/index.html": {
+      "reason": "Show separate current Google profile ratings and review totals for Utah and St. Louis with direct profile links.",
+      "expectedSha256": "9749a01827a66738200746e4f1d5ba676395d6296a1d806f15317e243065b177"
+    },
+    "assets/salt-lake-city-ut/index.html": {
+      "reason": "Show the current Google profile rating and review count on the hub, link the profile, and add its map and sameAs structured-data references.",
+      "expectedSha256": "ad5964016a8f083e163605463e9e50ee134e0e756a69fa0a8300fba6312ba70a"
+    },
+    "assets/salt-lake-city-ut/service-areas/american-fork-ut/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "d6c62d11416b2173f76601700955440c92a0eed591330408e4fb164c13693763"
+    },
+    "assets/salt-lake-city-ut/service-areas/cottonwood-heights-ut/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "bbae9a52ae53f4db31263d053eaa11261cb20798d1d57c42a49dd60e0a3b5d9f"
+    },
+    "assets/salt-lake-city-ut/service-areas/draper-ut/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "2f4c40b83a8d3724f0f4d4686264fbae5a5630e0ed05d5ba9082869b50b6f34b"
+    },
+    "assets/salt-lake-city-ut/service-areas/herriman-ut/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "2f19431c15794f64ac30a2badf069efc3e5e9e734677bfcae13b76e54dca71c6"
+    },
+    "assets/salt-lake-city-ut/service-areas/holladay-ut/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "d79c71e9db32c51fdb9c4802b1bb653b57f5c5dd46a3eeb1e38a785eac835f98"
+    },
+    "assets/salt-lake-city-ut/service-areas/millcreek-ut/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "bdfcce17cc96cf5d86c43a0abe5a4fc16cf97c1c4decd6f90d975ad422e2e0e4"
+    },
+    "assets/salt-lake-city-ut/service-areas/sandy-ut/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "8d6940056b08636df3c6f3d381099c5f22a621344dcce8fef348277aeeb55cf9"
+    },
+    "assets/salt-lake-city-ut/service-areas/south-jordan-ut/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "8ba2f70d252c5b2924d44ebbddb872a2b7597e0efe1fa00b546a6fdeef79ea0c"
+    },
+    "assets/salt-lake-city-ut/service-areas/sugar-house-ut/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "e569f64d7d93e59fa8bc5cf73ce2de5f1d2723bc414caecd62acb046d8c89c61"
+    },
+    "assets/salt-lake-city-ut/service-areas/west-jordan-ut/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "d129334ccd53a9ef62ab3ef0ed6463cdf0c9e543c3cf588c67476dad3ab64455"
+    },
+    "assets/st-louis-mo/index.html": {
+      "reason": "Show the current Google profile rating and review count on the hub, link the profile, and add its map and sameAs structured-data references.",
+      "expectedSha256": "c2fbae00dccc131ef9ff2d85c8f77a997be87c8806754d7325a4b3220e0159ed"
+    },
+    "assets/st-louis-mo/service-areas/ballwin-mo/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "c5724e7007c4a5c7535ec796d013b972e77d18c61b90e16c51349104472a4b2c"
+    },
+    "assets/st-louis-mo/service-areas/chesterfield-mo/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "2b9bc9b50ebf266e365d8e7696b6d6194bd58306a70dc3c917bc07a5a3136b83"
+    },
+    "assets/st-louis-mo/service-areas/clayton-mo/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "3ee2b1caae408c473e8fe4c09a5334f1cdc6dfb2155294d78143bf66a1925ffc"
+    },
+    "assets/st-louis-mo/service-areas/des-peres-mo/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "9f82e666fb11d7842242f1c98023c485d451ebc565fc53f840d732b26e41033f"
+    },
+    "assets/st-louis-mo/service-areas/frontenac-mo/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "d42c6199d5d9861f7cb75ae85eb80c9494c32ea6fb8cf9a0c7ff2e26ae4f9d33"
+    },
+    "assets/st-louis-mo/service-areas/o-fallon-mo/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "aa3dba90aec50e1477808ad2dc3dc8b55f3de75803596bc49991007d1626acea"
+    },
+    "assets/st-louis-mo/service-areas/st-charles-mo/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "9498018ccba5fd9317c9864cde37d469faebd91e2f67a980072829eb9038e401"
+    },
+    "assets/st-louis-mo/service-areas/st-peters-mo/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "bd00793e8c044c2edfcfb75cf891934be31972ce88ffa305c2bd0d17a15f0d38"
+    },
+    "assets/st-louis-mo/service-areas/town-and-country-mo/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "a2aade8eb3234264590c2a2458c5e57c7e03b93995d7c4895945e8beacbd499f"
+    },
+    "assets/st-louis-mo/service-areas/wildwood-mo/index.html": {
+      "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
+      "expectedSha256": "bcbc0d61d7cafa98723e32bce2784faf98036eaff48bb8c587dd5d15d00f684f"
+    }
+  }
 }
