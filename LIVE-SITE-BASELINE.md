@@ -1,19 +1,19 @@
 # Live-site release baseline
 
-`scripts/live-site-baseline.json` freezes the exact public build and runtime source for Cloudflare Pages production deployment `d0acd4af-738d-4dee-9f4b-5df4612bd4b0`. The 288 public file hashes were captured from the verified live checkout. The live HTML references `script.40559d41a6b61dc2.js`; the guard also checks that every page references the reviewed active script and that all regional pages retain the correct Quo call links and displayed numbers.
+`scripts/live-site-baseline.json` freezes the public build and runtime source for Cloudflare Pages production deployment `fbcb84ff-a1bd-4878-b90d-00500ae6434b`. Cloudflare identifies it as a direct upload from clean Git commit `8ae1d564816270a006b5beacc9004379755e9e00` on 2026-10-07. Its 328 published static files match that commit's build; the local guard also hashes `_headers` and `_redirects`, for 330 build files total. The live HTML references `script.e0b6cf2323b054a8.js`; the guard checks that every page references the reviewed active script and that all regional pages retain the correct Quo call links and displayed numbers.
 
 The active JavaScript source is `src/site-interactions.js`, which is byte-for-byte
 identical to the live hashed script in this baseline. The public `script.js` is a
 legacy URL and does **not** contain all current live behavior. Edit the canonical
 source for future interactions. `npm run build` creates a new content-addressed
 script and updates only the built HTML references and `_headers` when that source
-changes; an unchanged build reproduces all 288 live files exactly.
+changes; an unchanged build reproduces the live static files exactly.
 
-The Git source commit named in Cloudflare metadata is `24e8665`, but the live
-static improvements were deployed from uncommitted files. Commit `4919386` on
-`baseline/live-site-2026-09-30` captures those exact static bytes. Starting a
-release from `24e8665`, the old `main`, or `stage1-shadow` without this snapshot
-would restore older content and phone numbers.
+The backup branch `backup/live-site-d2d9c1d5-2026-10-07` diverged before this
+release. Its commit `c6d241f` includes three Quo runtime changes that were not
+in the clean `8ae1d56` release. Start new website work from the current
+`baseline/live-site-2026-09-30` tip, not the backup branch. Reintroduce any
+pending Quo changes through the reviewed-change guard before a future release.
 
 `baseline/live-site-2026-09-30` is the canonical GitHub default and Cloudflare
 Pages production branch. Start each website change from its current tip. The
