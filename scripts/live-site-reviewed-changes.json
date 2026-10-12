@@ -1,26 +1,5 @@
 {
   "schemaVersion": 1,
-  "baselineDeploymentId": "2954e9d8-b084-4138-b4d7-b74c77be3424",
-  "changes": {
-    "runtime/server/jobber-custom-fields.js": {
-      "expectedSha256": "c3cbfac842f8532ba1aa95bc85725e3474d9555460956e2f11728e163a9ef223",
-      "reason": "Read the Quote Request's Client ID, update only exact generic call fields, and verify safe reversal of our paid fields after a match is demoted."
-    },
-    "runtime/server/jobber-quote-attribution.js": {
-      "expectedSha256": "89564d89f384a7f7ae00b6651aacf431b59da4ea4bb4d99dc1663037d41e3be1",
-      "reason": "Resolve reviewed call lineage, record paid field write evidence, and reconcile a demoted Google call match with fresh account and Client checks."
-    },
-    "runtime/functions/api/jobber/quote-call-replay.js": {
-      "expectedSha256": "a7778c68a82121f0764e5b0aef0dc73d2f24fed20591964b7966b79596afe423",
-      "reason": "Expose the bounded Quote call match replay only to the existing authenticated Quote broker."
-    },
-    "runtime/workers/jobber-quote-consumer.js": {
-      "expectedSha256": "df8b8e8eacdcf57c9c5dd8afa70924ed1a0fa9f70f12ca7bfe993e369287a30d",
-      "reason": "Run the bounded replay on the existing Quote cron only when its dedicated opt-in flag is enabled."
-    },
-    "runtime/workers/jobber-quote-consumer.wrangler.toml": {
-      "expectedSha256": "e4236e56d85a49a245841a4c54c73f8a5229ad75c172de68218f98e229e70943",
-      "reason": "Keep late Google call replay disabled by default in the Quote consumer deployment configuration."
-    }
-  }
+  "baselineDeploymentId": "dccc6049-dc80-490b-ac21-6c6c00524d18",
+  "changes": {}
 }
