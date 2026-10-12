@@ -97,6 +97,30 @@
     "assets/st-louis-mo/service-areas/wildwood-mo/index.html": {
       "reason": "Show the current Google profile rating and review count for this market on the town page, with a direct profile link.",
       "expectedSha256": "bcbc0d61d7cafa98723e32bce2784faf98036eaff48bb8c587dd5d15d00f684f"
+    },
+    "runtime/functions/api/jobber/quote-history-backfill.js": {
+      "expectedSha256": "f13e2265221cb88687049bbaa0cf940c1c145fc4d33f92be2c325926c39d5ae7",
+      "reason": "Expose the bounded historical call Quote audit only through the authenticated internal broker."
+    },
+    "runtime/server/jobber-custom-fields.js": {
+      "expectedSha256": "28d48653695b75b46c75782374d97ac12fa7b81711072971edf63a425fc91433",
+      "reason": "Hold historical Quote attribution when existing staff values conflict and require blank paid fields before writing a campaign."
+    },
+    "runtime/server/jobber-quote-attribution.js": {
+      "expectedSha256": "94cc0ac95fd39db7a4be06fe0f52461c48ed34f050f07e39e6870ca1a7f78d62",
+      "reason": "Backfill old call-origin Quotes with fresh Jobber and current Quo lineage checks, website lead precedence, an audit lease, and a three-Quote batch cap."
+    },
+    "runtime/workers/jobber-quote-consumer.js": {
+      "expectedSha256": "960b935e5af15aa8b486fd43150a967c1edd682c75819e7a870ae0c485763460",
+      "reason": "Call the authenticated historical Quote backfill from the existing thirty-minute consumer cron only when enabled."
+    },
+    "runtime/workers/jobber-quote-consumer.wrangler.toml": {
+      "expectedSha256": "b0033a5be6dab96ffa124a96aef0ef5a34c89d85a027511aeb38e8a7a92e8c6e",
+      "reason": "Keep the historical Quote backfill disabled by default in the consumer deployment."
+    },
+    "runtime/wrangler.toml": {
+      "expectedSha256": "5b5730979070aa186c2dc0f9fae1f4b3c7d25eb4bb3a466c5f06ae2ae91dd7ae",
+      "reason": "Keep the historical Quote backfill disabled by default in production and preview Pages Functions."
     }
   }
 }
