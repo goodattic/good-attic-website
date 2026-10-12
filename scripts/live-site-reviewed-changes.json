@@ -1,5 +1,14 @@
 {
   "schemaVersion": 1,
   "baselineDeploymentId": "2954e9d8-b084-4138-b4d7-b74c77be3424",
-  "changes": {}
+  "changes": {
+    "runtime/server/jobber-custom-fields.js": {
+      "expectedSha256": "dcf1abe5e1b8e3bba45f51f4285e691d1616f94dd59f636df0ecfc422adb33f5",
+      "reason": "Read the authoritative Jobber Client ID from the Quote's Request before resolving Quo call lineage."
+    },
+    "runtime/server/jobber-quote-attribution.js": {
+      "expectedSha256": "1f6d5257055cedcaf257414a7c93a9767bd5a5c0bed418697d386b7a638805bd",
+      "reason": "Resolve verified Quo call and reviewed Request lineage for Quote fields while requiring a unique Google call match before naming an Ads campaign."
+    }
+  }
 }

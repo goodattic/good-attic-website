@@ -1,7 +1,6 @@
 import { getJobberOAuthRoute } from "../functions/api/jobber/oauth/config.js";
 import { _private as leadHelpers } from "../functions/api/leads.js";
 import { canonicalJobberId } from "./acknowledgement-source.js";
-import { campaignMarket } from "./qualified-phone-runtime.js";
 import {
   _private as customFieldHelpers,
   applyQuoteCustomFields,
@@ -22,6 +21,12 @@ const ROUTES_BY_ACCOUNT_ID = new Map(
 function clean(value, max = 500) {
   if (!["string", "number", "bigint"].includes(typeof value)) return "";
   return String(value).trim().slice(0, max);
+}
+
+function campaignMarket(name) {
+  const markers = [["ut", /\| UT \|/], ["mo_stl", /\| MO-STL \|/], ["mo_kc", /\| MO-KC \|/]]
+    .filter(([, pattern]) => pattern.test(name || ""));
+  return markers.length === 1 ? markers[0][0] : null;
 }
 
 function jsonResponse(body, status = 200) {
