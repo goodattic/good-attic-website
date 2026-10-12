@@ -3,12 +3,15 @@ import { _private as leadHelpers } from "../functions/api/leads.js";
 import { canonicalJobberId } from "./acknowledgement-source.js";
 import {
   _private as customFieldHelpers,
+  applyGoogleCallQuoteReplay,
   applyQuoteCustomFields,
 } from "./jobber-custom-fields.js";
 
 const MAX_RESOLVER_BODY_BYTES = 32 * 1024;
 const QUOTE_ATTRIBUTION_EVENT_NAME = "jobber.quote_attribution.v1";
 const ATTRIBUTION_CLAIM_LEASE_MS = 2 * 60 * 1000;
+const CALL_REPLAY_BATCH_SIZE = 3;
+const CALL_REPLAY_CLAIM_LEASE_MS = 2 * 60 * 1000;
 const ENABLED_MARKETS = new Set(["ut", "mo_stl"]);
 
 const ROUTES_BY_ACCOUNT_ID = new Map(
@@ -87,7 +90,7 @@ async function findLead(database, requestId) {
   `).bind(requestId).first();
 }
 
-async function verifiedGoogleCallCampaign(database, call, marketKey) {
+async function verifiedGoogleCallMatch(database, call, marketKey) {
   let result;
   try {
     result = await database.prepare(`
@@ -111,7 +114,7 @@ async function verifiedGoogleCallCampaign(database, call, marketKey) {
     || match.caller_area_code !== call.caller_phone?.slice(2, 5)
     || !Number.isFinite(callAt) || !Number.isFinite(googleAt)
     || Math.abs(googleAt - callAt) > 120_000) return null;
-  return match.campaign_name;
+  return { campaign: match.campaign_name, google_resource: match.google_resource };
 }
 
 // A Quo call is not a website form submission and does not carry a click ID.
@@ -175,14 +178,145 @@ async function findCallLead(database, { accountId, marketKey, requestId, clientI
   if (call?.account_id !== accountId || call?.jobber_client_id !== clientId
     || (marketKey === "ut" ? call.market !== "utah" : call.market !== "stl")
     || !/^AC[A-Za-z0-9_-]{1,160}$/.test(call.quo_call_id || "")) return null;
-  const campaign = await verifiedGoogleCallCampaign(database, call, marketKey);
+  const googleMatch = await verifiedGoogleCallMatch(database, call, marketKey);
   return {
     lead_id: `quo-call:${call.quo_call_id}`, market_key: marketKey,
     jobber_account_id: accountId, jobber_request_id: requestId,
     original_request_id: originalRequestId,
-    original_source: campaign ? "Google Ads call" : "Quo inbound call",
-    campaign, landing_page: null,
+    original_source: googleMatch ? "Google Ads call" : "Quo inbound call",
+    campaign: googleMatch?.campaign || null,
+    google_resource: googleMatch?.google_resource || null,
+    landing_page: null,
   };
+}
+
+async function findMatchedCallQuoteReplayCandidates(database, nowMs) {
+  const rows = await database.prepare(`
+    SELECT c.quote_id, c.lead_id, c.market_key, c.jobber_request_id,
+      q.account_id, m.quo_call_id, m.google_resource
+    FROM closed_loop_quote_attributions c
+    JOIN google_call_match_shadow m ON c.lead_id = ('quo-call:' || m.quo_call_id)
+    JOIN quo_call_attributions q ON q.quo_call_id = m.quo_call_id
+    LEFT JOIN quote_google_call_replays r ON r.quote_id = c.quote_id
+    WHERE c.status IN ('applied', 'skipped')
+      AND m.match_state = 'matched' AND m.diagnostic_code IS NULL
+      AND m.market_key = c.market_key AND q.direction = 'incoming'
+      AND ((c.market_key = 'ut' AND q.market = 'utah')
+        OR (c.market_key = 'mo_stl' AND q.market = 'stl'))
+      AND (r.quote_id IS NULL OR (r.state IN ('pending', 'retryable')
+        AND r.google_resource = m.google_resource
+        AND (r.next_attempt_at IS NULL OR r.next_attempt_at <= ?)
+        AND (r.claim_token IS NULL OR r.claim_expires_at <= ?)))
+    ORDER BY c.created_at ASC, c.quote_id ASC LIMIT 12
+  `).bind(nowMs, nowMs).all();
+  return rows?.results || [];
+}
+
+async function claimGoogleCallQuoteReplay(database, candidate, nowMs) {
+  const now = new Date(nowMs).toISOString();
+  await database.prepare(`
+    INSERT OR IGNORE INTO quote_google_call_replays (
+      quote_id, quo_call_id, google_resource, state, attempt_count, created_at, updated_at
+    ) VALUES (?, ?, ?, 'pending', 0, ?, ?)
+  `).bind(candidate.quote_id, candidate.quo_call_id, candidate.google_resource, now, now).run();
+  const token = crypto.randomUUID();
+  const claimed = await database.prepare(`
+    UPDATE quote_google_call_replays SET claim_token = ?, claim_expires_at = ?,
+      attempt_count = attempt_count + 1, updated_at = ?
+    WHERE quote_id = ? AND quo_call_id = ? AND google_resource = ?
+      AND state IN ('pending', 'retryable')
+      AND (next_attempt_at IS NULL OR next_attempt_at <= ?)
+      AND (claim_token IS NULL OR claim_expires_at <= ?)
+  `).bind(token, nowMs + CALL_REPLAY_CLAIM_LEASE_MS, now,
+    candidate.quote_id, candidate.quo_call_id, candidate.google_resource, nowMs, nowMs).run();
+  return changes(claimed) === 1 ? token : null;
+}
+
+async function finishGoogleCallQuoteReplay(database, candidate, token, state, reason = "") {
+  const nowMs = Date.now();
+  const now = new Date(nowMs).toISOString();
+  const nextAttemptAt = state === "retryable" ? nowMs + 30 * 60 * 1000 : null;
+  const updated = await database.prepare(`
+    UPDATE quote_google_call_replays
+    SET state = ?, claim_token = NULL, claim_expires_at = NULL,
+      next_attempt_at = ?, last_error_code = ?, updated_at = ?,
+      completed_at = CASE WHEN ? IN ('applied', 'held') THEN ? ELSE completed_at END
+    WHERE quote_id = ? AND claim_token = ?
+  `).bind(state, nextAttemptAt, clean(reason, 120) || null, now,
+    state, now, candidate.quote_id, token).run();
+  return changes(updated) === 1;
+}
+
+async function replayMatchedCallQuote(env, database, candidate) {
+  const route = ROUTES_BY_ACCOUNT_ID.get(candidate.account_id);
+  if (!route || route.marketKey !== candidate.market_key
+    || candidate.lead_id !== `quo-call:${candidate.quo_call_id}`) {
+    return { state: "held", reason: "account_or_lead_mismatch" };
+  }
+  const token = await leadHelpers.refreshJobberAccessToken(env, route);
+  const quoteResult = await customFieldHelpers.jobberGraphql(
+    env, token.accessToken, customFieldHelpers.QUOTE_CONTEXT_QUERY, { id: candidate.quote_id },
+  );
+  if (!quoteResult.response.ok || quoteResult.data?.errors?.length) {
+    return { state: "retryable", reason: classifyGraphqlFailure(quoteResult) };
+  }
+  const quote = quoteResult.data?.data?.quote;
+  if (!quote?.id) return { state: "retryable", reason: "quote_not_found" };
+  const requestId = clean(quote.request?.id, 500);
+  const clientId = canonicalJobberId(quote.request?.client?.id, "Client");
+  if (quote.id !== candidate.quote_id || requestId !== candidate.jobber_request_id || !clientId) {
+    return { state: "held", reason: "quote_lineage_changed" };
+  }
+  const lead = await findCallLead(database, {
+    accountId: candidate.account_id, marketKey: candidate.market_key, requestId, clientId,
+  });
+  if (!lead || lead.lead_id !== candidate.lead_id || !lead.campaign
+    || lead.google_resource !== candidate.google_resource) {
+    return { state: "retryable", reason: "google_match_not_current" };
+  }
+  const applied = await applyGoogleCallQuoteReplay(
+    env, token.accessToken, quote, lead.original_request_id || requestId, lead.campaign,
+  );
+  if (applied.ok) return { state: "applied", reason: applied.alreadyApplied ? "already_applied" : "" };
+  if (applied.skipped && ["quote_fields_changed", "original_lead_field_mismatch"].includes(applied.reason)) {
+    return { state: "held", reason: applied.reason };
+  }
+  return { state: "retryable", reason: applied.reason || "jobber_rejected" };
+}
+
+export async function replayMatchedCallQuotes({ request, env }) {
+  if (!await bearerAuthorized(request, env.JOBBER_QUOTE_BROKER_SECRET)) {
+    return jsonResponse({ ok: false, code: "unauthorized" }, 401);
+  }
+  const database = env.ANGI_ROUTER_DB;
+  if (!database?.prepare) return jsonResponse({ ok: false, code: "jobber_authoritative_database_unavailable" }, 503);
+  if (env.EXTERNAL_API_WRITES_ENABLED !== "true") {
+    return jsonResponse({ ok: true, status: "skipped", reason: "external_api_writes_disabled" });
+  }
+  try {
+    const nowMs = Date.now();
+    const candidates = (await findMatchedCallQuoteReplayCandidates(database, nowMs))
+      .filter((candidate) => quoteAllowedInCurrentMode(env, candidate.market_key, candidate.quote_id))
+      .slice(0, CALL_REPLAY_BATCH_SIZE);
+    const counts = { applied: 0, held: 0, retryable: 0 };
+    for (const candidate of candidates) {
+      const token = await claimGoogleCallQuoteReplay(database, candidate, nowMs);
+      if (!token) continue;
+      let outcome;
+      try {
+        outcome = await replayMatchedCallQuote(env, database, candidate);
+      } catch (error) {
+        outcome = { state: "retryable", reason: clean(error?.details?.code, 120) || "replay_failed" };
+      }
+      if (!await finishGoogleCallQuoteReplay(database, candidate, token, outcome.state, outcome.reason)) {
+        return jsonResponse({ ok: false, code: "replay_claim_lost" }, 503);
+      }
+      counts[outcome.state] += 1;
+    }
+    return jsonResponse({ ok: true, status: "completed", ...counts });
+  } catch {
+    return jsonResponse({ ok: false, code: "call_replay_unavailable" }, 503);
+  }
 }
 
 async function beginAttribution(database, quoteId, lead) {
@@ -402,7 +536,11 @@ export const _private = {
   classifyGraphqlFailure,
   findLead,
   findCallLead,
-  verifiedGoogleCallCampaign,
+  verifiedGoogleCallMatch,
+  findMatchedCallQuoteReplayCandidates,
+  claimGoogleCallQuoteReplay,
+  finishGoogleCallQuoteReplay,
+  replayMatchedCallQuote,
   beginAttribution,
   finishAttribution,
   leadForCustomFields,

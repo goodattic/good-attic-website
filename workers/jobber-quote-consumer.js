@@ -3,6 +3,7 @@ const BASE_RETRY_DELAY_SECONDS = 60;
 const MAX_RETRY_DELAY_SECONDS = 60 * 60;
 const DEFAULT_RESOLVER_URL = "https://goodattic.energy/api/jobber/quote-resolve";
 const DEFAULT_AUTH_HEALTH_URL = "https://goodattic.energy/api/jobber/oauth/health-check";
+const DEFAULT_CALL_REPLAY_URL = "https://goodattic.energy/api/jobber/quote-call-replay";
 
 const MARKET_BY_ACCOUNT_ID = new Map([
   ["Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQzMg==", "ut"],
@@ -118,6 +119,23 @@ async function runAuthorizationHealth(env) {
   return result;
 }
 
+async function runMatchedCallReplay(env) {
+  const url = clean(env.JOBBER_QUOTE_CALL_REPLAY_URL || DEFAULT_CALL_REPLAY_URL, 2000);
+  const secret = clean(env.JOBBER_QUOTE_BROKER_SECRET, 2000);
+  if (!secret) throw new Error("resolver_secret_not_configured");
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
+    body: "{}",
+    redirect: "manual",
+    signal: AbortSignal.timeout(45_000),
+  });
+  let result = null;
+  try { result = await response.json(); } catch { /* report HTTP status below */ }
+  if (!response.ok || !result?.ok) throw new Error(`call_replay_http_${response.status || 0}`);
+  return result;
+}
+
 export default {
   async queue(batch, env) {
     for (const message of batch.messages) await processMessage(message, env);
@@ -130,12 +148,22 @@ export default {
         error: error instanceof Error ? error.message : "unknown_error",
       });
     }
+    if (env.JOBBER_QUOTE_CALL_REPLAY_ENABLED === "true") {
+      try {
+        await runMatchedCallReplay(env);
+      } catch (error) {
+        console.error("Jobber Quote call replay failed.", {
+          error: error instanceof Error ? error.message : "unknown_error",
+        });
+      }
+    }
   },
 };
 
 export const _private = {
   BASE_RETRY_DELAY_SECONDS,
   DEFAULT_AUTH_HEALTH_URL,
+  DEFAULT_CALL_REPLAY_URL,
   DEFAULT_RESOLVER_URL,
   MARKET_BY_ACCOUNT_ID,
   MAX_RETRY_DELAY_SECONDS,
@@ -146,5 +174,6 @@ export const _private = {
   resolveQuote,
   retryDelaySeconds,
   runAuthorizationHealth,
+  runMatchedCallReplay,
   validMessage,
 };

@@ -10,6 +10,7 @@ import {
 } from "../server/jobber-quote-attribution.js";
 import {
   applyQuoteCustomFields,
+  buildGoogleCallQuoteReplayAttributes,
   buildQuoteCustomFieldAttributes,
   filterQuoteCustomFieldConfigurations,
   resolveCustomFieldDefinitions,
@@ -104,6 +105,35 @@ test("does not overwrite a staff-corrected value and omits a missing campaign", 
   }]);
   assert.deepEqual(result.skippedExisting, ["Original Source"]);
   assert.deepEqual(result.missingValues, ["Campaign"]);
+});
+
+test("late Google call replay upgrades only the same Quote's generic source", () => {
+  const definitions = new Map([
+    ["Original Lead ID", "lead-id"], ["Original Source", "source-id"], ["Campaign", "campaign-id"],
+  ]);
+  const fields = (source, campaign = "") => [
+    { valueText: "jobber-request:original-1", customFieldConfiguration: { id: "lead-id", name: "Original Lead ID" } },
+    { valueText: source, customFieldConfiguration: { id: "source-id", name: "Original Source" } },
+    { valueText: campaign, customFieldConfiguration: { id: "campaign-id", name: "Campaign" } },
+  ];
+  const result = buildGoogleCallQuoteReplayAttributes(definitions,
+    { customFields: fields("Quo inbound call") }, "original-1", "Search | UT | Attic");
+  assert.deepEqual(result.attributes, [
+    { customFieldConfigurationId: "source-id", valueText: "Google Ads call" },
+    { customFieldConfigurationId: "campaign-id", valueText: "Search | UT | Attic" },
+  ]);
+  assert.equal(buildGoogleCallQuoteReplayAttributes(definitions,
+    { customFields: fields("Staff corrected") }, "original-1", "Search | UT | Attic").reason,
+  "quote_fields_changed");
+  assert.equal(buildGoogleCallQuoteReplayAttributes(definitions,
+    { customFields: fields("Quo inbound call", "Staff campaign") }, "original-1", "Search | UT | Attic").reason,
+  "quote_fields_changed");
+  assert.equal(buildGoogleCallQuoteReplayAttributes(definitions,
+    { customFields: fields("Quo inbound call") }, "different-1", "Search | UT | Attic").reason,
+  "original_lead_field_mismatch");
+  assert.equal(buildGoogleCallQuoteReplayAttributes(definitions,
+    { customFields: fields("Google Ads call", "Search | UT | Attic") }, "original-1", "Search | UT | Attic").alreadyApplied,
+  true);
 });
 
 test("duplicate webhook deliveries produce one stable queue event per quote", () => {

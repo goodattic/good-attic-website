@@ -3,12 +3,24 @@
   "baselineDeploymentId": "2954e9d8-b084-4138-b4d7-b74c77be3424",
   "changes": {
     "runtime/server/jobber-custom-fields.js": {
-      "expectedSha256": "dcf1abe5e1b8e3bba45f51f4285e691d1616f94dd59f636df0ecfc422adb33f5",
-      "reason": "Read the authoritative Jobber Client ID from the Quote's Request before resolving Quo call lineage."
+      "expectedSha256": "93d6a14a062872fa1c4ae19ba3a78616485f919f63d4e09198afa150348bf60f",
+      "reason": "Read the Quote Request's Client ID and safely upgrade a generic call source only after a verified Google call match."
     },
     "runtime/server/jobber-quote-attribution.js": {
-      "expectedSha256": "1f6d5257055cedcaf257414a7c93a9767bd5a5c0bed418697d386b7a638805bd",
-      "reason": "Resolve verified Quo call and reviewed Request lineage for Quote fields while requiring a unique Google call match before naming an Ads campaign."
+      "expectedSha256": "95ab53970037386c357cd86edc2318676204387e495868b83a05e39f5962498f",
+      "reason": "Resolve reviewed call lineage and replay a later unique Google call match to an already attributed Quote with fresh account and Client checks."
+    },
+    "runtime/functions/api/jobber/quote-call-replay.js": {
+      "expectedSha256": "a7778c68a82121f0764e5b0aef0dc73d2f24fed20591964b7966b79596afe423",
+      "reason": "Expose the bounded Quote call match replay only to the existing authenticated Quote broker."
+    },
+    "runtime/workers/jobber-quote-consumer.js": {
+      "expectedSha256": "df8b8e8eacdcf57c9c5dd8afa70924ed1a0fa9f70f12ca7bfe993e369287a30d",
+      "reason": "Run the bounded replay on the existing Quote cron only when its dedicated opt-in flag is enabled."
+    },
+    "runtime/workers/jobber-quote-consumer.wrangler.toml": {
+      "expectedSha256": "e4236e56d85a49a245841a4c54c73f8a5229ad75c172de68218f98e229e70943",
+      "reason": "Keep late Google call replay disabled by default in the Quote consumer deployment configuration."
     }
   }
 }
