@@ -31,7 +31,8 @@ function callAttributionDatabase() {
   ); CREATE TABLE call_request_lineage_links (
     account_id TEXT, market_key TEXT, quo_call_id TEXT, original_request_id TEXT,
     operational_request_id TEXT, client_id TEXT, call_started_at_utc TEXT
-  )`);
+  ); CREATE VIEW call_request_lineage_active_links AS
+    SELECT *, 0 AS revision FROM call_request_lineage_links`);
   return {
     sqlite: db,
     d1: { prepare(sql) { return { bind(...values) { return {
@@ -159,6 +160,35 @@ test("a Quo call resolves to its original Request without inventing a Google cam
   assert.equal(lead.campaign, null);
 });
 
+test("a unique Google forwarding call match supplies the actual campaign to a call-origin Quote", async () => {
+  const { sqlite, d1 } = callAttributionDatabase();
+  sqlite.exec(`ALTER TABLE quo_call_attributions ADD COLUMN caller_phone TEXT;
+    CREATE TABLE google_call_match_shadow (
+      google_resource TEXT, market_key TEXT, campaign_name TEXT,
+      caller_area_code TEXT, call_started_at_utc TEXT, diagnostic_code TEXT,
+      quo_call_id TEXT, match_state TEXT
+    )`);
+  const requestId = gid("Request", 35017089), clientId = gid("Client", 155986226);
+  const at = "2026-10-12T19:45:45.000Z";
+  sqlite.prepare(`INSERT INTO quo_call_attributions VALUES (?,?,?,?,?,?,?,?)`).run(
+    UTAH_ACCOUNT_ID, "utah", "ACfirstCall", requestId, clientId,
+    "incoming", at, "+16142166149",
+  );
+  sqlite.prepare(`INSERT INTO google_call_match_shadow VALUES (?,?,?,?,?,?,?,?)`).run(
+    "customers/4800890529/callViews/123", "ut", "Search | UT | Attic",
+    "614", "2026-10-12T19:46:20.000Z", null, "ACfirstCall", "matched",
+  );
+  const lead = await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID,
+    marketKey: "ut", requestId, clientId });
+  assert.equal(lead.original_source, "Google Ads call");
+  assert.equal(lead.campaign, "Search | UT | Attic");
+  sqlite.prepare(`UPDATE google_call_match_shadow SET match_state = 'held', diagnostic_code = 'ambiguous'`).run();
+  const held = await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID,
+    marketKey: "ut", requestId, clientId });
+  assert.equal(held.original_source, "Quo inbound call");
+  assert.equal(held.campaign, null);
+});
+
 test("a reviewed same-client Request link carries the original Quo source to a later Quote", async () => {
   const { sqlite, d1 } = callAttributionDatabase();
   const original = gid("Request", 35017089), booked = gid("Request", 35017723);
@@ -174,6 +204,7 @@ test("a reviewed same-client Request link carries the original Quo source to a l
   assert.equal(lead.original_request_id, original);
   assert.equal(lead.lead_id, "quo-call:ACfirstCall");
   assert.equal(await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID, marketKey: "ut", requestId: booked, clientId: gid("Client", 999) }), null);
+  assert.equal(await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID, marketKey: "ut", requestId: original, clientId: client }), null);
 });
 
 test("multiple call origins on a Request remain unlinked", async () => {

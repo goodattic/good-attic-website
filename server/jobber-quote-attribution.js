@@ -1,6 +1,7 @@
 import { getJobberOAuthRoute } from "../functions/api/jobber/oauth/config.js";
 import { _private as leadHelpers } from "../functions/api/leads.js";
 import { canonicalJobberId } from "./acknowledgement-source.js";
+import { campaignMarket } from "./qualified-phone-runtime.js";
 import {
   _private as customFieldHelpers,
   applyQuoteCustomFields,
@@ -81,6 +82,33 @@ async function findLead(database, requestId) {
   `).bind(requestId).first();
 }
 
+async function verifiedGoogleCallCampaign(database, call, marketKey) {
+  let result;
+  try {
+    result = await database.prepare(`
+      SELECT google_resource, market_key, campaign_name, caller_area_code,
+        call_started_at_utc, diagnostic_code
+      FROM google_call_match_shadow
+      WHERE quo_call_id = ? AND match_state = 'matched' LIMIT 2
+    `).bind(call.quo_call_id).all();
+  } catch (error) {
+    if (!/no such table.*google_call_match_shadow/i.test(String(error))) throw error;
+    return null;
+  }
+  const matches = result?.results || [];
+  if (matches.length !== 1) return null;
+  const match = matches[0];
+  const callAt = Date.parse(call.call_started_at_utc);
+  const googleAt = Date.parse(match.call_started_at_utc);
+  if (match.market_key !== marketKey || match.diagnostic_code !== null
+    || campaignMarket(match.campaign_name) !== marketKey
+    || !/^customers\/4800890529\/callViews\/[^/\s]+$/.test(match.google_resource || "")
+    || match.caller_area_code !== call.caller_phone?.slice(2, 5)
+    || !Number.isFinite(callAt) || !Number.isFinite(googleAt)
+    || Math.abs(googleAt - callAt) > 120_000) return null;
+  return match.campaign_name;
+}
+
 // A Quo call is not a website form submission and does not carry a click ID.
 // Keep its source separate, and use a reviewed Request link only when staff
 // booked the same inquiry on a second Jobber Request.
@@ -95,22 +123,36 @@ async function findCallLead(database, { accountId, marketKey, requestId, clientI
   if (directRows.length > 1) return null;
   let call = directRows[0] || null;
   let originalRequestId = requestId;
-  // The link table is additive; original Requests still resolve before its
-  // migration. Once present, a direct call and a reviewed link must not both
-  // claim the same operational Request.
+  // Only the current reviewed target can receive call attribution. A later
+  // correction retires the prior target without rewriting its audit record.
   let linked;
   try {
     linked = await database.prepare(`
-      SELECT * FROM call_request_lineage_links
+      SELECT * FROM call_request_lineage_active_links
       WHERE account_id = ? AND market_key = ? AND operational_request_id = ?
         AND client_id = ? LIMIT 2
     `).bind(accountId, marketKey, requestId, clientId).all();
   } catch (error) {
-    if (!/no such table.*call_request_lineage_links/i.test(String(error))) throw error;
+    if (!/no such (table|view).*call_request_lineage_active_links/i.test(String(error))) throw error;
     linked = { results: [] };
   }
   const links = linked?.results || [];
-  if (links.length > 1 || (call && links.length)) return null;
+  if (links.length > 1 || (call && links.length && links[0].quo_call_id !== call.quo_call_id)) return null;
+  if (call) {
+    let active;
+    try {
+      active = await database.prepare(`
+        SELECT operational_request_id, client_id FROM call_request_lineage_active_links
+        WHERE account_id = ? AND quo_call_id = ? LIMIT 2
+      `).bind(accountId, call.quo_call_id).all();
+    } catch (error) {
+      if (!/no such (table|view).*call_request_lineage_active_links/i.test(String(error))) throw error;
+      active = { results: [] };
+    }
+    const targets = active?.results || [];
+    if (targets.length > 1 || (targets.length === 1
+      && (targets[0].operational_request_id !== requestId || targets[0].client_id !== clientId))) return null;
+  }
   if (!call) {
     if (links.length !== 1) return null;
     const link = links[0];
@@ -128,11 +170,13 @@ async function findCallLead(database, { accountId, marketKey, requestId, clientI
   if (call?.account_id !== accountId || call?.jobber_client_id !== clientId
     || (marketKey === "ut" ? call.market !== "utah" : call.market !== "stl")
     || !/^AC[A-Za-z0-9_-]{1,160}$/.test(call.quo_call_id || "")) return null;
+  const campaign = await verifiedGoogleCallCampaign(database, call, marketKey);
   return {
     lead_id: `quo-call:${call.quo_call_id}`, market_key: marketKey,
     jobber_account_id: accountId, jobber_request_id: requestId,
     original_request_id: originalRequestId,
-    original_source: "Quo inbound call", campaign: null, landing_page: null,
+    original_source: campaign ? "Google Ads call" : "Quo inbound call",
+    campaign, landing_page: null,
   };
 }
 
@@ -353,6 +397,7 @@ export const _private = {
   classifyGraphqlFailure,
   findLead,
   findCallLead,
+  verifiedGoogleCallCampaign,
   beginAttribution,
   finishAttribution,
   leadForCustomFields,
