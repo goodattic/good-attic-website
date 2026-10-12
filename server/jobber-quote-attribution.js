@@ -3,6 +3,7 @@ import { _private as leadHelpers } from "../functions/api/leads.js";
 import { canonicalJobberId } from "./acknowledgement-source.js";
 import {
   _private as customFieldHelpers,
+  applyGoogleCallQuoteDemotion,
   applyGoogleCallQuoteReplay,
   applyQuoteCustomFields,
 } from "./jobber-custom-fields.js";
@@ -232,7 +233,8 @@ async function claimGoogleCallQuoteReplay(database, candidate, nowMs) {
   return changes(claimed) === 1 ? token : null;
 }
 
-async function finishGoogleCallQuoteReplay(database, candidate, token, state, reason = "") {
+async function finishGoogleCallQuoteReplay(database, candidate, token, outcome) {
+  const { state, reason = "", campaign = null, promotionWriteVerified = false } = outcome;
   const nowMs = Date.now();
   const now = new Date(nowMs).toISOString();
   const nextAttemptAt = state === "retryable" ? nowMs + 30 * 60 * 1000 : null;
@@ -240,9 +242,13 @@ async function finishGoogleCallQuoteReplay(database, candidate, token, state, re
     UPDATE quote_google_call_replays
     SET state = ?, claim_token = NULL, claim_expires_at = NULL,
       next_attempt_at = ?, last_error_code = ?, updated_at = ?,
+      campaign_written = CASE WHEN ? = 'applied' THEN ? ELSE campaign_written END,
+      promotion_write_verified = CASE WHEN ? = 'applied' THEN ? ELSE promotion_write_verified END,
       completed_at = CASE WHEN ? IN ('applied', 'held') THEN ? ELSE completed_at END
     WHERE quote_id = ? AND claim_token = ?
   `).bind(state, nextAttemptAt, clean(reason, 120) || null, now,
+    state, state === "applied" ? clean(campaign, 200) || null : null,
+    state, promotionWriteVerified ? 1 : 0,
     state, now, candidate.quote_id, token).run();
   return changes(updated) === 1;
 }
@@ -277,8 +283,138 @@ async function replayMatchedCallQuote(env, database, candidate) {
   const applied = await applyGoogleCallQuoteReplay(
     env, token.accessToken, quote, lead.original_request_id || requestId, lead.campaign,
   );
-  if (applied.ok) return { state: "applied", reason: applied.alreadyApplied ? "already_applied" : "" };
-  if (applied.skipped && ["quote_fields_changed", "original_lead_field_mismatch"].includes(applied.reason)) {
+  if (applied.ok) return { state: "applied", reason: applied.alreadyApplied ? "already_applied" : "",
+    campaign: lead.campaign, promotionWriteVerified: !applied.alreadyApplied };
+  if (applied.skipped && ["quote_fields_changed", "original_lead_field_mismatch", "quote_lineage_changed"].includes(applied.reason)) {
+    return { state: "held", reason: applied.reason };
+  }
+  return { state: "retryable", reason: applied.reason || "jobber_rejected" };
+}
+
+async function recordInitialGoogleCallQuoteWrite(database, quoteId, lead, applied) {
+  if (!applied?.ok || !lead?.google_resource || !lead?.lead_id?.startsWith("quo-call:")) return;
+  const written = new Set(applied.appliedFields || []);
+  if (!written.has("Original Source") || !written.has("Campaign")) return;
+  const now = new Date().toISOString();
+  await database.prepare(`
+    INSERT OR IGNORE INTO quote_google_call_replays (
+      quote_id, quo_call_id, google_resource, state, attempt_count,
+      campaign_written, promotion_write_verified, created_at, updated_at, completed_at
+    ) VALUES (?, ?, ?, 'applied', 1, ?, 1, ?, ?, ?)
+  `).bind(quoteId, lead.lead_id.slice("quo-call:".length), lead.google_resource,
+    clean(lead.campaign, 200), now, now, now).run();
+}
+
+async function findGoogleCallDemotionCandidates(database, nowMs) {
+  const rows = await database.prepare(`
+    SELECT r.quote_id, r.quo_call_id, r.google_resource, r.campaign_written,
+      c.lead_id, c.market_key, c.jobber_request_id, q.account_id,
+      COALESCE(m.diagnostic_code, CASE WHEN m.google_resource IS NULL
+        THEN 'google_match_missing' ELSE 'google_match_changed' END) AS diagnostic_code
+    FROM quote_google_call_replays r
+    JOIN closed_loop_quote_attributions c ON c.quote_id = r.quote_id
+    JOIN quo_call_attributions q ON q.quo_call_id = r.quo_call_id
+    LEFT JOIN google_call_match_shadow m ON m.google_resource = r.google_resource
+    LEFT JOIN quote_google_call_demotions d ON d.quote_id = r.quote_id
+    WHERE r.state = 'applied' AND r.promotion_write_verified = 1
+      AND r.campaign_written IS NOT NULL AND c.status IN ('applied', 'skipped')
+      AND c.lead_id = ('quo-call:' || r.quo_call_id) AND q.direction = 'incoming'
+      AND ((c.market_key = 'ut' AND q.market = 'utah')
+        OR (c.market_key = 'mo_stl' AND q.market = 'stl'))
+      AND (m.google_resource IS NULL OR m.match_state <> 'matched'
+        OR m.diagnostic_code IS NOT NULL OR m.quo_call_id <> r.quo_call_id
+        OR m.market_key <> c.market_key
+        OR substr(m.campaign_name, 1, 200) <> r.campaign_written)
+      AND (d.quote_id IS NULL OR (d.state IN ('pending', 'retryable')
+        AND d.google_resource = r.google_resource
+        AND (d.next_attempt_at IS NULL OR d.next_attempt_at <= ?)
+        AND (d.claim_token IS NULL OR d.claim_expires_at <= ?)))
+    ORDER BY r.completed_at ASC, r.quote_id ASC LIMIT 12
+  `).bind(nowMs, nowMs).all();
+  return rows?.results || [];
+}
+
+async function claimGoogleCallDemotion(database, candidate, nowMs) {
+  const now = new Date(nowMs).toISOString();
+  await database.prepare(`
+    INSERT OR IGNORE INTO quote_google_call_demotions (
+      quote_id, quo_call_id, google_resource, campaign_written, state,
+      diagnostic_code, attempt_count, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, 'pending', ?, 0, ?, ?)
+  `).bind(candidate.quote_id, candidate.quo_call_id, candidate.google_resource,
+    candidate.campaign_written, clean(candidate.diagnostic_code, 120), now, now).run();
+  const token = crypto.randomUUID();
+  const claimed = await database.prepare(`
+    UPDATE quote_google_call_demotions
+    SET claim_token = ?, claim_expires_at = ?, attempt_count = attempt_count + 1,
+      diagnostic_code = ?, updated_at = ?
+    WHERE quote_id = ? AND quo_call_id = ? AND google_resource = ?
+      AND campaign_written = ? AND state IN ('pending', 'retryable')
+      AND (next_attempt_at IS NULL OR next_attempt_at <= ?)
+      AND (claim_token IS NULL OR claim_expires_at <= ?)
+  `).bind(token, nowMs + CALL_REPLAY_CLAIM_LEASE_MS,
+    clean(candidate.diagnostic_code, 120), now, candidate.quote_id,
+    candidate.quo_call_id, candidate.google_resource, candidate.campaign_written,
+    nowMs, nowMs).run();
+  return changes(claimed) === 1 ? token : null;
+}
+
+async function finishGoogleCallDemotion(database, candidate, token, outcome) {
+  const nowMs = Date.now();
+  const now = new Date(nowMs).toISOString();
+  const nextAttemptAt = outcome.state === "retryable" ? nowMs + 30 * 60 * 1000 : null;
+  const updated = await database.prepare(`
+    UPDATE quote_google_call_demotions
+    SET state = ?, claim_token = NULL, claim_expires_at = NULL,
+      next_attempt_at = ?, last_error_code = ?, updated_at = ?,
+      completed_at = CASE WHEN ? IN ('reverted', 'held') THEN ? ELSE completed_at END
+    WHERE quote_id = ? AND claim_token = ?
+  `).bind(outcome.state, nextAttemptAt, clean(outcome.reason, 120) || null,
+    now, outcome.state, now, candidate.quote_id, token).run();
+  return changes(updated) === 1;
+}
+
+async function demoteGoogleCallQuote(env, database, candidate) {
+  const route = ROUTES_BY_ACCOUNT_ID.get(candidate.account_id);
+  if (!route || route.marketKey !== candidate.market_key
+    || candidate.lead_id !== `quo-call:${candidate.quo_call_id}`) {
+    return { state: "held", reason: "account_or_lead_mismatch" };
+  }
+  const match = await database.prepare(`
+    SELECT match_state, diagnostic_code, quo_call_id, market_key, campaign_name
+    FROM google_call_match_shadow WHERE google_resource = ?
+  `).bind(candidate.google_resource).first();
+  if (match?.match_state === "matched" && match.diagnostic_code === null
+    && match.quo_call_id === candidate.quo_call_id && match.market_key === candidate.market_key
+    && clean(match.campaign_name, 200) === candidate.campaign_written) {
+    return { state: "retryable", reason: "google_match_restored" };
+  }
+  const token = await leadHelpers.refreshJobberAccessToken(env, route);
+  const quoteResult = await customFieldHelpers.jobberGraphql(
+    env, token.accessToken, customFieldHelpers.QUOTE_CONTEXT_QUERY, { id: candidate.quote_id },
+  );
+  if (!quoteResult.response.ok || quoteResult.data?.errors?.length) {
+    return { state: "retryable", reason: classifyGraphqlFailure(quoteResult) };
+  }
+  const quote = quoteResult.data?.data?.quote;
+  if (!quote?.id) return { state: "retryable", reason: "quote_not_found" };
+  const requestId = clean(quote.request?.id, 500);
+  const clientId = canonicalJobberId(quote.request?.client?.id, "Client");
+  if (quote.id !== candidate.quote_id || requestId !== candidate.jobber_request_id || !clientId) {
+    return { state: "held", reason: "quote_lineage_changed" };
+  }
+  const lead = await findCallLead(database, {
+    accountId: candidate.account_id, marketKey: candidate.market_key, requestId, clientId,
+  });
+  if (!lead || lead.lead_id !== candidate.lead_id || lead.jobber_request_id !== requestId) {
+    return { state: "held", reason: "call_lineage_changed" };
+  }
+  const applied = await applyGoogleCallQuoteDemotion(
+    env, token.accessToken, quote, lead.original_request_id || requestId,
+    candidate.campaign_written,
+  );
+  if (applied.ok) return { state: "reverted", reason: applied.alreadyReverted ? "already_reverted" : "" };
+  if (applied.skipped && ["quote_fields_changed", "original_lead_field_mismatch", "quote_lineage_changed"].includes(applied.reason)) {
     return { state: "held", reason: applied.reason };
   }
   return { state: "retryable", reason: applied.reason || "jobber_rejected" };
@@ -295,10 +431,28 @@ export async function replayMatchedCallQuotes({ request, env }) {
   }
   try {
     const nowMs = Date.now();
-    const candidates = (await findMatchedCallQuoteReplayCandidates(database, nowMs))
+    const demotions = (await findGoogleCallDemotionCandidates(database, nowMs))
       .filter((candidate) => quoteAllowedInCurrentMode(env, candidate.market_key, candidate.quote_id))
       .slice(0, CALL_REPLAY_BATCH_SIZE);
-    const counts = { applied: 0, held: 0, retryable: 0 };
+    const counts = { applied: 0, held: 0, retryable: 0,
+      reverted: 0, demotion_held: 0, demotion_retryable: 0 };
+    for (const candidate of demotions) {
+      const token = await claimGoogleCallDemotion(database, candidate, nowMs);
+      if (!token) continue;
+      let outcome;
+      try {
+        outcome = await demoteGoogleCallQuote(env, database, candidate);
+      } catch (error) {
+        outcome = { state: "retryable", reason: clean(error?.details?.code, 120) || "demotion_failed" };
+      }
+      if (!await finishGoogleCallDemotion(database, candidate, token, outcome)) {
+        return jsonResponse({ ok: false, code: "demotion_claim_lost" }, 503);
+      }
+      counts[outcome.state === "reverted" ? "reverted" : `demotion_${outcome.state}`] += 1;
+    }
+    const candidates = (await findMatchedCallQuoteReplayCandidates(database, nowMs))
+      .filter((candidate) => quoteAllowedInCurrentMode(env, candidate.market_key, candidate.quote_id))
+      .slice(0, Math.max(0, CALL_REPLAY_BATCH_SIZE - demotions.length));
     for (const candidate of candidates) {
       const token = await claimGoogleCallQuoteReplay(database, candidate, nowMs);
       if (!token) continue;
@@ -308,7 +462,7 @@ export async function replayMatchedCallQuotes({ request, env }) {
       } catch (error) {
         outcome = { state: "retryable", reason: clean(error?.details?.code, 120) || "replay_failed" };
       }
-      if (!await finishGoogleCallQuoteReplay(database, candidate, token, outcome.state, outcome.reason)) {
+      if (!await finishGoogleCallQuoteReplay(database, candidate, token, outcome)) {
         return jsonResponse({ ok: false, code: "replay_claim_lost" }, 503);
       }
       counts[outcome.state] += 1;
@@ -502,6 +656,7 @@ export async function resolveQuoteAttribution({ request, env }) {
       const status = applied.reason === "permission_denied" ? 503 : 502;
       return jsonResponse({ ok: false, status: "quote_attribution_failed", quote_id: quote.id, jobber_request_id: requestId, ...applied }, status);
     }
+    await recordInitialGoogleCallQuoteWrite(database, quote.id, lead, applied);
     const finished = await finishAttribution(
       database,
       quote.id,
@@ -541,6 +696,11 @@ export const _private = {
   claimGoogleCallQuoteReplay,
   finishGoogleCallQuoteReplay,
   replayMatchedCallQuote,
+  recordInitialGoogleCallQuoteWrite,
+  findGoogleCallDemotionCandidates,
+  claimGoogleCallDemotion,
+  finishGoogleCallDemotion,
+  demoteGoogleCallQuote,
   beginAttribution,
   finishAttribution,
   leadForCustomFields,

@@ -10,6 +10,7 @@ import {
 } from "../server/jobber-quote-attribution.js";
 import {
   applyQuoteCustomFields,
+  buildGoogleCallQuoteDemotionAttributes,
   buildGoogleCallQuoteReplayAttributes,
   buildQuoteCustomFieldAttributes,
   filterQuoteCustomFieldConfigurations,
@@ -132,8 +133,20 @@ test("late Google call replay upgrades only the same Quote's generic source", ()
     { customFields: fields("Quo inbound call") }, "different-1", "Search | UT | Attic").reason,
   "original_lead_field_mismatch");
   assert.equal(buildGoogleCallQuoteReplayAttributes(definitions,
+    { customFields: fields("") }, "original-1", "Search | UT | Attic").reason,
+  "quote_fields_changed");
+  assert.equal(buildGoogleCallQuoteReplayAttributes(definitions,
     { customFields: fields("Google Ads call", "Search | UT | Attic") }, "original-1", "Search | UT | Attic").alreadyApplied,
   true);
+  const demotion = buildGoogleCallQuoteDemotionAttributes(definitions,
+    { customFields: fields("Google Ads call", "Search | UT | Attic") }, "original-1", "Search | UT | Attic");
+  assert.deepEqual(demotion.attributes, [
+    { customFieldConfigurationId: "source-id", valueText: "Quo inbound call" },
+    { customFieldConfigurationId: "campaign-id", valueText: "" },
+  ]);
+  assert.equal(buildGoogleCallQuoteDemotionAttributes(definitions,
+    { customFields: fields("Google Ads call", "Staff campaign") }, "original-1", "Search | UT | Attic").reason,
+  "quote_fields_changed");
 });
 
 test("duplicate webhook deliveries produce one stable queue event per quote", () => {

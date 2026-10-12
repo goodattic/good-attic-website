@@ -3,12 +3,12 @@
   "baselineDeploymentId": "2954e9d8-b084-4138-b4d7-b74c77be3424",
   "changes": {
     "runtime/server/jobber-custom-fields.js": {
-      "expectedSha256": "93d6a14a062872fa1c4ae19ba3a78616485f919f63d4e09198afa150348bf60f",
-      "reason": "Read the Quote Request's Client ID and safely upgrade a generic call source only after a verified Google call match."
+      "expectedSha256": "c3cbfac842f8532ba1aa95bc85725e3474d9555460956e2f11728e163a9ef223",
+      "reason": "Read the Quote Request's Client ID, update only exact generic call fields, and verify safe reversal of our paid fields after a match is demoted."
     },
     "runtime/server/jobber-quote-attribution.js": {
-      "expectedSha256": "95ab53970037386c357cd86edc2318676204387e495868b83a05e39f5962498f",
-      "reason": "Resolve reviewed call lineage and replay a later unique Google call match to an already attributed Quote with fresh account and Client checks."
+      "expectedSha256": "89564d89f384a7f7ae00b6651aacf431b59da4ea4bb4d99dc1663037d41e3be1",
+      "reason": "Resolve reviewed call lineage, record paid field write evidence, and reconcile a demoted Google call match with fresh account and Client checks."
     },
     "runtime/functions/api/jobber/quote-call-replay.js": {
       "expectedSha256": "a7778c68a82121f0764e5b0aef0dc73d2f24fed20591964b7966b79596afe423",
