@@ -22,7 +22,7 @@ const QUOTE_CONTEXT_QUERY = `
   query GoodAtticQuoteContext($id: EncodedId!) {
     quote(id: $id) {
       id
-      request { id }
+      request { id client { id } }
       customFields {
         ... on CustomFieldText {
           id
@@ -289,6 +289,8 @@ export async function applyQuoteCustomFields(env, accessToken, quote, lead, requ
     return {
       ok: true,
       applied: built.attributes.length,
+      appliedFields: [...resolved.definitions].filter(([, id]) =>
+        built.attributes.some((attribute) => attribute.customFieldConfigurationId === id)).map(([name]) => name),
       skippedExisting: built.skippedExisting,
       missingValues: built.missingValues,
     };
@@ -299,6 +301,143 @@ export async function applyQuoteCustomFields(env, accessToken, quote, lead, requ
       reason: "network_error",
       message: error instanceof Error ? error.message : "unknown_error",
     };
+  }
+}
+
+// A call's Google forwarding record can arrive after its Quote. Only upgrade
+// the source we wrote for that same original Request; never replace a value
+// that staff has changed or a campaign that is already populated.
+export function buildGoogleCallQuoteReplayAttributes(definitions, quote, originalRequestId, campaign) {
+  const existing = normalizeExistingCustomFields(quote?.customFields);
+  const field = (name) => existing.get(`id:${definitions.get(name)}`) ?? "";
+  const expectedLeadId = `jobber-request:${cleanScalar(originalRequestId, 200)}`;
+  const campaignValue = cleanScalar(campaign, 200);
+  if (!cleanScalar(originalRequestId, 200) || !campaignValue || field("Original Lead ID") !== expectedLeadId) {
+    return { ok: false, reason: "original_lead_field_mismatch" };
+  }
+  const currentSource = field("Original Source");
+  const currentCampaign = field("Campaign");
+  if (currentSource === "Google Ads call" && currentCampaign === campaignValue) {
+    return { ok: true, alreadyApplied: true, attributes: [] };
+  }
+  if (currentSource !== "Quo inbound call" || currentCampaign) {
+    return { ok: false, reason: "quote_fields_changed" };
+  }
+  return {
+    ok: true,
+    alreadyApplied: false,
+    attributes: [
+      { customFieldConfigurationId: definitions.get("Original Source"), valueText: "Google Ads call" },
+      { customFieldConfigurationId: definitions.get("Campaign"), valueText: campaignValue },
+    ],
+  };
+}
+
+export async function applyGoogleCallQuoteReplay(env, accessToken, quote, originalRequestId, campaign) {
+  if (env?.EXTERNAL_API_WRITES_ENABLED !== "true") {
+    return { ok: false, skipped: true, reason: "external_api_writes_disabled" };
+  }
+  const resolved = await resolveCustomFieldDefinitions(env, accessToken);
+  if (!resolved.ok) return { ok: false, skipped: false, reason: resolved.reason || "definitions_missing" };
+  const fresh = await jobberGraphql(env, accessToken, QUOTE_CONTEXT_QUERY, { id: quote.id });
+  if (!fresh.response.ok || fresh.data?.errors?.length) {
+    return { ok: false, skipped: false, reason: "verification_unavailable" };
+  }
+  const current = fresh.data?.data?.quote;
+  if (current?.id !== quote.id || current.request?.id !== quote.request?.id
+    || current.request?.client?.id !== quote.request?.client?.id) {
+    return { ok: false, skipped: true, reason: "quote_lineage_changed" };
+  }
+  const built = buildGoogleCallQuoteReplayAttributes(resolved.definitions, current, originalRequestId, campaign);
+  if (!built.ok) return { ok: false, skipped: true, reason: built.reason };
+  if (built.alreadyApplied) return { ok: true, alreadyApplied: true, applied: 0 };
+  try {
+    const { response, data } = await jobberGraphql(env, accessToken, QUOTE_CUSTOM_FIELDS_MUTATION, {
+      quoteId: quote.id,
+      attributes: { customFields: built.attributes },
+    });
+    const userErrors = data?.data?.quoteEdit?.userErrors || [];
+    if (!response.ok || data?.errors?.length || userErrors.length) {
+      return { ok: false, skipped: false, reason: classifyJobberFailure(response, data), userErrors };
+    }
+    return { ok: true, alreadyApplied: false, applied: built.attributes.length };
+  } catch {
+    return { ok: false, skipped: false, reason: "network_error" };
+  }
+}
+
+function googleCallQuoteFieldValues(definitions, quote) {
+  const existing = normalizeExistingCustomFields(quote?.customFields);
+  const field = (name) => existing.get(`id:${definitions.get(name)}`) ?? "";
+  return {
+    leadId: field("Original Lead ID"),
+    source: field("Original Source"),
+    campaign: field("Campaign"),
+  };
+}
+
+export function buildGoogleCallQuoteDemotionAttributes(definitions, quote, originalRequestId, campaignWritten) {
+  const expectedLeadId = `jobber-request:${cleanScalar(originalRequestId, 200)}`;
+  const expectedCampaign = cleanScalar(campaignWritten, 200);
+  const values = googleCallQuoteFieldValues(definitions, quote);
+  if (!cleanScalar(originalRequestId, 200) || !expectedCampaign || values.leadId !== expectedLeadId) {
+    return { ok: false, reason: "original_lead_field_mismatch" };
+  }
+  if (values.source === "Quo inbound call" && values.campaign === "") {
+    return { ok: true, alreadyReverted: true, attributes: [] };
+  }
+  if (values.source !== "Google Ads call" || values.campaign !== expectedCampaign) {
+    return { ok: false, reason: "quote_fields_changed" };
+  }
+  return {
+    ok: true,
+    attributes: [
+      { customFieldConfigurationId: definitions.get("Original Source"), valueText: "Quo inbound call" },
+      { customFieldConfigurationId: definitions.get("Campaign"), valueText: "" },
+    ],
+  };
+}
+
+export async function applyGoogleCallQuoteDemotion(env, accessToken, quote, originalRequestId, campaignWritten) {
+  if (env?.EXTERNAL_API_WRITES_ENABLED !== "true") {
+    return { ok: false, skipped: true, reason: "external_api_writes_disabled" };
+  }
+  const resolved = await resolveCustomFieldDefinitions(env, accessToken);
+  if (!resolved.ok) return { ok: false, skipped: false, reason: resolved.reason || "definitions_missing" };
+  const fresh = await jobberGraphql(env, accessToken, QUOTE_CONTEXT_QUERY, { id: quote.id });
+  if (!fresh.response.ok || fresh.data?.errors?.length) {
+    return { ok: false, skipped: false, reason: "verification_unavailable" };
+  }
+  const current = fresh.data?.data?.quote;
+  if (current?.id !== quote.id || current.request?.id !== quote.request?.id
+    || current.request?.client?.id !== quote.request?.client?.id) {
+    return { ok: false, skipped: true, reason: "quote_lineage_changed" };
+  }
+  const built = buildGoogleCallQuoteDemotionAttributes(
+    resolved.definitions, current, originalRequestId, campaignWritten,
+  );
+  if (!built.ok) return { ok: false, skipped: true, reason: built.reason };
+  if (built.alreadyReverted) return { ok: true, alreadyReverted: true, applied: 0, verified: true };
+  try {
+    const { response, data } = await jobberGraphql(env, accessToken, QUOTE_CUSTOM_FIELDS_MUTATION, {
+      quoteId: quote.id, attributes: { customFields: built.attributes },
+    });
+    const userErrors = data?.data?.quoteEdit?.userErrors || [];
+    if (!response.ok || data?.errors?.length || userErrors.length) {
+      return { ok: false, skipped: false, reason: classifyJobberFailure(response, data), userErrors };
+    }
+    const verified = await jobberGraphql(env, accessToken, QUOTE_CONTEXT_QUERY, { id: quote.id });
+    if (!verified.response.ok || verified.data?.errors?.length) {
+      return { ok: false, skipped: false, reason: "verification_unavailable" };
+    }
+    const values = googleCallQuoteFieldValues(resolved.definitions, verified.data?.data?.quote);
+    if (values.leadId !== `jobber-request:${cleanScalar(originalRequestId, 200)}`
+      || values.source !== "Quo inbound call" || values.campaign !== "") {
+      return { ok: false, skipped: false, reason: "demotion_not_verified" };
+    }
+    return { ok: true, applied: built.attributes.length, verified: true };
+  } catch {
+    return { ok: false, skipped: false, reason: "network_error" };
   }
 }
 

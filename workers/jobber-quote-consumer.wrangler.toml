@@ -17,3 +17,4 @@ JOBBER_AUTH_HEALTH_URL = "https://goodattic.energy/api/jobber/oauth/health-check
 JOBBER_QUOTE_TEST_MODE = "false"
 JOBBER_QUOTE_TEST_ALLOWLIST_UT = ""
 JOBBER_QUOTE_TEST_ALLOWLIST_STL = ""
+JOBBER_QUOTE_CALL_REPLAY_ENABLED = "false"

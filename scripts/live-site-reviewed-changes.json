@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "baselineDeploymentId": "2954e9d8-b084-4138-b4d7-b74c77be3424",
+  "baselineDeploymentId": "dccc6049-dc80-490b-ac21-6c6c00524d18",
   "changes": {
     "assets/index.html": {
       "reason": "Show the combined current Google review rating and count on the homepage, with direct links to both market profiles.",
