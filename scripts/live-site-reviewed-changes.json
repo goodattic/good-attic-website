@@ -23,8 +23,8 @@
       "reason": "Keep the historical Quote backfill disabled by default in the consumer deployment."
     },
     "runtime/wrangler.toml": {
-      "expectedSha256": "5b5730979070aa186c2dc0f9fae1f4b3c7d25eb4bb3a466c5f06ae2ae91dd7ae",
-      "reason": "Keep the historical Quote backfill disabled by default in production and preview Pages Functions."
+      "expectedSha256": "15e4ffa531e17dfbff96d811f8e3215aaeaf0b1f99a624b35da3dd17004585a1",
+      "reason": "Enable the authenticated, three-Quote historical call attribution backfill in production after migration 0028 and live lineage verification; keep preview disabled."
     }
   }
 }
