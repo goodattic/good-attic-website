@@ -1,0 +1,14 @@
+import http from 'node:http';import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';
+const root=process.cwd();const results=[];
+const pages=['salt-lake-city-ut','st-louis-mo','kansas-city-mo'].flatMap(m=>['attic-insulation','insulation-removal'].map(s=>`/${m}/lp/${s}/`));pages.push('/salt-lake-city-ut/lp/attic-insulation/?utm_location=1026920');
+const fingerprint=()=>Object.fromEntries([...pages.slice(0,6).map(p=>'dist'+p+'index.html'),'dist/script.e0b6cf2323b054a8.js','assets/ad-landing.js','tests/browser/lp-runtime.js'].map(p=>[p,crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex')]));
+http.createServer(async(req,res)=>{
+ const url=new URL(req.url,'http://localhost');const send=(body,type='text/html')=>{res.setHeader('Content-Type',type);res.end(body);};
+ if(url.pathname==='/'){results.length=0;return send(`<h1>LP real-browser regression</h1><pre id="results">Running 7 cases…</pre><iframe id="case" style="width:375px;height:812px;border:0"></iframe><script>const paths=${JSON.stringify(pages)},results=[];const frame=document.querySelector('iframe');addEventListener('message',async e=>{if(e.origin!==location.origin||!e.data.lpBrowserTest)return;results.push(e.data.lpBrowserTest);document.querySelector('#results').textContent=JSON.stringify(results,null,2);await fetch('/results',{method:'POST',body:JSON.stringify(e.data.lpBrowserTest)});if(results.length<paths.length)frame.src=paths[results.length];else document.title=results.every(r=>r.pass)?'PASS: 7 browser cases':'FAIL: browser regression';});frame.src=paths[0];</script>`);}
+ if(url.pathname==='/results'&&req.method==='POST'){let b='';for await(const c of req)b+=c;results.push(JSON.parse(b));fs.writeFileSync('release-evidence/lp-browser-results.json',JSON.stringify({capturedAt:new Date().toISOString(),fingerprint:fingerprint(),results},null,2));return send('{}','application/json');}
+ if(url.pathname==='/test-runtime.js')return send(fs.readFileSync('tests/browser/lp-runtime.js'),'application/javascript');
+ if(url.pathname.startsWith('/api/')){res.statusCode=500;return send('Real APIs forbidden in browser tests');}
+ const file=path.resolve(root,'dist','.'+url.pathname+(url.pathname.endsWith('/')?'index.html':''));if(!file.startsWith(root+'/dist/')||!fs.existsSync(file)){res.statusCode=404;return send('Not found');}
+ let content=fs.readFileSync(file);if(file.endsWith('.html')){content=content.toString().replace(/<script([^>]*src="https:[^>]+)>/g,'<script type="application/json"$1>').replace('<head>','<head><script src="/test-runtime.js"></script>');}
+ send(content,file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':file.endsWith('.html')?'text/html':file.endsWith('.webp')?'image/webp':'application/octet-stream');
+}).listen(4186,'127.0.0.1',()=>console.log('Browser regression harness: http://127.0.0.1:4186'));

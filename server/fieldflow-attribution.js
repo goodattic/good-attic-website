@@ -3,6 +3,36 @@ import { persistClosedLoopLead } from "./closed-loop-ledger.js";
 const SCHEMA_VERSION = "2026-09-21";
 const FIELDFLOW_WIRE_VERSION = "2026-07-31";
 const MAX_ATTEMPTS = 3;
+// Snake-case fields accepted by Fieldflow's lib/highlevel/payload.ts.
+const FIELDFLOW_WIRE_FIELDS = [
+  "jobber_account_id",
+  "jobber_request_id",
+  "provider_lead_id",
+  "provider_name",
+  "submission_id",
+  "stable_lead_key",
+  "occurred_at",
+  "lead_source",
+  "source_key",
+  "source_detail",
+  "source_reason",
+  "gclid",
+  "gbraid",
+  "wbraid",
+  "gad_source",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "referrer",
+  "request_title",
+];
+// Exact authoritative triples accepted by Fieldflow's payload.ts.
+const FIELDFLOW_SOURCE_COMBINATIONS = new Set([
+  "Google Ads|google|google_ads",
+  "Google Organic|google|google_organic",
+  "Organic Online|website|organic_online",
+  "Good Attic Website|website|website_other",
+]);
 const MARKET_ROUTES = {
   ut: { slug: "slc", tokenKey: "FIELDFLOW_ATTRIBUTION_TOKEN_SLC" },
   mo_stl: { slug: "stl", tokenKey: "FIELDFLOW_ATTRIBUTION_TOKEN_STL" },
@@ -37,13 +67,25 @@ function compactLandingPage(value) {
 }
 
 function buildFieldflowWireRecord(record) {
-  if (!record?.schema_version) return record;
   if (![SCHEMA_VERSION, FIELDFLOW_WIRE_VERSION].includes(record?.schema_version)) {
     throw new Error("unsupported_attribution_schema");
   }
-  const wire = { ...record, schema_version: FIELDFLOW_WIRE_VERSION };
-  delete wire.self_reported_source;
-  delete wire.self_reported_source_detail;
+  const wire = { schema_version: FIELDFLOW_WIRE_VERSION };
+  for (const field of FIELDFLOW_WIRE_FIELDS) {
+    if (record[field] !== undefined) wire[field] = record[field];
+  }
+  // Keep ai_referral in the local D1 record; Fieldflow groups it under organic_online.
+  if (wire.lead_source === "Organic Online" && wire.source_key === "website" && wire.source_detail === "ai_referral") {
+    wire.source_detail = "organic_online";
+  }
+  const sourceFields = [wire.lead_source, wire.source_key, wire.source_detail].filter(Boolean);
+  const angiEvidenceOnly = sourceFields.length === 1
+    && /^(?:angi|homeadvisor)$/i.test(wire.lead_source);
+  if (sourceFields.length !== 0 && !angiEvidenceOnly
+      && (sourceFields.length !== 3
+        || !FIELDFLOW_SOURCE_COMBINATIONS.has(sourceFields.join("|")))) {
+    throw new Error("unsupported_attribution_source");
+  }
   return wire;
 }
 
@@ -146,8 +188,11 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
   let wireRecord;
   try {
     wireRecord = buildFieldflowWireRecord(record);
-  } catch {
-    return { ok: false, attempts: 0, status: 0, reason: "unsupported_attribution_schema", ledger };
+  } catch (error) {
+    const reason = error instanceof Error && error.message === "unsupported_attribution_source"
+      ? "unsupported_attribution_source"
+      : "unsupported_attribution_schema";
+    return { ok: false, attempts: 0, status: 0, reason, ledger };
   }
   let lastStatus = 0;
   let lastReason = "network_error";

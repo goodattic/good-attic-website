@@ -12,7 +12,7 @@ import {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-test("current built release matches the frozen live deployment without approvals", () => {
+test("current built release differs from the frozen live deployment only by exact reviewed changes", () => {
   const result = spawnSync(process.execPath, ["scripts/check-live-site-baseline.mjs"], { cwd: root, encoding: "utf8" });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   assert.match(result.stdout, /Local release guard passed:/);

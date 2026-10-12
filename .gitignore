@@ -5,3 +5,6 @@ dist/
 .env.*
 .dev.vars
 .wrangler/
+.gate3-backups/
+
+preview/.test-access.json

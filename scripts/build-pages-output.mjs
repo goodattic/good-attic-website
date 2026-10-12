@@ -67,7 +67,12 @@ const allowedNestedFileExtensions = new Set([
   ".woff2",
 ]);
 
+// Keep unprocessed collage uploads (and their metadata) out of preview output.
+const collageSourceFolders = ["attic-insulation", "removal"].map((name) => path.join(projectDirectory, "assets/lp/collage", name));
+const isCollageSource = (file) => collageSourceFolders.some((folder) => file === folder || file.startsWith(folder + path.sep));
+
 async function assertSafePublicTree(sourcePath, explicitEntry = false) {
+  if (isCollageSource(sourcePath)) return;
   const stats = await lstat(sourcePath);
   if (stats.isSymbolicLink()) {
     throw new Error(`Refusing to publish symbolic link: ${sourcePath}`);
@@ -100,6 +105,7 @@ for (const entry of publicEntries) {
   await assertSafePublicTree(source, true);
   await cp(source, destination, {
     recursive: true,
+    filter: (sourcePath) => !isCollageSource(sourcePath),
     errorOnExist: true,
   });
 }

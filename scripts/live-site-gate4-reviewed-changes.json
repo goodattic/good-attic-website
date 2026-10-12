@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "stage": "gate4",
+  "baselineDeploymentId": "d0acd4af-738d-4dee-9f4b-5df4612bd4b0",
+  "activeScript": "script.40559d41a6b61dc2.js",
+  "changes": {
+    "runtime/.github/workflows/live-site-release-guard.yml": {
+      "expectedSha256": "cd87c86178d62b13612e3c3e559780321235590f88e68e16b17473eaf36b112f",
+      "reason": "Fetch complete Git history so historical release proof tests can run in GitHub Actions."
+    },
+    "runtime/scripts/check-live-site-baseline.mjs": {
+      "expectedSha256": "8bed85d478405d48944084d55569616ccbf8926eabff0e5cbfd7ede4348a153d",
+      "reason": "Pin each release stage to its serving Pages deployment and capture the verified Gate 4 artifact."
+    },
+    "runtime/scripts/live-site-baseline-guard.mjs": {
+      "expectedSha256": "a3d10d8cb0877a45b509df66e729f1cd704cf3561b35a0c7cf9fc328639fb751",
+      "reason": "Validate Gate 4 artifact lineage and exact stage-specific static and runtime changes."
+    },
+    "runtime/tests/live-site-baseline-guard.test.mjs": {
+      "expectedSha256": "5c451fa6cbfa2e0c9b58441046d2ecff99694cb2611ca6d5d2cdbcef7a946a07",
+      "reason": "Verify serving deployment identity and describe exact reviewed candidate changes accurately."
+    },
+    "runtime/functions/api/leads.js": {
+      "expectedSha256": "78b3838a91e96c43de860187d8c84bce5beabea94670ebe350924ad3f5ea9b4f",
+      "reason": "Restore Jobber 401 refresh and Request-only retry, durable failed-lead queue and alert while retaining fail-open transaction identity; extract the same alert payload for an exact contact-sync contract test."
+    },
+    "runtime/src/site-interactions.js": {
+      "expectedSha256": "e0b6cf2323b054a829fabc791fa4ae35c634461c7a2655fa0d303663a0659726",
+      "reason": "Add stable form transaction identity and an intake-error phone fallback using the current on-page call link."
+    },
+    "runtime/functions/api/leads/conversion-signal.js": {
+      "expectedSha256": "05bd454bcc846739f3aa069be11df41a581bfce414690ff370e018b7b76d82af",
+      "reason": "Record the matching browser tag invocation without inferring a completed Jobber Request."
+    },
+    "runtime/server/website-form-transactions.js": {
+      "expectedSha256": "04c92ad5dd33c87f3dc6ee8e101cc49b19c7c575b98dd5cc8c577825f4ba1a9f",
+      "reason": "Implement the form transaction ledger, early conversion-signal retention, and uncertain-delivery reconciliation path."
+    },
+    "runtime/server/website-form-retractions.js": {
+      "expectedSha256": "c3b288e28dce4fb09240ad9cf57d6d7a0d61bf31333b02bed44a9b440707fd3d",
+      "reason": "Add a read-only tagged-junk retraction preview with no sender or Google upload."
+    },
+    "runtime/server/fieldflow-attribution.js": {
+      "expectedSha256": "a7bf050f8e348bb0d15ee69397df69534c82e911e4675b7f9f4cb17c8a76a336",
+      "reason": "Project website attribution onto the Fieldflow receiver allowlist and map AI referral wire values while retaining complete D1 evidence."
+    },
+    "runtime/tests/staged-release-guard.test.mjs": {
+      "expectedSha256": "0a7cfae7b5a1d0330365aa2198b08744102f3bf66dec7155d64d25d61c397d59",
+      "reason": "Exercise stage-specific release invariants and fail-closed preflight options."
+    },
+    "runtime/functions/api/internal/fieldflow-attribution-backfill.js": {
+      "expectedSha256": "daa05e868dec70ab4c244b4ecdcbdc6cab406d40a7826aceeb1ab042a731ad0d",
+      "reason": "Allow one-time authenticated replay of approved historical website attributions with D1 proof and no Jobber writes."
+    }
+  }
+}

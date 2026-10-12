@@ -95,7 +95,10 @@ test('public forms preserve routing and the success response even when the new r
         assert.equal(response.status, 200);
         const body = await response.json();
         assert.equal(body.ok, true); assert.equal(body.jobber.market_key, market);
-        assert.deepEqual(Object.keys(body).sort(), ['fieldflow', 'ghl', 'jobber', 'message', 'ok']);
+        assert.deepEqual(Object.keys(body).sort(), ['conversion_state', 'fieldflow', 'ghl', 'jobber', 'message', 'ok', 'transaction_confirmed', 'transaction_id']);
+        assert.equal(body.transaction_confirmed, true, 'the completed D1 row confirms the browser transaction ID');
+        assert.match(body.transaction_id, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+        assert.equal(body.conversion_state, 'not_confirmed');
         assert.equal(writes.length, 2);
         if (receiptAvailable) {
           const receipt = db.sqlite.prepare('SELECT * FROM acknowledgement_sources').get();

@@ -1,0 +1,444 @@
+{
+  "capturedAt": "2026-10-07T18:41:53.003Z",
+  "fingerprint": {
+    "dist/salt-lake-city-ut/lp/attic-insulation/index.html": "96c04bf56df695872ff8925ab2cd3be3264bc622652dd12df996a3dec653593e",
+    "dist/salt-lake-city-ut/lp/insulation-removal/index.html": "973c4af0911d4e7b735f83851678cacbd1d9ca019304eb020ce6fa5ed01162a8",
+    "dist/st-louis-mo/lp/attic-insulation/index.html": "58dd948d2bcba497475a628c58870140eef4dc18327b08c44bdc7ffeff2d2bf0",
+    "dist/st-louis-mo/lp/insulation-removal/index.html": "8c5d5bc1b4aa7e743fb51c09c920d679b4a4ca6adf33f68abf3986d61b1d8734",
+    "dist/kansas-city-mo/lp/attic-insulation/index.html": "7b8a6c2db842d6e727cddf34f988fb01eb2443719d3cf7071de1860df67b8ec9",
+    "dist/kansas-city-mo/lp/insulation-removal/index.html": "6da2add09bdcc362ab8d0aab5f5f277d7e5012a5359a49f588feba018c358868",
+    "dist/script.e0b6cf2323b054a8.js": "e0b6cf2323b054a829fabc791fa4ae35c634461c7a2655fa0d303663a0659726",
+    "assets/ad-landing.js": "311572d032ccd59a008fe9754f986ff9df2f911dccaefdcf6904edfed71174d8",
+    "tests/browser/lp-runtime.js": "d9ad3a5d336d7d4ae01a9939fc5581ca97f955dd30ad1bacc58028781ac08116"
+  },
+  "results": [
+    {
+      "path": "/salt-lake-city-ut/lp/attic-insulation/",
+      "errors": [],
+      "checks": [
+        "phone viewport 375px",
+        "zero load errors",
+        "compatibility nodes invisible and inert",
+        "compatibility button cannot focus",
+        "Add a note expands",
+        "notes field visible",
+        "services popover opens",
+        "services stay open on scroll",
+        "Apply preserves multiple choices and closes",
+        "market Call and Text links correct",
+        "Call and Text activate their links without dialing during test",
+        "existing three phone configs remain",
+        "only market phone config has Google callback",
+        "Google callback swaps every Call and preserves Text",
+        "real full script attached one form handler",
+        "notes and selected services reach mocked API",
+        "DA - Submit Lead Form gets the confirmed transaction ID once",
+        "conversion signal carries same transaction ID",
+        "successful thank-you opens",
+        "thank-you closes",
+        "zero errors through interactions and submission"
+      ],
+      "requests": [
+        {
+          "form_variant": "short_ad_landing",
+          "form_name": "Salt Lake City Attic Insulation short ad form top",
+          "source_page": "http://127.0.0.1:4186/salt-lake-city-ut/lp/attic-insulation/",
+          "name": "Browser Mock Only",
+          "phone": "8015550101",
+          "zip": "84020",
+          "project_type": [
+            "Attic Insulation",
+            "Insulation Removal"
+          ],
+          "additional_notes": "Mock note preserved",
+          "submission_id": "568436fb-86d3-49ed-8946-4c77a7e4c359",
+          "project_type_label": "Attic Insulation, Insulation Removal",
+          "full_address": "84020",
+          "ad_landing_page": "http://127.0.0.1:4186/salt-lake-city-ut/lp/attic-insulation/",
+          "ad_landing_page_path": "/salt-lake-city-ut/lp/attic-insulation/",
+          "ad_referrer": "http://127.0.0.1:4186/",
+          "attribution_captured_at": "",
+          "page_path": "/salt-lake-city-ut/lp/attic-insulation/",
+          "page_market": "ut",
+          "page_market_label": "Salt Lake City, UT",
+          "page_service_context": "attic_insulation",
+          "page_url": "http://127.0.0.1:4186/salt-lake-city-ut/lp/attic-insulation/"
+        }
+      ],
+      "signals": [
+        {
+          "submission_id": "568436fb-86d3-49ed-8946-4c77a7e4c359",
+          "transaction_id": "568436fb-86d3-49ed-8946-4c77a7e4c359"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "path": "/salt-lake-city-ut/lp/insulation-removal/",
+      "errors": [],
+      "checks": [
+        "phone viewport 375px",
+        "zero load errors",
+        "compatibility nodes invisible and inert",
+        "compatibility button cannot focus",
+        "Add a note expands",
+        "notes field visible",
+        "services popover opens",
+        "services stay open on scroll",
+        "Apply preserves multiple choices and closes",
+        "market Call and Text links correct",
+        "Call and Text activate their links without dialing during test",
+        "existing three phone configs remain",
+        "only market phone config has Google callback",
+        "Google callback swaps every Call and preserves Text",
+        "real full script attached one form handler",
+        "notes and selected services reach mocked API",
+        "DA - Submit Lead Form gets the confirmed transaction ID once",
+        "conversion signal carries same transaction ID",
+        "successful thank-you opens",
+        "thank-you closes",
+        "zero errors through interactions and submission"
+      ],
+      "requests": [
+        {
+          "form_variant": "short_ad_landing",
+          "form_name": "Salt Lake City Insulation Removal & Replacement short ad form top",
+          "source_page": "http://127.0.0.1:4186/salt-lake-city-ut/lp/insulation-removal/",
+          "name": "Browser Mock Only",
+          "phone": "8015550101",
+          "zip": "84020",
+          "project_type": [
+            "Attic Insulation",
+            "Insulation Removal"
+          ],
+          "additional_notes": "Mock note preserved",
+          "submission_id": "acce2e0c-fa7b-48d9-a3b6-58d16b7d6a08",
+          "project_type_label": "Attic Insulation, Insulation Removal",
+          "full_address": "84020",
+          "ad_landing_page": "http://127.0.0.1:4186/salt-lake-city-ut/lp/insulation-removal/",
+          "ad_landing_page_path": "/salt-lake-city-ut/lp/insulation-removal/",
+          "ad_referrer": "http://127.0.0.1:4186/",
+          "attribution_captured_at": "",
+          "page_path": "/salt-lake-city-ut/lp/insulation-removal/",
+          "page_market": "ut",
+          "page_market_label": "Salt Lake City, UT",
+          "page_service_context": "insulation_removal",
+          "page_url": "http://127.0.0.1:4186/salt-lake-city-ut/lp/insulation-removal/"
+        }
+      ],
+      "signals": [
+        {
+          "submission_id": "acce2e0c-fa7b-48d9-a3b6-58d16b7d6a08",
+          "transaction_id": "acce2e0c-fa7b-48d9-a3b6-58d16b7d6a08"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "path": "/st-louis-mo/lp/attic-insulation/",
+      "errors": [],
+      "checks": [
+        "phone viewport 375px",
+        "zero load errors",
+        "compatibility nodes invisible and inert",
+        "compatibility button cannot focus",
+        "Add a note expands",
+        "notes field visible",
+        "services popover opens",
+        "services stay open on scroll",
+        "Apply preserves multiple choices and closes",
+        "market Call and Text links correct",
+        "Call and Text activate their links without dialing during test",
+        "existing three phone configs remain",
+        "only market phone config has Google callback",
+        "Google callback swaps every Call and preserves Text",
+        "real full script attached one form handler",
+        "notes and selected services reach mocked API",
+        "DA - Submit Lead Form gets the confirmed transaction ID once",
+        "conversion signal carries same transaction ID",
+        "successful thank-you opens",
+        "thank-you closes",
+        "zero errors through interactions and submission"
+      ],
+      "requests": [
+        {
+          "form_variant": "short_ad_landing",
+          "form_name": "St. Louis Attic Insulation short ad form top",
+          "source_page": "http://127.0.0.1:4186/st-louis-mo/lp/attic-insulation/",
+          "name": "Browser Mock Only",
+          "phone": "8015550101",
+          "zip": "84020",
+          "project_type": [
+            "Attic Insulation",
+            "Insulation Removal"
+          ],
+          "additional_notes": "Mock note preserved",
+          "submission_id": "94535cef-01e2-435d-a524-6ebd0275fd89",
+          "project_type_label": "Attic Insulation, Insulation Removal",
+          "full_address": "84020",
+          "ad_landing_page": "http://127.0.0.1:4186/st-louis-mo/lp/attic-insulation/",
+          "ad_landing_page_path": "/st-louis-mo/lp/attic-insulation/",
+          "ad_referrer": "http://127.0.0.1:4186/",
+          "attribution_captured_at": "",
+          "page_path": "/st-louis-mo/lp/attic-insulation/",
+          "page_market": "mo_stl",
+          "page_market_label": "St. Louis, MO",
+          "page_service_context": "attic_insulation",
+          "page_url": "http://127.0.0.1:4186/st-louis-mo/lp/attic-insulation/"
+        }
+      ],
+      "signals": [
+        {
+          "submission_id": "94535cef-01e2-435d-a524-6ebd0275fd89",
+          "transaction_id": "94535cef-01e2-435d-a524-6ebd0275fd89"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "path": "/st-louis-mo/lp/insulation-removal/",
+      "errors": [],
+      "checks": [
+        "phone viewport 375px",
+        "zero load errors",
+        "compatibility nodes invisible and inert",
+        "compatibility button cannot focus",
+        "Add a note expands",
+        "notes field visible",
+        "services popover opens",
+        "services stay open on scroll",
+        "Apply preserves multiple choices and closes",
+        "market Call and Text links correct",
+        "Call and Text activate their links without dialing during test",
+        "existing three phone configs remain",
+        "only market phone config has Google callback",
+        "Google callback swaps every Call and preserves Text",
+        "real full script attached one form handler",
+        "notes and selected services reach mocked API",
+        "DA - Submit Lead Form gets the confirmed transaction ID once",
+        "conversion signal carries same transaction ID",
+        "successful thank-you opens",
+        "thank-you closes",
+        "zero errors through interactions and submission"
+      ],
+      "requests": [
+        {
+          "form_variant": "short_ad_landing",
+          "form_name": "St. Louis Insulation Removal & Replacement short ad form top",
+          "source_page": "http://127.0.0.1:4186/st-louis-mo/lp/insulation-removal/",
+          "name": "Browser Mock Only",
+          "phone": "8015550101",
+          "zip": "84020",
+          "project_type": [
+            "Attic Insulation",
+            "Insulation Removal"
+          ],
+          "additional_notes": "Mock note preserved",
+          "submission_id": "90074f4f-02d0-493b-9486-abcb01db034f",
+          "project_type_label": "Attic Insulation, Insulation Removal",
+          "full_address": "84020",
+          "ad_landing_page": "http://127.0.0.1:4186/st-louis-mo/lp/insulation-removal/",
+          "ad_landing_page_path": "/st-louis-mo/lp/insulation-removal/",
+          "ad_referrer": "http://127.0.0.1:4186/",
+          "attribution_captured_at": "",
+          "page_path": "/st-louis-mo/lp/insulation-removal/",
+          "page_market": "mo_stl",
+          "page_market_label": "St. Louis, MO",
+          "page_service_context": "insulation_removal",
+          "page_url": "http://127.0.0.1:4186/st-louis-mo/lp/insulation-removal/"
+        }
+      ],
+      "signals": [
+        {
+          "submission_id": "90074f4f-02d0-493b-9486-abcb01db034f",
+          "transaction_id": "90074f4f-02d0-493b-9486-abcb01db034f"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "path": "/kansas-city-mo/lp/attic-insulation/",
+      "errors": [],
+      "checks": [
+        "phone viewport 375px",
+        "zero load errors",
+        "compatibility nodes invisible and inert",
+        "compatibility button cannot focus",
+        "Add a note expands",
+        "notes field visible",
+        "services popover opens",
+        "services stay open on scroll",
+        "Apply preserves multiple choices and closes",
+        "market Call and Text links correct",
+        "Call and Text activate their links without dialing during test",
+        "existing three phone configs remain",
+        "only market phone config has Google callback",
+        "Google callback swaps every Call and preserves Text",
+        "real full script attached one form handler",
+        "notes and selected services reach mocked API",
+        "DA - Submit Lead Form gets the confirmed transaction ID once",
+        "conversion signal carries same transaction ID",
+        "successful thank-you opens",
+        "thank-you closes",
+        "zero errors through interactions and submission"
+      ],
+      "requests": [
+        {
+          "form_variant": "short_ad_landing",
+          "form_name": "Kansas City Attic Insulation short ad form top",
+          "source_page": "http://127.0.0.1:4186/kansas-city-mo/lp/attic-insulation/",
+          "name": "Browser Mock Only",
+          "phone": "8015550101",
+          "zip": "84020",
+          "project_type": [
+            "Attic Insulation",
+            "Insulation Removal"
+          ],
+          "additional_notes": "Mock note preserved",
+          "submission_id": "63d0c4ee-e140-4301-9645-be6523c40c8a",
+          "project_type_label": "Attic Insulation, Insulation Removal",
+          "full_address": "84020",
+          "ad_landing_page": "http://127.0.0.1:4186/kansas-city-mo/lp/attic-insulation/",
+          "ad_landing_page_path": "/kansas-city-mo/lp/attic-insulation/",
+          "ad_referrer": "http://127.0.0.1:4186/",
+          "attribution_captured_at": "",
+          "page_path": "/kansas-city-mo/lp/attic-insulation/",
+          "page_market": "mo_kc",
+          "page_market_label": "Kansas City, MO",
+          "page_service_context": "attic_insulation",
+          "page_url": "http://127.0.0.1:4186/kansas-city-mo/lp/attic-insulation/"
+        }
+      ],
+      "signals": [
+        {
+          "submission_id": "63d0c4ee-e140-4301-9645-be6523c40c8a",
+          "transaction_id": "63d0c4ee-e140-4301-9645-be6523c40c8a"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "path": "/kansas-city-mo/lp/insulation-removal/",
+      "errors": [],
+      "checks": [
+        "phone viewport 375px",
+        "zero load errors",
+        "compatibility nodes invisible and inert",
+        "compatibility button cannot focus",
+        "Add a note expands",
+        "notes field visible",
+        "services popover opens",
+        "services stay open on scroll",
+        "Apply preserves multiple choices and closes",
+        "market Call and Text links correct",
+        "Call and Text activate their links without dialing during test",
+        "existing three phone configs remain",
+        "only market phone config has Google callback",
+        "Google callback swaps every Call and preserves Text",
+        "real full script attached one form handler",
+        "notes and selected services reach mocked API",
+        "DA - Submit Lead Form gets the confirmed transaction ID once",
+        "conversion signal carries same transaction ID",
+        "successful thank-you opens",
+        "thank-you closes",
+        "zero errors through interactions and submission"
+      ],
+      "requests": [
+        {
+          "form_variant": "short_ad_landing",
+          "form_name": "Kansas City Insulation Removal & Replacement short ad form top",
+          "source_page": "http://127.0.0.1:4186/kansas-city-mo/lp/insulation-removal/",
+          "name": "Browser Mock Only",
+          "phone": "8015550101",
+          "zip": "84020",
+          "project_type": [
+            "Attic Insulation",
+            "Insulation Removal"
+          ],
+          "additional_notes": "Mock note preserved",
+          "submission_id": "c67f8518-4504-4ee4-bc29-ab51708514ba",
+          "project_type_label": "Attic Insulation, Insulation Removal",
+          "full_address": "84020",
+          "ad_landing_page": "http://127.0.0.1:4186/kansas-city-mo/lp/insulation-removal/",
+          "ad_landing_page_path": "/kansas-city-mo/lp/insulation-removal/",
+          "ad_referrer": "http://127.0.0.1:4186/",
+          "attribution_captured_at": "",
+          "page_path": "/kansas-city-mo/lp/insulation-removal/",
+          "page_market": "mo_kc",
+          "page_market_label": "Kansas City, MO",
+          "page_service_context": "insulation_removal",
+          "page_url": "http://127.0.0.1:4186/kansas-city-mo/lp/insulation-removal/"
+        }
+      ],
+      "signals": [
+        {
+          "submission_id": "c67f8518-4504-4ee4-bc29-ab51708514ba",
+          "transaction_id": "c67f8518-4504-4ee4-bc29-ab51708514ba"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "path": "/salt-lake-city-ut/lp/attic-insulation/?utm_location=1026920",
+      "errors": [],
+      "checks": [
+        "phone viewport 375px",
+        "zero load errors",
+        "compatibility nodes invisible and inert",
+        "compatibility button cannot focus",
+        "Add a note expands",
+        "notes field visible",
+        "services popover opens",
+        "services stay open on scroll",
+        "Apply preserves multiple choices and closes",
+        "market Call and Text links correct",
+        "Call and Text activate their links without dialing during test",
+        "existing three phone configs remain",
+        "only market phone config has Google callback",
+        "Google callback swaps every Call and preserves Text",
+        "Draper town detection",
+        "real full script attached one form handler",
+        "notes and selected services reach mocked API",
+        "DA - Submit Lead Form gets the confirmed transaction ID once",
+        "conversion signal carries same transaction ID",
+        "successful thank-you opens",
+        "thank-you closes",
+        "zero errors through interactions and submission"
+      ],
+      "requests": [
+        {
+          "form_variant": "short_ad_landing",
+          "form_name": "Salt Lake City Attic Insulation short ad form top",
+          "source_page": "http://127.0.0.1:4186/salt-lake-city-ut/lp/attic-insulation/?utm_location=1026920",
+          "name": "Browser Mock Only",
+          "phone": "8015550101",
+          "zip": "84020",
+          "project_type": [
+            "Attic Insulation",
+            "Insulation Removal"
+          ],
+          "additional_notes": "Mock note preserved",
+          "submission_id": "f1d86ff7-fbaa-4852-beaa-100143eccc03",
+          "project_type_label": "Attic Insulation, Insulation Removal",
+          "full_address": "84020",
+          "ad_landing_page": "http://127.0.0.1:4186/salt-lake-city-ut/lp/attic-insulation/?utm_location=1026920",
+          "ad_landing_page_path": "/salt-lake-city-ut/lp/attic-insulation/?utm_location=1026920",
+          "ad_referrer": "http://127.0.0.1:4186/",
+          "attribution_captured_at": "",
+          "page_path": "/salt-lake-city-ut/lp/attic-insulation/",
+          "page_market": "ut",
+          "page_market_label": "Salt Lake City, UT",
+          "page_service_context": "attic_insulation",
+          "page_url": "http://127.0.0.1:4186/salt-lake-city-ut/lp/attic-insulation/?utm_location=1026920"
+        }
+      ],
+      "signals": [
+        {
+          "submission_id": "f1d86ff7-fbaa-4852-beaa-100143eccc03",
+          "transaction_id": "f1d86ff7-fbaa-4852-beaa-100143eccc03"
+        }
+      ],
+      "pass": true
+    }
+  ]
+}

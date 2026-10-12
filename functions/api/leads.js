@@ -1,14 +1,48 @@
 import { getJobberOAuthRoute } from "./jobber/oauth/config.js";
+import {
+  completeFormTransaction,
+  flagFormTransactionForReconciliation,
+  markFormDeliveryUncertain,
+  recordFormReconciliationAttempt,
+  releaseUnstartedFormTransaction,
+  reserveFormTransaction,
+  validSubmissionId,
+} from "../../server/website-form-transactions.js";
 
 const JOBBER_API_URL = "https://api.getjobber.com/api/graphql";
 const JOBBER_TOKEN_URL = "https://api.getjobber.com/api/oauth/token";
 const DEFAULT_JOBBER_GRAPHQL_VERSION = "2025-04-16";
 const JOBBER_REFRESH_LEASE_MS = 2 * 60 * 1000;
 const JOBBER_TOKEN_REQUEST_TIMEOUT_MS = 45 * 1000;
+const JOBBER_401_RECOVERY_WAIT_MS = 5000;
+const JOBBER_401_RECOVERY_POLL_MS = 100;
 const GHL_MAX_ATTEMPTS = 3;
 const ATTRIBUTION_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 const ATTRIBUTION_FUTURE_SKEW_MS = 5 * 60 * 1000;
+const FORM_TRACKING_TIMEOUT_MS = 2000;
 const GOOGLE_PAID_MEDIA = new Set(["cpc", "ppc", "paidsearch", "paid-search", "sem"]);
+const SHORT_AD_FORM_MARKER = "short_ad_landing";
+const SHORT_AD_REQUEST_NOTE = "SHORT AD FORM - get address on the call";
+const SHORT_AD_PATH_MARKETS = new Map([
+  ["/salt-lake-city-ut/lp/attic-insulation/", "ut"],
+  ["/salt-lake-city-ut/lp/insulation-removal/", "ut"],
+  ["/st-louis-mo/lp/attic-insulation/", "mo_stl"],
+  ["/st-louis-mo/lp/insulation-removal/", "mo_stl"],
+  ["/kansas-city-mo/lp/attic-insulation/", "mo_kc"],
+  ["/kansas-city-mo/lp/insulation-removal/", "mo_kc"],
+]);
+const SHORT_AD_NEEDS = new Set([
+  "Attic Insulation",
+  "Insulation Removal",
+  "Attic Pest Issues",
+  "Attic Air Sealing",
+  "Attic Fans",
+  "Other",
+  "Insulation removal & replacement",
+  "New or added attic insulation",
+  "Rodent or pest damage cleanup",
+  "Not sure, I'd like an inspection",
+]);
 const SELF_REPORTED_SOURCES = new Set([
   "google_search_maps",
   "google_ads",
@@ -218,6 +252,17 @@ function normalizePhone(phone) {
   return digits || clean(phone, 32);
 }
 
+function shortAdMarketFor(payload) {
+  if (payload?.form_variant !== SHORT_AD_FORM_MARKER) return "";
+  return SHORT_AD_PATH_MARKETS.get(payload?.page_path) || "";
+}
+
+function shortAdNeedFor(payload) {
+  const values = Array.isArray(payload?.project_type) ? payload.project_type : [payload?.project_type];
+  return values.length > 0 && values.every((value) => SHORT_AD_NEEDS.has(value))
+    ? [...new Set(values)].join(", ") : "";
+}
+
 function extractPathname(url) {
   try {
     return new URL(url).pathname;
@@ -417,13 +462,13 @@ function inferMarket(payload) {
   return "general";
 }
 
-function buildLead(payload, submissionId = crypto.randomUUID(), source = null) {
+function buildLead(payload, submissionId = crypto.randomUUID(), source = null, shortAdMarket = "") {
   const suppliedFirstName = clean(payload.first_name, 80);
   const suppliedLastName = clean(payload.last_name, 80);
   const suppliedFullName = clean(payload.name, 160);
   const derivedFullName = [suppliedFirstName, suppliedLastName].filter(Boolean).join(" ");
   const { firstName, lastName } = splitName(suppliedFullName || derivedFullName);
-  const marketKey = inferMarket(payload);
+  const marketKey = shortAdMarket || inferMarket(payload);
   const route = MARKET_ROUTES[marketKey] || MARKET_ROUTES.general;
   const leadSource = source || {
     key: "website",
@@ -438,11 +483,13 @@ function buildLead(payload, submissionId = crypto.randomUUID(), source = null) {
     full_name: suppliedFullName || derivedFullName,
     phone: normalizePhone(payload.phone),
     email: clean(payload.email, 160),
-    address: clean(payload.street_address || payload.address || payload.full_address, 240),
-    city: clean(payload.city, 120),
-    state: clean(payload.state, 10).toUpperCase(),
+    address: shortAdMarket ? "" : clean(payload.street_address || payload.address || payload.full_address, 240),
+    city: shortAdMarket ? "" : clean(payload.city, 120),
+    state: shortAdMarket ? "" : clean(payload.state, 10).toUpperCase(),
     zip: normalizeZip(payload.zip),
-    service: cleanList(payload.project_type_label || payload.project_type || payload.service || "Attic insulation assessment", 160),
+    service: shortAdMarket
+      ? shortAdNeedFor(payload)
+      : cleanList(payload.project_type_label || payload.project_type || payload.service || "Attic insulation assessment", 160),
     message: clean(payload.additional_notes || payload.message || payload.notes, 2000),
     source_url: clean(payload.source_url || payload.page_url || payload.ad_landing_page, 500),
     page_path: clean(payload.page_path, 500),
@@ -451,6 +498,7 @@ function buildLead(payload, submissionId = crypto.randomUUID(), source = null) {
     submitted_at: new Date().toISOString(),
     submission_id: submissionId,
     market_key: marketKey,
+    ...(shortAdMarket ? { short_ad_form: true } : {}),
     market_label: route.accountLabel,
     source_key: leadSource.key,
     source_detail: leadSource.detail,
@@ -565,8 +613,15 @@ function buildGhlLead(payload, lead, jobber) {
   };
 }
 
-function validateLead(lead) {
+function validateLead(lead, payload = {}) {
   const missing = [];
+  if (lead.short_ad_form) {
+    if (!clean(payload.name, 160)) missing.push("name");
+    if (!clean(payload.phone, 32)) missing.push("phone");
+    if (!/^\d{5}$/.test(clean(payload.zip, 16))) missing.push("zip");
+    if (!shortAdNeedFor(payload)) missing.push("project_type");
+    return missing;
+  }
   if (!lead.full_name) missing.push("name");
   if (!lead.phone) missing.push("phone");
   if (!lead.email) missing.push("email");
@@ -617,6 +672,7 @@ async function refreshJobberAccessTokenViaD1(env, route) {
   ) {
     return {
       accessToken: clean(cached.access_token, 4000),
+      refreshRevision: Number(cached.refresh_revision || 0),
       tokenRotated: false,
       tokenPersisted: true,
     };
@@ -659,6 +715,7 @@ async function refreshJobberAccessTokenViaD1(env, route) {
   if (d1Changes(lock) !== 1) {
     throw new LeadSubmissionError("Jobber routing is temporarily busy.", 503, {
       account: route.accountLabel,
+      code: "jobber_refresh_process_busy",
     });
   }
 
@@ -687,6 +744,7 @@ async function refreshJobberAccessTokenViaD1(env, route) {
     ) {
       return {
         accessToken: clean(stored.access_token, 4000),
+        refreshRevision: Number(stored.refresh_revision || 0),
         tokenRotated: false,
         tokenPersisted: true,
       };
@@ -948,6 +1006,7 @@ async function refreshJobberAccessTokenViaD1(env, route) {
     }
     return {
       accessToken: nextAccessToken,
+      refreshRevision,
       tokenRotated: nextRefreshToken !== refreshToken,
       tokenPersisted: true,
     };
@@ -980,6 +1039,255 @@ async function refreshJobberAccessToken(env, route) {
       code: "jobber_authoritative_database_unavailable",
     },
   );
+}
+
+function rejectedJobberTokenSnapshot(token) {
+  const accessToken = clean(token?.accessToken, 4000);
+  const revision = Number(token?.refreshRevision);
+  if (!accessToken || !Number.isSafeInteger(revision) || revision < 0) return null;
+  return { accessToken, revision };
+}
+
+async function fenceJobberAccessToken(env, route, code = "jobber_http_401", rejectedToken) {
+  const database = env.ANGI_ROUTER_DB;
+  const accountKey = getJobberBrokerAccountKey(route);
+  const rejected = rejectedJobberTokenSnapshot(rejectedToken);
+  if (!database?.prepare || !accountKey || !rejected) return false;
+  const result = await database.prepare(`
+    /* jobber_token_authority:fence_unauthorized_access */
+    UPDATE angi_router_jobber_auth
+    SET access_expires_at = 0,
+        last_error_code = ?,
+        updated_at = ?
+    WHERE account_key = ?
+      AND access_token = ?
+      AND COALESCE(refresh_revision, 0) = ?
+      AND COALESCE(refresh_status, 'ready') = 'ready'
+  `).bind(clean(code, 120), new Date().toISOString(), accountKey, rejected.accessToken, rejected.revision).run();
+  return d1Changes(result) === 1;
+}
+
+async function markJobberAuthorizationBroken(env, route, code = "jobber_http_401", rejectedToken) {
+  const database = env.ANGI_ROUTER_DB;
+  const accountKey = getJobberBrokerAccountKey(route);
+  const rejected = rejectedJobberTokenSnapshot(rejectedToken);
+  if (!database?.prepare || !accountKey || !rejected) return false;
+  const result = await database.prepare(`
+    /* jobber_token_authority:mark_unauthorized_broken */
+    UPDATE angi_router_jobber_auth
+    SET access_expires_at = 0,
+        refresh_status = 'refresh_outcome_unknown',
+        refresh_lease_token = NULL,
+        refresh_lease_expires_at = NULL,
+        last_error_code = ?,
+        updated_at = ?
+    WHERE account_key = ?
+      AND access_token = ?
+      AND COALESCE(refresh_revision, 0) = ?
+      AND COALESCE(refresh_status, 'ready') = 'ready'
+  `).bind(clean(code, 120), new Date().toISOString(), accountKey, rejected.accessToken, rejected.revision).run();
+  return d1Changes(result) === 1;
+}
+
+async function recoverJobberTokenAfter401(env, route, rejectedToken) {
+  // Only the request whose exact token/revision is still authoritative may
+  // invalidate it. Others wait for the winner's refresh or reuse its result.
+  await fenceJobberAccessToken(env, route, "jobber_http_401", rejectedToken);
+  const deadline = Date.now() + JOBBER_401_RECOVERY_WAIT_MS;
+  while (true) {
+    try {
+      const current = await refreshJobberAccessToken(env, route);
+      if (
+        current.accessToken !== rejectedToken.accessToken
+        || current.refreshRevision !== rejectedToken.refreshRevision
+      ) return current;
+      throw new LeadSubmissionError("The rejected Jobber token is still authoritative.", 503, {
+        account: route.accountLabel,
+        code: "jobber_rejected_token_unchanged",
+      });
+    } catch (error) {
+      const busy = error instanceof LeadSubmissionError && [
+        "jobber_refresh_process_busy", "jobber_refresh_in_flight", "jobber_refresh_claim_conflict",
+      ].includes(error.details?.code);
+      if (!busy) throw error;
+      if (Date.now() >= deadline) {
+        throw new LeadSubmissionError("Jobber authorization refresh is still in progress.", 503, {
+          account: route.accountLabel,
+          code: "jobber_refresh_in_flight",
+        });
+      }
+      await new Promise(resolve => setTimeout(resolve, JOBBER_401_RECOVERY_POLL_MS));
+    }
+  }
+}
+
+async function failedJobberAuthorizationAfterRetry(env, route, rejectedToken, error) {
+  const broken = await markJobberAuthorizationBroken(env, route, "jobber_http_401_after_refresh", rejectedToken);
+  if (!broken) {
+    return new LeadSubmissionError("Jobber authorization changed during the retry.", 503, {
+      account: route.accountLabel,
+      code: "jobber_authorization_changed_during_retry",
+    });
+  }
+  error.details = { ...error.details, code: "jobber_http_401_after_refresh" };
+  return error;
+}
+
+async function jobberGraphqlWithAuthorizationRecovery(env, route, query, variables = {}) {
+  let token = await refreshJobberAccessToken(env, route);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      return await jobberGraphql(env, token.accessToken, query, variables);
+    } catch (error) {
+      const unauthorized = error instanceof LeadSubmissionError && Number(error.status) === 401;
+      if (!unauthorized || attempt === 1) {
+        if (unauthorized) throw await failedJobberAuthorizationAfterRetry(env, route, token, error);
+        throw error;
+      }
+      token = await recoverJobberTokenAfter401(env, route, token);
+    }
+  }
+  throw new LeadSubmissionError("Jobber read failed after authorization recovery.", 503, {
+    code: "jobber_authorization_recovery_failed",
+  });
+}
+
+async function jobberMutationWithAuthorizationRecovery(env, route, query, variables = {}) {
+  return jobberGraphqlWithAuthorizationRecovery(env, route, query, variables);
+}
+
+async function recordWebsiteLeadIntakeFailure(env, lead, error) {
+  const database = env.ANGI_ROUTER_DB;
+  if (!database?.prepare) return false;
+  const now = new Date();
+  const createdAt = now.toISOString();
+  const expiresAt = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString();
+  const code = clean(error?.details?.code, 120) || "jobber_lead_intake_failed";
+  const payload = {
+    first_name: lead.first_name,
+    last_name: lead.last_name,
+    full_name: lead.full_name,
+    phone: lead.phone,
+    email: lead.email,
+    address: lead.address,
+    city: lead.city,
+    state: lead.state,
+    zip: lead.zip,
+    message: lead.message,
+    submission_id: lead.submission_id,
+  };
+  const result = await database.prepare(`
+    /* website_lead_intake_failures:record */
+    INSERT INTO website_lead_intake_failures (
+      submission_id, market_key, source_key, payload_json, error_code,
+      error_status, attempt_count, state, next_retry_at, expires_at,
+      created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, 1, 'pending', ?, ?, ?, ?)
+    ON CONFLICT (submission_id) DO UPDATE SET
+      payload_json = excluded.payload_json,
+      error_code = excluded.error_code,
+      error_status = excluded.error_status,
+      attempt_count = website_lead_intake_failures.attempt_count + 1,
+      state = 'pending',
+      next_retry_at = excluded.next_retry_at,
+      expires_at = excluded.expires_at,
+      updated_at = excluded.updated_at
+  `).bind(
+    lead.submission_id,
+    lead.market_key,
+    lead.source_key,
+    JSON.stringify(payload),
+    code,
+    Number.isFinite(Number(error?.status)) ? Number(error.status) : null,
+    createdAt,
+    expiresAt,
+    createdAt,
+    createdAt,
+  ).run();
+  return d1Changes(result) === 1;
+}
+
+function buildWebsiteLeadIntakeFailureAlert(lead, error, occurredAt = new Date()) {
+  return {
+    id: lead.submission_id,
+    market: lead.market_key,
+    occurred_at: occurredAt.toISOString(),
+    reason: error?.details?.code || "intake_failed",
+    contact_name: lead.full_name,
+    phone: lead.phone,
+    email: lead.email,
+    message: lead.message,
+  };
+}
+
+async function notifyWebsiteLeadIntakeFailure(env, lead, error) {
+  const service = env.CONTACT_SYNC_SERVICE;
+  const secret = clean(env.CONTACT_SYNC_BROKER_SECRET, 500);
+  if (!service?.fetch || !secret) return false;
+  const response = await service.fetch(new Request("https://contact-sync/internal/website-lead-failure", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${secret}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(buildWebsiteLeadIntakeFailureAlert(lead, error)),
+  }));
+  if (response.status !== 202) {
+    console.error("Website lead failure alert was not accepted", {
+      submissionId: lead.submission_id,
+      market: lead.market_key,
+      status: response.status,
+      code: "lead_failure_alert_rejected",
+    });
+    return false;
+  }
+  return true;
+}
+
+async function withLeadRecoveryDeadline(env, operation) {
+  const configured = Number(env?.LEAD_INTAKE_RECOVERY_TIMEOUT_MS);
+  const timeoutMs = Number.isFinite(configured) && configured > 0
+    ? Math.min(configured, 5000)
+    : 2000;
+  let timer;
+  try {
+    return await Promise.race([
+      Promise.resolve().then(operation),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("lead_recovery_timeout")), timeoutMs);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function resolveWebsiteLeadIntakeFailure(env, submissionId) {
+  const database = env.ANGI_ROUTER_DB;
+  if (!database?.prepare) return false;
+  const result = await database.prepare(`
+    /* website_lead_intake_failures:resolve_after_jobber_request */
+    DELETE FROM website_lead_intake_failures
+    WHERE submission_id = ?
+  `).bind(submissionId).run();
+  return d1Changes(result) === 1;
+}
+
+async function clearWebsiteLeadFailureAfterSuccess(env, lead, jobber) {
+  if (!jobber?.request_id) return;
+  try {
+    await withLeadRecoveryDeadline(env, () =>
+      resolveWebsiteLeadIntakeFailure(env, lead.submission_id));
+  } catch (error) {
+    // A recovery-queue problem must never turn an accepted Jobber Request into
+    // a failed form submission. The pending row remains visible for review.
+    console.error("Website lead recovery queue could not clear a completed Request", {
+      submissionId: lead.submission_id,
+      market: lead.market_key,
+      jobberRequestId: jobber.request_id,
+      code: error?.message === "lead_recovery_timeout" ? "timeout" : "queue_unavailable",
+    });
+  }
 }
 
 async function safeJson(response) {
@@ -1025,7 +1333,10 @@ function buildClientInput(lead, { includePhone = true } = {}) {
   const input = {
     firstName: lead.first_name || lead.full_name,
     lastName: lead.last_name,
-    properties: [
+  };
+
+  if (!lead.short_ad_form) {
+    input.properties = [
       {
         name: "Service address",
         address: {
@@ -1036,8 +1347,8 @@ function buildClientInput(lead, { includePhone = true } = {}) {
           country: "United States",
         },
       },
-    ],
-  };
+    ];
+  }
 
   if (lead.email) {
     input.emails = [
@@ -1091,10 +1402,27 @@ function buildRequestInstructions(lead) {
 function buildRequestInput(lead, clientId, propertyId) {
   const input = {
     clientId,
-    title: clean(lead.service || "Website attic assessment", 240),
+    title: lead.short_ad_form
+      ? clean(`${SHORT_AD_REQUEST_NOTE} | ZIP ${lead.zip} | ${lead.service}`, 240)
+      : clean(lead.service || "Website attic assessment", 240),
   };
 
-  if (propertyId) input.propertyId = propertyId;
+  if (lead.short_ad_form) {
+    input.requestDetails = { form: { sections: [{
+      label: "Service Details",
+      items: [{
+        label: "Please provide as much information as you can",
+        answerText: [
+          lead.message,
+          `Services: ${lead.service}`,
+          `ZIP: ${lead.zip}`,
+          "Short ad form: get the address on the call.",
+        ].filter(Boolean).join("\n"),
+      }],
+    }] } };
+  }
+
+  if (propertyId && !lead.short_ad_form) input.propertyId = propertyId;
   return input;
 }
 
@@ -1126,7 +1454,7 @@ async function createJobberClient(env, accessToken, lead) {
       phoneIncluded: true,
     };
   } catch (error) {
-    if (!(error instanceof LeadSubmissionError) || !shouldRetryWithoutPhone(error)) {
+    if (lead.short_ad_form || !(error instanceof LeadSubmissionError) || !shouldRetryWithoutPhone(error)) {
       throw error;
     }
 
@@ -1211,28 +1539,77 @@ function resolveLeadJobberRoute(env, lead) {
   return { ...googleRoute, attributionFallback: false };
 }
 
-async function submitLeadToJobber(env, lead) {
+async function submitLeadToJobber(env, lead, { onWriteAttempt = () => {}, onClientCreated = () => {} } = {}) {
   const route = resolveLeadJobberRoute(env, lead);
-  const token = await refreshJobberAccessToken(env, route);
-  const created = await createJobberClient(env, token.accessToken, lead);
-  const client = created.result?.data?.clientCreate?.client || {};
-  const property = client.clientProperties?.nodes?.[0] || null;
+  let token = await refreshJobberAccessToken(env, route);
+  onWriteAttempt();
+  let created;
+  let client;
+  let property;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      created = await createJobberClient(env, token.accessToken, lead);
+      client = created.result?.data?.clientCreate?.client || {};
+      property = client.clientProperties?.nodes?.[0] || null;
+      if (!client.id) {
+        throw new LeadSubmissionError("Jobber did not return the created client.", 502, {
+          account: route.accountLabel,
+        });
+      }
+      break;
+    } catch (error) {
+      const unauthorized = error instanceof LeadSubmissionError && Number(error.status) === 401;
+      if (!unauthorized || attempt === 1) {
+        if (unauthorized) throw await failedJobberAuthorizationAfterRetry(env, route, token, error);
+        throw error;
+      }
+      token = await recoverJobberTokenAfter401(env, route, token);
+    }
+  }
+  onClientCreated({ client_id: client.id, account_id: route.expectedAccountId });
 
-  if (!client.id) {
-    throw new LeadSubmissionError("Jobber did not return the created client.", 502, {
-      account: route.accountLabel,
-    });
+  let request;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      request = await createJobberRequest(env, token.accessToken, lead, client.id, property?.id || null);
+      break;
+    } catch (error) {
+      const unauthorized = error instanceof LeadSubmissionError && Number(error.status) === 401;
+      if (!unauthorized || attempt === 1) {
+        if (unauthorized) throw await failedJobberAuthorizationAfterRetry(env, route, token, error);
+        throw error;
+      }
+      token = await recoverJobberTokenAfter401(env, route, token);
+    }
   }
 
-  const request = await createJobberRequest(
-    env,
-    token.accessToken,
-    lead,
-    client.id,
-    property?.id || null,
-  );
+  // Only short ad forms add a team-visible note. Record its outcome separately:
+  // a note failure must never trigger another client/Request creation.
+  let customerNote = null;
+  if (lead.short_ad_form && lead.message) {
+    try {
+      await env.ANGI_ROUTER_DB.prepare(`INSERT INTO short_ad_request_notes
+        (submission_id, request_id, message, status) VALUES (?, ?, ?, 'pending')
+        ON CONFLICT(submission_id) DO NOTHING`)
+        .bind(lead.submission_id, request.id, buildRequestInstructions(lead)).run();
+      const result = await jobberGraphql(env, token.accessToken, `mutation GoodAtticShortAdNote($requestId: EncodedId!, $input: RequestCreateNoteInput!) {
+        requestCreateNote(requestId: $requestId, input: $input) { requestNote { id } userErrors { message path } }
+      }`, { requestId: request.id, input: { message: buildRequestInstructions(lead) } });
+      const note = result?.data?.requestCreateNote;
+      if (note?.userErrors?.length || !note?.requestNote?.id) throw new Error('short_ad_note_not_confirmed');
+      customerNote = { status: 'completed', id: note.requestNote.id };
+      await env.ANGI_ROUTER_DB.prepare(`UPDATE short_ad_request_notes SET status = 'completed', note_id = ? WHERE submission_id = ?`)
+        .bind(note.requestNote.id, lead.submission_id).run();
+    } catch {
+      customerNote = { status: 'needs_reconciliation' };
+      console.error('Short ad customer note needs reconciliation', {
+        submissionId: lead.submission_id, requestId: request.id,
+      });
+    }
+  }
 
   return {
+    ...(customerNote ? { customer_note: customerNote } : {}),
     account: route.accountLabel,
     account_id: route.expectedAccountId,
     market_key: lead.market_key,
@@ -1308,6 +1685,87 @@ async function submitLeadToGhl(env, ghlLead) {
   };
 }
 
+// Transaction tracking adds identity to successful leads but is never an
+// availability dependency of the existing Jobber intake path.
+async function optionalFormTracking(env, lead, step, operation) {
+  const configured = Number(env?.FORM_TRANSACTION_TIMEOUT_MS);
+  const timeoutMs = Number.isFinite(configured) && configured > 0
+    ? Math.min(configured, FORM_TRACKING_TIMEOUT_MS)
+    : FORM_TRACKING_TIMEOUT_MS;
+  let timer;
+  try {
+    const value = await Promise.race([
+      Promise.resolve().then(operation),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("form_tracking_timeout")), timeoutMs);
+      }),
+    ]);
+    return { ok: true, value };
+  } catch (error) {
+    const timedOut = error?.message === "form_tracking_timeout";
+    console.error("Website form tracking failed open", {
+      submissionId: lead.submission_id,
+      market: lead.market_key,
+      step,
+      code: timedOut ? "timeout" : "tracking_unavailable",
+    });
+    return { ok: false, timedOut };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// A D1 reservation can commit after its fail-open deadline. Keep that
+// unfinished operation alive long enough to link (or release) the late row;
+// never make the Jobber result wait for it.
+function repairLateFormReservation(context, env, lead, reservationPromise, outcome) {
+  const repair = reservationPromise.then(async (reservation) => {
+    if (reservation?.claimed && reservation.state === "processing") {
+      if (!outcome.jobber) {
+        await optionalFormTracking(env, lead, "late_recover_failed_jobber_intake", () =>
+          outcome.jobberWriteAttempted
+            ? markFormDeliveryUncertain(env.ANGI_ROUTER_DB, lead.submission_id, outcome.partialJobber)
+            : releaseUnstartedFormTransaction(env.ANGI_ROUTER_DB, lead.submission_id));
+        return;
+      }
+      const completed = await optionalFormTracking(env, lead, "late_complete", () =>
+        completeFormTransaction(env.ANGI_ROUTER_DB, lead.submission_id, outcome.jobber));
+      if (!completed.ok) {
+        await optionalFormTracking(env, lead, "late_mark_delivery_uncertain", () =>
+          markFormDeliveryUncertain(env.ANGI_ROUTER_DB, lead.submission_id, outcome.jobber));
+      }
+      return;
+    }
+    if (reservation && outcome.jobber) {
+      const reason = `${reservation.state || "unknown"}_late_retry`;
+      const attemptId = crypto.randomUUID();
+      await optionalFormTracking(env, lead, "late_flag_reconciliation", () =>
+        flagFormTransactionForReconciliation(env.ANGI_ROUTER_DB, lead.submission_id, reason));
+      await optionalFormTracking(env, lead, "late_record_reconciliation_attempt", () =>
+        recordFormReconciliationAttempt(env.ANGI_ROUTER_DB, {
+          attemptId, submissionId: lead.submission_id, marketKey: lead.market_key,
+          reason, jobber: outcome.jobber,
+        }));
+    }
+  }).catch(() => {
+    console.error("Late website form reservation needs reconciliation", {
+      submissionId: lead.submission_id,
+      market: lead.market_key,
+      jobberRequestId: outcome.jobber?.request_id || null,
+      code: "late_reservation_failed",
+    });
+  });
+  try {
+    context.waitUntil?.(repair);
+  } catch {
+    console.error("Late website form reservation could not be registered for repair", {
+      submissionId: lead.submission_id,
+      market: lead.market_key,
+      code: "late_reservation_wait_until_unavailable",
+    });
+  }
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   let payload;
@@ -1318,9 +1776,17 @@ export async function onRequestPost(context) {
     return jsonResponse({ ok: false, message: "Invalid JSON payload." }, 400);
   }
 
+  const suppliedSubmissionId = payload?.submission_id;
+  if (suppliedSubmissionId != null && !validSubmissionId(suppliedSubmissionId)) {
+    console.error("Website form supplied an invalid tracking ID; Jobber intake continues.", {
+      code: "invalid_submission_id_replaced",
+    });
+  }
+  const submissionId = validSubmissionId(suppliedSubmissionId) ? suppliedSubmissionId : crypto.randomUUID();
   const source = classifyWebsiteLeadSource(payload || {});
-  const lead = buildLead(payload || {}, crypto.randomUUID(), source);
-  const missing = validateLead(lead);
+  const shortAdMarket = shortAdMarketFor(payload || {});
+  const lead = buildLead(payload || {}, submissionId, source, shortAdMarket);
+  const missing = validateLead(lead, payload || {});
   if (missing.length) {
     return jsonResponse({
       ok: false,
@@ -1329,61 +1795,96 @@ export async function onRequestPost(context) {
     }, 400);
   }
 
-  try {
-    const jobber = await submitLeadToJobber(env, lead);
-    if (env.ACKNOWLEDGEMENT_SOURCE_ENABLED === 'true') {
-      // Proof is written only by this successful public form path, never by a
-      // manually created Jobber record or its editable marketing source label.
-      try {
-        const { recordWebsiteAcknowledgementSourceSafely } = await import('../../server/acknowledgement-source.js');
-        await recordWebsiteAcknowledgementSourceSafely(env, lead, jobber, console, context.waitUntil?.bind(context));
-      } catch {
-        console.error('Website acknowledgement proof hook unavailable after Jobber succeeded.');
-      }
-    }
-    // Attribution is intentionally loaded only for website lead submission.
-    // The private appointment resolver imports the Jobber helpers in this file
-    // without bringing Fieldflow into its execution path.
-    const {
-      buildWebsiteAttribution,
-      submitFieldflowAttribution,
-    } = await import("../../server/fieldflow-attribution.js");
-    const [ghl, fieldflow] = await Promise.all([
-      submitLeadToGhl(env, buildGhlLead(payload, lead, jobber)),
-      submitFieldflowAttribution(
-        env,
-        lead.market_key,
-        buildWebsiteAttribution(payload, lead, jobber),
-      ),
-    ]);
-
-    if (!ghl.ok) {
-      console.error("HighLevel lead delivery failed after Jobber succeeded.", {
-        submissionId: lead.submission_id,
-        market: lead.market_key,
-        attempts: ghl.attempts,
-        status: ghl.status,
-        reason: ghl.reason,
-      });
-    }
-    if (!fieldflow.ok) {
-      console.error("Fieldflow attribution delivery failed after Jobber succeeded.", {
-        submissionId: lead.submission_id,
-        market: lead.market_key,
-        attempts: fieldflow.attempts,
-        status: fieldflow.status,
-        reason: fieldflow.reason,
-      });
-    }
-
+  const reservationPromise = Promise.resolve().then(() =>
+    reserveFormTransaction(env.ANGI_ROUTER_DB, submissionId, lead.market_key));
+  const reserved = await optionalFormTracking(env, lead, "reserve", () => reservationPromise);
+  const reservation = reserved.ok ? reserved.value : null;
+  if (reservation?.state === "completed" && reservation.jobber_request_id) {
+    await clearWebsiteLeadFailureAfterSuccess(env, lead, {
+      request_id: reservation.jobber_request_id,
+    });
     return jsonResponse({
       ok: true,
-      message: ghl.ok ? "Lead sent to Jobber and HighLevel." : "Lead sent to Jobber.",
-      jobber,
-      ghl,
-      fieldflow,
+      duplicate: true,
+      transaction_id: reservation.transaction_id,
+      transaction_confirmed: true,
+      conversion_state: reservation.conversion_state,
+      jobber: {
+        request_id: reservation.jobber_request_id,
+        client_id: reservation.jobber_client_id,
+        account_id: reservation.jobber_account_id,
+        market_key: reservation.market_key,
+      },
+    });
+  }
+  // If a previous delivery is uncertain, create the Request on retry and
+  // retain both attempts for reconciliation; never reject a real lead.
+  const reconciliationReason = reservation && (!reservation.claimed || reservation.state !== "processing")
+    ? `${reservation.state || "unknown"}_retry`
+    : null;
+  const retryAttemptId = reconciliationReason ? crypto.randomUUID() : null;
+  if (reconciliationReason) {
+    await optionalFormTracking(env, lead, "flag_reconciliation", () =>
+      flagFormTransactionForReconciliation(env.ANGI_ROUTER_DB, submissionId, reconciliationReason));
+  }
+
+  let jobberWriteAttempted = false;
+  let partialJobber = null;
+  let jobber;
+  try {
+    jobber = await submitLeadToJobber(env, lead, {
+      onWriteAttempt: () => { jobberWriteAttempted = true; },
+      onClientCreated: client => { partialJobber = client; },
     });
   } catch (error) {
+    if (reservation?.claimed && reservation.state === "processing") {
+      await optionalFormTracking(env, lead, "recover_failed_jobber_intake", () =>
+        jobberWriteAttempted
+          ? markFormDeliveryUncertain(env.ANGI_ROUTER_DB, submissionId, partialJobber)
+          : releaseUnstartedFormTransaction(env.ANGI_ROUTER_DB, submissionId));
+    } else if (reserved.timedOut) {
+      repairLateFormReservation(context, env, lead, reservationPromise, {
+        jobberWriteAttempted, partialJobber,
+      });
+    }
+    await Promise.allSettled([
+      (async () => {
+        try {
+          const queued = await withLeadRecoveryDeadline(env, () =>
+            recordWebsiteLeadIntakeFailure(env, lead, error));
+          if (!queued) console.error("Website lead recovery queue did not accept the failed intake", {
+            submissionId: lead.submission_id, market: lead.market_key, code: "lead_recovery_queue_unavailable",
+          });
+        } catch (queueError) {
+          console.error("Website lead recovery queue write failed", {
+            submissionId: lead.submission_id,
+            market: lead.market_key,
+            code: queueError?.message === "lead_recovery_timeout" ? "timeout" : "lead_recovery_queue_failed",
+          });
+        }
+      })(),
+      (async () => {
+        try {
+          const alerted = await withLeadRecoveryDeadline(env, () =>
+            notifyWebsiteLeadIntakeFailure(env, lead, error));
+          if (!alerted) console.error("Website lead failure alert was unavailable", {
+            submissionId: lead.submission_id, market: lead.market_key, code: "lead_failure_alert_unavailable",
+          });
+        } catch (alertError) {
+          console.error("Website lead failure alert delivery failed", {
+            submissionId: lead.submission_id,
+            market: lead.market_key,
+            code: alertError?.message === "lead_recovery_timeout" ? "timeout" : "lead_failure_alert_failed",
+          });
+        }
+      })(),
+    ]);
+    console.error("Jobber lead intake failed", {
+      submissionId: lead.submission_id,
+      market: lead.market_key,
+      status: Number.isFinite(Number(error?.status)) ? Number(error.status) : 500,
+      code: error?.details?.code || error?.code || "jobber_lead_intake_failed",
+    });
     if (error instanceof LeadSubmissionError) {
       return jsonResponse({
         ok: false,
@@ -1397,12 +1898,90 @@ export async function onRequestPost(context) {
       message: "Unexpected lead routing error.",
     }, 500);
   }
+
+  await clearWebsiteLeadFailureAfterSuccess(env, lead, jobber);
+
+  let transactionConfirmed = false;
+  if (reservation?.claimed && reservation.state === "processing") {
+    const completed = await optionalFormTracking(env, lead, "complete", () =>
+      completeFormTransaction(env.ANGI_ROUTER_DB, submissionId, jobber));
+    transactionConfirmed = completed.ok
+      && completed.value?.state === "completed"
+      && completed.value?.transaction_id === submissionId
+      && completed.value?.jobber_request_id === jobber.request_id;
+    if (!transactionConfirmed) {
+      await optionalFormTracking(env, lead, "mark_delivery_uncertain", () =>
+        markFormDeliveryUncertain(env.ANGI_ROUTER_DB, submissionId, jobber));
+    }
+  } else if (reconciliationReason) {
+    await optionalFormTracking(env, lead, "record_reconciliation_attempt", () =>
+      recordFormReconciliationAttempt(env.ANGI_ROUTER_DB, {
+        attemptId: retryAttemptId, submissionId, marketKey: lead.market_key,
+        reason: reconciliationReason, jobber,
+      }));
+  } else {
+    console.error("Website form Request needs transaction-ledger recovery", {
+      submissionId, market: lead.market_key, jobberRequestId: jobber.request_id,
+      code: "reservation_unavailable_jobber_succeeded",
+    });
+    if (reserved.timedOut) {
+      repairLateFormReservation(context, env, lead, reservationPromise, { jobber });
+    }
+  }
+
+  if (env.ACKNOWLEDGEMENT_SOURCE_ENABLED === 'true') {
+    // Proof is written only by this successful public form path, never by a
+    // manually created Jobber record or its editable marketing source label.
+    try {
+      const { recordWebsiteAcknowledgementSourceSafely } = await import('../../server/acknowledgement-source.js');
+      await recordWebsiteAcknowledgementSourceSafely(env, lead, jobber, console, context.waitUntil?.bind(context));
+    } catch {
+      console.error('Website acknowledgement proof hook unavailable after Jobber succeeded.');
+    }
+  }
+  // Optional downstream attribution must not turn a created Jobber Request
+  // into a customer-facing failure or cause the browser to retry intake.
+  const [ghlResult, fieldflowResult] = await Promise.allSettled([
+    Promise.resolve().then(() => submitLeadToGhl(env, buildGhlLead(payload, lead, jobber))),
+    import("../../server/fieldflow-attribution.js").then(({
+      buildWebsiteAttribution, submitFieldflowAttribution,
+    }) => submitFieldflowAttribution(
+      env, lead.market_key, buildWebsiteAttribution(payload, lead, jobber),
+    )),
+  ]);
+  const ghl = ghlResult.status === "fulfilled" ? ghlResult.value : { ok: false, reason: "delivery_exception" };
+  const fieldflow = fieldflowResult.status === "fulfilled" ? fieldflowResult.value : { ok: false, reason: "delivery_exception" };
+  if (!ghl?.ok) {
+    console.error("HighLevel lead delivery failed after Jobber succeeded.", {
+      submissionId, market: lead.market_key, attempts: ghl?.attempts,
+      status: ghl?.status, reason: ghl?.reason,
+    });
+  }
+  if (!fieldflow?.ok) {
+    console.error("Fieldflow attribution delivery failed after Jobber succeeded.", {
+      submissionId, market: lead.market_key, attempts: fieldflow?.attempts,
+      status: fieldflow?.status, reason: fieldflow?.reason,
+    });
+  }
+
+  return jsonResponse({
+    ok: true,
+    transaction_id: submissionId,
+    transaction_confirmed: transactionConfirmed,
+    conversion_state: "not_confirmed",
+    message: ghl?.ok ? "Lead sent to Jobber and HighLevel." : "Lead sent to Jobber.",
+    jobber,
+    ghl,
+    fieldflow,
+  });
 }
 
 export const _private = {
   LeadSubmissionError,
   MARKET_ROUTES,
   buildLead,
+  shortAdMarketFor,
+  shortAdNeedFor,
   classifyWebsiteLeadSource,
   hasFreshAttribution,
   isGoogleSearchHost,
@@ -1416,6 +1995,13 @@ export const _private = {
   buildRequestInstructions,
   buildGhlLead,
   refreshJobberAccessToken,
+  fenceJobberAccessToken,
+  markJobberAuthorizationBroken,
+  jobberGraphqlWithAuthorizationRecovery,
+  jobberMutationWithAuthorizationRecovery,
+  recordWebsiteLeadIntakeFailure,
+  buildWebsiteLeadIntakeFailureAlert,
+  notifyWebsiteLeadIntakeFailure,
   jobberGraphql,
   createJobberClient,
   createJobberRequest,

@@ -151,7 +151,10 @@ for (const [market, key, state, zip, suffix] of [['ut', 'utah', 'UT', '84101', '
       t.mock.timers.tick(1);
       const response = await result, body = await response.json();
       assert.equal(response.status, 200); assert.equal(body.ok, true); assert.equal(body.jobber.market_key, market);
-      assert.deepEqual(Object.keys(body).sort(), ['fieldflow', 'ghl', 'jobber', 'message', 'ok']);
+      assert.deepEqual(Object.keys(body).sort(), ['conversion_state', 'fieldflow', 'ghl', 'jobber', 'message', 'ok', 'transaction_confirmed', 'transaction_id']);
+      assert.equal(body.transaction_confirmed, true, 'the completed D1 row confirms the browser transaction ID');
+      assert.match(body.transaction_id, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+      assert.equal(body.conversion_state, 'not_confirmed');
       assert.equal(body.ghl.ok, true); assert.equal(body.fieldflow.ok, true);
       assert.equal(requests.filter(q => q.includes('clientCreate')).length, 1);
       assert.equal(requests.filter(q => q.includes('requestCreate')).length, 1);

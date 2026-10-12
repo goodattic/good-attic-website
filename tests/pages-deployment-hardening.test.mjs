@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { test } from "node:test";
@@ -68,9 +69,21 @@ test("Pages output publishes only the explicit public allowlist", async () => {
       stdio: "pipe",
     });
   }
+  // The build may add exactly one new active script, named for the reviewed
+  // canonical source. Do not allow arbitrary hashed files in public output.
+  const canonicalScript = await readFile(path.join(projectDirectory, "src/site-interactions.js"));
+  const scriptHash = createHash("sha256").update(canonicalScript).digest("hex").slice(0, 16);
+  const activeScriptName = `script.${scriptHash}.js`;
+  const allowedEntries = [...expectedPublicEntries];
+  if (!allowedEntries.includes(activeScriptName)) allowedEntries.push(activeScriptName);
   assert.deepEqual(
     (await readdir(outputDirectory)).sort(),
-    [...expectedPublicEntries].sort(),
+    allowedEntries.sort(),
+  );
+  assert.deepEqual(await readFile(path.join(outputDirectory, activeScriptName)), canonicalScript);
+  assert.match(
+    await readFile(path.join(outputDirectory, "index.html"), "utf8"),
+    new RegExp(`<script src="${activeScriptName.replaceAll(".", "\\.")}" defer><\\/script>`),
   );
 
   for (const internalEntry of [
