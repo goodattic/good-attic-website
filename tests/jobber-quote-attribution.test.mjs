@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
+import { DatabaseSync } from "node:sqlite";
 
 import {
   _private as quote,
@@ -17,8 +18,27 @@ import {
 const originalFetch = globalThis.fetch;
 const UTAH_ACCOUNT_ID = "Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQzMg==";
 const STL_ACCOUNT_ID = "Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQ1Mw==";
+const gid = (type, number) => btoa(`gid://Jobber/${type}/${number}`);
+const databases = [];
 
-afterEach(() => { globalThis.fetch = originalFetch; });
+afterEach(() => { globalThis.fetch = originalFetch; for (const db of databases.splice(0)) db.close(); });
+
+function callAttributionDatabase() {
+  const db = new DatabaseSync(":memory:"); databases.push(db);
+  db.exec(`CREATE TABLE quo_call_attributions (
+    account_id TEXT, market TEXT, quo_call_id TEXT, jobber_request_id TEXT,
+    jobber_client_id TEXT, direction TEXT, call_started_at_utc TEXT
+  ); CREATE TABLE call_request_lineage_links (
+    account_id TEXT, market_key TEXT, quo_call_id TEXT, original_request_id TEXT,
+    operational_request_id TEXT, client_id TEXT, call_started_at_utc TEXT
+  )`);
+  return {
+    sqlite: db,
+    d1: { prepare(sql) { return { bind(...values) { return {
+      async all() { return { results: db.prepare(sql).all(...values) }; },
+    }; } }; } },
+  };
+}
 
 const LEAD = {
   market_key: "ut",
@@ -123,6 +143,60 @@ test("a Utah ledger row cannot be used for St. Louis", () => {
   );
   assert.equal(result.ok, false);
   assert.equal(result.status, "missing_request");
+});
+
+test("a Quo call resolves to its original Request without inventing a Google campaign", async () => {
+  const { sqlite, d1 } = callAttributionDatabase();
+  const original = gid("Request", 35017089), client = gid("Client", 155986226);
+  sqlite.prepare(`INSERT INTO quo_call_attributions VALUES (?,?,?,?,?,?,?)`).run(
+    UTAH_ACCOUNT_ID, "utah", "ACfirstCall", original, client, "incoming", "2026-10-12T19:45:45.000Z",
+  );
+  const lead = await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID, marketKey: "ut", requestId: original, clientId: client });
+  assert.equal(lead.lead_id, "quo-call:ACfirstCall");
+  assert.equal(lead.original_request_id, original);
+  assert.equal(lead.jobber_request_id, original);
+  assert.equal(lead.original_source, "Quo inbound call");
+  assert.equal(lead.campaign, null);
+});
+
+test("a reviewed same-client Request link carries the original Quo source to a later Quote", async () => {
+  const { sqlite, d1 } = callAttributionDatabase();
+  const original = gid("Request", 35017089), booked = gid("Request", 35017723);
+  const client = gid("Client", 155986226), at = "2026-10-12T19:45:45.000Z";
+  sqlite.prepare(`INSERT INTO quo_call_attributions VALUES (?,?,?,?,?,?,?)`).run(
+    UTAH_ACCOUNT_ID, "utah", "ACfirstCall", original, client, "incoming", at,
+  );
+  sqlite.prepare(`INSERT INTO call_request_lineage_links VALUES (?,?,?,?,?,?,?)`).run(
+    UTAH_ACCOUNT_ID, "ut", "ACfirstCall", original, booked, client, at,
+  );
+  const lead = await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID, marketKey: "ut", requestId: booked, clientId: client });
+  assert.equal(lead.jobber_request_id, booked);
+  assert.equal(lead.original_request_id, original);
+  assert.equal(lead.lead_id, "quo-call:ACfirstCall");
+  assert.equal(await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID, marketKey: "ut", requestId: booked, clientId: gid("Client", 999) }), null);
+});
+
+test("multiple call origins on a Request remain unlinked", async () => {
+  const { sqlite, d1 } = callAttributionDatabase();
+  const requestId = gid("Request", 35017089), client = gid("Client", 155986226);
+  for (const call of ["ACfirstCall", "AClaterCall"]) sqlite.prepare(`INSERT INTO quo_call_attributions VALUES (?,?,?,?,?,?,?)`).run(
+    UTAH_ACCOUNT_ID, "utah", call, requestId, client, "incoming", "2026-10-12T19:45:45.000Z",
+  );
+  assert.equal(await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID, marketKey: "ut", requestId, clientId: client }), null);
+});
+
+test("a direct call and a reviewed replacement link cannot both claim one Quote Request", async () => {
+  const { sqlite, d1 } = callAttributionDatabase();
+  const original = gid("Request", 35017089), booked = gid("Request", 35017723);
+  const client = gid("Client", 155986226), at = "2026-10-12T19:45:45.000Z";
+  for (const [callId, requestId] of [["ACfirstCall", original], ["ACotherCall", booked]])
+    sqlite.prepare(`INSERT INTO quo_call_attributions VALUES (?,?,?,?,?,?,?)`).run(
+      UTAH_ACCOUNT_ID, "utah", callId, requestId, client, "incoming", at,
+    );
+  sqlite.prepare(`INSERT INTO call_request_lineage_links VALUES (?,?,?,?,?,?,?)`).run(
+    UTAH_ACCOUNT_ID, "ut", "ACfirstCall", original, booked, client, at,
+  );
+  assert.equal(await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID, marketKey: "ut", requestId: booked, clientId: client }), null);
 });
 
 test("permission failures are reported without attempting a quote write", async () => {

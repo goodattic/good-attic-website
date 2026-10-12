@@ -1,5 +1,6 @@
 import { getJobberOAuthRoute } from "../functions/api/jobber/oauth/config.js";
 import { _private as leadHelpers } from "../functions/api/leads.js";
+import { canonicalJobberId } from "./acknowledgement-source.js";
 import {
   _private as customFieldHelpers,
   applyQuoteCustomFields,
@@ -78,6 +79,61 @@ async function findLead(database, requestId) {
     WHERE jobber_request_id = ?
     LIMIT 1
   `).bind(requestId).first();
+}
+
+// A Quo call is not a website form submission and does not carry a click ID.
+// Keep its source separate, and use a reviewed Request link only when staff
+// booked the same inquiry on a second Jobber Request.
+async function findCallLead(database, { accountId, marketKey, requestId, clientId }) {
+  const direct = await database.prepare(`
+    SELECT * FROM quo_call_attributions
+    WHERE account_id = ? AND market = ? AND jobber_request_id = ?
+      AND jobber_client_id = ? AND direction = 'incoming'
+    ORDER BY call_started_at_utc ASC LIMIT 2
+  `).bind(accountId, marketKey === "ut" ? "utah" : "stl", requestId, clientId).all();
+  const directRows = direct?.results || [];
+  if (directRows.length > 1) return null;
+  let call = directRows[0] || null;
+  let originalRequestId = requestId;
+  // The link table is additive; original Requests still resolve before its
+  // migration. Once present, a direct call and a reviewed link must not both
+  // claim the same operational Request.
+  let linked;
+  try {
+    linked = await database.prepare(`
+      SELECT * FROM call_request_lineage_links
+      WHERE account_id = ? AND market_key = ? AND operational_request_id = ?
+        AND client_id = ? LIMIT 2
+    `).bind(accountId, marketKey, requestId, clientId).all();
+  } catch (error) {
+    if (!/no such table.*call_request_lineage_links/i.test(String(error))) throw error;
+    linked = { results: [] };
+  }
+  const links = linked?.results || [];
+  if (links.length > 1 || (call && links.length)) return null;
+  if (!call) {
+    if (links.length !== 1) return null;
+    const link = links[0];
+    originalRequestId = canonicalJobberId(link.original_request_id, "Request");
+    if (!originalRequestId || originalRequestId === requestId) return null;
+    const source = await database.prepare(`
+      SELECT * FROM quo_call_attributions
+      WHERE account_id = ? AND quo_call_id = ? AND jobber_request_id = ?
+        AND jobber_client_id = ? AND direction = 'incoming' LIMIT 2
+    `).bind(accountId, link.quo_call_id, originalRequestId, clientId).all();
+    const sourceRows = source?.results || [];
+    if (sourceRows.length !== 1 || sourceRows[0].call_started_at_utc !== link.call_started_at_utc) return null;
+    call = sourceRows[0];
+  }
+  if (call?.account_id !== accountId || call?.jobber_client_id !== clientId
+    || (marketKey === "ut" ? call.market !== "utah" : call.market !== "stl")
+    || !/^AC[A-Za-z0-9_-]{1,160}$/.test(call.quo_call_id || "")) return null;
+  return {
+    lead_id: `quo-call:${call.quo_call_id}`, market_key: marketKey,
+    jobber_account_id: accountId, jobber_request_id: requestId,
+    original_request_id: originalRequestId,
+    original_source: "Quo inbound call", campaign: null, landing_page: null,
+  };
 }
 
 async function beginAttribution(database, quoteId, lead) {
@@ -235,7 +291,9 @@ export async function resolveQuoteAttribution({ request, env }) {
     if (!quote?.id) return jsonResponse({ ok: true, status: "quote_not_found" });
     const requestId = clean(quote.request?.id, 500);
     if (!requestId) return jsonResponse({ ok: true, status: "missing_request", quote_id: quote.id });
-    const lead = await findLead(database, requestId);
+    const clientId = canonicalJobberId(quote.request?.client?.id, "Client");
+    const lead = await findLead(database, requestId)
+      || (clientId ? await findCallLead(database, { accountId, marketKey: route.marketKey, requestId, clientId }) : null);
     const link = quoteLeadLinkStatus(quote, lead, route, accountId);
     if (!link.ok) {
       return jsonResponse({ ok: true, status: "missing_request", quote_id: quote.id, jobber_request_id: requestId });
@@ -253,7 +311,7 @@ export async function resolveQuoteAttribution({ request, env }) {
       token.accessToken,
       quote,
       leadForCustomFields(lead),
-      requestId,
+      lead.original_request_id || requestId,
     );
     if (!applied.ok && !applied.skipped) {
       const finished = await finishAttribution(database, quote.id, checkpoint.claimToken, "retryable", applied.reason);
@@ -294,6 +352,7 @@ export const _private = {
   changes,
   classifyGraphqlFailure,
   findLead,
+  findCallLead,
   beginAttribution,
   finishAttribution,
   leadForCustomFields,

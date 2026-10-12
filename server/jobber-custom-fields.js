@@ -22,7 +22,7 @@ const QUOTE_CONTEXT_QUERY = `
   query GoodAtticQuoteContext($id: EncodedId!) {
     quote(id: $id) {
       id
-      request { id }
+      request { id client { id } }
       customFields {
         ... on CustomFieldText {
           id
