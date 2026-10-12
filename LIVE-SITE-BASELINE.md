@@ -1,6 +1,6 @@
 # Live-site release baseline
 
-`scripts/live-site-baseline.json` freezes the public build and runtime source for Cloudflare Pages production deployment `2954e9d8-b084-4138-b4d7-b74c77be3424`. Cloudflare identifies it as a direct upload from clean canonical Git commit `9f4d560062cd69660590acbb829b60c0841f154e` on 2026-10-12. Its 328 published static files match that commit's build; only the Salt Lake City and St. Louis hub pages differ from the prior `fbcb84ff` deployment. The local guard also hashes `_headers` and `_redirects`, for 330 build files total. The live HTML references `script.e0b6cf2323b054a8.js`; the guard checks that every page references the reviewed active script and that all regional pages retain the correct Quo call links and displayed numbers.
+`scripts/live-site-baseline.json` freezes the public build and runtime source for Cloudflare Pages production deployment `dccc6049-dc80-490b-ac21-6c6c00524d18`. Cloudflare identifies it as a direct upload from canonical Git commit `ec831228266f1d3f6dca7eb3ebff64792d3f0ebb` on 2026-10-12, with Pages Functions enabled. Its 328 published static files exactly match the prior `2954e9d8` deployment. The local guard also hashes `_headers` and `_redirects`, for 330 build files total. The live HTML references `script.e0b6cf2323b054a8.js`; the guard checks that every page references the reviewed active script and that all regional pages retain the correct Quo call links and displayed numbers.
 
 The active JavaScript source is `src/site-interactions.js`, which is byte-for-byte
 identical to the live hashed script in this baseline. The public `script.js` is a
@@ -39,7 +39,7 @@ node scripts/check-live-site-baseline.mjs --check-live-deployment
 Alternatively, supply a Cloudflare API token with **Pages Read** permission as
 `CLOUDFLARE_API_TOKEN`. The command reads deployment metadata only.
 
-The online check aborts if the newest production deployment ID differs from the frozen baseline. It is read-only. It does not publish anything.
+The online check aborts if the serving production deployment ID differs from the frozen baseline. It permits newer idle deployment records and is read-only.
 
 Every intentionally changed, added, or removed public or runtime file needs an entry in `scripts/live-site-reviewed-changes.json` with its exact candidate SHA-256 and a review reason. Use `null` for an intentional removal. A changed active script also needs an `activeScript` entry; all 96 HTML pages must reference it. Entries for unchanged files are rejected. The guard is included in the test suite and fails on any unreviewed difference. It also checks `functions/`, `server/`, `workers/`, Cloudflare configuration, package manifests, and the build script, so an API-only change cannot quietly replace existing backend behavior.
 

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
+import { DatabaseSync } from "node:sqlite";
 
 import {
   _private as quote,
@@ -9,6 +10,8 @@ import {
 } from "../server/jobber-quote-attribution.js";
 import {
   applyQuoteCustomFields,
+  buildGoogleCallQuoteDemotionAttributes,
+  buildGoogleCallQuoteReplayAttributes,
   buildQuoteCustomFieldAttributes,
   filterQuoteCustomFieldConfigurations,
   resolveCustomFieldDefinitions,
@@ -17,8 +20,28 @@ import {
 const originalFetch = globalThis.fetch;
 const UTAH_ACCOUNT_ID = "Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQzMg==";
 const STL_ACCOUNT_ID = "Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQ1Mw==";
+const gid = (type, number) => btoa(`gid://Jobber/${type}/${number}`);
+const databases = [];
 
-afterEach(() => { globalThis.fetch = originalFetch; });
+afterEach(() => { globalThis.fetch = originalFetch; for (const db of databases.splice(0)) db.close(); });
+
+function callAttributionDatabase() {
+  const db = new DatabaseSync(":memory:"); databases.push(db);
+  db.exec(`CREATE TABLE quo_call_attributions (
+    account_id TEXT, market TEXT, quo_call_id TEXT, jobber_request_id TEXT,
+    jobber_client_id TEXT, direction TEXT, call_started_at_utc TEXT
+  ); CREATE TABLE call_request_lineage_links (
+    account_id TEXT, market_key TEXT, quo_call_id TEXT, original_request_id TEXT,
+    operational_request_id TEXT, client_id TEXT, call_started_at_utc TEXT
+  ); CREATE VIEW call_request_lineage_active_links AS
+    SELECT *, 0 AS revision FROM call_request_lineage_links`);
+  return {
+    sqlite: db,
+    d1: { prepare(sql) { return { bind(...values) { return {
+      async all() { return { results: db.prepare(sql).all(...values) }; },
+    }; } }; } },
+  };
+}
 
 const LEAD = {
   market_key: "ut",
@@ -85,6 +108,47 @@ test("does not overwrite a staff-corrected value and omits a missing campaign", 
   assert.deepEqual(result.missingValues, ["Campaign"]);
 });
 
+test("late Google call replay upgrades only the same Quote's generic source", () => {
+  const definitions = new Map([
+    ["Original Lead ID", "lead-id"], ["Original Source", "source-id"], ["Campaign", "campaign-id"],
+  ]);
+  const fields = (source, campaign = "") => [
+    { valueText: "jobber-request:original-1", customFieldConfiguration: { id: "lead-id", name: "Original Lead ID" } },
+    { valueText: source, customFieldConfiguration: { id: "source-id", name: "Original Source" } },
+    { valueText: campaign, customFieldConfiguration: { id: "campaign-id", name: "Campaign" } },
+  ];
+  const result = buildGoogleCallQuoteReplayAttributes(definitions,
+    { customFields: fields("Quo inbound call") }, "original-1", "Search | UT | Attic");
+  assert.deepEqual(result.attributes, [
+    { customFieldConfigurationId: "source-id", valueText: "Google Ads call" },
+    { customFieldConfigurationId: "campaign-id", valueText: "Search | UT | Attic" },
+  ]);
+  assert.equal(buildGoogleCallQuoteReplayAttributes(definitions,
+    { customFields: fields("Staff corrected") }, "original-1", "Search | UT | Attic").reason,
+  "quote_fields_changed");
+  assert.equal(buildGoogleCallQuoteReplayAttributes(definitions,
+    { customFields: fields("Quo inbound call", "Staff campaign") }, "original-1", "Search | UT | Attic").reason,
+  "quote_fields_changed");
+  assert.equal(buildGoogleCallQuoteReplayAttributes(definitions,
+    { customFields: fields("Quo inbound call") }, "different-1", "Search | UT | Attic").reason,
+  "original_lead_field_mismatch");
+  assert.equal(buildGoogleCallQuoteReplayAttributes(definitions,
+    { customFields: fields("") }, "original-1", "Search | UT | Attic").reason,
+  "quote_fields_changed");
+  assert.equal(buildGoogleCallQuoteReplayAttributes(definitions,
+    { customFields: fields("Google Ads call", "Search | UT | Attic") }, "original-1", "Search | UT | Attic").alreadyApplied,
+  true);
+  const demotion = buildGoogleCallQuoteDemotionAttributes(definitions,
+    { customFields: fields("Google Ads call", "Search | UT | Attic") }, "original-1", "Search | UT | Attic");
+  assert.deepEqual(demotion.attributes, [
+    { customFieldConfigurationId: "source-id", valueText: "Quo inbound call" },
+    { customFieldConfigurationId: "campaign-id", valueText: "" },
+  ]);
+  assert.equal(buildGoogleCallQuoteDemotionAttributes(definitions,
+    { customFields: fields("Google Ads call", "Staff campaign") }, "original-1", "Search | UT | Attic").reason,
+  "quote_fields_changed");
+});
+
 test("duplicate webhook deliveries produce one stable queue event per quote", () => {
   const body = JSON.stringify({ data: { webHookEvent: {
     topic: "QUOTE_CREATE",
@@ -123,6 +187,90 @@ test("a Utah ledger row cannot be used for St. Louis", () => {
   );
   assert.equal(result.ok, false);
   assert.equal(result.status, "missing_request");
+});
+
+test("a Quo call resolves to its original Request without inventing a Google campaign", async () => {
+  const { sqlite, d1 } = callAttributionDatabase();
+  const original = gid("Request", 35017089), client = gid("Client", 155986226);
+  sqlite.prepare(`INSERT INTO quo_call_attributions VALUES (?,?,?,?,?,?,?)`).run(
+    UTAH_ACCOUNT_ID, "utah", "ACfirstCall", original, client, "incoming", "2026-10-12T19:45:45.000Z",
+  );
+  const lead = await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID, marketKey: "ut", requestId: original, clientId: client });
+  assert.equal(lead.lead_id, "quo-call:ACfirstCall");
+  assert.equal(lead.original_request_id, original);
+  assert.equal(lead.jobber_request_id, original);
+  assert.equal(lead.original_source, "Quo inbound call");
+  assert.equal(lead.campaign, null);
+});
+
+test("a unique Google forwarding call match supplies the actual campaign to a call-origin Quote", async () => {
+  const { sqlite, d1 } = callAttributionDatabase();
+  sqlite.exec(`ALTER TABLE quo_call_attributions ADD COLUMN caller_phone TEXT;
+    CREATE TABLE google_call_match_shadow (
+      google_resource TEXT, market_key TEXT, campaign_name TEXT,
+      caller_area_code TEXT, call_started_at_utc TEXT, diagnostic_code TEXT,
+      quo_call_id TEXT, match_state TEXT
+    )`);
+  const requestId = gid("Request", 35017089), clientId = gid("Client", 155986226);
+  const at = "2026-10-12T19:45:45.000Z";
+  sqlite.prepare(`INSERT INTO quo_call_attributions VALUES (?,?,?,?,?,?,?,?)`).run(
+    UTAH_ACCOUNT_ID, "utah", "ACfirstCall", requestId, clientId,
+    "incoming", at, "+16142166149",
+  );
+  sqlite.prepare(`INSERT INTO google_call_match_shadow VALUES (?,?,?,?,?,?,?,?)`).run(
+    "customers/4800890529/callViews/123", "ut", "Search | UT | Attic",
+    "614", "2026-10-12T19:46:20.000Z", null, "ACfirstCall", "matched",
+  );
+  const lead = await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID,
+    marketKey: "ut", requestId, clientId });
+  assert.equal(lead.original_source, "Google Ads call");
+  assert.equal(lead.campaign, "Search | UT | Attic");
+  sqlite.prepare(`UPDATE google_call_match_shadow SET match_state = 'held', diagnostic_code = 'ambiguous'`).run();
+  const held = await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID,
+    marketKey: "ut", requestId, clientId });
+  assert.equal(held.original_source, "Quo inbound call");
+  assert.equal(held.campaign, null);
+});
+
+test("a reviewed same-client Request link carries the original Quo source to a later Quote", async () => {
+  const { sqlite, d1 } = callAttributionDatabase();
+  const original = gid("Request", 35017089), booked = gid("Request", 35017723);
+  const client = gid("Client", 155986226), at = "2026-10-12T19:45:45.000Z";
+  sqlite.prepare(`INSERT INTO quo_call_attributions VALUES (?,?,?,?,?,?,?)`).run(
+    UTAH_ACCOUNT_ID, "utah", "ACfirstCall", original, client, "incoming", at,
+  );
+  sqlite.prepare(`INSERT INTO call_request_lineage_links VALUES (?,?,?,?,?,?,?)`).run(
+    UTAH_ACCOUNT_ID, "ut", "ACfirstCall", original, booked, client, at,
+  );
+  const lead = await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID, marketKey: "ut", requestId: booked, clientId: client });
+  assert.equal(lead.jobber_request_id, booked);
+  assert.equal(lead.original_request_id, original);
+  assert.equal(lead.lead_id, "quo-call:ACfirstCall");
+  assert.equal(await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID, marketKey: "ut", requestId: booked, clientId: gid("Client", 999) }), null);
+  assert.equal(await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID, marketKey: "ut", requestId: original, clientId: client }), null);
+});
+
+test("multiple call origins on a Request remain unlinked", async () => {
+  const { sqlite, d1 } = callAttributionDatabase();
+  const requestId = gid("Request", 35017089), client = gid("Client", 155986226);
+  for (const call of ["ACfirstCall", "AClaterCall"]) sqlite.prepare(`INSERT INTO quo_call_attributions VALUES (?,?,?,?,?,?,?)`).run(
+    UTAH_ACCOUNT_ID, "utah", call, requestId, client, "incoming", "2026-10-12T19:45:45.000Z",
+  );
+  assert.equal(await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID, marketKey: "ut", requestId, clientId: client }), null);
+});
+
+test("a direct call and a reviewed replacement link cannot both claim one Quote Request", async () => {
+  const { sqlite, d1 } = callAttributionDatabase();
+  const original = gid("Request", 35017089), booked = gid("Request", 35017723);
+  const client = gid("Client", 155986226), at = "2026-10-12T19:45:45.000Z";
+  for (const [callId, requestId] of [["ACfirstCall", original], ["ACotherCall", booked]])
+    sqlite.prepare(`INSERT INTO quo_call_attributions VALUES (?,?,?,?,?,?,?)`).run(
+      UTAH_ACCOUNT_ID, "utah", callId, requestId, client, "incoming", at,
+    );
+  sqlite.prepare(`INSERT INTO call_request_lineage_links VALUES (?,?,?,?,?,?,?)`).run(
+    UTAH_ACCOUNT_ID, "ut", "ACfirstCall", original, booked, client, at,
+  );
+  assert.equal(await quote.findCallLead(d1, { accountId: UTAH_ACCOUNT_ID, marketKey: "ut", requestId: booked, clientId: client }), null);
 });
 
 test("permission failures are reported without attempting a quote write", async () => {

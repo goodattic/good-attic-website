@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 
-import { _private as consumer } from "../workers/jobber-quote-consumer.js";
+import quoteConsumer, { _private as consumer } from "../workers/jobber-quote-consumer.js";
 
 const originalFetch = globalThis.fetch;
 
@@ -98,4 +98,28 @@ test("scheduled authorization health uses the protected Pages endpoint", async (
   assert.equal(request.url, "https://example.test/api/jobber/oauth/health-check");
   assert.equal(request.options.method, "POST");
   assert.equal(request.options.headers.Authorization, "Bearer health-secret");
+});
+
+test("scheduled call replay uses the same internal Quote broker credential", async () => {
+  let request;
+  globalThis.fetch = async (url, options) => {
+    request = { url, options };
+    return Response.json({ ok: true, status: "completed", applied: 1, held: 0, retryable: 0 });
+  };
+  const result = await consumer.runMatchedCallReplay({ JOBBER_QUOTE_BROKER_SECRET: "broker-secret" });
+  assert.equal(result.applied, 1);
+  assert.equal(request.url, "https://goodattic.energy/api/jobber/quote-call-replay");
+  assert.equal(request.options.method, "POST");
+  assert.equal(request.options.headers.Authorization, "Bearer broker-secret");
+});
+
+test("scheduled replay remains off unless explicitly enabled", async () => {
+  const urls = [];
+  globalThis.fetch = async (url) => {
+    urls.push(url);
+    return Response.json({ ok: true, results: [] });
+  };
+  await quoteConsumer.scheduled({}, { JOBBER_AUTH_HEALTH_SECRET: "health-secret",
+    JOBBER_QUOTE_BROKER_SECRET: "broker-secret" });
+  assert.deepEqual(urls, ["https://goodattic.energy/api/jobber/oauth/health-check"]);
 });
