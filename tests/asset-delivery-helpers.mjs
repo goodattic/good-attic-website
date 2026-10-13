@@ -3,7 +3,12 @@ import { assetDelivery } from "../scripts/asset-delivery.mjs";
 import { applyGoogleReviewFacts } from "../scripts/google-review-facts.mjs";
 import { applyLocalBusinessFacts } from "../scripts/local-business-facts.mjs";
 import { applyMarketFaq } from "../scripts/market-faq.mjs";
+import { applyTownFaq } from "../scripts/town-faq.mjs";
 import { synchronizationFiles } from "./live-backend-parity.mjs";
+
+export function preTownFaqHtml(html, file) {
+  return applyTownFaq(html, file, { reverse: true });
+}
 
 export function preMarketFaqHtml(html, file) {
   return applyMarketFaq(html, file, { reverse: true });
@@ -31,6 +36,7 @@ export function readApprovedContent(file, root = new URL("../", import.meta.url)
   // Historical layout/copy tests use the retained pre-focus JS; modal tests verify the new asset.
   const asset = file === "styles.css" ? assetDelivery.css.to : file === "script.js" ? assetDelivery.modalFocus.previousAsset : file;
   let html = readFileSync(new URL(asset, root), "utf8");
+  html = preTownFaqHtml(html, file);
   html = preMarketFaqHtml(html, file);
   html = preGoogleReviewFactsHtml(html, file);
   html = preLocalBusinessFactsHtml(html, file);

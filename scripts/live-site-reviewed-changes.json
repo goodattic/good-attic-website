@@ -1,5 +1,42 @@
 {
   "schemaVersion": 1,
   "baselineDeploymentId": "d4c1eed9-56c9-498c-8ea0-a487d5e9f521",
-  "changes": {}
+  "changes": {
+    "assets/kansas-city-mo/index.html": {
+      "expectedSha256": "b5282be82e1ed30b859fd375202d7780f3e03d2db3d4bc650a422f0dd961bba9",
+      "reason": "Add the approved Kansas City market FAQ and matching FAQPage structured data."
+    },
+    "assets/kansas-city-mo/service-areas/leawood-ks/index.html": {
+      "expectedSha256": "44de10b681730f5f829f9f473449d6548afbc6d6715d0d4e0fb2f324971e6259",
+      "reason": "Add the approved Leawood town FAQs and matching FAQPage structured data."
+    },
+    "assets/kansas-city-mo/service-areas/olathe-ks/index.html": {
+      "expectedSha256": "602b431e14124b4e4b39518707c4bc86b5df25a36c6e72209ece426bee3d87d2",
+      "reason": "Add the approved Olathe town FAQs and matching FAQPage structured data."
+    },
+    "assets/kansas-city-mo/service-areas/overland-park-ks/index.html": {
+      "expectedSha256": "3bf9ec9469779092d14c910697f6823ccec621e40713f502ddb0453090ac6afb",
+      "reason": "Add the approved Overland Park town FAQs and matching FAQPage structured data."
+    },
+    "assets/salt-lake-city-ut/service-areas/cottonwood-heights-ut/index.html": {
+      "expectedSha256": "ad4a7b87580d50304be0d56e8a20471915bbfbbf0c15d62ed4e08984ea983fe6",
+      "reason": "Add the approved Cottonwood Heights town FAQs and matching FAQPage structured data."
+    },
+    "assets/salt-lake-city-ut/service-areas/draper-ut/index.html": {
+      "expectedSha256": "bb9d68adf86cbd4bcd51cb0729f31284a27143f3f5b5f622d0de27845f6e5a65",
+      "reason": "Add the approved Draper town FAQs and matching FAQPage structured data."
+    },
+    "assets/salt-lake-city-ut/service-areas/sandy-ut/index.html": {
+      "expectedSha256": "d3aefbeac64c2376c98663b1125c6b6ecfaa8e3c8415126aefddb71d58023362",
+      "reason": "Add the approved Sandy town FAQs and matching FAQPage structured data."
+    },
+    "assets/st-louis-mo/service-areas/chesterfield-mo/index.html": {
+      "expectedSha256": "742d6ee8d33b8c23b6f0176abb1011bb5db542c614aa26a41ba8687cf4f374e1",
+      "reason": "Add the approved Chesterfield town FAQs and matching FAQPage structured data."
+    },
+    "assets/st-louis-mo/service-areas/wildwood-mo/index.html": {
+      "expectedSha256": "6a17a3f549e9a0a5199a1ff5bcce52ee1e13cf796494ce906fcf7d7f89df3b9c",
+      "reason": "Add the approved Wildwood town FAQs and matching FAQPage structured data."
+    }
+  }
 }
