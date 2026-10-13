@@ -221,20 +221,27 @@ export function normalizeExistingCustomFields(customFields = []) {
   return values;
 }
 
-export function buildQuoteCustomFieldAttributes(definitions, lead, requestId, existingFields = []) {
+export function buildQuoteCustomFieldAttributes(definitions, lead, requestId, existingFields = [], options = {}) {
   const existing = normalizeExistingCustomFields(existingFields);
   const attributes = [];
   const skippedExisting = [];
   const missingValues = [];
+  const conflictingExisting = [];
   for (const [name, value] of buildClientCustomFieldValues(lead, requestId)) {
     const definitionId = definitions?.get?.(name) || "";
     const valueText = nonBlank(value).slice(0, 200);
+    const current = existing.get(`id:${definitionId}`) || existing.get(`name:${name}`) || "";
+    if ((options.strictExistingValues && current && current !== valueText)
+      || (options.requireBlankPaidFields && lead?.source_label === "Google Ads call"
+        && ["Original Source", "Campaign"].includes(name) && current)) {
+      conflictingExisting.push(name);
+    }
     if (!valueText) {
       missingValues.push(name);
       continue;
     }
     if (!definitionId) continue;
-    if (existing.get(`id:${definitionId}`) || existing.get(`name:${name}`)) {
+    if (current) {
       skippedExisting.push(name);
       continue;
     }
@@ -243,10 +250,10 @@ export function buildQuoteCustomFieldAttributes(definitions, lead, requestId, ex
       valueText,
     });
   }
-  return { attributes, skippedExisting, missingValues };
+  return { attributes, skippedExisting, missingValues, conflictingExisting };
 }
 
-export async function applyQuoteCustomFields(env, accessToken, quote, lead, requestId) {
+export async function applyQuoteCustomFields(env, accessToken, quote, lead, requestId, options = {}) {
   if (env?.EXTERNAL_API_WRITES_ENABLED !== "true") {
     return { ok: false, skipped: true, reason: "external_api_writes_disabled" };
   }
@@ -258,7 +265,12 @@ export async function applyQuoteCustomFields(env, accessToken, quote, lead, requ
     lead,
     requestId,
     quote.customFields,
+    options,
   );
+  if (built.conflictingExisting.length) {
+    return { ok: false, skipped: true, reason: "quote_fields_conflict",
+      conflictingExisting: built.conflictingExisting };
+  }
   if (!built.attributes.length) {
     return {
       ok: false,

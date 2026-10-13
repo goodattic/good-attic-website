@@ -1,6 +1,6 @@
 # Live-site release baseline
 
-`scripts/live-site-baseline.json` freezes the public build and runtime source for Cloudflare Pages production deployment `6b5f831b-a6bc-410f-82ba-4d32ef44b88d`. Cloudflare identifies it as a direct upload from canonical Git commit `968f6eb6338273c410797d88c83d6b628615c473` on 2026-10-12, with Pages Functions enabled. Its 328 published static files contain the approved Google review facts on all 24 changed pages. The local guard also hashes `_headers` and `_redirects`, for 330 build files total. The live HTML references `script.e0b6cf2323b054a8.js`; the guard checks that every page references the reviewed active script and that all regional pages retain the correct Quo call links and displayed numbers.
+`scripts/live-site-baseline.json` freezes the public build and runtime source for Cloudflare Pages production deployment `9703281f-e1bd-4917-8c0c-d2c1a4df9ae8`. Cloudflare identifies it as a direct upload from clean source commit `f34488df07de16589c48193891a111fca22410cd` on 2026-10-12, with Pages Functions enabled. Its 328 published static files match the prior `6b5f831b` deployment exactly; the new runtime enables guarded historical call-origin Quote backfill. The local guard also hashes `_headers` and `_redirects`, for 330 build files total. The live HTML references `script.e0b6cf2323b054a8.js`; the guard checks that every page references the reviewed active script and that all regional pages retain the correct Quo call links and displayed numbers.
 
 The active JavaScript source is `src/site-interactions.js`, which is byte-for-byte
 identical to the live hashed script in this baseline. The public `script.js` is a
@@ -50,9 +50,12 @@ no deployment step. Its green result does not replace the online deployment-ID
 preflight or review of the exact proposed change list. Use an explicit guarded
 publish from the canonical branch only after approval.
 
-After **every** new release is verified live, capture a new baseline from that
-deployment, update the deployment ID, and empty the reviewed-change list before
-the next change starts. Do not refresh the baseline from an unshipped candidate
-just to make a failing guard pass. This guard detects byte changes and protected
-phone/script invariants; ordinary tests and a post-deploy check still matter for
-behavior.
+Every production publish, from any session or workstream, must re-baseline
+`baseline/live-site-2026-09-30` in the same sitting. Verify the serving
+deployment, capture its static and runtime source, update the deployment ID,
+empty the reviewed-change list, and merge the re-baseline into the canonical
+branch before the session ends. A release is not finished until the canonical
+branch records the new deployment ID. Do not refresh the baseline from an
+unshipped candidate just to make a failing guard pass. This guard detects byte
+changes and protected phone/script invariants; ordinary tests and a post-deploy
+check still matter for behavior.
