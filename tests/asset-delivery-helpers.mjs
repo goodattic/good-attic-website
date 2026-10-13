@@ -2,7 +2,12 @@ import { readFileSync } from "node:fs";
 import { assetDelivery } from "../scripts/asset-delivery.mjs";
 import { applyGoogleReviewFacts } from "../scripts/google-review-facts.mjs";
 import { applyLocalBusinessFacts } from "../scripts/local-business-facts.mjs";
+import { applyMarketFaq } from "../scripts/market-faq.mjs";
 import { synchronizationFiles } from "./live-backend-parity.mjs";
+
+export function preMarketFaqHtml(html, file) {
+  return applyMarketFaq(html, file, { reverse: true });
+}
 
 export function preGoogleReviewFactsHtml(html, file) {
   return applyGoogleReviewFacts(html, file, { reverse: true });
@@ -25,7 +30,11 @@ export function preAssetMigrationHtml(html, file) {
 export function readApprovedContent(file, root = new URL("../", import.meta.url)) {
   // Historical layout/copy tests use the retained pre-focus JS; modal tests verify the new asset.
   const asset = file === "styles.css" ? assetDelivery.css.to : file === "script.js" ? assetDelivery.modalFocus.previousAsset : file;
-  return preAssetMigrationHtml(preLocalBusinessFactsHtml(preGoogleReviewFactsHtml(readFileSync(new URL(asset, root), "utf8"), file), file), file);
+  let html = readFileSync(new URL(asset, root), "utf8");
+  html = preMarketFaqHtml(html, file);
+  html = preGoogleReviewFactsHtml(html, file);
+  html = preLocalBusinessFactsHtml(html, file);
+  return preAssetMigrationHtml(html, file);
 }
 
 export const assetMigrationFiles = [

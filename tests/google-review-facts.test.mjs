@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { applyGoogleReviewFacts, googleReviewFactsFiles } from "../scripts/google-review-facts.mjs";
-import { preGoogleReviewFactsHtml } from "./asset-delivery-helpers.mjs";
+import { preGoogleReviewFactsHtml, preMarketFaqHtml } from "./asset-delivery-helpers.mjs";
 
 const root = new URL("../", import.meta.url);
 const base = "5e3ac67b1173d30298b70e8d2c8814bf8beb1abb";
@@ -14,7 +14,7 @@ test("the 24 Google review fact pages preserve every other baseline byte and rev
   assert.equal(new Set(googleReviewFactsFiles).size, 24);
   for (const file of googleReviewFactsFiles) {
     const original = before(file);
-    const current = readFileSync(new URL(file, root), "utf8");
+    const current = preMarketFaqHtml(readFileSync(new URL(file, root), "utf8"), file);
     assert.equal(applyGoogleReviewFacts(original, file), current, `${file}: exact forward transform`);
     assert.equal(applyGoogleReviewFacts(current, file), current, `${file}: forward idempotence`);
     assert.equal(preGoogleReviewFactsHtml(current, file), original, `${file}: exact reversal`);

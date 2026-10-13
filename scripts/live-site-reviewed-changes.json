@@ -1,5 +1,14 @@
 {
   "schemaVersion": 1,
   "baselineDeploymentId": "9703281f-e1bd-4917-8c0c-d2c1a4df9ae8",
-  "changes": {}
+  "changes": {
+    "assets/salt-lake-city-ut/index.html": {
+      "expectedSha256": "1f3def10d2e98b3d7aced9237df8779eeb5baf2db2237e7f032da77aa3e50989",
+      "reason": "Add the approved Salt Lake City market FAQ and matching FAQPage structured data."
+    },
+    "assets/st-louis-mo/index.html": {
+      "expectedSha256": "c427783a41e6484aaa4aba8eca41dca35688c1a805520bfc7ddea8c93b4477ca",
+      "reason": "Add the approved St. Louis market FAQ and matching FAQPage structured data."
+    }
+  }
 }
