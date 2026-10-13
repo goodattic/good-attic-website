@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "description": "Serving Good Attic Pages deployment 9703281f, direct-uploaded from clean source commit f34488d and verified 2026-10-12: its 328 published static files exactly match prior deployment 6b5f831b, while Pages Functions enable a guarded historical call-origin Quote backfill. The local build includes 330 static files and the runtime source is the committed f34488d tree.",
+  "description": "Serving Good Attic Pages deployment d4c1eed9, explicitly direct-uploaded from clean canonical merge commit fe0c484 and verified 2026-10-13. Cloudflare published 328 static files; exactly the Salt Lake City and St. Louis hub HTML files changed from deployment 9703281f to add Patrick-approved market FAQs and matching FAQPage data. Pages Functions and runtime source are unchanged. The local build includes 330 static files including _headers and _redirects.",
   "productionDeployment": {
-    "id": "9703281f-e1bd-4917-8c0c-d2c1a4df9ae8",
-    "sourceCommit": "f34488df07de16589c48193891a111fca22410cd",
-    "capturedStaticCommit": "968f6eb6338273c410797d88c83d6b628615c473",
+    "id": "d4c1eed9-56c9-498c-8ea0-a487d5e9f521",
+    "sourceCommit": "fe0c4841b74c5d50238bfe1582e1ec4aa62fb4fb",
+    "capturedStaticCommit": "fe0c4841b74c5d50238bfe1582e1ec4aa62fb4fb",
     "accountId": "944914746b7fbc8cd91cd7d0d9d1940c",
     "projectName": "good-attic-website"
   },
@@ -308,7 +308,7 @@
     "salt-lake-city-ut/attic-fans/index.html": "faf357a1210924806636fd8b2a9bb7bdf57c0777603b57cb84e18887f32a2da7",
     "salt-lake-city-ut/attic-insulation/index.html": "be77f138e75590abb9ed5b8f2baed255a018c8cb2ef14a78b41c7b17571b4457",
     "salt-lake-city-ut/attic-pest-remediation/index.html": "eb071c053ca63ec9c32acfbcbdf12006eeefa1227f07dd49874a6d5d0548dcf0",
-    "salt-lake-city-ut/index.html": "ad5964016a8f083e163605463e9e50ee134e0e756a69fa0a8300fba6312ba70a",
+    "salt-lake-city-ut/index.html": "1f3def10d2e98b3d7aced9237df8779eeb5baf2db2237e7f032da77aa3e50989",
     "salt-lake-city-ut/insulation-removal/index.html": "a7598e0bed3fe29ffac448f62f6d3e08c764e9478bd54d7fa752dce3bc57d0a0",
     "salt-lake-city-ut/lp/attic-insulation/index.html": "96c04bf56df695872ff8925ab2cd3be3264bc622652dd12df996a3dec653593e",
     "salt-lake-city-ut/lp/insulation-removal/index.html": "973c4af0911d4e7b735f83851678cacbd1d9ca019304eb020ce6fa5ed01162a8",
@@ -340,7 +340,7 @@
     "st-louis-mo/attic-fans/index.html": "69fd45a75c0d24bb9e06624eb18baca7cdac4e1114d4682884f66e575f289457",
     "st-louis-mo/attic-insulation/index.html": "4e9064f52c911638e3f1dfb5d599ed6cad1100564fad096197b1038869d0993e",
     "st-louis-mo/attic-pest-remediation/index.html": "f216f7d9b5a922893aaea92aedf58d9818d9aac94679ec93baf65a5be6236d97",
-    "st-louis-mo/index.html": "c2fbae00dccc131ef9ff2d85c8f77a997be87c8806754d7325a4b3220e0159ed",
+    "st-louis-mo/index.html": "c427783a41e6484aaa4aba8eca41dca35688c1a805520bfc7ddea8c93b4477ca",
     "st-louis-mo/insulation-removal/index.html": "3f6ae38e3bb10d042a233ea41c1d0e323f9e5ac0179eb7938cce6279fd27a600",
     "st-louis-mo/lp/attic-insulation/index.html": "58dd948d2bcba497475a628c58870140eef4dc18327b08c44bdc7ffeff2d2bf0",
     "st-louis-mo/lp/insulation-removal/index.html": "8c5d5bc1b4aa7e743fb51c09c920d679b4a4ca6adf33f68abf3986d61b1d8734",
