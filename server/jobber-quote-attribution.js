@@ -13,6 +13,8 @@ const QUOTE_ATTRIBUTION_EVENT_NAME = "jobber.quote_attribution.v1";
 const ATTRIBUTION_CLAIM_LEASE_MS = 2 * 60 * 1000;
 const CALL_REPLAY_BATCH_SIZE = 3;
 const CALL_REPLAY_CLAIM_LEASE_MS = 2 * 60 * 1000;
+const HISTORY_BACKFILL_BATCH_SIZE = 3;
+const HISTORY_BACKFILL_MIN_AGE_MS = 24 * 60 * 60 * 1000;
 const ENABLED_MARKETS = new Set(["ut", "mo_stl"]);
 
 const ROUTES_BY_ACCOUNT_ID = new Map(
@@ -189,6 +191,166 @@ async function findCallLead(database, { accountId, marketKey, requestId, clientI
     google_resource: googleMatch?.google_resource || null,
     landing_page: null,
   };
+}
+
+async function hasWebsiteLeadForRequests(database, marketKey, requestId, originalRequestId = requestId) {
+  const found = await database.prepare(`
+    SELECT 1 AS present FROM closed_loop_leads
+      WHERE jobber_request_id IN (?, ?)
+    UNION ALL
+    SELECT 1 AS present FROM closed_loop_stage1_leads
+      WHERE market_key = ? AND request_id IN (?, ?)
+    LIMIT 1
+  `).bind(requestId, originalRequestId, marketKey, requestId, originalRequestId).first();
+  return Boolean(found);
+}
+
+async function findHistoricalCallQuoteCandidates(database, nowMs) {
+  const rows = await database.prepare(`
+    SELECT c.market_key, c.object_id AS quote_id, c.account_id,
+      c.operational_request_id AS request_id, o.client_id,
+      CASE WHEN c.link_decision_id IS NULL THEN c.direct_max_call_id
+        ELSE l.quo_call_id END AS quo_call_id
+    FROM call_origin_shadow_object_checks c
+    JOIN closed_loop_stage1_objects o
+      ON o.market_key = c.market_key AND o.object_type = 'quote'
+      AND o.object_id = c.object_id AND o.request_id = c.operational_request_id
+    LEFT JOIN call_request_lineage_active_links l
+      ON l.account_id = c.account_id AND l.market_key = c.market_key
+      AND l.operational_request_id = c.operational_request_id
+      AND l.client_id = o.client_id AND l.decision_id = c.link_decision_id
+    LEFT JOIN quote_call_history_backfill b ON b.quote_id = c.object_id
+    LEFT JOIN closed_loop_quote_attributions a ON a.quote_id = c.object_id
+    WHERE c.object_type = 'quote' AND c.check_status = 'resolved'
+      AND o.client_id IS NOT NULL
+      AND CAST(strftime('%s', o.source_created_at) AS INTEGER) <= ?
+      AND ((c.link_decision_id IS NULL AND c.direct_call_count = 1
+          AND c.direct_max_call_id IS NOT NULL)
+        OR (c.link_decision_id IS NOT NULL AND c.direct_call_count = 0
+          AND l.quo_call_id IS NOT NULL))
+      AND (a.quote_id IS NULL OR (b.quote_id IS NOT NULL
+        AND a.status IN ('pending', 'retryable')
+        AND a.lead_id = ('quo-call:' || CASE WHEN c.link_decision_id IS NULL
+          THEN c.direct_max_call_id ELSE l.quo_call_id END)
+        AND a.market_key = c.market_key
+        AND a.jobber_request_id = c.operational_request_id
+        AND (a.claim_token IS NULL OR a.claim_expires_at <= ?)))
+      AND NOT EXISTS (SELECT 1 FROM closed_loop_leads w
+        WHERE w.jobber_request_id IN (o.request_id, COALESCE(l.original_request_id, o.request_id)))
+      AND NOT EXISTS (SELECT 1 FROM closed_loop_stage1_leads w
+        WHERE w.market_key = c.market_key
+          AND w.request_id IN (o.request_id, COALESCE(l.original_request_id, o.request_id)))
+      AND (b.quote_id IS NULL OR (b.state IN ('pending', 'retryable')
+        AND b.account_id = c.account_id AND b.market_key = c.market_key
+        AND b.request_id = c.operational_request_id AND b.client_id = o.client_id
+        AND b.quo_call_id = CASE WHEN c.link_decision_id IS NULL
+          THEN c.direct_max_call_id ELSE l.quo_call_id END
+        AND (b.next_attempt_at IS NULL OR b.next_attempt_at <= ?)
+        AND (b.claim_token IS NULL OR b.claim_expires_at <= ?)))
+    ORDER BY o.source_created_at ASC, c.object_id ASC LIMIT 12
+  `).bind(Math.floor((nowMs - HISTORY_BACKFILL_MIN_AGE_MS) / 1000),
+    nowMs, nowMs, nowMs).all();
+  return rows?.results || [];
+}
+
+async function claimHistoricalCallQuote(database, candidate, nowMs) {
+  const now = new Date(nowMs).toISOString();
+  await database.prepare(`
+    INSERT OR IGNORE INTO quote_call_history_backfill (
+      quote_id, market_key, account_id, request_id, client_id, quo_call_id,
+      state, attempt_count, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?)
+  `).bind(candidate.quote_id, candidate.market_key, candidate.account_id,
+    candidate.request_id, candidate.client_id, candidate.quo_call_id, now, now).run();
+  const token = crypto.randomUUID();
+  const result = await database.prepare(`
+    UPDATE quote_call_history_backfill
+    SET state = 'pending', claim_token = ?, claim_expires_at = ?, attempt_count = attempt_count + 1,
+      updated_at = ?
+    WHERE quote_id = ? AND market_key = ? AND account_id = ?
+      AND request_id = ? AND client_id = ? AND quo_call_id = ?
+      AND state IN ('pending', 'retryable')
+      AND (next_attempt_at IS NULL OR next_attempt_at <= ?)
+      AND (claim_token IS NULL OR claim_expires_at <= ?)
+  `).bind(token, nowMs + ATTRIBUTION_CLAIM_LEASE_MS, now, candidate.quote_id,
+    candidate.market_key, candidate.account_id, candidate.request_id,
+    candidate.client_id, candidate.quo_call_id, nowMs, nowMs).run();
+  return changes(result) === 1 ? token : null;
+}
+
+async function finishHistoricalCallQuote(database, candidate, token, outcome) {
+  const nowMs = Date.now();
+  const now = new Date(nowMs).toISOString();
+  const result = await database.prepare(`
+    UPDATE quote_call_history_backfill
+    SET state = ?, claim_token = NULL, claim_expires_at = NULL,
+      next_attempt_at = ?, result_status = ?, diagnostic_code = ?, updated_at = ?,
+      completed_at = CASE WHEN ? IN ('applied', 'held') THEN ? ELSE completed_at END
+    WHERE quote_id = ? AND claim_token = ?
+  `).bind(outcome.state, outcome.state === 'retryable' ? nowMs + 30 * 60 * 1000 : null,
+    clean(outcome.resultStatus, 80) || null, clean(outcome.reason, 120) || null, now,
+    outcome.state, now, candidate.quote_id, token).run();
+  return changes(result) === 1;
+}
+
+async function backfillHistoricalCallQuote(env, candidate) {
+  const secret = clean(env.JOBBER_QUOTE_BROKER_SECRET, 1000);
+  const request = new Request('https://goodattic.energy/api/jobber/quote-resolve', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${secret}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ account_id: candidate.account_id, market_key: candidate.market_key,
+      quote_id: candidate.quote_id, historical_call_backfill: true,
+      expected_request_id: candidate.request_id, expected_client_id: candidate.client_id,
+      expected_quo_call_id: candidate.quo_call_id }),
+  });
+  const response = await resolveQuoteAttribution({ request, env });
+  let result;
+  try { result = await response.json(); } catch { result = {}; }
+  if (response.ok && ['applied', 'skipped'].includes(result.status)) {
+    return { state: 'applied', resultStatus: result.status, reason: result.reason || '' };
+  }
+  if (response.ok && ['held', 'manual_review'].includes(result.status)) {
+    return { state: 'held', resultStatus: result.status, reason: result.reason || '' };
+  }
+  return { state: 'retryable', resultStatus: result.status || '',
+    reason: result.code || result.reason || 'quote_resolver_failed' };
+}
+
+export async function backfillHistoricalCallQuotes({ request, env }) {
+  if (!await bearerAuthorized(request, env.JOBBER_QUOTE_BROKER_SECRET)) {
+    return jsonResponse({ ok: false, code: 'unauthorized' }, 401);
+  }
+  if (env.JOBBER_QUOTE_HISTORY_BACKFILL_ENABLED !== 'true') {
+    return jsonResponse({ ok: true, status: 'skipped', reason: 'history_backfill_disabled' });
+  }
+  if (env.EXTERNAL_API_WRITES_ENABLED !== 'true') {
+    return jsonResponse({ ok: true, status: 'skipped', reason: 'external_api_writes_disabled' });
+  }
+  const database = env.ANGI_ROUTER_DB;
+  if (!database?.prepare) return jsonResponse({ ok: false, code: 'jobber_authoritative_database_unavailable' }, 503);
+  try {
+    const nowMs = Date.now();
+    const candidates = (await findHistoricalCallQuoteCandidates(database, nowMs))
+      .filter((candidate) => quoteAllowedInCurrentMode(env, candidate.market_key, candidate.quote_id))
+      .slice(0, HISTORY_BACKFILL_BATCH_SIZE);
+    const counts = { applied: 0, held: 0, retryable: 0 };
+    for (const candidate of candidates) {
+      const route = ROUTES_BY_ACCOUNT_ID.get(candidate.account_id);
+      if (!route || route.marketKey !== candidate.market_key || !/^AC[A-Za-z0-9_-]{1,160}$/.test(candidate.quo_call_id || '')) continue;
+      const token = await claimHistoricalCallQuote(database, candidate, nowMs);
+      if (!token) continue;
+      let outcome;
+      try { outcome = await backfillHistoricalCallQuote(env, candidate); }
+      catch { outcome = { state: 'retryable', reason: 'history_backfill_failed' }; }
+      if (!await finishHistoricalCallQuote(database, candidate, token, outcome)) {
+        return jsonResponse({ ok: false, code: 'history_backfill_claim_lost' }, 503);
+      }
+      counts[outcome.state] += 1;
+    }
+    return jsonResponse({ ok: true, status: 'completed', ...counts });
+  } catch {
+    return jsonResponse({ ok: false, code: 'history_backfill_unavailable' }, 503);
+  }
 }
 
 async function findMatchedCallQuoteReplayCandidates(database, nowMs) {
@@ -495,7 +657,7 @@ async function beginAttribution(database, quoteId, lead) {
   const claimed = await database.prepare(`
     /* jobber_quote_attribution:claim */
     UPDATE closed_loop_quote_attributions
-    SET claim_token = ?, claim_expires_at = ?, attempt_count = attempt_count + 1,
+    SET status = 'pending', claim_token = ?, claim_expires_at = ?, attempt_count = attempt_count + 1,
       last_error_code = NULL, updated_at = ?
     WHERE quote_id = ?
       AND status IN ('pending', 'retryable')
@@ -603,8 +765,15 @@ export async function resolveQuoteAttribution({ request, env }) {
   const accountId = clean(input?.account_id, 500);
   const quoteId = clean(input?.quote_id, 500);
   const route = ROUTES_BY_ACCOUNT_ID.get(accountId);
+  const historical = input?.historical_call_backfill === true;
   if (!route || !quoteId || (input?.market_key && clean(input.market_key, 40) !== route.marketKey)) {
     return jsonResponse({ ok: false, code: "market_account_mismatch" }, 409);
+  }
+  if (historical && (env.JOBBER_QUOTE_HISTORY_BACKFILL_ENABLED !== "true"
+    || !canonicalJobberId(input?.expected_request_id, "Request")
+    || !canonicalJobberId(input?.expected_client_id, "Client")
+    || !/^AC[A-Za-z0-9_-]{1,160}$/.test(input?.expected_quo_call_id || ""))) {
+    return jsonResponse({ ok: false, code: "invalid_history_backfill" }, 409);
   }
   if (!quoteAllowedInCurrentMode(env, route.marketKey, quoteId)) {
     return jsonResponse({ ok: true, status: "skipped", reason: "quote_not_allowlisted", quote_id: quoteId });
@@ -629,8 +798,20 @@ export async function resolveQuoteAttribution({ request, env }) {
     const requestId = clean(quote.request?.id, 500);
     if (!requestId) return jsonResponse({ ok: true, status: "missing_request", quote_id: quote.id });
     const clientId = canonicalJobberId(quote.request?.client?.id, "Client");
+    if (historical && (quote.id !== quoteId || requestId !== input.expected_request_id
+      || clientId !== input.expected_client_id)) {
+      return jsonResponse({ ok: true, status: "held", reason: "quote_lineage_changed", quote_id: quoteId });
+    }
     const lead = await findLead(database, requestId)
       || (clientId ? await findCallLead(database, { accountId, marketKey: route.marketKey, requestId, clientId }) : null);
+    if (historical && (!lead || lead.lead_id !== `quo-call:${input.expected_quo_call_id}`
+      || lead.jobber_request_id !== requestId)) {
+      return jsonResponse({ ok: true, status: "held", reason: "call_lineage_changed", quote_id: quoteId });
+    }
+    if (historical && await hasWebsiteLeadForRequests(database, route.marketKey,
+      requestId, lead.original_request_id || requestId)) {
+      return jsonResponse({ ok: true, status: "held", reason: "website_precedence", quote_id: quoteId });
+    }
     const link = quoteLeadLinkStatus(quote, lead, route, accountId);
     if (!link.ok) {
       return jsonResponse({ ok: true, status: "missing_request", quote_id: quote.id, jobber_request_id: requestId });
@@ -649,7 +830,15 @@ export async function resolveQuoteAttribution({ request, env }) {
       quote,
       leadForCustomFields(lead),
       lead.original_request_id || requestId,
+      historical ? { strictExistingValues: true, requireBlankPaidFields: true } : {},
     );
+    if (historical && applied.reason === "quote_fields_conflict") {
+      const finished = await finishAttribution(database, quote.id, checkpoint.claimToken,
+        "manual_review", applied.reason);
+      if (!finished) return jsonResponse({ ok: false, status: "claim_lost" }, 503);
+      return jsonResponse({ ok: true, status: "manual_review", reason: applied.reason,
+        quote_id: quote.id, jobber_request_id: requestId });
+    }
     if (!applied.ok && !applied.skipped) {
       const finished = await finishAttribution(database, quote.id, checkpoint.claimToken, "retryable", applied.reason);
       if (!finished) return jsonResponse({ ok: false, status: "claim_lost" }, 503);
@@ -691,6 +880,12 @@ export const _private = {
   classifyGraphqlFailure,
   findLead,
   findCallLead,
+  hasWebsiteLeadForRequests,
+  findHistoricalCallQuoteCandidates,
+  claimHistoricalCallQuote,
+  finishHistoricalCallQuote,
+  backfillHistoricalCallQuote,
+  backfillHistoricalCallQuotes,
   verifiedGoogleCallMatch,
   findMatchedCallQuoteReplayCandidates,
   claimGoogleCallQuoteReplay,

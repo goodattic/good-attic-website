@@ -108,6 +108,18 @@ test("does not overwrite a staff-corrected value and omits a missing campaign", 
   assert.deepEqual(result.missingValues, ["Campaign"]);
 });
 
+test("historical paid call backfill holds a preexisting source so a later demotion stays safe", () => {
+  const definitions = new Map([
+    ["Original Lead ID", "lead-id"], ["Original Source", "source-id"], ["Campaign", "campaign-id"],
+  ]);
+  const built = buildQuoteCustomFieldAttributes(definitions,
+    { source_label: "Google Ads call", campaign: "Search | UT | Attic" },
+    "request-1", [{ valueText: "Google Ads call",
+      customFieldConfiguration: { id: "source-id", name: "Original Source" } }],
+    { strictExistingValues: true, requireBlankPaidFields: true });
+  assert.deepEqual(built.conflictingExisting, ["Original Source"]);
+});
+
 test("late Google call replay upgrades only the same Quote's generic source", () => {
   const definitions = new Map([
     ["Original Lead ID", "lead-id"], ["Original Source", "source-id"], ["Campaign", "campaign-id"],

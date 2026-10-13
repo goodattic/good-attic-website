@@ -123,3 +123,22 @@ test("scheduled replay remains off unless explicitly enabled", async () => {
     JOBBER_QUOTE_BROKER_SECRET: "broker-secret" });
   assert.deepEqual(urls, ["https://goodattic.energy/api/jobber/oauth/health-check"]);
 });
+
+test("historical Quote backfill uses the broker credential and stays disabled by default", async () => {
+  const urls = [];
+  globalThis.fetch = async (url, options) => {
+    urls.push(url);
+    if (url.endsWith("quote-history-backfill")) {
+      assert.equal(options.headers.Authorization, "Bearer broker-secret");
+      return Response.json({ ok: true, status: "completed", applied: 2, held: 0, retryable: 0 });
+    }
+    return Response.json({ ok: true, results: [] });
+  };
+  const env = { JOBBER_AUTH_HEALTH_SECRET: "health-secret",
+    JOBBER_QUOTE_BROKER_SECRET: "broker-secret" };
+  await quoteConsumer.scheduled({}, env);
+  assert.deepEqual(urls, ["https://goodattic.energy/api/jobber/oauth/health-check"]);
+  await quoteConsumer.scheduled({}, { ...env, JOBBER_QUOTE_HISTORY_BACKFILL_ENABLED: "true" });
+  assert.deepEqual(urls.slice(1), ["https://goodattic.energy/api/jobber/oauth/health-check",
+    "https://goodattic.energy/api/jobber/quote-history-backfill"]);
+});
