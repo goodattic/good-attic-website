@@ -1,18 +1,5 @@
 {
   "schemaVersion": 1,
-  "baselineDeploymentId": "2de2ed51-7bb0-44d7-a86f-98a4d2e71134",
-  "changes": {
-    "runtime/server/jobber-acknowledgement-resolver.js": {
-      "expectedSha256": "f337b0ddeb03ac1ff7a0b8b7d3ab9dd2f9a534a6f511bf7a39d45d25596d6e09",
-      "reason": "Share the existing source proof readers with internal lead alerts while preserving customer acknowledgement rules."
-    },
-    "runtime/server/jobber-alert-resolver.js": {
-      "expectedSha256": "b82baa0f6c649b909a1717c2b7d4a4f8e9394078158188815ad51a14e057088e",
-      "reason": "Return verified lead source evidence with the authoritative Jobber Request used by internal alerts."
-    },
-    "runtime/server/jobber-lead-alert-source.js": {
-      "expectedSha256": "99f9591f08013e9be073a9fc3f2f8ae0f3ab9c51335b3e406baa9d1571158cbf",
-      "reason": "Verify website submissions and Angi deliveries against durable records and suppress manual or Quo Requests."
-    }
-  }
+  "baselineDeploymentId": "a6bf33a2-c923-4b1c-9450-74b1ab18ad3e",
+  "changes": {}
 }
