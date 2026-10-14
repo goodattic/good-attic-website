@@ -1,4 +1,4 @@
-import { canonicalJobberId, readWebsiteAcknowledgementSource } from './acknowledgement-source.js';
+import { canonicalJobberId, readWebsiteAcknowledgementSource, sourceHash } from './acknowledgement-source.js';
 import { nativeAngiProof, quoIntakeProof, requestPhone } from './jobber-acknowledgement-resolver.js';
 
 const MARKET = { ut: 'utah', mo_stl: 'stl', mo_kc: 'kc' };
@@ -6,6 +6,11 @@ const WEBSITE_SOURCES = new Set(['Good Attic Website Leads', 'Good Attic Google 
 const PROOF_GRACE_MS = 5 * 60_000;
 const WEBSITE_LEAD_ID = /^website:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const SHA256 = /^[0-9a-f]{64}$/;
+const UTAH_ACCOUNT_ID = btoa('gid://Jobber/Account/2498432');
+const ANGI_ROUTER_KEY = /^131399442:[0-9]{5,24}$/;
+const ANGI_ROUTER_REQUEST_STATES = new Set([
+  'request_created', 'note_creating', 'completed', 'failed_retryable', 'needs_review',
+]);
 
 function result(state, kind, reason, retryable = false, sourceLeadId = null, sourceCreatedAt = null) {
   return { state, kind, reason, retryable, sourceLeadId, sourceCreatedAt };
@@ -34,6 +39,25 @@ function websiteProof(receipt, route, record) {
     receipt.source_lead_id, new Date(sourceTime).toISOString());
 }
 
+async function utahAngiRouterProof(env, route, record) {
+  if (route.marketKey !== 'ut') return null;
+  if (route.expectedAccountId !== UTAH_ACCOUNT_ID) return result('held', null, 'angi_router_account_conflict');
+  const response = await env.ANGI_ROUTER_DB.prepare(`SELECT idempotency_key, status, client_id,
+    request_id, created_at FROM angi_utah_jobber_deliveries WHERE request_id = ? LIMIT 2`)
+    .bind(canonicalJobberId(record.id, 'Request')).all();
+  if (response?.success === false || !Array.isArray(response?.results)) throw new Error('angi_router_proof_unavailable');
+  if (!response.results.length) return null;
+  if (response.results.length !== 1) return result('held', null, 'angi_router_delivery_ambiguous');
+  const row = response.results[0], sourceTime = Date.parse(row.created_at), requestTime = Date.parse(record.createdAt);
+  if (!ANGI_ROUTER_KEY.test(row.idempotency_key || '') || !ANGI_ROUTER_REQUEST_STATES.has(row.status)
+    || canonicalJobberId(row.request_id, 'Request') !== canonicalJobberId(record.id, 'Request')
+    || canonicalJobberId(row.client_id, 'Client') !== canonicalJobberId(record.client.id, 'Client')
+    || !Number.isFinite(sourceTime) || sourceTime > requestTime + 30_000
+    || requestTime - sourceTime > 3_600_000) return result('held', null, 'angi_router_delivery_identity_conflict');
+  return result('verified', 'angi', 'angi_router_delivery_verified', false,
+    `angi-router:${await sourceHash(row.idempotency_key)}`, new Date(sourceTime).toISOString());
+}
+
 /** Source verification for internal group lead alerts; it never authorizes a customer SMS. */
 export async function resolveLeadAlertSource(env, route, record, now = Date.now()) {
   if (!env.ANGI_ROUTER_DB?.prepare || !MARKET[route?.marketKey]
@@ -42,12 +66,17 @@ export async function resolveLeadAlertSource(env, route, record, now = Date.now(
 
   const receipt = await readWebsiteAcknowledgementSource(env, route.expectedAccountId,
     canonicalJobberId(record.id, 'Request'));
+  const router = await utahAngiRouterProof(env, route, record);
   // Quo uses the shared Jobber app, so its display source may say Website.
   // The immutable Quo operation wins over labels; conflicting proofs stay held.
   const quo = await quoIntakeProof(env, route, record, requestPhone(record), receipt);
+  if (quo && router) return result('held', null, 'source_identity_conflict');
   if (quo) return quo.eligibility === 'suppressed'
     ? result('suppressed', null, quo.reason)
     : result('held', null, quo.reason);
+
+  if (router && receipt) return result('held', null, 'source_identity_conflict');
+  if (router) return router;
 
   if (receipt) return websiteProof(receipt, route, record);
 

@@ -35,13 +35,18 @@ function quoRow(route, overrides = {}) {
     client_id: id('Client', 20), request_id: id('Request', 10),
     source_json: JSON.stringify({ type: 'call', id: 'CAfixture', from: '+18015551212', to, occurred_at: createdAt }), ...overrides };
 }
-function environment(stored = null, rows = []) {
-  return { ANGI_ROUTER_DB: { prepare() { return { bind() { return {
-    first: async () => stored, all: async () => ({ success: true, results: rows }),
+function routerRow(overrides = {}) {
+  return { idempotency_key: '131399442:123456789', status: 'request_created',
+    client_id: id('Client', 20), request_id: id('Request', 10), created_at: createdAt, ...overrides };
+}
+function environment(stored = null, rows = [], routerRows = []) {
+  return { ANGI_ROUTER_DB: { prepare(sql) { return { bind() { return {
+    first: async () => stored, all: async () => ({ success: true,
+      results: sql.includes('angi_utah_jobber_deliveries') ? routerRows : rows }),
   }; } }; } } };
 }
-const classify = (route, record, stored = null, rows = [], at = now) =>
-  resolveLeadAlertSource(environment(stored, rows), route, record, at);
+const classify = (route, record, stored = null, rows = [], at = now, routerRows = []) =>
+  resolveLeadAlertSource(environment(stored, rows, routerRows), route, record, at);
 
 test('exact server receipt verifies a website form in every market despite changed Jobber phone or display labels', async () => {
   for (const route of Object.values(routes)) {
@@ -79,6 +84,37 @@ test('verified Quo intake suppresses a Request even when its shared app label sa
     const malformed = await classify(route, record, null, [quoRow(route, { client_id: id('Client', 21) })]);
     assert.equal(malformed.state, 'held'); assert.equal(malformed.reason, 'source_identity_conflict');
   }
+});
+
+test('Utah Angi webhook router ledger verifies its own Request in each post-create state', async () => {
+  const route = routes.ut, record = request({ source: 'Good Attic Website Leads' });
+  for (const status of ['request_created', 'note_creating', 'completed', 'failed_retryable', 'needs_review']) {
+    const row = routerRow({ status });
+    const proof = await classify(route, record, null, [], now, [row]);
+    assert.deepEqual(proof, { state: 'verified', kind: 'angi', reason: 'angi_router_delivery_verified',
+      retryable: false, sourceLeadId: `angi-router:${await sourceHash(row.idempotency_key)}`,
+      sourceCreatedAt: createdAt });
+  }
+  const nonUtah = await classify(routes.mo_stl, record, null, [], now, [routerRow()]);
+  assert.notEqual(nonUtah.state, 'verified');
+});
+
+test('Utah router ledger must bind one exact source, Client, Request and recent receipt', async () => {
+  const route = routes.ut, record = request({ source: 'Good Attic Website Leads' });
+  for (const patch of [
+    { idempotency_key: 'other:123456789' }, { client_id: id('Client', 21) },
+    { request_id: id('Request', 11) }, { status: 'request_creating' },
+    { created_at: '2026-10-14T18:59:59Z' }, { created_at: 'invalid' },
+  ]) {
+    const proof = await classify(route, record, null, [], now, [routerRow(patch)]);
+    assert.equal(proof.state, 'held'); assert.equal(proof.reason, 'angi_router_delivery_identity_conflict');
+  }
+  const duplicates = await classify(route, record, null, [], now, [routerRow(), routerRow({ idempotency_key: '131399442:987654321' })]);
+  assert.equal(duplicates.state, 'held'); assert.equal(duplicates.reason, 'angi_router_delivery_ambiguous');
+  const competingWebsite = await classify(route, record, await receipt(route), [], now, [routerRow()]);
+  assert.equal(competingWebsite.state, 'held'); assert.equal(competingWebsite.reason, 'source_identity_conflict');
+  const competingQuo = await classify(route, record, null, [quoRow(route)], now, [routerRow()]);
+  assert.equal(competingQuo.state, 'held'); assert.equal(competingQuo.reason, 'source_identity_conflict');
 });
 
 test('native app-authored Angi Request proves internal lead source in all markets while KC welcome remains excluded', async () => {
