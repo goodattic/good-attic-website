@@ -1,12 +1,25 @@
 import { _private as leadHelpers } from '../functions/api/leads.js';
 import { _private as contactHelpers } from './jobber-contact-resolver.js';
+import { resolveLeadAlertSource } from './jobber-lead-alert-source.js';
 
 const QUERY = `query GoodAtticNewRequestAlert($id: EncodedId!) {
   account { id }
   request(id:$id) {
     id createdAt title jobberWebUri source contactName phone email
-    client { id name phone email leadSource }
+    client { id name phone email leadSource
+      phones { number normalizedPhoneNumber primary smsAllowed }
+    }
     property { address { street1 street2 city province postalCode } }
+    notes(first: 100) {
+      nodes {
+        __typename
+        ... on RequestNote {
+          id createdAt message
+          createdBy { __typename ... on Application { id name } }
+        }
+      }
+      pageInfo { hasNextPage }
+    }
   }
 }`;
 const MARKETS = { ut:'utah', mo_stl:'stl', mo_kc:'kc' };
@@ -37,12 +50,14 @@ export async function handleJobberAlertResolve({request,env}, dependencies=leadH
     try{uri=new URL(r.jobberWebUri);}catch{return json({ok:false,code:'jobber_url_invalid'},502);}
     if(uri.protocol!=='https:'||uri.hostname!=='secure.getjobber.com'||uri.username||uri.password)return json({ok:false,code:'jobber_url_invalid'},502);
     const address=r.property?.address;
+    const leadSourceProof=await resolveLeadAlertSource(env,route,r,dependencies.now?.()??Date.now());
     return json({ok:true,account_id:route.expectedAccountId,market:MARKETS[route.marketKey],request:{
       id:btoa(atob(r.id)),createdAt:new Date(r.createdAt).toISOString(),title:clean(r.title),jobberWebUri:uri.href,
       source:[clean(r.source,100),clean(r.client.leadSource,100)].filter(Boolean).join(' / '),
       phone:clean(r.phone||r.client.phone,200),email:clean(r.email||r.client.email,320),contactName:clean(r.contactName||r.client.name,200),
       address:address?['street1','street2','city','province','postalCode'].map(k=>clean(address[k],150)).filter(Boolean).join(', '):'',
       clientId:btoa(atob(r.client.id)),
+      leadSourceProof,
     }});
   }catch{return json({ok:false,code:'jobber_resolve_failed'},503);}
 }

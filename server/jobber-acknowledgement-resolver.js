@@ -39,7 +39,7 @@ function freshRequest(createdAt, now) {
   return age >= -30_000 && age < PROOF_GRACE_MS;
 }
 
-function requestPhone(record) {
+export function requestPhone(record) {
   const phones = record.client.phones;
   if (!Array.isArray(phones) || phones.length > 1000) return { reason: 'jobber_phone_response_invalid' };
   const normalized = [];
@@ -73,8 +73,8 @@ function requestPhone(record) {
   return { phone, smsAllowed: matches.every(item => item.smsAllowed) };
 }
 
-async function nativeAngiProof(record, market, now) {
-  if (market === 'kc') return decision('suppressed', 'angi_market_not_enabled');
+export async function nativeAngiProof(record, market, now, { allowKc = false } = {}) {
+  if (market === 'kc' && !allowKc) return decision('suppressed', 'angi_market_not_enabled');
   if (!record.notes || !Array.isArray(record.notes.nodes) || !record.notes.pageInfo
     || typeof record.notes.pageInfo.hasNextPage !== 'boolean') {
     return decision('held', 'angi_note_response_invalid');
@@ -110,7 +110,7 @@ async function nativeAngiProof(record, market, now) {
   });
 }
 
-async function quoIntakeProof(env, route, record, phone, websiteReceipt) {
+export async function quoIntakeProof(env, route, record, phone, websiteReceipt) {
   const result = await env.ANGI_ROUTER_DB.prepare(`SELECT operation_id, operation_kind, operation_state,
     account_id, market, phone, phone_number_id, client_id, request_id, source_json
     FROM quo_intake_operations WHERE account_id = ? AND request_id = ? AND operation_kind = 'intake'

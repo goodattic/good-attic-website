@@ -16,6 +16,7 @@ const client={id:clientId,firstName:phone,lastName:'',companyName:null,isCompany
 
 function database(t) {
   const raw=new DatabaseSync(':memory:');
+  raw.exec(fs.readFileSync(new URL('../migrations/0005_acknowledgement_sources.sql',import.meta.url),'utf8'));
   raw.exec(fs.readFileSync(new URL('../migrations/0006_quo_intake_operations.sql',import.meta.url),'utf8'));
   t.after(()=>raw.close());
   const reads=[];
