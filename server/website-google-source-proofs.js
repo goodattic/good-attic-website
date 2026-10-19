@@ -1,12 +1,22 @@
 import { validSubmissionId } from './website-form-transactions.js';
 
-const KC_ACCOUNT_ID = 'Z2lkOi8vSm9iYmVyL0FjY291bnQvMTkxOTgyNA==';
+const MARKET_PROOFS = Object.freeze({
+  mo_kc: {
+    accountId: 'Z2lkOi8vSm9iYmVyL0FjY291bnQvMTkxOTgyNA==',
+    table: 'website_google_source_proofs',
+  },
+  mo_stl: {
+    accountId: 'Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQ1Mw==',
+    table: 'website_stl_google_source_proofs',
+  },
+});
+const KC_ACCOUNT_ID = MARKET_PROOFS.mo_kc.accountId;
 const GOOGLE_REASONS = /^(?:(?:paid_touch|first_touch)_)?(?:gclid|gbraid|wbraid|gad_source|google_paid_utm)$/;
 
 function changes(result) { return Number(result?.meta?.changes ?? result?.changes ?? 0); }
 
 function validLead(lead) {
-  return validSubmissionId(lead?.submission_id) && lead.market_key === 'mo_kc'
+  return validSubmissionId(lead?.submission_id) && Boolean(MARKET_PROOFS[lead.market_key])
     && lead.source_key === 'google' && lead.source_detail === 'google_ads'
     && GOOGLE_REASONS.test(lead.source_reason || '');
 }
@@ -38,9 +48,10 @@ export function googleSourceEvidence(lead, attribution, verifiedSignals) {
   });
 }
 
-export async function readGoogleSourceProof(database, submissionId) {
-  if (!database?.prepare || !validSubmissionId(submissionId)) throw new Error('google_source_proof_unavailable');
-  return database.prepare(`SELECT * FROM website_google_source_proofs WHERE submission_id = ?`)
+export async function readGoogleSourceProof(database, submissionId, marketKey = 'mo_kc') {
+  const spec = MARKET_PROOFS[marketKey];
+  if (!database?.prepare || !validSubmissionId(submissionId) || !spec) throw new Error('google_source_proof_unavailable');
+  return database.prepare(`SELECT * FROM ${spec.table} WHERE submission_id = ?`)
     .bind(submissionId).first();
 }
 
@@ -48,15 +59,16 @@ export async function prepareGoogleSourceProof(database, lead, evidenceJson) {
   if (!database?.prepare || !validLead(lead) || typeof evidenceJson !== 'string') {
     throw new Error('google_source_proof_unavailable');
   }
+  const spec = MARKET_PROOFS[lead.market_key];
   const at = new Date().toISOString();
-  await database.prepare(`INSERT OR IGNORE INTO website_google_source_proofs
+  await database.prepare(`INSERT OR IGNORE INTO ${spec.table}
     (submission_id, source_lead_id, market_key, account_id, source_key, source_detail,
       source_reason, evidence_json, state, created_at, updated_at)
-    VALUES (?, ?, 'mo_kc', ?, 'google', 'google_ads', ?, ?, 'prepared', ?, ?)`)
-    .bind(lead.submission_id, `website:${lead.submission_id.toLowerCase()}`, KC_ACCOUNT_ID,
+    VALUES (?, ?, ?, ?, 'google', 'google_ads', ?, ?, 'prepared', ?, ?)`)
+    .bind(lead.submission_id, `website:${lead.submission_id.toLowerCase()}`, lead.market_key, spec.accountId,
       lead.source_reason, evidenceJson, at, at).run();
-  const row = await readGoogleSourceProof(database, lead.submission_id);
-  if (!row || row.market_key !== 'mo_kc' || row.account_id !== KC_ACCOUNT_ID
+  const row = await readGoogleSourceProof(database, lead.submission_id, lead.market_key);
+  if (!row || row.market_key !== lead.market_key || row.account_id !== spec.accountId
     || row.source_key !== 'google' || row.source_detail !== 'google_ads'
     || row.source_reason !== lead.source_reason || row.evidence_json !== evidenceJson
     || row.source_lead_id !== `website:${lead.submission_id.toLowerCase()}`) {
@@ -66,35 +78,37 @@ export async function prepareGoogleSourceProof(database, lead, evidenceJson) {
   return row;
 }
 
-export async function beginGoogleSourceWrite(database, submissionId, sourceApp, fallbackReason = null) {
+export async function beginGoogleSourceWrite(database, submissionId, sourceApp, fallbackReason = null, marketKey = 'mo_kc') {
+  const spec = MARKET_PROOFS[marketKey];
   if (!['google', 'website'].includes(sourceApp)
     || (sourceApp === 'google' && fallbackReason !== null)
-    || (sourceApp === 'website' && !fallbackReason)) throw new Error('google_source_write_invalid');
-  const result = await database.prepare(`UPDATE website_google_source_proofs
+    || (sourceApp === 'website' && !fallbackReason) || !spec) throw new Error('google_source_write_invalid');
+  const result = await database.prepare(`UPDATE ${spec.table}
     SET state = 'write_started', jobber_source_app = ?, fallback_reason = ?, updated_at = ?
     WHERE submission_id = ? AND state = 'prepared' AND jobber_source_app IS NULL`)
     .bind(sourceApp, fallbackReason, new Date().toISOString(), submissionId).run();
   if (changes(result) !== 1) throw new Error('google_source_proof_requires_reconciliation');
-  const row = await readGoogleSourceProof(database, submissionId);
+  const row = await readGoogleSourceProof(database, submissionId, marketKey);
   if (row?.state !== 'write_started' || row.jobber_source_app !== sourceApp
     || row.fallback_reason !== fallbackReason) throw new Error('google_source_write_unconfirmed');
   return row;
 }
 
 export async function completeGoogleSourceProof(database, lead, jobber) {
-  if (!validLead(lead) || jobber?.account_id !== KC_ACCOUNT_ID
+  const spec = MARKET_PROOFS[lead?.market_key];
+  if (!validLead(lead) || jobber?.account_id !== spec.accountId
     || !jobber?.request_id || !jobber?.client_id
     || !['google', 'website'].includes(jobber?.jobber_source_app)) {
     throw new Error('google_source_link_invalid');
   }
-  const result = await database.prepare(`UPDATE website_google_source_proofs
+  const result = await database.prepare(`UPDATE ${spec.table}
     SET state = 'completed', jobber_request_id = ?, jobber_client_id = ?, updated_at = ?
     WHERE submission_id = ? AND state = 'write_started' AND account_id = ?
       AND jobber_source_app = ? AND jobber_request_id IS NULL AND jobber_client_id IS NULL`)
     .bind(jobber.request_id, jobber.client_id, new Date().toISOString(), lead.submission_id,
-      KC_ACCOUNT_ID, jobber.jobber_source_app).run();
+      spec.accountId, jobber.jobber_source_app).run();
   if (changes(result) !== 1) throw new Error('google_source_link_unconfirmed');
-  const row = await readGoogleSourceProof(database, lead.submission_id);
+  const row = await readGoogleSourceProof(database, lead.submission_id, lead.market_key);
   if (row?.state !== 'completed' || row.jobber_request_id !== jobber.request_id
     || row.jobber_client_id !== jobber.client_id || row.jobber_source_app !== jobber.jobber_source_app) {
     throw new Error('google_source_link_unconfirmed');

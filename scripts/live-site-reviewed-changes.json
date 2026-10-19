@@ -2,6 +2,10 @@
   "schemaVersion": 1,
   "baselineDeploymentId": "36bd0a70-13f0-4d39-a462-3b5d0d8599cd",
   "changes": {
+    "runtime/functions/api/leads.js": {
+      "expectedSha256": "96dc7d1300922c9e0a44fae41985f80f30722c21f81c7fad945db50723664678",
+      "reason": "Reviewed STL paid form fallback: persist exact Google source proof before a pre-write Website app failover, fence retries and nonpaid same-UUID downgrades, and hold downstream attribution until the Request chain is complete."
+    },
     "runtime/server/call-origin-stage3c-shadow.js": {
       "expectedSha256": "7c4accbb48634cb95b60344f1b426f6495d05712e42f56c4e147f0aa0a51f933",
       "reason": "Reviewed source snapshot of the already deployed Stage3c Worker; Pages assets remain unchanged."
@@ -117,6 +121,10 @@
     "runtime/server/stage3c-outcome-watcher.js": {
       "expectedSha256": "8aa0504e0205ae49bb52f1bd184b7bc759295cc1e10bd251a2bbc1cd248a31e3",
       "reason": "Reviewed deployed Stage3c watcher copied under a separate name to preserve the canonical watcher."
+    },
+    "runtime/server/website-google-source-proofs.js": {
+      "expectedSha256": "033f8d1b559d2646962dd9ca7ea17357bd4472d00cdb0e8d82cfb0fb666b2e54",
+      "reason": "Reviewed market-scoped proof routing to an additive STL table while keeping KC proof records and account checks separate."
     },
     "runtime/workers/jobber-phase2-backfill.wrangler.toml": {
       "expectedSha256": "a67e307e9a250ad34ccef888d28db60c02c0c4fc2c06c424053058b5e1a7f9eb",
