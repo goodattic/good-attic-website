@@ -1,5 +1,30 @@
 {
   "schemaVersion": 1,
   "baselineDeploymentId": "925176a5-2aeb-4106-8312-06b07175add8",
-  "changes": {}
+  "changes": {
+    "runtime/functions/api/jobber/kc-paid-lineage-poll.js": {
+      "expectedSha256": "2de35d6ae3a15ae54147ee1056098231d74985298b453a4d5e6e132c2ee7d1b4",
+      "reason": "Authenticate the scheduled KC paid website lineage read without changing Jobber objects."
+    },
+    "runtime/server/closed-loop-ledger.js": {
+      "expectedSha256": "99cffab22dc169872e07a9f32755f39aa08a880a04d539c72a1767f4262b3dbf",
+      "reason": "Admit only proof-backed KC paid website leads to the closed-loop ledger."
+    },
+    "runtime/server/fieldflow-attribution.js": {
+      "expectedSha256": "0d9b09b7ff1ffd2d20f3fe99fb56e5a51a51b24f975f816d8c8a59b8571cfcc5",
+      "reason": "Validate KC paid attribution against captured source evidence."
+    },
+    "runtime/server/kc-paid-lineage-poller.js": {
+      "expectedSha256": "533784a1e0a2d2ddd9be5c8f43b2d434f9fe345b7ae7eebdf848e7aca193e5a2",
+      "reason": "Record exact read-only KC Request, assessment, Quote, Job, and Invoice links in D1."
+    },
+    "runtime/workers/jobber-quote-consumer.js": {
+      "expectedSha256": "c4a6cdb3438a707c5a5518e7734bae5892df23b397e18f2386c3dfeb79b0cefb",
+      "reason": "Poll KC paid lineage from the existing scheduled quote Worker."
+    },
+    "runtime/workers/jobber-quote-consumer.wrangler.toml": {
+      "expectedSha256": "08cdbd7f05e1845242a43c865a7b9e3de7f623d21dc7b98925164bc775cb9d5f",
+      "reason": "Enable bounded KC lineage polling after the Pages endpoint and D1 migrations are live."
+    }
+  }
 }
