@@ -34,6 +34,19 @@ CREATE TABLE IF NOT EXISTS kc_paid_lineage_polls (
 CREATE INDEX IF NOT EXISTS kc_paid_lineage_polls_due_idx
   ON kc_paid_lineage_polls (last_polled_at, status);
 
+-- A completed paid form can outlive a transient failure of the optional
+-- closed-loop ledger write. Record bounded repair attempts separately because
+-- no lineage poll row exists until the missing lead has been recovered.
+CREATE TABLE IF NOT EXISTS kc_paid_ledger_reconciliations (
+  submission_id TEXT PRIMARY KEY,
+  status TEXT NOT NULL CHECK (status IN ('recovered', 'held', 'retryable')),
+  reason TEXT,
+  attempt_count INTEGER NOT NULL DEFAULT 1,
+  last_checked_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS kc_paid_ledger_reconciliations_status_idx
+  ON kc_paid_ledger_reconciliations (status, last_checked_at);
+
 -- One production poll at a time. The claim is an atomic conditional UPDATE;
 -- a crashed run can be reclaimed after the lease expires.
 CREATE TABLE IF NOT EXISTS kc_paid_lineage_poll_lock (

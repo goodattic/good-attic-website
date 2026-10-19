@@ -3,7 +3,12 @@
 This poller reads Jobber through the KC Website Leads app and records exact
 Request, assessment, Quote, Job, and Invoice links in the existing D1 database.
 It does not edit Jobber, populate Jobber custom fields, write
-`closed_loop_events`, or send anything to Google Ads. A scheduled run uses the
+`closed_loop_events`, or send anything to Google Ads. Before reading Jobber, the
+same run repairs at most eight missing `closed_loop_leads` rows from a completed
+KC paid source proof, form transaction, and exact website receipt. This repair
+never creates a Jobber object or infers a missing click or consent value. Repaired
+rows have unknown consent and are held by the separate KC Google upload gate.
+A scheduled run uses the
 existing quote Worker's 30-minute cron and `JOBBER_QUOTE_BROKER_SECRET` on both
 the Worker and Pages endpoint. A D1 lease serializes overlapping poll runs.
 
@@ -42,6 +47,13 @@ mixed-Request Invoice is held immediately. No historical reconciliation row with
 original completed source proof, form transaction, and website receipt enters
 this poller.
 
+`kc_paid_ledger_reconciliations` records bounded repair results for completed
+paid forms whose optional first ledger write did not persist. Invalid evidence
+or conflicting existing Request identity is held for review. A transient D1
+failure is retryable. Repaired rows remain ineligible for KC Google upload
+until consent is established independently; an SMS opt-in is not treated as ad
+consent.
+
 Example read-only production checks after one cron run:
 
 ```sql
@@ -51,6 +63,8 @@ FROM kc_paid_lineage_objects GROUP BY object_type, status;
 SELECT lead_id, request_id, hold_code, last_polled_at
 FROM kc_paid_lineage_polls WHERE status = 'held'
 ORDER BY last_polled_at DESC LIMIT 20;
+SELECT status, reason, COUNT(*) AS submissions
+FROM kc_paid_ledger_reconciliations GROUP BY status, reason;
 ```
 
 This table is an internal relationship ledger. It does not guarantee that

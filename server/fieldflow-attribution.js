@@ -1,5 +1,6 @@
 import { persistClosedLoopLead } from "./closed-loop-ledger.js";
 import { getJobberOAuthRoute } from "../functions/api/jobber/oauth/config.js";
+import { validSubmissionId } from "./website-form-transactions.js";
 
 const SCHEMA_VERSION = "2026-09-21";
 const FIELDFLOW_WIRE_VERSION = "2026-07-31";
@@ -217,6 +218,170 @@ async function verifiedKcGoogleWebsiteLead(database, record) {
       || signals.utm_medium !== record.utm_medium) return null;
   } else return null;
   return click;
+}
+
+const KC_LEDGER_REPAIR_SQL = `
+  SELECT p.submission_id, p.account_id, p.jobber_request_id,
+    p.jobber_client_id, p.source_reason, p.evidence_json,
+    f.conversion_at, a.source_created_at
+  FROM website_google_source_proofs p
+  JOIN website_form_conversions f ON f.submission_id = p.submission_id
+    AND f.transaction_id = p.submission_id AND f.market_key = p.market_key
+    AND f.jobber_account_id = p.account_id
+    AND f.jobber_request_id = p.jobber_request_id
+    AND f.jobber_client_id = p.jobber_client_id
+    AND f.state = 'completed' AND f.reconciliation_required = 0
+  JOIN acknowledgement_sources a ON a.account_id = p.account_id
+    AND a.request_id = p.jobber_request_id AND a.market_key = p.market_key
+    AND a.client_id = p.jobber_client_id AND a.source_kind = 'website'
+    AND a.source_lead_id = p.source_lead_id
+  LEFT JOIN kc_paid_ledger_reconciliations r ON r.submission_id = p.submission_id
+  WHERE p.market_key = 'mo_kc' AND p.state = 'completed'
+    AND p.source_key = 'google' AND p.source_detail = 'google_ads'
+    AND p.source_lead_id = 'website:' || lower(p.submission_id)
+    AND (r.status IS NULL OR r.status <> 'held')
+    AND NOT EXISTS (SELECT 1 FROM closed_loop_leads l
+      WHERE l.submission_id = p.submission_id
+        AND l.market_key = p.market_key
+        AND l.jobber_account_id = p.account_id
+        AND l.jobber_request_id = p.jobber_request_id
+        AND l.jobber_client_id = p.jobber_client_id)
+  ORDER BY COALESCE(r.last_checked_at, '') ASC, p.updated_at ASC
+  LIMIT ?`;
+
+function repairRecord(row) {
+  if (!validSubmissionId(row?.submission_id)
+    || row.account_id !== getJobberOAuthRoute('mo_kc', 'website')?.expectedAccountId
+    || !row.jobber_request_id || !row.jobber_client_id) return null;
+  const sourceTime = Date.parse(row.source_created_at);
+  const completionTime = Date.parse(row.conversion_at);
+  if (!Number.isFinite(sourceTime) || !Number.isFinite(completionTime)
+    || sourceTime > completionTime) return null;
+  let evidence;
+  try { evidence = JSON.parse(row.evidence_json); } catch { return null; }
+  if (evidence?.schema_version !== 1 || evidence.source_key !== 'google'
+    || evidence.source_detail !== 'google_ads'
+    || evidence.source_reason !== row.source_reason
+    || !evidence.attribution || typeof evidence.attribution !== 'object'
+    || Array.isArray(evidence.attribution)) return null;
+  const prefix = row.source_reason.startsWith('paid_touch_') ? 'paid_touch'
+    : row.source_reason.startsWith('first_touch_') ? 'first_touch' : '';
+  const capturedAt = Date.parse(evidence.attribution[
+    prefix ? `${prefix}_captured_at` : 'attribution_captured_at']);
+  if (!Number.isFinite(capturedAt) || sourceTime - capturedAt < -5 * 60_000
+    || sourceTime - capturedAt > 90 * 24 * 60 * 60_000) return null;
+  const signal = field => readAttributionSignal(evidence.attribution, field, prefix);
+  const landing = evidence.attribution[prefix ? `${prefix}_landing_page` : 'ad_landing_page']
+    || evidence.attribution.page_url;
+  return {
+    market_key: 'mo_kc', lead_source: 'Google Ads', source_key: 'google',
+    source_detail: 'google_ads', source_reason: row.source_reason,
+    submission_id: row.submission_id, jobber_account_id: row.account_id,
+    jobber_request_id: row.jobber_request_id, jobber_client_id: row.jobber_client_id,
+    occurred_at: row.source_created_at, campaign: signal('utm_campaign'),
+    landing_page: compactLandingPage(landing),
+    gclid: signal('gclid'), gbraid: signal('gbraid'), wbraid: signal('wbraid'),
+    gad_source: signal('gad_source'), utm_source: signal('utm_source'),
+    utm_medium: signal('utm_medium'),
+    // The original form receipt has no ad-consent field. Never infer consent
+    // from SMS opt-in or attribution parameters during a repair.
+    consent_state: '',
+  };
+}
+
+async function recordKcLedgerRepair(database, submissionId, status, reason, now) {
+  await database.prepare(`INSERT INTO kc_paid_ledger_reconciliations
+    (submission_id, status, reason, attempt_count, last_checked_at)
+    VALUES (?, ?, ?, 1, ?)
+    ON CONFLICT(submission_id) DO UPDATE SET status = excluded.status,
+      reason = excluded.reason, attempt_count = attempt_count + 1,
+      last_checked_at = excluded.last_checked_at`)
+    .bind(submissionId, status, reason, now).run();
+}
+
+async function insertMissingKcLead(database, record) {
+  const matches = await database.prepare(`SELECT submission_id, market_key,
+    jobber_account_id, jobber_request_id, jobber_client_id, original_source,
+    source_detail, campaign, gclid, gbraid, wbraid, inquiry_at
+    FROM closed_loop_leads WHERE submission_id = ? OR jobber_request_id = ?`)
+    .bind(record.submission_id, record.jobber_request_id).all();
+  const exact = row => row.submission_id === record.submission_id
+    && row.market_key === record.market_key
+    && row.jobber_account_id === record.jobber_account_id
+    && row.jobber_request_id === record.jobber_request_id
+    && row.jobber_client_id === record.jobber_client_id
+    && row.original_source === record.original_source
+    && row.source_detail === record.source_detail
+    && (row.campaign || '') === record.campaign
+    && (row.gclid || '') === record.gclid
+    && (row.gbraid || '') === record.gbraid
+    && (row.wbraid || '') === record.wbraid
+    && row.inquiry_at === record.inquiry_at;
+  if (matches?.results?.length) return matches.results.length === 1 && exact(matches.results[0]);
+  const at = new Date().toISOString();
+  await database.prepare(`INSERT OR IGNORE INTO closed_loop_leads
+    (lead_id, submission_id, market_key, jobber_account_id, jobber_request_id,
+      jobber_client_id, original_source, source_detail, campaign, service,
+      landing_page, gclid, gbraid, wbraid, consent_state, inquiry_at,
+      created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(`jobber-request:${record.jobber_request_id}`, record.submission_id,
+      record.market_key, record.jobber_account_id, record.jobber_request_id,
+      record.jobber_client_id, record.original_source, record.source_detail,
+      record.campaign || null, null, record.landing_page || null,
+      record.gclid || null, record.gbraid || null, record.wbraid || null,
+      null, record.inquiry_at, at, at).run();
+  const stored = await database.prepare(`SELECT submission_id, market_key,
+    jobber_account_id, jobber_request_id, jobber_client_id, original_source,
+    source_detail, campaign, gclid, gbraid, wbraid, inquiry_at
+    FROM closed_loop_leads WHERE submission_id = ? OR jobber_request_id = ?`)
+    .bind(record.submission_id, record.jobber_request_id).all();
+  return stored?.results?.length === 1 && exact(stored.results[0]);
+}
+
+// Runs under the lineage poll's D1 lease. A completed form can remain valid
+// after the optional post-Jobber ledger write failed, so the original proof is
+// the repair source. No Jobber object is created or changed here.
+export async function reconcileMissingKcPaidWebsiteLeads(database, { limit = 8,
+  now = () => new Date().toISOString() } = {}) {
+  if (!database?.prepare) return { ok: false, code: 'database_unavailable' };
+  const bounded = Math.max(1, Math.min(8, Number(limit) || 8));
+  const rows = (await database.prepare(KC_LEDGER_REPAIR_SQL).bind(bounded).all())?.results;
+  if (!Array.isArray(rows)) return { ok: false, code: 'database_response_invalid' };
+  const result = { ok: true, examined: 0, recovered: 0, held: 0, retryable: 0 };
+  for (const row of rows) {
+    result.examined += 1;
+    const record = repairRecord(row);
+    if (!record) {
+      await recordKcLedgerRepair(database, row.submission_id, 'held',
+        'source_evidence_invalid', now());
+      result.held += 1;
+      continue;
+    }
+    try {
+      const click = await verifiedKcGoogleWebsiteLead(database, record);
+      if (!click) {
+        await recordKcLedgerRepair(database, row.submission_id, 'held',
+          'source_chain_invalid', now());
+        result.held += 1;
+        continue;
+      }
+      const lead = durableLeadFromAttribution('mo_kc', record, click);
+      if (!lead || !await insertMissingKcLead(database, lead)) {
+        await recordKcLedgerRepair(database, row.submission_id, 'held',
+          'ledger_identity_conflict', now());
+        result.held += 1;
+        continue;
+      }
+      await recordKcLedgerRepair(database, row.submission_id, 'recovered', null, now());
+      result.recovered += 1;
+    } catch {
+      await recordKcLedgerRepair(database, row.submission_id, 'retryable',
+        'ledger_repair_unavailable', now());
+      result.retryable += 1;
+    }
+  }
+  return result;
 }
 
 function durableLeadFromAttribution(marketKey, record, kcVerifiedClick = null) {

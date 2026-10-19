@@ -1,6 +1,6 @@
 import { getJobberOAuthRoute } from "../functions/api/jobber/oauth/config.js";
 import { _private as leadHelpers } from "../functions/api/leads.js";
-import { readAttributionSignal } from "./fieldflow-attribution.js";
+import { readAttributionSignal, reconcileMissingKcPaidWebsiteLeads } from "./fieldflow-attribution.js";
 
 const KC_ROUTE = getJobberOAuthRoute("mo_kc", "website");
 const PAGE_SIZE = 50;
@@ -532,17 +532,21 @@ export async function pollKcPaidLineage(env, { limit = 8, query = null, now = ()
   const token = await claimPoll(database);
   if (!token) return { ok: true, busy: true, examined: 0, linked: 0, held: 0, retryable: 0 };
   try {
+    const reconciliation = await reconcileMissingKcPaidWebsiteLeads(database, { limit, now });
+    if (!reconciliation.ok) return reconciliation;
     const boundedLimit = Math.max(1, Math.min(8, Number(limit) || 8));
     const candidates = await database.prepare(CANDIDATES_SQL).bind(boundedLimit).all();
     const leads = candidates?.results || [];
     if (!Array.isArray(leads)) return { ok: false, code: "database_response_invalid" };
-    if (leads.length === 0) return { ok: true, examined: 0, linked: 0, held: 0, retryable: 0 };
+    if (leads.length === 0) return { ok: true, examined: 0, linked: 0,
+      held: 0, retryable: 0, reconciliation };
     let graphQuery = query;
     if (!graphQuery) {
       graphQuery = (document, variables) =>
         leadHelpers.jobberGraphqlWithAuthorizationRecovery(env, KC_ROUTE, document, variables);
     }
-    const result = { ok: true, examined: 0, linked: 0, held: 0, retryable: 0 };
+    const result = { ok: true, examined: 0, linked: 0, held: 0, retryable: 0,
+      reconciliation };
     for (const lead of leads) {
       result.examined += 1;
       try {

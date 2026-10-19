@@ -273,7 +273,8 @@ test("migration and poll persist only proof-backed linked objects, idempotently"
       .run(ACCOUNT, AT, AT);
     const env = { ANGI_ROUTER_DB: databaseAdapter(sqlite) };
     const first = await pollKcPaidLineage(env, { limit: 1, query: graph().query, now: () => AT });
-    assert.deepEqual(first, { ok: true, examined: 1, linked: 1, held: 0, retryable: 0 });
+    assert.deepEqual(first, { ok: true, examined: 1, linked: 1, held: 0, retryable: 0,
+      reconciliation: { ok: true, examined: 0, recovered: 0, held: 0, retryable: 0 } });
     assert.equal(sqlite.prepare("SELECT COUNT(*) AS count FROM kc_paid_lineage_objects WHERE status='linked'").get().count, 6);
     const second = await pollKcPaidLineage(env, { limit: 1, query: graph().query, now: () => AT });
     assert.equal(second.linked, 1);

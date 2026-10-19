@@ -205,10 +205,14 @@ export default {
     if (env.KC_PAID_LINEAGE_POLL_ENABLED === "true") {
       try {
         const result = await runKcLineagePoll(env);
-        if (Number(result.held) > 0 || Number(result.retryable) > 0) {
+        if (Number(result.held) > 0 || Number(result.retryable) > 0
+          || Number(result.reconciliation?.held) > 0
+          || Number(result.reconciliation?.retryable) > 0) {
           console.error("KC paid website lineage needs reconciliation.", {
             held: Number(result.held) || 0,
             retryable: Number(result.retryable) || 0,
+            ledger_held: Number(result.reconciliation?.held) || 0,
+            ledger_retryable: Number(result.reconciliation?.retryable) || 0,
           });
         }
       } catch (error) {

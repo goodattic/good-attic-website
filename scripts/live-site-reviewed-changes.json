@@ -11,20 +11,20 @@
       "reason": "Admit only proof-backed KC paid website leads to the closed-loop ledger."
     },
     "runtime/server/fieldflow-attribution.js": {
-      "expectedSha256": "0d9b09b7ff1ffd2d20f3fe99fb56e5a51a51b24f975f816d8c8a59b8571cfcc5",
-      "reason": "Validate KC paid attribution against captured source evidence."
+      "expectedSha256": "486173652c068ad29566b105fca507384471eb137a6cf1f5c3f96ce770ed6742",
+      "reason": "Validate KC paid attribution and repair a missed ledger write from the completed source chain."
     },
     "runtime/server/kc-paid-lineage-poller.js": {
-      "expectedSha256": "533784a1e0a2d2ddd9be5c8f43b2d434f9fe345b7ae7eebdf848e7aca193e5a2",
-      "reason": "Record exact read-only KC Request, assessment, Quote, Job, and Invoice links in D1."
+      "expectedSha256": "cecc5e5bc5be806ab53a4e5a71977d265411e897c7c324b8d955b01e2a15e1f2",
+      "reason": "Repair missing KC paid ledger rows, then record exact read-only Request, assessment, Quote, Job, and Invoice links in D1."
     },
     "runtime/workers/jobber-quote-consumer.js": {
-      "expectedSha256": "c4a6cdb3438a707c5a5518e7734bae5892df23b397e18f2386c3dfeb79b0cefb",
+      "expectedSha256": "9cf0f2cab88f3f8d9bd77b9ee1f432c8d62c20244db801304039c5edcefe3c14",
       "reason": "Poll KC paid lineage from the existing scheduled quote Worker."
     },
     "runtime/workers/jobber-quote-consumer.wrangler.toml": {
-      "expectedSha256": "08cdbd7f05e1845242a43c865a7b9e3de7f623d21dc7b98925164bc775cb9d5f",
-      "reason": "Enable bounded KC lineage polling after the Pages endpoint and D1 migrations are live."
+      "expectedSha256": "ae2c3e0086be4748d5a4e7da35b0587a9b3b539e599a3c334710650ca8100f08",
+      "reason": "Enable bounded KC lineage polling while preserving live quote replay and historical backfill flags."
     }
   }
 }
