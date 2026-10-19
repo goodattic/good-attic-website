@@ -1,0 +1,36 @@
+name = "good-attic-jobber-phase2-backfill"
+main = "stage3c-live.js"
+compatibility_date = "2026-07-27"
+workers_dev = true
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+PHONE_LEAD_WATCH_ENABLED = "true"
+QUALIFIED_PHONE_SERVICE_SCOPE_ENABLED = "true"
+QUALIFIED_PHONE_PLACEHOLDER_ALIAS_ENABLED = "true"
+QUALIFIED_PHONE_UPLOAD_ENABLED = "true"
+GOOGLE_ADS_UPLOAD_ENABLED = "true"
+GOOGLE_ADS_TRANSPORT = "data_manager_api"
+KC_GOOGLE_OFFLINE_MEASUREMENT_POLICY = "privacy_notice_us"
+PHASE2_SHADOW_ENABLED = "true"
+INVOICE_LINEAGE_SHADOW_ENABLED = "true"
+CALL_ORIGIN_SHADOW_ENABLED = "true"
+GOOGLE_CALL_MATCH_SHADOW_ENABLED = "true"
+SOLD_JOB_CALL_SHADOW_ENABLED = "true"
+
+[[rules]]
+type = "Text"
+globs = ["**/*.sql"]
+fallthrough = true
+
+[[d1_databases]]
+binding = "ANGI_ROUTER_DB"
+database_name = "good-attic-angi-jobber-router"
+database_id = "934d7ad9-cba8-4cb4-9494-1e9980b7c403"
+
+[[d1_databases]]
+binding = "WEBSITE_ATTRIBUTION_DB"
+database_name = "fieldflow-prod"
+database_id = "7f9bffa8-07d7-4cd8-a60f-96a7d0af3486"
