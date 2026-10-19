@@ -46,9 +46,17 @@ function cleanScalar(value, max = 500) {
 function parseUrl(value) {
   try { return new URL(cleanScalar(value, 5000)); } catch { return null; }
 }
-function readAttributionSignal(payload, field) {
-  const landing = [payload?.ad_landing_page, payload?.source_url, payload?.page_url].map(parseUrl).find(Boolean);
-  return cleanScalar(landing?.searchParams.get(field), 500) || cleanScalar(payload?.[field], 500);
+function paidTouchPrefix(lead) {
+  if (lead?.source_key !== 'google') return '';
+  if (lead.source_reason?.startsWith('paid_touch_')) return 'paid_touch';
+  if (lead.source_reason?.startsWith('first_touch_')) return 'first_touch';
+  return '';
+}
+function readAttributionSignal(payload, field, prefix = '') {
+  const landing = (prefix ? [payload?.[`${prefix}_landing_page`]]
+    : [payload?.ad_landing_page, payload?.source_url, payload?.page_url]).map(parseUrl).find(Boolean);
+  return cleanScalar(landing?.searchParams.get(field), 500)
+    || cleanScalar(payload?.[prefix ? `${prefix}_${field}` : field], 500);
 }
 function safeReferrerOrigin(value) {
   const referrer = cleanScalar(value, 2048);
@@ -90,6 +98,8 @@ function buildFieldflowWireRecord(record) {
 }
 
 export function buildWebsiteAttribution(payload, lead, jobber) {
+  const paidPrefix = paidTouchPrefix(lead);
+  const signal = (field) => readAttributionSignal(payload, field, paidPrefix);
   return compactRecord({
     schema_version: SCHEMA_VERSION,
     market_key: cleanScalar(lead?.market_key, 40),
@@ -102,18 +112,18 @@ export function buildWebsiteAttribution(payload, lead, jobber) {
     source_key: cleanScalar(lead?.source_key, 50),
     source_detail: cleanScalar(lead?.source_detail, 100),
     source_reason: cleanScalar(lead?.source_reason, 2000) || "server_classified",
-    campaign: readAttributionSignal(payload, "utm_campaign"),
+    campaign: signal('utm_campaign'),
     service: cleanScalar(lead?.service, 500),
-    landing_page: compactLandingPage(payload?.ad_landing_page || lead?.source_url),
+    landing_page: compactLandingPage(payload?.[paidPrefix ? `${paidPrefix}_landing_page` : 'ad_landing_page'] || lead?.source_url),
     consent_state: cleanScalar(lead?.consent, 500),
-    gclid: readAttributionSignal(payload, "gclid"),
-    gbraid: readAttributionSignal(payload, "gbraid"),
-    wbraid: readAttributionSignal(payload, "wbraid"),
-    gad_source: readAttributionSignal(payload, "gad_source"),
-    utm_source: readAttributionSignal(payload, "utm_source"),
-    utm_medium: readAttributionSignal(payload, "utm_medium"),
-    utm_campaign: readAttributionSignal(payload, "utm_campaign"),
-    referrer: safeReferrerOrigin(payload?.ad_referrer || payload?.referrer),
+    gclid: signal('gclid'),
+    gbraid: signal('gbraid'),
+    wbraid: signal('wbraid'),
+    gad_source: signal('gad_source'),
+    utm_source: signal('utm_source'),
+    utm_medium: signal('utm_medium'),
+    utm_campaign: signal('utm_campaign'),
+    referrer: safeReferrerOrigin(payload?.[paidPrefix ? `${paidPrefix}_referrer` : 'ad_referrer'] || payload?.referrer),
   });
 }
 

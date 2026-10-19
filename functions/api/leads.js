@@ -8,6 +8,13 @@ import {
   reserveFormTransaction,
   validSubmissionId,
 } from "../../server/website-form-transactions.js";
+import {
+  beginGoogleSourceWrite,
+  completeGoogleSourceProof,
+  googleSourceEvidence,
+  prepareGoogleSourceProof,
+  readGoogleSourceProof,
+} from "../../server/website-google-source-proofs.js";
 
 const JOBBER_API_URL = "https://api.getjobber.com/api/graphql";
 const JOBBER_TOKEN_URL = "https://api.getjobber.com/api/oauth/token";
@@ -514,6 +521,17 @@ function buildAttribution(payload) {
     attribution[field] = cleanInline(payload[field], 500);
     return attribution;
   }, {});
+}
+
+function verifiedGoogleSignals(payload, lead) {
+  const prefix = lead.source_reason.startsWith('paid_touch_') ? 'paid_touch'
+    : lead.source_reason.startsWith('first_touch_') ? 'first_touch' : '';
+  const reason = prefix ? lead.source_reason.slice(prefix.length + 1) : lead.source_reason;
+  if (reason === 'google_paid_utm') return {
+    utm_source: readAttributionSignal(payload, 'utm_source', prefix),
+    utm_medium: readAttributionSignal(payload, 'utm_medium', prefix),
+  };
+  return { [reason]: readAttributionSignal(payload, reason, prefix) };
 }
 
 function promoteCanonicalPaidTouch(attribution, lead) {
@@ -1539,9 +1557,37 @@ function resolveLeadJobberRoute(env, lead) {
   return { ...googleRoute, attributionFallback: false };
 }
 
-async function submitLeadToJobber(env, lead, { onWriteAttempt = () => {}, onClientCreated = () => {} } = {}) {
-  const route = resolveLeadJobberRoute(env, lead);
-  let token = await refreshJobberAccessToken(env, route);
+const KC_GOOGLE_FALLBACK_AUTH_CODES = new Set([
+  'jobber_refresh_outcome_unknown',
+  'jobber_refresh_lease_expired',
+  'jobber_refresh_transport_unknown',
+  'jobber_refresh_response_unknown',
+  'jobber_refresh_checkpoint_unknown',
+  'jobber_authoritative_token_missing',
+]);
+
+function guardedKcGoogleLead(lead) {
+  return lead.market_key === 'mo_kc' && lead.source_key === 'google';
+}
+
+async function submitLeadToJobber(env, lead, {
+  beforeWriteAttempt = async () => {}, onWriteAttempt = () => {}, onClientCreated = () => {},
+} = {}) {
+  let route = resolveLeadJobberRoute(env, lead);
+  let fallbackReason = route.attributionFallback ? 'google_route_disabled' : null;
+  let token;
+  try { token = await refreshJobberAccessToken(env, route); }
+  catch (error) {
+    const code = error instanceof LeadSubmissionError ? error.details?.code : null;
+    if (!guardedKcGoogleLead(lead) || route.sourceKey !== 'google'
+      || !KC_GOOGLE_FALLBACK_AUTH_CODES.has(code)) throw error;
+    // Token acquisition occurs before any Jobber Client or Request mutation.
+    // Never switch apps after onWriteAttempt has run, even on a 401.
+    route = { ...MARKET_ROUTES.mo_kc, attributionFallback: true };
+    token = await refreshJobberAccessToken(env, route);
+    fallbackReason = code;
+  }
+  await beforeWriteAttempt({ route, fallbackReason });
   onWriteAttempt();
   let created;
   let client;
@@ -1622,6 +1668,7 @@ async function submitLeadToJobber(env, lead, { onWriteAttempt = () => {}, onClie
     attributed_source: lead.source_label,
     jobber_source_app: route.sourceKey || "website",
     source_app_fallback: route.attributionFallback,
+    ...(fallbackReason ? { source_app_fallback_reason: fallbackReason } : {}),
     phone_included: created.phoneIncluded,
     refresh_token_rotated: token.tokenRotated,
     refresh_token_persisted: token.tokenPersisted,
@@ -1687,7 +1734,7 @@ async function submitLeadToGhl(env, ghlLead) {
 
 // Transaction tracking adds identity to successful leads but is never an
 // availability dependency of the existing Jobber intake path.
-async function optionalFormTracking(env, lead, step, operation) {
+async function optionalFormTracking(env, lead, step, operation, { failOpen = true } = {}) {
   const configured = Number(env?.FORM_TRANSACTION_TIMEOUT_MS);
   const timeoutMs = Number.isFinite(configured) && configured > 0
     ? Math.min(configured, FORM_TRACKING_TIMEOUT_MS)
@@ -1703,7 +1750,7 @@ async function optionalFormTracking(env, lead, step, operation) {
     return { ok: true, value };
   } catch (error) {
     const timedOut = error?.message === "form_tracking_timeout";
-    console.error("Website form tracking failed open", {
+    console.error(failOpen ? "Website form tracking failed open" : "Website form tracking blocked paid intake", {
       submissionId: lead.submission_id,
       market: lead.market_key,
       step,
@@ -1794,12 +1841,37 @@ export async function onRequestPost(context) {
       missing,
     }, 400);
   }
+  const guardedKcGoogle = guardedKcGoogleLead(lead);
 
   const reservationPromise = Promise.resolve().then(() =>
     reserveFormTransaction(env.ANGI_ROUTER_DB, submissionId, lead.market_key));
-  const reserved = await optionalFormTracking(env, lead, "reserve", () => reservationPromise);
+  const reserved = await optionalFormTracking(env, lead, "reserve", () => reservationPromise,
+    { failOpen: !guardedKcGoogle });
   const reservation = reserved.ok ? reserved.value : null;
   if (reservation?.state === "completed" && reservation.jobber_request_id) {
+    if (guardedKcGoogle) {
+      try {
+        const evidence = googleSourceEvidence(lead, buildAttribution(payload || {}),
+          verifiedGoogleSignals(payload || {}, lead));
+        const proof = await readGoogleSourceProof(env.ANGI_ROUTER_DB, submissionId);
+        const { readWebsiteAcknowledgementSource } = await import('../../server/acknowledgement-source.js');
+        const receipt = await readWebsiteAcknowledgementSource(env,
+          reservation.jobber_account_id, reservation.jobber_request_id);
+        if (proof?.state !== 'completed'
+          || proof.account_id !== reservation.jobber_account_id
+          || proof.evidence_json !== evidence
+          || proof.jobber_request_id !== reservation.jobber_request_id
+          || proof.jobber_client_id !== reservation.jobber_client_id
+          || receipt?.account_id !== proof.account_id
+          || receipt?.market_key !== lead.market_key
+          || receipt?.source_lead_id !== `website:${submissionId.toLowerCase()}`
+          || receipt.client_id !== reservation.jobber_client_id) throw new Error('google_source_chain_unconfirmed');
+      } catch {
+        return jsonResponse({ ok: false,
+          message: 'This form submission needs review before retrying.',
+          details: { code: 'google_source_chain_unconfirmed' } }, 503);
+      }
+    }
     await clearWebsiteLeadFailureAfterSuccess(env, lead, {
       request_id: reservation.jobber_request_id,
     });
@@ -1808,6 +1880,7 @@ export async function onRequestPost(context) {
       duplicate: true,
       transaction_id: reservation.transaction_id,
       transaction_confirmed: true,
+      ...(guardedKcGoogle ? { source_proof_confirmed: true } : {}),
       conversion_state: reservation.conversion_state,
       jobber: {
         request_id: reservation.jobber_request_id,
@@ -1819,7 +1892,7 @@ export async function onRequestPost(context) {
   }
   // If a previous delivery is uncertain, create the Request on retry and
   // retain both attempts for reconciliation; never reject a real lead.
-  const reconciliationReason = reservation && (!reservation.claimed || reservation.state !== "processing")
+  const reconciliationReason = !guardedKcGoogle && reservation && (!reservation.claimed || reservation.state !== "processing")
     ? `${reservation.state || "unknown"}_retry`
     : null;
   const retryAttemptId = reconciliationReason ? crypto.randomUUID() : null;
@@ -1832,7 +1905,26 @@ export async function onRequestPost(context) {
   let partialJobber = null;
   let jobber;
   try {
+    if (guardedKcGoogle) {
+      // A paid KC form requires one claimed UUID and an immutable copy of the
+      // server-validated click/touch evidence before either Jobber app can write.
+      if (!reservation?.claimed || reservation.state !== 'processing') {
+        throw new LeadSubmissionError('This form submission needs review before retrying.', 503,
+          { code: 'google_form_transaction_unavailable' });
+      }
+      if (env.ACKNOWLEDGEMENT_SOURCE_ENABLED !== 'true') {
+        throw new LeadSubmissionError('Website source confirmation is unavailable.', 503,
+          { code: 'google_form_receipt_disabled' });
+      }
+      const evidence = googleSourceEvidence(lead, buildAttribution(payload || {}),
+        verifiedGoogleSignals(payload || {}, lead));
+      await prepareGoogleSourceProof(env.ANGI_ROUTER_DB, lead, evidence);
+    }
     jobber = await submitLeadToJobber(env, lead, {
+      beforeWriteAttempt: async ({ route, fallbackReason }) => {
+        if (guardedKcGoogle) await beginGoogleSourceWrite(env.ANGI_ROUTER_DB,
+          submissionId, route.sourceKey, fallbackReason);
+      },
       onWriteAttempt: () => { jobberWriteAttempted = true; },
       onClientCreated: client => { partialJobber = client; },
     });
@@ -1899,9 +1991,37 @@ export async function onRequestPost(context) {
     }, 500);
   }
 
-  await clearWebsiteLeadFailureAfterSuccess(env, lead, jobber);
-
   let transactionConfirmed = false;
+  let sourceProofConfirmed = !guardedKcGoogle;
+  let receiptConfirmed = false;
+  if (guardedKcGoogle) {
+    try {
+      await completeGoogleSourceProof(env.ANGI_ROUTER_DB, lead, jobber);
+      sourceProofConfirmed = true;
+    } catch {
+      console.error('KC Google website source proof needs reconciliation after Jobber succeeded', {
+        submissionId, jobberRequestId: jobber.request_id, code: 'google_source_link_unconfirmed',
+      });
+    }
+  }
+  if (env.ACKNOWLEDGEMENT_SOURCE_ENABLED === 'true') {
+    // The normal form path remains bounded and fail-open after a Request.
+    // KC paid forms confirm the exact Request/client receipt before declaring
+    // their source chain complete; a failure cannot trigger a second write.
+    try {
+      const proof = await import('../../server/acknowledgement-source.js');
+      if (guardedKcGoogle) {
+        await proof.recordWebsiteAcknowledgementSource(env, lead, jobber);
+        receiptConfirmed = true;
+      } else await proof.recordWebsiteAcknowledgementSourceSafely(
+        env, lead, jobber, console, context.waitUntil?.bind(context));
+    } catch {
+      console.error('Website acknowledgement proof hook unavailable after Jobber succeeded.', {
+        submissionId, jobberRequestId: jobber.request_id,
+      });
+    }
+  }
+
   if (reservation?.claimed && reservation.state === "processing") {
     const completed = await optionalFormTracking(env, lead, "complete", () =>
       completeFormTransaction(env.ANGI_ROUTER_DB, submissionId, jobber));
@@ -1929,15 +2049,13 @@ export async function onRequestPost(context) {
     }
   }
 
-  if (env.ACKNOWLEDGEMENT_SOURCE_ENABLED === 'true') {
-    // Proof is written only by this successful public form path, never by a
-    // manually created Jobber record or its editable marketing source label.
-    try {
-      const { recordWebsiteAcknowledgementSourceSafely } = await import('../../server/acknowledgement-source.js');
-      await recordWebsiteAcknowledgementSourceSafely(env, lead, jobber, console, context.waitUntil?.bind(context));
-    } catch {
-      console.error('Website acknowledgement proof hook unavailable after Jobber succeeded.');
-    }
+  if (!guardedKcGoogle || sourceProofConfirmed && receiptConfirmed) {
+    await clearWebsiteLeadFailureAfterSuccess(env, lead, jobber);
+  } else {
+    console.error('KC paid form Request exists but source chain needs reconciliation', {
+      submissionId, jobberRequestId: jobber.request_id,
+      sourceProofConfirmed, receiptConfirmed,
+    });
   }
   // Optional downstream attribution must not turn a created Jobber Request
   // into a customer-facing failure or cause the browser to retry intake.
@@ -1968,6 +2086,7 @@ export async function onRequestPost(context) {
     ok: true,
     transaction_id: submissionId,
     transaction_confirmed: transactionConfirmed,
+    ...(guardedKcGoogle ? { source_proof_confirmed: sourceProofConfirmed && receiptConfirmed } : {}),
     conversion_state: "not_confirmed",
     message: ghl?.ok ? "Lead sent to Jobber and HighLevel." : "Lead sent to Jobber.",
     jobber,

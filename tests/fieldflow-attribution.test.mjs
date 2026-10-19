@@ -175,6 +175,29 @@ test("builds a canonical, PII-minimized website attribution record", () => {
   }
 });
 
+test('KC paid-touch Google evidence remains canonical when the latest touch is organic', () => {
+  const payload = {
+    attribution_captured_at: new Date().toISOString(),
+    ad_landing_page: 'https://goodattic.energy/kansas-city-mo/',
+    paid_touch_captured_at: new Date().toISOString(),
+    paid_touch_landing_page: 'https://goodattic.energy/kansas-city-mo/?gclid=PaidClick_123456&utm_source=google&utm_medium=cpc&utm_campaign=kc-fall',
+    paid_touch_referrer: 'https://www.google.com/search?q=attic',
+  };
+  const lead = leads.buildLead({ name: 'Source Test', state: 'KS', page_market: 'mo_kc' },
+    'paid-touch-kc', leads.classifyWebsiteLeadSource(payload));
+  assert.equal(lead.source_reason, 'paid_touch_gclid');
+  const record = buildWebsiteAttribution(payload, lead, {
+    account_id: leads.MARKET_ROUTES.mo_kc.expectedAccountId,
+    request_id: 'request-kc', client_id: 'client-kc',
+  });
+  assert.equal(record.gclid, 'PaidClick_123456');
+  assert.equal(record.utm_source, 'google');
+  assert.equal(record.utm_medium, 'cpc');
+  assert.equal(record.utm_campaign, 'kc-fall');
+  assert.equal(record.landing_page, 'https://goodattic.energy/kansas-city-mo/');
+  assert.equal(record.source_key, 'google');
+});
+
 test("keeps the server-classified Website/Other source over editable form data", () => {
   const lead = websiteLead({
     key: "website",
