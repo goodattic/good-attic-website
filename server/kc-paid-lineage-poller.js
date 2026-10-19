@@ -230,6 +230,7 @@ export async function collectKcPaidLineage(lead, query) {
     if (!sameClient(quote, requestId, clientId)) hold("quote_identity_conflict");
     quoteIds.add(quote.id);
     objects.push(object("quote", quote, lead, { status: quote.quoteStatus }));
+    if (objects.length > MAX_OBJECTS) retry("jobber_object_limit");
   }
   const jobs = await connectionPages(query, REQUEST_JOBS_QUERY, { id: requestId },
     (parent) => parent.jobs, validateRequest);
@@ -241,6 +242,7 @@ export async function collectKcPaidLineage(lead, query) {
       || job.quote.request?.id !== requestId
       || job.quote.request?.client?.id !== clientId)) hold("job_quote_identity_conflict");
     objects.push(object("job", job, lead, { status: job.jobStatus, quoteId: job.quote?.id }));
+    if (objects.length > MAX_OBJECTS) retry("jobber_object_limit");
   }
   for (const quote of quotes) {
     const quoteJobs = await connectionPages(query, QUOTE_JOBS_QUERY, { id: quote.id },
@@ -303,8 +305,8 @@ export async function collectKcPaidLineage(lead, query) {
     objects.push(object("invoice", invoice, lead, {
       status: invoice.invoiceStatus, jobIds: linkedIds,
     }));
+    if (objects.length > MAX_OBJECTS) retry("jobber_object_limit");
   }
-  if (objects.length > MAX_OBJECTS) retry("jobber_object_limit");
   return objects;
 }
 
