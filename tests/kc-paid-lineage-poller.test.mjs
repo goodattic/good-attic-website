@@ -240,6 +240,11 @@ test("same-lead parent changes refresh, and a collision atomically holds both fu
 test("migration and poll persist only proof-backed linked objects, idempotently", async () => {
   const sqlite = new DatabaseSync(":memory:");
   try {
+    const submissionId = "31534eaa-e6cb-4a2a-ac68-07bed5877c90";
+    const sourceLeadId = `website:${submissionId}`;
+    const evidence = JSON.stringify({ ...JSON.parse(lead().evidence_json),
+      attribution: { attribution_captured_at: AT,
+        ad_landing_page: "https://goodattic.energy/kansas-city-mo/?gclid=abc123456&utm_campaign=KC%20paid" } });
     sqlite.exec("PRAGMA foreign_keys = ON");
     for (const file of [
       "0005_closed_loop_tracking.sql", "0006_closed_loop_quote_attribution.sql",
@@ -253,28 +258,29 @@ test("migration and poll persist only proof-backed linked objects, idempotently"
       jobber_client_id, original_source, source_detail, campaign, gclid,
       inquiry_at, created_at, updated_at
     ) VALUES (?, ?, 'mo_kc', ?, 'r1', 'c1', 'Google Ads', 'google_ads', 'KC paid',
-      'abc123456', ?, ?, ?)`).run("jobber-request:r1", "submission-1", ACCOUNT, AT, AT, AT);
+      'abc123456', ?, ?, ?)`).run("jobber-request:r1", submissionId, ACCOUNT, AT, AT, AT);
     sqlite.prepare(`INSERT INTO website_google_source_proofs (
       submission_id, source_lead_id, market_key, account_id, source_key,
       source_detail, source_reason, evidence_json, state, jobber_source_app,
       jobber_request_id, jobber_client_id, created_at, updated_at
-    ) VALUES ('submission-1', 'website:submission-1', 'mo_kc', ?, 'google',
+    ) VALUES (?, ?, 'mo_kc', ?, 'google',
       'google_ads', 'gclid', ?, 'completed', 'website', 'r1', 'c1', ?, ?)`)
-      .run(ACCOUNT, lead().evidence_json, AT, AT);
+      .run(submissionId, sourceLeadId, ACCOUNT, evidence, AT, AT);
     sqlite.prepare(`INSERT INTO website_form_conversions (
       submission_id, transaction_id, market_key, jobber_account_id,
-      jobber_request_id, jobber_client_id, state, created_at, updated_at
-    ) VALUES ('submission-1', 'submission-1', 'mo_kc', ?, 'r1', 'c1',
-      'completed', ?, ?)`).run(ACCOUNT, AT, AT);
+      jobber_request_id, jobber_client_id, state, conversion_at, created_at, updated_at
+    ) VALUES (?, ?, 'mo_kc', ?, 'r1', 'c1',
+      'completed', ?, ?, ?)`).run(submissionId, submissionId, ACCOUNT, AT, AT, AT);
     sqlite.prepare(`INSERT INTO acknowledgement_sources (
       account_id, request_id, market_key, client_id, source_kind,
       source_lead_id, source_created_at, recorded_at
-    ) VALUES (?, 'r1', 'mo_kc', 'c1', 'website', 'website:submission-1', ?, ?)`)
-      .run(ACCOUNT, AT, AT);
+    ) VALUES (?, 'r1', 'mo_kc', 'c1', 'website', ?, ?, ?)`)
+      .run(ACCOUNT, sourceLeadId, AT, AT);
     const env = { ANGI_ROUTER_DB: databaseAdapter(sqlite) };
     const first = await pollKcPaidLineage(env, { limit: 1, query: graph().query, now: () => AT });
     assert.deepEqual(first, { ok: true, examined: 1, linked: 1, held: 0, retryable: 0,
-      reconciliation: { ok: true, examined: 0, recovered: 0, held: 0, retryable: 0 } });
+      reconciliation: { ok: true, examined: 1, recovered: 0, verified: 1,
+        held: 0, retryable: 0 } });
     assert.equal(sqlite.prepare("SELECT COUNT(*) AS count FROM kc_paid_lineage_objects WHERE status='linked'").get().count, 6);
     const second = await pollKcPaidLineage(env, { limit: 1, query: graph().query, now: () => AT });
     assert.equal(second.linked, 1);
@@ -297,7 +303,8 @@ test("migration and poll persist only proof-backed linked objects, idempotently"
     const recovered = await pollKcPaidLineage(env, { limit: 1, query: graph().query, now: () => AT });
     assert.equal(recovered.linked, 1);
     assert.equal(sqlite.prepare("SELECT COUNT(*) AS count FROM kc_paid_lineage_objects WHERE status='linked'").get().count, 6);
-    sqlite.exec("UPDATE website_google_source_proofs SET state='prepared' WHERE submission_id='submission-1'");
+    sqlite.prepare("UPDATE website_google_source_proofs SET state='prepared' WHERE submission_id=?")
+      .run(submissionId);
     const revoked = await pollKcPaidLineage(env, { limit: 1, query: graph().query, now: () => AT });
     assert.equal(revoked.held, 1);
     assert.equal(sqlite.prepare("SELECT COUNT(*) AS count FROM kc_paid_lineage_objects WHERE status='held'").get().count, 6);

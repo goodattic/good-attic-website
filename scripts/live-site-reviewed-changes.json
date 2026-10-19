@@ -11,7 +11,7 @@
       "reason": "Admit only proof-backed KC paid website leads to the closed-loop ledger."
     },
     "runtime/server/fieldflow-attribution.js": {
-      "expectedSha256": "486173652c068ad29566b105fca507384471eb137a6cf1f5c3f96ce770ed6742",
+      "expectedSha256": "e910e5643a1a06a278d2da6f5302866a4cb4cbfac76ab6bcc9ec1d00e5aeb01f",
       "reason": "Validate KC paid attribution and repair a missed ledger write from the completed source chain."
     },
     "runtime/server/kc-paid-lineage-poller.js": {

@@ -49,7 +49,8 @@ this poller.
 
 `kc_paid_ledger_reconciliations` records bounded repair results for completed
 paid forms whose optional first ledger write did not persist. Invalid evidence
-or conflicting existing Request identity is held for review. A transient D1
+or conflicting existing Request identity, source, click, or lead ID is held for review.
+An existing exact lead is recorded as verified. A transient D1
 failure is retryable. Repaired rows remain ineligible for KC Google upload
 until consent is established independently; an SMS opt-in is not treated as ad
 consent.

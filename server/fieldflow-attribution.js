@@ -239,13 +239,7 @@ const KC_LEDGER_REPAIR_SQL = `
   WHERE p.market_key = 'mo_kc' AND p.state = 'completed'
     AND p.source_key = 'google' AND p.source_detail = 'google_ads'
     AND p.source_lead_id = 'website:' || lower(p.submission_id)
-    AND (r.status IS NULL OR r.status <> 'held')
-    AND NOT EXISTS (SELECT 1 FROM closed_loop_leads l
-      WHERE l.submission_id = p.submission_id
-        AND l.market_key = p.market_key
-        AND l.jobber_account_id = p.account_id
-        AND l.jobber_request_id = p.jobber_request_id
-        AND l.jobber_client_id = p.jobber_client_id)
+    AND (r.status IS NULL OR r.status = 'retryable')
   ORDER BY COALESCE(r.last_checked_at, '') ASC, p.updated_at ASC
   LIMIT ?`;
 
@@ -300,12 +294,13 @@ async function recordKcLedgerRepair(database, submissionId, status, reason, now)
 }
 
 async function insertMissingKcLead(database, record) {
-  const matches = await database.prepare(`SELECT submission_id, market_key,
+  const matches = await database.prepare(`SELECT lead_id, submission_id, market_key,
     jobber_account_id, jobber_request_id, jobber_client_id, original_source,
     source_detail, campaign, gclid, gbraid, wbraid, inquiry_at
     FROM closed_loop_leads WHERE submission_id = ? OR jobber_request_id = ?`)
     .bind(record.submission_id, record.jobber_request_id).all();
-  const exact = row => row.submission_id === record.submission_id
+  const exact = row => row.lead_id === record.lead_id
+    && row.submission_id === record.submission_id
     && row.market_key === record.market_key
     && row.jobber_account_id === record.jobber_account_id
     && row.jobber_request_id === record.jobber_request_id
@@ -317,9 +312,11 @@ async function insertMissingKcLead(database, record) {
     && (row.gbraid || '') === record.gbraid
     && (row.wbraid || '') === record.wbraid
     && row.inquiry_at === record.inquiry_at;
-  if (matches?.results?.length) return matches.results.length === 1 && exact(matches.results[0]);
+  if (matches?.results?.length) return {
+    ok: matches.results.length === 1 && exact(matches.results[0]), inserted: false,
+  };
   const at = new Date().toISOString();
-  await database.prepare(`INSERT OR IGNORE INTO closed_loop_leads
+  const inserted = await database.prepare(`INSERT OR IGNORE INTO closed_loop_leads
     (lead_id, submission_id, market_key, jobber_account_id, jobber_request_id,
       jobber_client_id, original_source, source_detail, campaign, service,
       landing_page, gclid, gbraid, wbraid, consent_state, inquiry_at,
@@ -331,12 +328,13 @@ async function insertMissingKcLead(database, record) {
       record.campaign || null, null, record.landing_page || null,
       record.gclid || null, record.gbraid || null, record.wbraid || null,
       null, record.inquiry_at, at, at).run();
-  const stored = await database.prepare(`SELECT submission_id, market_key,
+  const stored = await database.prepare(`SELECT lead_id, submission_id, market_key,
     jobber_account_id, jobber_request_id, jobber_client_id, original_source,
     source_detail, campaign, gclid, gbraid, wbraid, inquiry_at
     FROM closed_loop_leads WHERE submission_id = ? OR jobber_request_id = ?`)
     .bind(record.submission_id, record.jobber_request_id).all();
-  return stored?.results?.length === 1 && exact(stored.results[0]);
+  return { ok: stored?.results?.length === 1 && exact(stored.results[0]),
+    inserted: Number(inserted?.meta?.changes ?? inserted?.changes ?? 0) === 1 };
 }
 
 // Runs under the lineage poll's D1 lease. A completed form can remain valid
@@ -348,7 +346,8 @@ export async function reconcileMissingKcPaidWebsiteLeads(database, { limit = 8,
   const bounded = Math.max(1, Math.min(8, Number(limit) || 8));
   const rows = (await database.prepare(KC_LEDGER_REPAIR_SQL).bind(bounded).all())?.results;
   if (!Array.isArray(rows)) return { ok: false, code: 'database_response_invalid' };
-  const result = { ok: true, examined: 0, recovered: 0, held: 0, retryable: 0 };
+  const result = { ok: true, examined: 0, recovered: 0, verified: 0,
+    held: 0, retryable: 0 };
   for (const row of rows) {
     result.examined += 1;
     const record = repairRecord(row);
@@ -367,14 +366,16 @@ export async function reconcileMissingKcPaidWebsiteLeads(database, { limit = 8,
         continue;
       }
       const lead = durableLeadFromAttribution('mo_kc', record, click);
-      if (!lead || !await insertMissingKcLead(database, lead)) {
+      const insertion = lead && await insertMissingKcLead(database, lead);
+      if (!insertion?.ok) {
         await recordKcLedgerRepair(database, row.submission_id, 'held',
           'ledger_identity_conflict', now());
         result.held += 1;
         continue;
       }
-      await recordKcLedgerRepair(database, row.submission_id, 'recovered', null, now());
-      result.recovered += 1;
+      await recordKcLedgerRepair(database, row.submission_id,
+        insertion.inserted ? 'recovered' : 'verified', null, now());
+      result[insertion.inserted ? 'recovered' : 'verified'] += 1;
     } catch {
       await recordKcLedgerRepair(database, row.submission_id, 'retryable',
         'ledger_repair_unavailable', now());

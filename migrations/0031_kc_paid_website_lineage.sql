@@ -39,7 +39,7 @@ CREATE INDEX IF NOT EXISTS kc_paid_lineage_polls_due_idx
 -- no lineage poll row exists until the missing lead has been recovered.
 CREATE TABLE IF NOT EXISTS kc_paid_ledger_reconciliations (
   submission_id TEXT PRIMARY KEY,
-  status TEXT NOT NULL CHECK (status IN ('recovered', 'held', 'retryable')),
+  status TEXT NOT NULL CHECK (status IN ('recovered', 'verified', 'held', 'retryable')),
   reason TEXT,
   attempt_count INTEGER NOT NULL DEFAULT 1,
   last_checked_at TEXT NOT NULL

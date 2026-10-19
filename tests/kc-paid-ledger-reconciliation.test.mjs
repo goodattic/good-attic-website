@@ -160,3 +160,50 @@ test('partial source chain and conflicting existing Request cannot create a repa
       'ledger_identity_conflict');
   } finally { sqlite.close(); }
 });
+
+test('an existing exact paid lead is verified once without a second write', async () => {
+  const { sqlite, database } = fixture();
+  try {
+    completedChain(sqlite);
+    sqlite.prepare(`INSERT INTO closed_loop_leads (
+      lead_id, submission_id, market_key, jobber_account_id, jobber_request_id,
+      jobber_client_id, original_source, source_detail, campaign, gclid,
+      inquiry_at, created_at, updated_at)
+      VALUES ('jobber-request:r1', ?, 'mo_kc', ?, 'r1', 'c1', 'Google Ads',
+        'google_ads', 'KC paid', 'abc123456', ?, ?, ?)`)
+      .run(UUID, ACCOUNT, AT, AT, AT);
+    const result = await reconcileMissingKcPaidWebsiteLeads(database);
+    assert.equal(result.recovered, 0);
+    assert.equal(result.verified, 1);
+    assert.equal(sqlite.prepare('SELECT status FROM kc_paid_ledger_reconciliations').get().status,
+      'verified');
+    assert.equal((await reconcileMissingKcPaidWebsiteLeads(database)).examined, 0);
+    assert.equal(sqlite.prepare('SELECT COUNT(*) AS count FROM closed_loop_leads').get().count, 1);
+  } finally { sqlite.close(); }
+});
+
+test('a same-identity row with wrong lead ID, source, or click is held visibly', async () => {
+  for (const variant of ['lead_id', 'source', 'click']) {
+    const { sqlite, database } = fixture();
+    try {
+      completedChain(sqlite);
+      const leadId = variant === 'lead_id' ? 'other-lead:r1' : 'jobber-request:r1';
+      const source = variant === 'source' ? 'Organic Online' : 'Google Ads';
+      const click = variant === 'click' ? 'wrong123456' : 'abc123456';
+      sqlite.prepare(`INSERT INTO closed_loop_leads (
+        lead_id, submission_id, market_key, jobber_account_id, jobber_request_id,
+        jobber_client_id, original_source, source_detail, campaign, gclid,
+        inquiry_at, created_at, updated_at)
+        VALUES (?, ?, 'mo_kc', ?, 'r1', 'c1', ?, 'google_ads', 'KC paid', ?, ?, ?, ?)`)
+        .run(leadId, UUID, ACCOUNT, source, click, AT, AT, AT);
+      const result = await reconcileMissingKcPaidWebsiteLeads(database);
+      assert.equal(result.held, 1, variant);
+      assert.equal(result.verified, 0, variant);
+      assert.equal(result.recovered, 0, variant);
+      assert.equal(sqlite.prepare('SELECT lead_id FROM closed_loop_leads').get().lead_id,
+        leadId, variant);
+      assert.equal(sqlite.prepare('SELECT reason FROM kc_paid_ledger_reconciliations').get().reason,
+        'ledger_identity_conflict', variant);
+    } finally { sqlite.close(); }
+  }
+});
