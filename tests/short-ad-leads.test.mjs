@@ -48,6 +48,7 @@ function database() {
   raw.exec(fs.readFileSync(new URL("../migrations/0011_website_lead_intake_failures.sql", import.meta.url), "utf8"));
   raw.exec(fs.readFileSync(new URL("../migrations/0017_website_form_transaction_ids.sql", import.meta.url), "utf8"));
   raw.exec(fs.readFileSync(new URL("../migrations/0018_short_ad_request_notes.sql", import.meta.url), "utf8"));
+  raw.exec(fs.readFileSync(new URL("../migrations/0029_kc_google_website_source_proofs.sql", import.meta.url), "utf8"));
   return {
     raw,
     prepare(sql) {

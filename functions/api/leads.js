@@ -1557,7 +1557,7 @@ function resolveLeadJobberRoute(env, lead) {
   return { ...googleRoute, attributionFallback: false };
 }
 
-const KC_GOOGLE_FALLBACK_AUTH_CODES = new Set([
+const GOOGLE_FALLBACK_AUTH_CODES = new Set([
   'jobber_refresh_outcome_unknown',
   'jobber_refresh_lease_expired',
   'jobber_refresh_transport_unknown',
@@ -1566,8 +1566,9 @@ const KC_GOOGLE_FALLBACK_AUTH_CODES = new Set([
   'jobber_authoritative_token_missing',
 ]);
 
-function guardedKcGoogleLead(lead) {
-  return lead.market_key === 'mo_kc' && lead.source_key === 'google';
+function guardedGoogleLead(lead) {
+  return ['mo_kc', 'mo_stl'].includes(lead.market_key)
+    && lead.source_key === 'google' && lead.source_detail === 'google_ads';
 }
 
 async function submitLeadToJobber(env, lead, {
@@ -1579,11 +1580,11 @@ async function submitLeadToJobber(env, lead, {
   try { token = await refreshJobberAccessToken(env, route); }
   catch (error) {
     const code = error instanceof LeadSubmissionError ? error.details?.code : null;
-    if (!guardedKcGoogleLead(lead) || route.sourceKey !== 'google'
-      || !KC_GOOGLE_FALLBACK_AUTH_CODES.has(code)) throw error;
+    if (!guardedGoogleLead(lead) || route.sourceKey !== 'google'
+      || !GOOGLE_FALLBACK_AUTH_CODES.has(code)) throw error;
     // Token acquisition occurs before any Jobber Client or Request mutation.
     // Never switch apps after onWriteAttempt has run, even on a 401.
-    route = { ...MARKET_ROUTES.mo_kc, attributionFallback: true };
+    route = { ...MARKET_ROUTES[lead.market_key], attributionFallback: true };
     token = await refreshJobberAccessToken(env, route);
     fallbackReason = code;
   }
@@ -1841,19 +1842,30 @@ export async function onRequestPost(context) {
       missing,
     }, 400);
   }
-  const guardedKcGoogle = guardedKcGoogleLead(lead);
+  const guardedGoogle = guardedGoogleLead(lead);
 
   const reservationPromise = Promise.resolve().then(() =>
     reserveFormTransaction(env.ANGI_ROUTER_DB, submissionId, lead.market_key));
   const reserved = await optionalFormTracking(env, lead, "reserve", () => reservationPromise,
-    { failOpen: !guardedKcGoogle });
+    { failOpen: !guardedGoogle });
   const reservation = reserved.ok ? reserved.value : null;
   if (reservation?.state === "completed" && reservation.jobber_request_id) {
-    if (guardedKcGoogle) {
+    if (!guardedGoogle && ['mo_kc', 'mo_stl'].includes(lead.market_key)) {
+      try {
+        if (await readGoogleSourceProof(env.ANGI_ROUTER_DB, submissionId, lead.market_key)) {
+          throw new Error('google_source_chain_unconfirmed');
+        }
+      } catch {
+        return jsonResponse({ ok: false,
+          message: 'This form submission needs review before retrying.',
+          details: { code: 'google_source_chain_unconfirmed' } }, 503);
+      }
+    }
+    if (guardedGoogle) {
       try {
         const evidence = googleSourceEvidence(lead, buildAttribution(payload || {}),
           verifiedGoogleSignals(payload || {}, lead));
-        const proof = await readGoogleSourceProof(env.ANGI_ROUTER_DB, submissionId);
+        const proof = await readGoogleSourceProof(env.ANGI_ROUTER_DB, submissionId, lead.market_key);
         const { readWebsiteAcknowledgementSource } = await import('../../server/acknowledgement-source.js');
         const receipt = await readWebsiteAcknowledgementSource(env,
           reservation.jobber_account_id, reservation.jobber_request_id);
@@ -1880,7 +1892,7 @@ export async function onRequestPost(context) {
       duplicate: true,
       transaction_id: reservation.transaction_id,
       transaction_confirmed: true,
-      ...(guardedKcGoogle ? { source_proof_confirmed: true } : {}),
+      ...(guardedGoogle ? { source_proof_confirmed: true } : {}),
       conversion_state: reservation.conversion_state,
       jobber: {
         request_id: reservation.jobber_request_id,
@@ -1892,7 +1904,7 @@ export async function onRequestPost(context) {
   }
   // If a previous delivery is uncertain, create the Request on retry and
   // retain both attempts for reconciliation; never reject a real lead.
-  const reconciliationReason = !guardedKcGoogle && reservation && (!reservation.claimed || reservation.state !== "processing")
+  const reconciliationReason = !guardedGoogle && reservation && (!reservation.claimed || reservation.state !== "processing")
     ? `${reservation.state || "unknown"}_retry`
     : null;
   const retryAttemptId = reconciliationReason ? crypto.randomUUID() : null;
@@ -1905,8 +1917,8 @@ export async function onRequestPost(context) {
   let partialJobber = null;
   let jobber;
   try {
-    if (guardedKcGoogle) {
-      // A paid KC form requires one claimed UUID and an immutable copy of the
+    if (guardedGoogle) {
+      // A paid KC or STL form requires one claimed UUID and an immutable copy of the
       // server-validated click/touch evidence before either Jobber app can write.
       if (!reservation?.claimed || reservation.state !== 'processing') {
         throw new LeadSubmissionError('This form submission needs review before retrying.', 503,
@@ -1922,8 +1934,8 @@ export async function onRequestPost(context) {
     }
     jobber = await submitLeadToJobber(env, lead, {
       beforeWriteAttempt: async ({ route, fallbackReason }) => {
-        if (guardedKcGoogle) await beginGoogleSourceWrite(env.ANGI_ROUTER_DB,
-          submissionId, route.sourceKey, fallbackReason);
+        if (guardedGoogle) await beginGoogleSourceWrite(env.ANGI_ROUTER_DB,
+          submissionId, route.sourceKey, fallbackReason, lead.market_key);
       },
       onWriteAttempt: () => { jobberWriteAttempted = true; },
       onClientCreated: client => { partialJobber = client; },
@@ -1992,25 +2004,25 @@ export async function onRequestPost(context) {
   }
 
   let transactionConfirmed = false;
-  let sourceProofConfirmed = !guardedKcGoogle;
+  let sourceProofConfirmed = !guardedGoogle;
   let receiptConfirmed = false;
-  if (guardedKcGoogle) {
+  if (guardedGoogle) {
     try {
       await completeGoogleSourceProof(env.ANGI_ROUTER_DB, lead, jobber);
       sourceProofConfirmed = true;
     } catch {
-      console.error('KC Google website source proof needs reconciliation after Jobber succeeded', {
+      console.error('Google website source proof needs reconciliation after Jobber succeeded', {
         submissionId, jobberRequestId: jobber.request_id, code: 'google_source_link_unconfirmed',
       });
     }
   }
   if (env.ACKNOWLEDGEMENT_SOURCE_ENABLED === 'true') {
     // The normal form path remains bounded and fail-open after a Request.
-    // KC paid forms confirm the exact Request/client receipt before declaring
+    // Paid KC and STL forms confirm the exact Request/client receipt before declaring
     // their source chain complete; a failure cannot trigger a second write.
     try {
       const proof = await import('../../server/acknowledgement-source.js');
-      if (guardedKcGoogle) {
+      if (guardedGoogle) {
         await proof.recordWebsiteAcknowledgementSource(env, lead, jobber);
         receiptConfirmed = true;
       } else await proof.recordWebsiteAcknowledgementSourceSafely(
@@ -2049,10 +2061,11 @@ export async function onRequestPost(context) {
     }
   }
 
-  if (!guardedKcGoogle || sourceProofConfirmed && receiptConfirmed) {
+  const paidSourceChainConfirmed = sourceProofConfirmed && receiptConfirmed && transactionConfirmed;
+  if (!guardedGoogle || paidSourceChainConfirmed) {
     await clearWebsiteLeadFailureAfterSuccess(env, lead, jobber);
   } else {
-    console.error('KC paid form Request exists but source chain needs reconciliation', {
+    console.error('Paid form Request exists but source chain needs reconciliation', {
       submissionId, jobberRequestId: jobber.request_id,
       sourceProofConfirmed, receiptConfirmed,
     });
@@ -2061,11 +2074,13 @@ export async function onRequestPost(context) {
   // into a customer-facing failure or cause the browser to retry intake.
   const [ghlResult, fieldflowResult] = await Promise.allSettled([
     Promise.resolve().then(() => submitLeadToGhl(env, buildGhlLead(payload, lead, jobber))),
-    import("../../server/fieldflow-attribution.js").then(({
-      buildWebsiteAttribution, submitFieldflowAttribution,
-    }) => submitFieldflowAttribution(
-      env, lead.market_key, buildWebsiteAttribution(payload, lead, jobber),
-    )),
+    guardedGoogle && !paidSourceChainConfirmed
+      ? Promise.resolve({ ok: false, reason: 'google_source_chain_unconfirmed' })
+      : import("../../server/fieldflow-attribution.js").then(({
+        buildWebsiteAttribution, submitFieldflowAttribution,
+      }) => submitFieldflowAttribution(
+        env, lead.market_key, buildWebsiteAttribution(payload, lead, jobber),
+      )),
   ]);
   const ghl = ghlResult.status === "fulfilled" ? ghlResult.value : { ok: false, reason: "delivery_exception" };
   const fieldflow = fieldflowResult.status === "fulfilled" ? fieldflowResult.value : { ok: false, reason: "delivery_exception" };
@@ -2086,7 +2101,7 @@ export async function onRequestPost(context) {
     ok: true,
     transaction_id: submissionId,
     transaction_confirmed: transactionConfirmed,
-    ...(guardedKcGoogle ? { source_proof_confirmed: sourceProofConfirmed && receiptConfirmed } : {}),
+    ...(guardedGoogle ? { source_proof_confirmed: paidSourceChainConfirmed } : {}),
     conversion_state: "not_confirmed",
     message: ghl?.ok ? "Lead sent to Jobber and HighLevel." : "Lead sent to Jobber.",
     jobber,
