@@ -1936,6 +1936,30 @@ export async function onRequestPost(context) {
       beforeWriteAttempt: async ({ route, fallbackReason }) => {
         if (guardedGoogle) await beginGoogleSourceWrite(env.ANGI_ROUTER_DB,
           submissionId, route.sourceKey, fallbackReason, lead.market_key);
+        if (!guardedGoogle && lead.market_key === 'mo_stl') {
+          // A prior paid attempt can leave its proof prepared after the form
+          // reservation is released. Check every nonpaid STL write, including
+          // a fresh reservation for the same UUID, and fail closed on D1 errors.
+          let paidProof;
+          try {
+            paidProof = await readGoogleSourceProof(env.ANGI_ROUTER_DB, submissionId, lead.market_key);
+          } catch {
+            throw new LeadSubmissionError('This form submission needs review before retrying.', 503,
+              { code: 'google_source_proof_unavailable' });
+          }
+          if (paidProof) {
+            throw new LeadSubmissionError('This form submission needs review before retrying.', 503,
+              { code: 'google_source_chain_unconfirmed' });
+          }
+          // A concurrent paid attempt may not have prepared its proof yet.
+          // A known in-flight or uncertain UUID must never start a second STL
+          // write. Preserve legacy fail-open only when reservation D1 failed;
+          // that outage path cannot prove a complete UUID fence.
+          if (reserved.ok && (!reservation?.claimed || reservation.state !== 'processing')) {
+            throw new LeadSubmissionError('This form submission needs review before retrying.', 503,
+              { code: 'stl_form_transaction_unavailable' });
+          }
+        }
       },
       onWriteAttempt: () => { jobberWriteAttempted = true; },
       onClientCreated: client => { partialJobber = client; },

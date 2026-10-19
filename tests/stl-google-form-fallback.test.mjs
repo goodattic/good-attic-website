@@ -152,6 +152,59 @@ test('broken STL Website authorization stops paid intake before a Jobber mutatio
   } finally { db.sqlite.close(); }
 });
 
+test('a prepared paid STL proof blocks a same-UUID organic retry after reservation release', async () => {
+  const websiteAuth = { refresh_status: 'refresh_outcome_unknown' };
+  const { db, env } = fixture({ websiteAuth });
+  try {
+    await withJobber(async writes => {
+      const paidAttempt = await onRequestPost({ env, request: form() });
+      assert.ok(paidAttempt.status >= 500);
+      assert.equal(db.sqlite.prepare('SELECT state FROM website_stl_google_source_proofs').get().state,
+        'prepared');
+      assert.equal(db.sqlite.prepare('SELECT COUNT(*) AS n FROM website_form_conversions').get().n, 0);
+      Object.assign(websiteAuth, ready('stl-website-token'));
+
+      const organicRetry = await onRequestPost({ env, request: form({ paid: false }) });
+      assert.equal(organicRetry.status, 503);
+      assert.equal((await organicRetry.json()).details.code, 'google_source_chain_unconfirmed');
+      assert.equal(writes.length, 0);
+      assert.equal(db.sqlite.prepare('SELECT COUNT(*) AS n FROM website_form_conversions').get().n, 0);
+    });
+  } finally { db.sqlite.close(); }
+});
+
+test('an STL proof read failure blocks organic Jobber writes', async () => {
+  const { db, env } = fixture({ intercept: sql =>
+    sql.includes('SELECT * FROM website_stl_google_source_proofs')
+      ? { first: () => { throw Error('proof_read_unavailable'); } } : null });
+  try {
+    await withJobber(async writes => {
+      const response = await onRequestPost({ env, request: form({ paid: false }) });
+      assert.equal(response.status, 503);
+      assert.equal((await response.json()).details.code, 'google_source_proof_unavailable');
+      assert.equal(writes.length, 0);
+    });
+  } finally { db.sqlite.close(); }
+});
+
+test('an in-flight STL UUID blocks a second organic Jobber write before paid proof is prepared', async () => {
+  const { db, env } = fixture();
+  try {
+    db.sqlite.prepare(`INSERT INTO website_form_conversions
+      (submission_id, transaction_id, market_key, state, conversion_state, created_at, updated_at)
+      VALUES (?, ?, 'mo_stl', 'processing', 'not_confirmed', ?, ?)`)
+      .run(SUBMISSION_ID, SUBMISSION_ID, CAPTURED_AT, CAPTURED_AT);
+    await withJobber(async writes => {
+      const response = await onRequestPost({ env, request: form({ paid: false }) });
+      assert.equal(response.status, 503);
+      assert.equal((await response.json()).details.code, 'stl_form_transaction_unavailable');
+      assert.equal(writes.length, 0);
+      assert.equal(db.sqlite.prepare('SELECT COUNT(*) AS n FROM website_stl_google_source_proofs').get().n,
+        0);
+    });
+  } finally { db.sqlite.close(); }
+});
+
 test('an uncertain STL Jobber write is fenced and never retried for the same UUID', async () => {
   const { db, env } = fixture();
   try {

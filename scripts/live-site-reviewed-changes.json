@@ -3,8 +3,8 @@
   "baselineDeploymentId": "36bd0a70-13f0-4d39-a462-3b5d0d8599cd",
   "changes": {
     "runtime/functions/api/leads.js": {
-      "expectedSha256": "5da0aa5eb91a95ca271408907ae5fc0172b35fa4698b9685b0ab4dd186ce769c",
-      "reason": "Reviewed STL paid form fallback: persist exact Google source proof before a pre-write Website app failover, fence retries, and hold downstream attribution until the Request chain is complete."
+      "expectedSha256": "96dc7d1300922c9e0a44fae41985f80f30722c21f81c7fad945db50723664678",
+      "reason": "Reviewed STL paid form fallback: persist exact Google source proof before a pre-write Website app failover, fence retries and nonpaid same-UUID downgrades, and hold downstream attribution until the Request chain is complete."
     },
     "runtime/server/call-origin-stage3c-shadow.js": {
       "expectedSha256": "7c4accbb48634cb95b60344f1b426f6495d05712e42f56c4e147f0aa0a51f933",
