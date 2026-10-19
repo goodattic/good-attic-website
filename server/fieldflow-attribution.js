@@ -1,4 +1,5 @@
 import { persistClosedLoopLead } from "./closed-loop-ledger.js";
+import { getJobberOAuthRoute } from "../functions/api/jobber/oauth/config.js";
 
 const SCHEMA_VERSION = "2026-09-21";
 const FIELDFLOW_WIRE_VERSION = "2026-07-31";
@@ -52,7 +53,7 @@ function paidTouchPrefix(lead) {
   if (lead.source_reason?.startsWith('first_touch_')) return 'first_touch';
   return '';
 }
-function readAttributionSignal(payload, field, prefix = '') {
+export function readAttributionSignal(payload, field, prefix = '') {
   const landing = (prefix ? [payload?.[`${prefix}_landing_page`]]
     : [payload?.ad_landing_page, payload?.source_url, payload?.page_url]).map(parseUrl).find(Boolean);
   return cleanScalar(landing?.searchParams.get(field), 500)
@@ -145,10 +146,84 @@ export function buildAngiAttribution(angi, requestId) {
 }
 
 function wait(milliseconds) { return new Promise((resolve) => setTimeout(resolve, milliseconds)); }
-function durableLeadFromAttribution(marketKey, record) {
+// KC enters the local Quote lineage only after the independently persisted
+// source proof, form transaction, and website receipt agree on one Request.
+// A manually recovered historical Request has none of this paid-click proof.
+async function verifiedKcGoogleWebsiteLead(database, record) {
+  if (!database?.prepare || record?.market_key !== 'mo_kc'
+    || record?.lead_source !== 'Google Ads' || record?.source_key !== 'google'
+    || record?.source_detail !== 'google_ads') return null;
+  const submissionId = cleanScalar(record.submission_id, 500);
+  const accountId = cleanScalar(record.jobber_account_id, 500);
+  const requestId = cleanScalar(record.jobber_request_id, 500);
+  const clientId = cleanScalar(record.jobber_client_id, 500);
+  const occurredAt = cleanScalar(record.occurred_at, 80);
+  if (!submissionId || !accountId || !requestId || !clientId || !occurredAt
+    || accountId !== getJobberOAuthRoute('mo_kc', 'website')?.expectedAccountId) return null;
+  const proof = await database.prepare(`
+    SELECT p.source_reason, p.evidence_json
+    FROM website_google_source_proofs p
+    JOIN website_form_conversions f ON f.submission_id = p.submission_id
+      AND f.transaction_id = p.submission_id
+      AND f.market_key = p.market_key
+      AND f.jobber_account_id = p.account_id
+      AND f.jobber_request_id = p.jobber_request_id
+      AND f.jobber_client_id = p.jobber_client_id
+      AND f.state = 'completed' AND f.reconciliation_required = 0
+    JOIN acknowledgement_sources a ON a.account_id = p.account_id
+      AND a.request_id = p.jobber_request_id
+      AND a.market_key = p.market_key
+      AND a.client_id = p.jobber_client_id
+      AND a.source_kind = 'website' AND a.source_lead_id = p.source_lead_id
+    WHERE p.submission_id = ? AND p.market_key = 'mo_kc'
+      AND p.state = 'completed' AND p.source_key = 'google'
+      AND p.source_detail = 'google_ads'
+      AND p.account_id = ? AND p.jobber_request_id = ?
+      AND p.jobber_client_id = ? AND p.source_lead_id = ?
+      AND p.source_reason = ? AND a.source_created_at = ?
+    LIMIT 1
+  `).bind(submissionId, accountId, requestId, clientId,
+    `website:${submissionId.toLowerCase()}`,
+    cleanScalar(record.source_reason, 2000), occurredAt).first();
+  if (!proof) return null;
+
+  let evidence;
+  try { evidence = JSON.parse(proof.evidence_json); } catch { return null; }
+  if (evidence?.schema_version !== 1 || evidence?.source_key !== 'google'
+    || evidence?.source_detail !== 'google_ads'
+    || evidence?.source_reason !== proof.source_reason
+    || !evidence.attribution || typeof evidence.attribution !== 'object'
+    || Array.isArray(evidence.attribution)) return null;
+  const prefix = proof.source_reason.startsWith('paid_touch_') ? 'paid_touch'
+    : proof.source_reason.startsWith('first_touch_') ? 'first_touch' : '';
+  const campaign = readAttributionSignal(evidence.attribution, 'utm_campaign', prefix);
+  if (campaign !== cleanScalar(record.campaign || record.utm_campaign, 500)) return null;
+  const reason = proof.source_reason.replace(/^(?:paid_touch|first_touch)_/, '');
+  const signals = evidence.verified_signals;
+  if (!signals || typeof signals !== 'object') return null;
+  const click = { gclid: '', gbraid: '', wbraid: '', campaign };
+  if (['gclid', 'gbraid', 'wbraid'].includes(reason)) {
+    const value = cleanScalar(signals[reason], 500);
+    if (!/^[A-Za-z0-9._~-]{6,300}$/.test(value) || value !== record[reason]) return null;
+    click[reason] = value;
+  } else if (reason === 'gad_source') {
+    if (!/^\d{1,12}$/.test(signals.gad_source || '')
+      || signals.gad_source !== record.gad_source) return null;
+  } else if (reason === 'google_paid_utm') {
+    if (signals.utm_source?.toLowerCase() !== 'google'
+      || !/^(?:cpc|ppc|paidsearch|paid-search|sem)$/i.test(
+        (signals.utm_medium || '').replace(/[\s_]+/g, '-'))
+      || signals.utm_source !== record.utm_source
+      || signals.utm_medium !== record.utm_medium) return null;
+  } else return null;
+  return click;
+}
+
+function durableLeadFromAttribution(marketKey, record, kcVerifiedClick = null) {
   const requestId = cleanScalar(record?.jobber_request_id, 500);
   const submissionId = cleanScalar(record?.submission_id, 500);
-  if (!["ut", "mo_stl"].includes(marketKey) || !requestId || !submissionId) return null;
+  if (!["ut", "mo_stl", "mo_kc"].includes(marketKey) || !requestId || !submissionId
+    || (marketKey === 'mo_kc' && !kcVerifiedClick)) return null;
   const now = new Date().toISOString();
   return {
     lead_id: `jobber-request:${requestId}`,
@@ -159,12 +234,13 @@ function durableLeadFromAttribution(marketKey, record) {
     jobber_client_id: cleanScalar(record?.jobber_client_id, 500),
     original_source: cleanScalar(record?.lead_source, 120) || "Unknown",
     source_detail: cleanScalar(record?.source_detail, 120),
-    campaign: cleanScalar(record?.campaign || record?.utm_campaign, 500),
+    campaign: marketKey === 'mo_kc' ? kcVerifiedClick.campaign
+      : cleanScalar(record?.campaign || record?.utm_campaign, 500),
     service: cleanScalar(record?.service, 500),
     landing_page: cleanScalar(record?.landing_page, 1000),
-    gclid: cleanScalar(record?.gclid, 500),
-    gbraid: cleanScalar(record?.gbraid, 500),
-    wbraid: cleanScalar(record?.wbraid, 500),
+    gclid: marketKey === 'mo_kc' ? kcVerifiedClick.gclid : cleanScalar(record?.gclid, 500),
+    gbraid: marketKey === 'mo_kc' ? kcVerifiedClick.gbraid : cleanScalar(record?.gbraid, 500),
+    wbraid: marketKey === 'mo_kc' ? kcVerifiedClick.wbraid : cleanScalar(record?.wbraid, 500),
     consent_state: cleanScalar(record?.consent_state, 500),
     inquiry_at: cleanScalar(record?.occurred_at, 80) || now,
     created_at: now,
@@ -176,7 +252,24 @@ export async function submitFieldflowAttribution(env, marketKey, record) {
   const route = MARKET_ROUTES[marketKey];
   if (!route) return { ok: false, attempts: 0, status: 0, reason: "unsupported_market" };
   let ledger = { ok: false, reason: "outside_initial_rollout" };
-  const durableLead = durableLeadFromAttribution(marketKey, record);
+  let kcVerifiedClick = null;
+  if (marketKey === 'mo_kc') {
+    ledger = { ok: false, reason: 'kc_paid_source_proof_unconfirmed' };
+    try {
+      kcVerifiedClick = await verifiedKcGoogleWebsiteLead(env?.ANGI_ROUTER_DB, record);
+    } catch {
+      ledger = { ok: false, reason: 'kc_paid_source_proof_unavailable' };
+    }
+    if (!kcVerifiedClick && record?.source_key === 'google'
+      && record?.source_detail === 'google_ads') {
+      console.error('KC paid website attribution ledger needs reconciliation.', {
+        submissionId: cleanScalar(record.submission_id, 500),
+        jobberRequestId: cleanScalar(record.jobber_request_id, 500),
+        reason: ledger.reason,
+      });
+    }
+  }
+  const durableLead = durableLeadFromAttribution(marketKey, record, kcVerifiedClick);
   if (durableLead) {
     try {
       ledger = await persistClosedLoopLead(env?.ANGI_ROUTER_DB, durableLead);
@@ -234,6 +327,7 @@ export const _private = {
   FIELDFLOW_WIRE_VERSION,
   buildFieldflowWireRecord,
   durableLeadFromAttribution,
+  verifiedKcGoogleWebsiteLead,
   readAttributionSignal,
   safeReferrerOrigin,
 };

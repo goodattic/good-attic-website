@@ -4,6 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { readFileSync, readdirSync } from 'node:fs';
 import { onRequestPost } from '../functions/api/leads.js';
 import { _private as leads } from '../functions/api/leads.js';
+import { _private as attribution } from '../server/fieldflow-attribution.js';
 
 const SUBMISSION_ID = '31534eaa-e6cb-4a2a-ac68-07bed5877c90';
 const CAPTURED_AT = new Date().toISOString();
@@ -111,6 +112,33 @@ test('broken KC Google auth uses KC Website app once with durable paid proof and
       assert.equal(receipt.source_lead_id, `website:${SUBMISSION_ID}`);
       const conversion = db.sqlite.prepare('SELECT * FROM website_form_conversions').get();
       assert.equal(conversion.jobber_request_id, REQUEST);
+      const ledger = db.sqlite.prepare('SELECT * FROM closed_loop_leads WHERE jobber_request_id = ?').get(REQUEST);
+      assert.equal(ledger.submission_id, SUBMISSION_ID);
+      assert.equal(ledger.market_key, 'mo_kc');
+      assert.equal(ledger.jobber_account_id, KC_ACCOUNT);
+      assert.equal(ledger.jobber_client_id, CLIENT);
+      assert.equal(ledger.original_source, 'Google Ads');
+      assert.equal(ledger.campaign, 'kc-fall');
+      assert.equal(ledger.gclid, 'PaidKC_123456');
+      assert.equal(ledger.gbraid, null);
+      assert.equal(ledger.wbraid, null);
+      const exactRecord = {
+        market_key: 'mo_kc', lead_source: 'Google Ads', source_key: 'google',
+        source_detail: 'google_ads', source_reason: proof.source_reason,
+        submission_id: SUBMISSION_ID, jobber_account_id: KC_ACCOUNT,
+        jobber_request_id: REQUEST, jobber_client_id: CLIENT,
+        occurred_at: receipt.source_created_at, campaign: 'kc-fall',
+        gclid: 'PaidKC_123456',
+      };
+      assert.deepEqual(await attribution.verifiedKcGoogleWebsiteLead(db, exactRecord),
+        { gclid: 'PaidKC_123456', gbraid: '', wbraid: '', campaign: 'kc-fall' });
+      assert.equal(await attribution.verifiedKcGoogleWebsiteLead(db,
+        { ...exactRecord, campaign: 'unverified-campaign' }), null);
+      db.sqlite.prepare('UPDATE acknowledgement_sources SET client_id = ? WHERE request_id = ?')
+        .run('different-client', REQUEST);
+      assert.equal(await attribution.verifiedKcGoogleWebsiteLead(db, exactRecord), null);
+      db.sqlite.prepare('UPDATE acknowledgement_sources SET client_id = ? WHERE request_id = ?')
+        .run(CLIENT, REQUEST);
 
       const retry = await onRequestPost({ env, request: form({ paidTouch: true }) });
       assert.equal(retry.status, 200);
@@ -134,9 +162,50 @@ test('healthy Google token stays on KC Google app; ordinary website forms stay o
         assert.equal(body.jobber.jobber_source_app, paid ? 'google' : 'website');
         assert.ok(writes.every(item => item.bearer === `bearer ${expected}`));
         assert.equal(db.sqlite.prepare('SELECT COUNT(*) AS n FROM website_google_source_proofs').get().n, paid ? 1 : 0);
+        assert.equal(db.sqlite.prepare('SELECT COUNT(*) AS n FROM closed_loop_leads').get().n, paid ? 1 : 0);
       });
     } finally { db.sqlite.close(); }
   }
+});
+
+test('KC paid form keeps its Jobber Request but skips local lineage when the proof chain cannot be verified', async () => {
+  const { db, env } = fixture({ intercept: sql =>
+    sql.includes('FROM website_google_source_proofs p') ? { first: () => null } : null });
+  try {
+    await withJobber(async writes => {
+      const response = await onRequestPost({ env, request: form() });
+      assert.equal(response.status, 200);
+      const body = await response.json();
+      assert.equal(body.source_proof_confirmed, true);
+      assert.equal(body.fieldflow.ledger.ok, false);
+      assert.equal(body.fieldflow.ledger.reason, 'kc_paid_source_proof_unconfirmed');
+      assert.equal(db.sqlite.prepare('SELECT COUNT(*) AS n FROM closed_loop_leads').get().n, 0);
+      assert.deepEqual(writes.map(item => item.kind), ['client', 'request']);
+    });
+  } finally { db.sqlite.close(); }
+});
+
+test('KC paid source without a click ID records Google Ads without inventing a click', async () => {
+  const { db, env } = fixture();
+  try {
+    await withJobber(async writes => {
+      const payload = await form({ paid: false }).json();
+      payload.attribution_captured_at = CAPTURED_AT;
+      payload.ad_landing_page = 'https://goodattic.energy/kansas-city-mo/?gad_source=5';
+      const request = new Request('https://goodattic.energy/api/leads', { method: 'POST',
+        headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+      const response = await onRequestPost({ env, request });
+      assert.equal(response.status, 200);
+      const ledger = db.sqlite.prepare('SELECT * FROM closed_loop_leads').get();
+      assert.equal(ledger.original_source, 'Google Ads');
+      assert.equal(ledger.gclid, null);
+      assert.equal(ledger.gbraid, null);
+      assert.equal(ledger.wbraid, null);
+      assert.equal(db.sqlite.prepare('SELECT source_reason FROM website_google_source_proofs').get().source_reason,
+        'gad_source');
+      assert.deepEqual(writes.map(item => item.kind), ['client', 'request']);
+    });
+  } finally { db.sqlite.close(); }
 });
 
 test('reservation, source proof, and Website auth failures stop before a Jobber write', async () => {
@@ -194,5 +263,6 @@ test('historic failure reconciliation can link two UUIDs to one recovered Reques
     const rows = db.sqlite.prepare('SELECT * FROM website_lead_intake_reconciliations').all();
     assert.equal(rows.length, 2);
     assert.ok(rows.every(row => row.jobber_request_id === REQUEST && row.click_evidence === 'unavailable'));
+    assert.equal(db.sqlite.prepare('SELECT COUNT(*) AS n FROM closed_loop_leads').get().n, 0);
   } finally { db.sqlite.close(); }
 });
