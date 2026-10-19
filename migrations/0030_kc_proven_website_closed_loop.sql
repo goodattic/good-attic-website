@@ -2,8 +2,8 @@
 -- local closed-loop ledger. Existing Utah and St. Louis rows, claims, and
 -- indexes are copied intact. D1 applies each migration atomically; do not add
 -- BEGIN/COMMIT, which conflict with D1's implicit migration transaction.
--- The Google Ads outcome outbox remains UT/STL-only until a KC upload route is
--- separately reviewed.
+-- Deploy the KC source-proof upload gate in the Stage 3c Worker before this
+-- migration admits KC leads. Stage 3c discovers candidates from this table.
 PRAGMA defer_foreign_keys = ON;
 
 CREATE TABLE closed_loop_leads_kc (
