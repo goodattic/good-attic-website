@@ -270,6 +270,125 @@ test("does not report Quote write access when the probe mutation is rejected", a
   assert.equal(result.quoteWriteReason, "quote_write_probe_failed");
 });
 
+test("both KC lead apps checkpoint the verified account with Client and Request access, without a Quote probe", async () => {
+  for (const source of ["website", "google"]) {
+    const database = new AuthD1();
+    const setupKey = "test-only-oauth-setup-key";
+    const route = oauth.getMarketRoute("kc", source);
+    const state = await signedState("kc", setupKey, source);
+    const queries = [];
+    globalThis.fetch = async (url, init) => {
+      if (String(url).endsWith("/api/oauth/token")) {
+        return Response.json({
+          access_token: `kc-${source}-access`,
+          refresh_token: `kc-${source}-refresh`,
+          expires_in: 3600,
+        });
+      }
+      const { query } = JSON.parse(init.body);
+      queries.push(query);
+      if (query.includes("GoodAtticAccountCheck")) {
+        return Response.json({ data: { account: verifiedAccount(route).account } });
+      }
+      if (query.includes("GoodAtticLeadCapabilities")) {
+        return Response.json({ data: {
+          clients: { nodes: [] },
+          requests: { nodes: [] },
+        } });
+      }
+      throw new Error(`Unexpected Jobber query: ${query}`);
+    };
+
+    const response = await onRequestGet({
+      request: new Request(`https://example.com/api/jobber/oauth/callback?code=single-use-code&state=${encodeURIComponent(state)}`),
+      env: {
+        ANGI_ROUTER_DB: database,
+        JOBBER_OAUTH_SETUP_KEY: setupKey,
+        JOBBER_CLIENT_ID_KC: "website-client-id",
+        JOBBER_CLIENT_SECRET_KC: "website-client-secret",
+        JOBBER_CLIENT_ID_GOOGLE: "google-client-id",
+        JOBBER_CLIENT_SECRET_GOOGLE: "google-client-secret",
+      },
+    });
+
+    assert.equal(response.status, 200, source);
+    assert.equal(database.rows.get(route.authAccountKey)?.refresh_status, "ready", source);
+    assert.equal(database.rows.get(route.authAccountKey)?.refresh_token, `kc-${source}-refresh`, source);
+    assert.equal(queries.length, 2, source);
+    assert.match(queries[1], /clients\(first: 1\)/);
+    assert.match(queries[1], /requests\(first: 1\)/);
+    assert.doesNotMatch(queries.join(" "), /Quote|quote|customField/);
+    const html = await response.text();
+    assert.match(html, /Client read access: <strong>yes<\/strong>/);
+    assert.match(html, /Request read access: <strong>yes<\/strong>/);
+    assert.doesNotMatch(html, /Quote read access:/);
+  }
+});
+
+test("KC Google OAuth rejects missing lead read access before storing credentials", async () => {
+  const database = new AuthD1();
+  const setupKey = "test-only-oauth-setup-key";
+  const state = await signedState("kc", setupKey, "google");
+  globalThis.fetch = async (url, init) => {
+    if (String(url).endsWith("/api/oauth/token")) {
+      return Response.json({ access_token: "kc-google-access", refresh_token: "kc-google-refresh" });
+    }
+    const { query } = JSON.parse(init.body);
+    if (query.includes("GoodAtticAccountCheck")) {
+      return Response.json({ data: { account: verifiedAccount(oauth.getMarketRoute("kc", "google")).account } });
+    }
+    return Response.json({ data: { clients: { nodes: [] }, requests: null }, errors: [{ message: "Missing Requests scope" }] });
+  };
+
+  const response = await onRequestGet({
+    request: new Request(`https://example.com/api/jobber/oauth/callback?code=single-use-code&state=${encodeURIComponent(state)}`),
+    env: {
+      ANGI_ROUTER_DB: database,
+      JOBBER_OAUTH_SETUP_KEY: setupKey,
+      JOBBER_CLIENT_ID_GOOGLE: "google-client-id",
+      JOBBER_CLIENT_SECRET_GOOGLE: "google-client-secret",
+    },
+  });
+
+  assert.equal(response.status, 403);
+  assert.match(await response.text(), /No credentials were saved/);
+  assert.equal(database.authWrites, 0);
+  assert.equal(database.rows.size, 0);
+  assert.equal(database.locks.get("kc_google_jobber_process")?.leaseToken, null);
+});
+
+test("non-KC website OAuth still requires the Quote capability check", async () => {
+  const database = new AuthD1();
+  const setupKey = "test-only-oauth-setup-key";
+  const state = await signedState("ut", setupKey);
+  const queries = [];
+  globalThis.fetch = async (url, init) => {
+    if (String(url).endsWith("/api/oauth/token")) {
+      return Response.json({ access_token: "ut-website-access", refresh_token: "ut-website-refresh" });
+    }
+    const { query } = JSON.parse(init.body);
+    queries.push(query);
+    if (query.includes("GoodAtticAccountCheck")) {
+      return Response.json({ data: { account: verifiedAccount(oauth.getMarketRoute("ut")).account } });
+    }
+    return Response.json({ errors: [{ message: "Missing Quote scope" }] }, { status: 403 });
+  };
+
+  const response = await onRequestGet({
+    request: new Request(`https://example.com/api/jobber/oauth/callback?code=single-use-code&state=${encodeURIComponent(state)}`),
+    env: {
+      ANGI_ROUTER_DB: database,
+      JOBBER_OAUTH_SETUP_KEY: setupKey,
+      JOBBER_CLIENT_ID_SLC: "website-client-id",
+      JOBBER_CLIENT_SECRET_SLC: "website-client-secret",
+    },
+  });
+
+  assert.equal(response.status, 403);
+  assert.match(queries[1], /GoodAtticQuoteCapabilities/);
+  assert.equal(database.authWrites, 0);
+});
+
 test("checkpoints access, refresh, and expiry in D1 and mirrors refresh to KV", async () => {
   const database = new AuthD1();
   const kv = new RefreshTokenKV();

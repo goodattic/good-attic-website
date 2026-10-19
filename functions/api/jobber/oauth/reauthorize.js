@@ -103,7 +103,7 @@ function chooser(request) {
   return htmlResponse(
     "Choose the Jobber account",
     `<h1>Reconnect Good Attic lead apps</h1>
-    <p>Choose the Jobber account currently open. Jobber will ask you to approve the updated quote permissions.</p>
+    <p>Choose the Jobber account currently open. Jobber will ask you to approve access for the selected lead app.</p>
     <div class="actions">
       <a href="${escapeHtml(base)}?market=stl">Good Attic of Saint Louis</a>
       <a href="${escapeHtml(base)}?market=slc">Good Attic Utah</a>
