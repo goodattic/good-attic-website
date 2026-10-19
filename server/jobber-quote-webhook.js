@@ -6,7 +6,7 @@ const MAX_WEBHOOK_BODY_BYTES = 64 * 1024;
 const RESOLVE_DELAY_SECONDS = 2;
 
 const ROUTES_BY_ACCOUNT_ID = new Map(
-  ["ut", "mo_stl"].map((marketKey) => {
+  ["ut", "mo_stl", "mo_kc"].map((marketKey) => {
     const route = getJobberOAuthRoute(marketKey, "website");
     return [route.expectedAccountId, route];
   }),
@@ -38,6 +38,7 @@ export async function handleJobberQuoteWebhook({ request, env }) {
   const route = ROUTES_BY_ACCOUNT_ID.get(accountId);
   const candidateSecrets = [...new Set([
     route ? clean(env[route.clientSecretEnvKey], 1000) : "",
+    // The shared Website Leads secret is the configured KC OAuth fallback.
     clean(env.JOBBER_CLIENT_SECRET, 1000),
   ].filter(Boolean))];
   const valid = (await Promise.all(candidateSecrets.map((secret) => (

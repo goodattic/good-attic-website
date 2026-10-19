@@ -20,6 +20,7 @@ import {
 const originalFetch = globalThis.fetch;
 const UTAH_ACCOUNT_ID = "Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQzMg==";
 const STL_ACCOUNT_ID = "Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQ1Mw==";
+const KC_ACCOUNT_ID = "Z2lkOi8vSm9iYmVyL0FjY291bnQvMTkxOTgyNA==";
 const gid = (type, number) => btoa(`gid://Jobber/${type}/${number}`);
 const databases = [];
 
@@ -174,6 +175,8 @@ test("duplicate webhook deliveries produce one stable queue event per quote", ()
   assert.equal(first.event.market_key, "mo_stl");
   assert.equal(first.event.event_name, quote.QUOTE_ATTRIBUTION_EVENT_NAME);
   assert.equal(buildQuoteQueueEvent({ accountId: UTAH_ACCOUNT_ID, quoteId: "quote-2", occurredAt: "2026-09-21T18:00:00Z" }).market_key, "ut");
+  assert.equal(buildQuoteQueueEvent({ accountId: KC_ACCOUNT_ID, quoteId: "quote-3",
+    occurredAt: "2026-10-19T18:00:00Z" }).market_key, "mo_kc");
   assert.equal(buildQuoteQueueEvent({ accountId: "kansas-city", quoteId: "quote-3" }), null);
 });
 
@@ -362,6 +365,9 @@ class AttributionD1 {
         if (!database.row) {
           database.row = {
             quote_id: values[0],
+            lead_id: values[1],
+            market_key: values[2],
+            jobber_request_id: values[3],
             status: "pending",
             attempt_count: 0,
             claim_token: null,
@@ -377,7 +383,7 @@ class AttributionD1 {
     assert.match(sql, /jobber_quote_attribution:claim/);
     return { bind(...values) { return { async run() {
       const [claimToken, claimExpiresAt] = values;
-      const now = values[4];
+      const now = values[7];
       const claimable = database.row
         && ["pending", "retryable"].includes(database.row.status)
         && (!database.row.claim_token || database.row.claim_expires_at === null || database.row.claim_expires_at <= now);

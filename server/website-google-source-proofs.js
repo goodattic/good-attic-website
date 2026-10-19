@@ -60,13 +60,23 @@ export async function prepareGoogleSourceProof(database, lead, evidenceJson) {
     throw new Error('google_source_proof_unavailable');
   }
   const spec = MARKET_PROOFS[lead.market_key];
+  if (lead.market_key === 'mo_kc') {
+    const nonpaid = await database.prepare(`SELECT submission_id
+      FROM kc_website_nonpaid_source_attestations WHERE submission_id = ?`)
+      .bind(lead.submission_id).first();
+    if (nonpaid) throw new Error('kc_source_conflict');
+  }
   const at = new Date().toISOString();
-  await database.prepare(`INSERT OR IGNORE INTO ${spec.table}
+  try { await database.prepare(`INSERT OR IGNORE INTO ${spec.table}
     (submission_id, source_lead_id, market_key, account_id, source_key, source_detail,
       source_reason, evidence_json, state, created_at, updated_at)
     VALUES (?, ?, ?, ?, 'google', 'google_ads', ?, ?, 'prepared', ?, ?)`)
     .bind(lead.submission_id, `website:${lead.submission_id.toLowerCase()}`, lead.market_key, spec.accountId,
-      lead.source_reason, evidenceJson, at, at).run();
+      lead.source_reason, evidenceJson, at, at).run(); }
+  catch (error) {
+    if (String(error).includes('kc_source_conflict')) throw new Error('kc_source_conflict');
+    throw error;
+  }
   const row = await readGoogleSourceProof(database, lead.submission_id, lead.market_key);
   if (!row || row.market_key !== lead.market_key || row.account_id !== spec.accountId
     || row.source_key !== 'google' || row.source_detail !== 'google_ads'

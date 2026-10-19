@@ -1,6 +1,7 @@
 import { getJobberOAuthRoute } from "../functions/api/jobber/oauth/config.js";
 import { _private as leadHelpers } from "../functions/api/leads.js";
 import { canonicalJobberId } from "./acknowledgement-source.js";
+import { findVerifiedKcQuoteLead, KC_PAID_PROOF_CUTOVER } from "./kc-website-quote-proof.js";
 import {
   _private as customFieldHelpers,
   applyGoogleCallQuoteDemotion,
@@ -15,7 +16,7 @@ const CALL_REPLAY_BATCH_SIZE = 3;
 const CALL_REPLAY_CLAIM_LEASE_MS = 2 * 60 * 1000;
 const HISTORY_BACKFILL_BATCH_SIZE = 3;
 const HISTORY_BACKFILL_MIN_AGE_MS = 24 * 60 * 60 * 1000;
-const ENABLED_MARKETS = new Set(["ut", "mo_stl"]);
+const ENABLED_MARKETS = new Set(["ut", "mo_stl", "mo_kc"]);
 
 const ROUTES_BY_ACCOUNT_ID = new Map(
   [...ENABLED_MARKETS].map((marketKey) => {
@@ -73,7 +74,9 @@ function allowlistedQuoteIds(env, marketKey) {
     ? env.JOBBER_QUOTE_TEST_ALLOWLIST_UT
     : marketKey === "mo_stl"
       ? env.JOBBER_QUOTE_TEST_ALLOWLIST_STL
-      : "";
+      : marketKey === "mo_kc"
+        ? env.JOBBER_QUOTE_TEST_ALLOWLIST_KC
+        : "";
   return new Set(String(variable || "").split(",").map((value) => clean(value, 500)).filter(Boolean));
 }
 
@@ -221,7 +224,8 @@ async function findHistoricalCallQuoteCandidates(database, nowMs) {
       AND l.client_id = o.client_id AND l.decision_id = c.link_decision_id
     LEFT JOIN quote_call_history_backfill b ON b.quote_id = c.object_id
     LEFT JOIN closed_loop_quote_attributions a ON a.quote_id = c.object_id
-    WHERE c.object_type = 'quote' AND c.check_status = 'resolved'
+    WHERE c.object_type = 'quote' AND c.market_key IN ('ut', 'mo_stl')
+      AND c.check_status = 'resolved'
       AND o.client_id IS NOT NULL
       AND CAST(strftime('%s', o.source_created_at) AS INTEGER) <= ?
       AND ((c.link_decision_id IS NULL AND c.direct_call_count = 1
@@ -648,11 +652,17 @@ async function beginAttribution(database, quoteId, lead) {
   `).bind(quoteId, lead.lead_id, lead.market_key, lead.jobber_request_id, now, now).run();
   const current = await database.prepare(`
     /* jobber_quote_attribution:select */
-    SELECT quote_id, status, attempt_count, claim_token, claim_expires_at
+    SELECT quote_id, lead_id, market_key, jobber_request_id,
+      status, attempt_count, claim_token, claim_expires_at
     FROM closed_loop_quote_attributions
     WHERE quote_id = ?
     LIMIT 1
   `).bind(quoteId).first();
+  if (current && (current.lead_id !== lead.lead_id
+    || current.market_key !== lead.market_key
+    || current.jobber_request_id !== lead.jobber_request_id)) {
+    return { ...current, status: "manual_review", reason: "quote_attribution_conflict" };
+  }
   if (["applied", "skipped", "manual_review"].includes(current?.status)) return current;
   const claimed = await database.prepare(`
     /* jobber_quote_attribution:claim */
@@ -660,9 +670,11 @@ async function beginAttribution(database, quoteId, lead) {
     SET status = 'pending', claim_token = ?, claim_expires_at = ?, attempt_count = attempt_count + 1,
       last_error_code = NULL, updated_at = ?
     WHERE quote_id = ?
+      AND lead_id = ? AND market_key = ? AND jobber_request_id = ?
       AND status IN ('pending', 'retryable')
       AND (claim_token IS NULL OR claim_expires_at IS NULL OR claim_expires_at <= ?)
-  `).bind(claimToken, nowMs + ATTRIBUTION_CLAIM_LEASE_MS, now, quoteId, nowMs).run();
+  `).bind(claimToken, nowMs + ATTRIBUTION_CLAIM_LEASE_MS, now, quoteId,
+    lead.lead_id, lead.market_key, lead.jobber_request_id, nowMs).run();
   if (changes(claimed) !== 1) {
     return { ...current, quote_id: quoteId, claimed: false };
   }
@@ -769,6 +781,14 @@ export async function resolveQuoteAttribution({ request, env }) {
   if (!route || !quoteId || (input?.market_key && clean(input.market_key, 40) !== route.marketKey)) {
     return jsonResponse({ ok: false, code: "market_account_mismatch" }, 409);
   }
+  if (route.marketKey === "mo_kc" && (historical
+    || input?.schema_version !== 1 || input?.source !== "jobber"
+    || input?.topic !== "QUOTE_CREATE"
+    || input?.event_name !== QUOTE_ATTRIBUTION_EVENT_NAME
+    || !Number.isFinite(Date.parse(input?.occurred_at))
+    || Date.parse(input.occurred_at) < Date.parse(KC_PAID_PROOF_CUTOVER))) {
+    return jsonResponse({ ok: true, status: "held", reason: "kc_live_quote_event_required", quote_id: quoteId });
+  }
   if (historical && (env.JOBBER_QUOTE_HISTORY_BACKFILL_ENABLED !== "true"
     || !canonicalJobberId(input?.expected_request_id, "Request")
     || !canonicalJobberId(input?.expected_client_id, "Client")
@@ -802,8 +822,17 @@ export async function resolveQuoteAttribution({ request, env }) {
       || clientId !== input.expected_client_id)) {
       return jsonResponse({ ok: true, status: "held", reason: "quote_lineage_changed", quote_id: quoteId });
     }
-    const lead = await findLead(database, requestId)
-      || (clientId ? await findCallLead(database, { accountId, marketKey: route.marketKey, requestId, clientId }) : null);
+    let lead;
+    if (route.marketKey === "mo_kc") {
+      const verified = await findVerifiedKcQuoteLead(database, { accountId, requestId, clientId });
+      if (!verified.ok) return jsonResponse({ ok: true, status: verified.status,
+        reason: verified.reason, quote_id: quoteId, jobber_request_id: requestId });
+      lead = verified.lead;
+    } else {
+      lead = await findLead(database, requestId)
+        || (clientId ? await findCallLead(database,
+          { accountId, marketKey: route.marketKey, requestId, clientId }) : null);
+    }
     if (historical && (!lead || lead.lead_id !== `quo-call:${input.expected_quo_call_id}`
       || lead.jobber_request_id !== requestId)) {
       return jsonResponse({ ok: true, status: "held", reason: "call_lineage_changed", quote_id: quoteId });
@@ -819,20 +848,34 @@ export async function resolveQuoteAttribution({ request, env }) {
 
     const checkpoint = await beginAttribution(database, quote.id, lead);
     if (["applied", "skipped", "manual_review"].includes(checkpoint.status)) {
-      return jsonResponse({ ok: true, status: checkpoint.status, quote_id: quote.id, jobber_request_id: requestId });
+      return jsonResponse({ ok: true, status: checkpoint.status, reason: checkpoint.reason,
+        quote_id: quote.id, jobber_request_id: requestId });
     }
     if (!checkpoint.claimed) {
       return jsonResponse({ ok: false, status: "claim_busy", quote_id: quote.id, jobber_request_id: requestId }, 503);
     }
+    const kcQuote = route.marketKey === "mo_kc";
     const applied = await applyQuoteCustomFields(
       env,
       token.accessToken,
       quote,
       leadForCustomFields(lead),
       lead.original_request_id || requestId,
-      historical ? { strictExistingValues: true, requireBlankPaidFields: true } : {},
+      historical ? { strictExistingValues: true, requireBlankPaidFields: true }
+        : kcQuote
+          ? { strictExistingValues: true, requireUniqueDefinitions: true,
+            requireFreshQuote: true, expectedRequestId: requestId, expectedClientId: clientId,
+            verifyLead: async () => {
+              const current = await findVerifiedKcQuoteLead(database,
+                { accountId, requestId, clientId });
+              return current.ok && current.lead.lead_id === lead.lead_id
+                && current.lead.original_source === lead.original_source
+                && current.lead.campaign === lead.campaign;
+            } }
+          : {},
     );
-    if (historical && applied.reason === "quote_fields_conflict") {
+    if ((historical || kcQuote) && ["quote_fields_conflict", "quote_lineage_changed",
+      "source_proof_changed", "quote_lineage_changed_after_write"].includes(applied.reason)) {
       const finished = await finishAttribution(database, quote.id, checkpoint.claimToken,
         "manual_review", applied.reason);
       if (!finished) return jsonResponse({ ok: false, status: "claim_lost" }, 503);
@@ -843,7 +886,8 @@ export async function resolveQuoteAttribution({ request, env }) {
       const finished = await finishAttribution(database, quote.id, checkpoint.claimToken, "retryable", applied.reason);
       if (!finished) return jsonResponse({ ok: false, status: "claim_lost" }, 503);
       const status = applied.reason === "permission_denied" ? 503 : 502;
-      return jsonResponse({ ok: false, status: "quote_attribution_failed", quote_id: quote.id, jobber_request_id: requestId, ...applied }, status);
+      return jsonResponse({ ...applied, ok: false, status: "quote_attribution_failed",
+        quote_id: quote.id, jobber_request_id: requestId }, status);
     }
     await recordInitialGoogleCallQuoteWrite(database, quote.id, lead, applied);
     const finished = await finishAttribution(
