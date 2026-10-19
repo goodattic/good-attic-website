@@ -10,6 +10,7 @@ const DEFAULT_KC_LINEAGE_POLL_URL = "https://goodattic.energy/api/jobber/kc-paid
 const MARKET_BY_ACCOUNT_ID = new Map([
   ["Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQzMg==", "ut"],
   ["Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQ1Mw==", "mo_stl"],
+  ["Z2lkOi8vSm9iYmVyL0FjY291bnQvMTkxOTgyNA==", "mo_kc"],
 ]);
 
 function clean(value, max = 500) {
@@ -31,7 +32,9 @@ function allowlistedQuoteIds(env, marketKey) {
     ? env.JOBBER_QUOTE_TEST_ALLOWLIST_UT
     : marketKey === "mo_stl"
       ? env.JOBBER_QUOTE_TEST_ALLOWLIST_STL
-      : "";
+      : marketKey === "mo_kc"
+        ? env.JOBBER_QUOTE_TEST_ALLOWLIST_KC
+        : "";
   return new Set(String(variable || "").split(",").map((value) => clean(value, 500)).filter(Boolean));
 }
 
@@ -76,6 +79,7 @@ async function resolveQuote(env, body) {
   try { result = await response.json(); } catch { /* retry below */ }
   if (!response.ok || !result?.ok) throw new Error(`resolver_http_${response.status || 0}`);
   if (["applied", "skipped"].includes(result.status)) return result;
+  if (body.market_key === "mo_kc" && ["held", "manual_review"].includes(result.status)) return result;
   if (["missing_request", "quote_not_found"].includes(result.status)) {
     throw new Error(`resolver_pending_${result.status}`);
   }

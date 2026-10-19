@@ -6,6 +6,7 @@ const JOBBER_API_URL = "https://api.getjobber.com/api/graphql";
 const CUSTOM_FIELD_CONFIGURATIONS_QUERY = `
   query GoodAtticCustomFieldConfigurations {
     customFieldConfigurations(first: 50) {
+      pageInfo { hasNextPage }
       nodes {
         ... on CustomFieldConfigurationArea { __typename id name valueType appliesTo readOnly }
         ... on CustomFieldConfigurationDropdown { __typename id name valueType appliesTo readOnly }
@@ -160,7 +161,7 @@ async function jobberGraphql(env, accessToken, query, variables = {}) {
   return { response, data };
 }
 
-export async function resolveCustomFieldDefinitions(env, accessToken) {
+export async function resolveCustomFieldDefinitions(env, accessToken, options = {}) {
   if (!cleanScalar(accessToken, 4000)) return { ok: false, reason: "missing_access_token" };
   try {
     const { response, data } = await jobberGraphql(env, accessToken, CUSTOM_FIELD_CONFIGURATIONS_QUERY);
@@ -175,6 +176,17 @@ export async function resolveCustomFieldDefinitions(env, accessToken) {
     const configurations = Array.isArray(data?.data?.customFieldConfigurations?.nodes)
       ? data.data.customFieldConfigurations.nodes.filter((node) => node?.id && node?.name)
       : [];
+    if (options.requireUniqueDefinitions) {
+      if (data?.data?.customFieldConfigurations?.pageInfo?.hasNextPage !== false) {
+        return { ok: false, reason: "definitions_incomplete" };
+      }
+      const names = configurations.filter((node) =>
+        node.appliesTo === QUOTE_CUSTOM_FIELD_APPLICABILITY
+          && CUSTOM_FIELD_NAMES.includes(node.name)).map((node) => node.name);
+      if (new Set(names).size !== names.length) {
+        return { ok: false, reason: "definitions_ambiguous" };
+      }
+    }
     const definitions = new Map(
       filterQuoteCustomFieldConfigurations(configurations)
         .filter((node) => CUSTOM_FIELD_NAMES.includes(node.name))
@@ -258,13 +270,28 @@ export async function applyQuoteCustomFields(env, accessToken, quote, lead, requ
     return { ok: false, skipped: true, reason: "external_api_writes_disabled" };
   }
   if (!quote?.id) return { ok: false, skipped: true, reason: "missing_quote_id" };
-  const resolved = await resolveCustomFieldDefinitions(env, accessToken);
+  const resolved = await resolveCustomFieldDefinitions(env, accessToken, options);
   if (!resolved.ok) return { ok: false, skipped: false, ...resolved };
+  let currentQuote = quote;
+  if (options.requireFreshQuote) {
+    const fresh = await jobberGraphql(env, accessToken, QUOTE_CONTEXT_QUERY, { id: quote.id });
+    if (!fresh.response.ok || fresh.data?.errors?.length) {
+      return { ok: false, skipped: false, reason: classifyJobberFailure(fresh.response, fresh.data) };
+    }
+    currentQuote = fresh.data?.data?.quote;
+    if (currentQuote?.id !== quote.id || currentQuote.request?.id !== options.expectedRequestId
+      || currentQuote.request?.client?.id !== options.expectedClientId) {
+      return { ok: false, skipped: true, reason: "quote_lineage_changed" };
+    }
+    if (typeof options.verifyLead !== "function" || !await options.verifyLead()) {
+      return { ok: false, skipped: true, reason: "source_proof_changed" };
+    }
+  }
   const built = buildQuoteCustomFieldAttributes(
     resolved.definitions,
     lead,
     requestId,
-    quote.customFields,
+    currentQuote.customFields,
     options,
   );
   if (built.conflictingExisting.length) {
@@ -288,7 +315,8 @@ export async function applyQuoteCustomFields(env, accessToken, quote, lead, requ
       { quoteId: quote.id, attributes: { customFields: built.attributes } },
     );
     const userErrors = data?.data?.quoteEdit?.userErrors || [];
-    if (!response.ok || data?.errors?.length || userErrors.length) {
+    if (!response.ok || data?.errors?.length || userErrors.length
+      || data?.data?.quoteEdit?.quote?.id !== quote.id) {
       return {
         ok: false,
         skipped: false,
@@ -297,6 +325,23 @@ export async function applyQuoteCustomFields(env, accessToken, quote, lead, requ
         userErrors,
         errors: data?.errors || [],
       };
+    }
+    if (options.requireFreshQuote) {
+      const readback = await jobberGraphql(env, accessToken, QUOTE_CONTEXT_QUERY, { id: quote.id });
+      if (!readback.response.ok || readback.data?.errors?.length) {
+        return { ok: false, skipped: false,
+          reason: classifyJobberFailure(readback.response, readback.data) };
+      }
+      const after = readback.data?.data?.quote;
+      if (after?.id !== quote.id || after.request?.id !== options.expectedRequestId
+        || after.request?.client?.id !== options.expectedClientId) {
+        return { ok: false, skipped: true, reason: "quote_lineage_changed_after_write" };
+      }
+      const values = normalizeExistingCustomFields(after.customFields);
+      if (buildClientCustomFieldValues(lead, requestId).some(([name, value]) =>
+        (values.get(`id:${resolved.definitions.get(name)}`) || "") !== nonBlank(value).slice(0, 200))) {
+        return { ok: false, skipped: false, reason: "quote_write_unverified" };
+      }
     }
     return {
       ok: true,

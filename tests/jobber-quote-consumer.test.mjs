@@ -16,6 +16,10 @@ const EVENT = {
   quote_id: "quote-1",
   market_key: "ut",
 };
+const KC_EVENT = { ...EVENT,
+  account_id: "Z2lkOi8vSm9iYmVyL0FjY291bnQvMTkxOTgyNA==",
+  market_key: "mo_kc",
+};
 
 function messageWithResult(result) {
   const calls = { ack: 0, retry: 0 };
@@ -49,6 +53,18 @@ test("retries when the originating Request is not visible yet", async () => {
 test("acknowledges only terminal resolver statuses", async () => {
   globalThis.fetch = async () => Response.json({ ok: true, status: "applied" });
   const { message, calls } = messageWithResult();
+  await consumer.processMessage(message, { JOBBER_QUOTE_BROKER_SECRET: "secret" });
+  assert.equal(calls.ack, 1);
+  assert.equal(calls.retry, 0);
+});
+
+test("accepts KC Website Quote events and acknowledges proof holds without replay", async () => {
+  assert.equal(consumer.validMessage(KC_EVENT), true);
+  assert.equal(consumer.validMessage({ ...KC_EVENT, market_key: "ut" }), false);
+  globalThis.fetch = async () => Response.json({ ok: true, status: "held",
+    reason: "kc_paid_website_proof_unconfirmed" });
+  const { message, calls } = messageWithResult();
+  message.body = KC_EVENT;
   await consumer.processMessage(message, { JOBBER_QUOTE_BROKER_SECRET: "secret" });
   assert.equal(calls.ack, 1);
   assert.equal(calls.retry, 0);

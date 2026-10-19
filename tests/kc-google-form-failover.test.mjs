@@ -5,6 +5,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { onRequestPost } from '../functions/api/leads.js';
 import { _private as leads } from '../functions/api/leads.js';
 import { _private as attribution } from '../server/fieldflow-attribution.js';
+import { findVerifiedKcQuoteLead } from '../server/kc-website-quote-proof.js';
 
 const SUBMISSION_ID = '31534eaa-e6cb-4a2a-ac68-07bed5877c90';
 const CAPTURED_AT = new Date().toISOString();
@@ -29,6 +30,10 @@ function fixture({ googleAuth = { refresh_status: 'refresh_outcome_unknown' },
           if (override) return override.first?.();
           if (sql.includes('jobber_token_authority:select_auth')) return auth[params[0]] || null;
           return sqlite.prepare(sql).get(...params) || null;
+        },
+        async all() {
+          if (override) return override.all?.();
+          return { results: sqlite.prepare(sql).all(...params) };
         },
         async run() {
           if (override) return override.run?.();
@@ -163,7 +168,101 @@ test('healthy Google token stays on KC Google app; ordinary website forms stay o
         assert.ok(writes.every(item => item.bearer === `bearer ${expected}`));
         assert.equal(db.sqlite.prepare('SELECT COUNT(*) AS n FROM website_google_source_proofs').get().n, paid ? 1 : 0);
         assert.equal(db.sqlite.prepare('SELECT COUNT(*) AS n FROM closed_loop_leads').get().n, paid ? 1 : 0);
+        if (!paid) {
+          const attestation = db.sqlite.prepare('SELECT * FROM kc_website_nonpaid_source_attestations').get();
+          assert.equal(attestation.state, 'completed');
+          assert.equal(attestation.jobber_request_id, REQUEST);
+          assert.equal(attestation.jobber_client_id, CLIENT);
+          const verified = await findVerifiedKcQuoteLead(db,
+            { accountId: KC_ACCOUNT, requestId: REQUEST, clientId: CLIENT });
+          assert.equal(verified.ok, true);
+          assert.equal(verified.lead.original_source, 'Organic Online');
+          assert.equal(verified.lead.campaign, null);
+        }
       });
+    } finally { db.sqlite.close(); }
+  }
+});
+
+test('KC nonpaid attestation failure or timeout holds intake before any Jobber write', async () => {
+  for (const failure of ['abort', 'timeout']) {
+    const { db, env } = fixture({ intercept: sql => {
+      if (!sql.includes('INSERT OR IGNORE INTO kc_website_nonpaid_source_attestations')) return null;
+      return { run: () => failure === 'timeout' ? new Promise(() => {})
+        : Promise.reject(new Error('attestation_unavailable')) };
+    } });
+    env.FORM_TRANSACTION_TIMEOUT_MS = '30';
+    try {
+      await withJobber(async writes => {
+        const response = await onRequestPost({ env, request: form({ paid: false }) });
+        assert.equal(response.status, 503, failure);
+        assert.equal((await response.json()).details.code, 'kc_nonpaid_source_unavailable');
+        assert.deepEqual(writes, [], failure);
+        assert.equal(db.sqlite.prepare('SELECT COUNT(*) AS n FROM website_form_conversions').get().n, 0);
+      });
+    } finally { db.sqlite.close(); }
+  }
+});
+
+test('KC nonpaid form keeps Jobber intake available when reservation fails and records its lineage gap', async () => {
+  const { db, env } = fixture({ intercept: sql =>
+    sql.includes('INSERT OR IGNORE INTO website_form_conversions')
+      ? { run: () => { throw new Error('reservation_unavailable'); } } : null });
+  try {
+    await withJobber(async writes => {
+      const response = await onRequestPost({ env, request: form({ paid: false }) });
+      assert.equal(response.status, 200);
+      assert.equal((await response.json()).transaction_confirmed, false);
+      assert.deepEqual(writes.map(item => item.kind), ['client', 'request']);
+      assert.equal(db.sqlite.prepare('SELECT COUNT(*) AS n FROM website_form_conversions').get().n, 0);
+      const gap = db.sqlite.prepare('SELECT reason, jobber_request_id, jobber_client_id FROM website_form_reconciliation_attempts').get();
+      assert.deepEqual({ ...gap }, { reason: 'kc_nonpaid_reservation_unavailable',
+        jobber_request_id: REQUEST, jobber_client_id: CLIENT });
+    });
+  } finally { db.sqlite.close(); }
+});
+
+test('one KC submission cannot switch between paid and nonpaid before Jobber writes', async () => {
+  for (const firstPaid of [true, false]) {
+    const { db, env } = fixture({ googleAuth: { refresh_status: 'refresh_outcome_unknown' },
+      websiteAuth: { refresh_status: 'refresh_outcome_unknown' } });
+    try {
+      await withJobber(async writes => {
+        const first = await onRequestPost({ env, request: form({ paid: firstPaid }) });
+        assert.ok(first.status >= 500);
+        const firstTable = firstPaid ? 'website_google_source_proofs'
+          : 'kc_website_nonpaid_source_attestations';
+        const otherTable = firstPaid ? 'kc_website_nonpaid_source_attestations'
+          : 'website_google_source_proofs';
+        assert.equal(db.sqlite.prepare(`SELECT state FROM ${firstTable}`).get().state, 'prepared');
+        const switched = await onRequestPost({ env, request: form({ paid: !firstPaid }) });
+        assert.equal(switched.status, 503);
+        assert.deepEqual(writes, [], 'source switch must not reach Jobber');
+        assert.equal(db.sqlite.prepare(`SELECT COUNT(*) AS n FROM ${firstTable}`).get().n, 1);
+        assert.equal(db.sqlite.prepare(`SELECT COUNT(*) AS n FROM ${otherTable}`).get().n, 0);
+      });
+    } finally { db.sqlite.close(); }
+  }
+});
+
+test('KC source class exclusion is atomic in D1 even when a caller skips the read check', () => {
+  for (const firstPaid of [true, false]) {
+    const { db } = fixture();
+    const at = new Date().toISOString();
+    const insertPaid = () => db.sqlite.prepare(`INSERT OR IGNORE INTO website_google_source_proofs
+      (submission_id, source_lead_id, market_key, account_id, source_key, source_detail,
+        source_reason, evidence_json, state, created_at, updated_at)
+      VALUES (?, ?, 'mo_kc', ?, 'google', 'google_ads', 'gclid', '{}', 'prepared', ?, ?)`).run(
+      SUBMISSION_ID, `website:${SUBMISSION_ID}`, KC_ACCOUNT, at, at);
+    const insertNonpaid = () => db.sqlite.prepare(`INSERT OR IGNORE INTO kc_website_nonpaid_source_attestations
+      (submission_id, market_key, source_key, source_label, source_detail, source_reason,
+        source_created_at, state, account_id, created_at, updated_at)
+      VALUES (?, 'mo_kc', 'website', 'Organic Online', 'organic_online',
+        'non_google_attribution', ?, 'prepared', ?, ?, ?)`).run(
+      SUBMISSION_ID, at, KC_ACCOUNT, at, at);
+    try {
+      (firstPaid ? insertPaid : insertNonpaid)();
+      assert.throws(firstPaid ? insertNonpaid : insertPaid, /kc_source_conflict/);
     } finally { db.sqlite.close(); }
   }
 });

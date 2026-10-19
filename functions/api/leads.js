@@ -15,6 +15,11 @@ import {
   prepareGoogleSourceProof,
   readGoogleSourceProof,
 } from "../../server/website-google-source-proofs.js";
+import {
+  completeKcNonpaidSource,
+  prepareKcNonpaidSource,
+  readKcNonpaidSource,
+} from "../../server/kc-website-nonpaid-source.js";
 
 const JOBBER_API_URL = "https://api.getjobber.com/api/graphql";
 const JOBBER_TOKEN_URL = "https://api.getjobber.com/api/oauth/token";
@@ -1843,6 +1848,7 @@ export async function onRequestPost(context) {
     }, 400);
   }
   const guardedGoogle = guardedGoogleLead(lead);
+  const kcNonpaidWebsite = lead.market_key === "mo_kc" && lead.source_key === "website";
 
   const reservationPromise = Promise.resolve().then(() =>
     reserveFormTransaction(env.ANGI_ROUTER_DB, submissionId, lead.market_key));
@@ -1850,6 +1856,7 @@ export async function onRequestPost(context) {
     { failOpen: !guardedGoogle });
   const reservation = reserved.ok ? reserved.value : null;
   if (reservation?.state === "completed" && reservation.jobber_request_id) {
+    let nonpaidSourceConfirmed = false;
     if (!guardedGoogle && ['mo_kc', 'mo_stl'].includes(lead.market_key)) {
       try {
         if (await readGoogleSourceProof(env.ANGI_ROUTER_DB, submissionId, lead.market_key)) {
@@ -1883,6 +1890,51 @@ export async function onRequestPost(context) {
           message: 'This form submission needs review before retrying.',
           details: { code: 'google_source_chain_unconfirmed' } }, 503);
       }
+    } else if (kcNonpaidWebsite) {
+      // A duplicate may complete a prior pre-write attestation, but must not
+      // create one after the Request already exists.
+      try {
+        if (await readGoogleSourceProof(env.ANGI_ROUTER_DB, submissionId)) {
+          throw new Error("kc_source_conflict");
+        }
+        const stored = await readKcNonpaidSource(env.ANGI_ROUTER_DB, submissionId);
+        if (!stored || stored.source_key !== "website" || stored.source_label !== "Organic Online"
+          || stored.source_detail !== lead.source_detail
+          || stored.source_reason !== lead.source_reason
+          || stored.account_id !== reservation.jobber_account_id) {
+          throw new Error("kc_nonpaid_source_conflict");
+        }
+        lead.submitted_at = stored.source_created_at;
+        const linkedJobber = { account_id: reservation.jobber_account_id,
+          market_key: "mo_kc", request_id: reservation.jobber_request_id,
+          client_id: reservation.jobber_client_id };
+        const attestation = stored.state === "prepared" && env.ACKNOWLEDGEMENT_SOURCE_ENABLED === "true"
+          ? await completeKcNonpaidSource(env.ANGI_ROUTER_DB, lead, linkedJobber) : stored;
+        const receipt = env.ACKNOWLEDGEMENT_SOURCE_ENABLED === "true"
+          ? await (await import('../../server/acknowledgement-source.js'))
+            .readWebsiteAcknowledgementSource(env, reservation.jobber_account_id, reservation.jobber_request_id)
+          : null;
+        nonpaidSourceConfirmed = attestation.state === "completed"
+          && attestation.jobber_request_id === reservation.jobber_request_id
+          && attestation.jobber_client_id === reservation.jobber_client_id
+          && receipt?.account_id === reservation.jobber_account_id
+          && receipt?.request_id === reservation.jobber_request_id
+          && receipt?.market_key === "mo_kc"
+          && receipt?.client_id === reservation.jobber_client_id
+          && receipt?.source_kind === "website"
+          && receipt?.source_lead_id === `website:${submissionId.toLowerCase()}`
+          && receipt?.source_created_at === attestation.source_created_at;
+        if (!nonpaidSourceConfirmed && env.ACKNOWLEDGEMENT_SOURCE_ENABLED === "true") {
+          throw new Error("kc_nonpaid_source_chain_unconfirmed");
+        }
+      } catch {
+        console.error("KC non-paid duplicate source chain needs reconciliation", {
+          submissionId, jobberRequestId: reservation.jobber_request_id,
+        });
+        return jsonResponse({ ok: false,
+          message: "This form submission needs review before retrying.",
+          details: { code: "kc_nonpaid_source_chain_unconfirmed" } }, 503);
+      }
     }
     await clearWebsiteLeadFailureAfterSuccess(env, lead, {
       request_id: reservation.jobber_request_id,
@@ -1893,6 +1945,7 @@ export async function onRequestPost(context) {
       transaction_id: reservation.transaction_id,
       transaction_confirmed: true,
       ...(guardedGoogle ? { source_proof_confirmed: true } : {}),
+      ...(kcNonpaidWebsite ? { nonpaid_source_confirmed: nonpaidSourceConfirmed } : {}),
       conversion_state: reservation.conversion_state,
       jobber: {
         request_id: reservation.jobber_request_id,
@@ -1916,6 +1969,8 @@ export async function onRequestPost(context) {
   let jobberWriteAttempted = false;
   let partialJobber = null;
   let jobber;
+  let nonpaidPreparationPromise = null;
+  let nonpaidPreparation = null;
   try {
     if (guardedGoogle) {
       // A paid KC or STL form requires one claimed UUID and an immutable copy of the
@@ -1931,6 +1986,18 @@ export async function onRequestPost(context) {
       const evidence = googleSourceEvidence(lead, buildAttribution(payload || {}),
         verifiedGoogleSignals(payload || {}, lead));
       await prepareGoogleSourceProof(env.ANGI_ROUTER_DB, lead, evidence);
+    } else if (kcNonpaidWebsite) {
+      // Persist the server's non-paid decision before creating a Request.
+      // Absence of a Google proof alone never establishes an organic source.
+      nonpaidPreparationPromise = Promise.resolve().then(() =>
+        prepareKcNonpaidSource(env.ANGI_ROUTER_DB, lead));
+      nonpaidPreparation = await optionalFormTracking(env, lead, "prepare_kc_nonpaid_source",
+        () => nonpaidPreparationPromise, { failOpen: false });
+      if (!nonpaidPreparation.ok) {
+        throw new LeadSubmissionError("This form submission needs review before retrying.", 503,
+          { code: "kc_nonpaid_source_unavailable" });
+      }
+      lead.submitted_at = nonpaidPreparation.value.source_created_at;
     }
     jobber = await submitLeadToJobber(env, lead, {
       beforeWriteAttempt: async ({ route, fallbackReason }) => {
@@ -2013,6 +2080,11 @@ export async function onRequestPost(context) {
       status: Number.isFinite(Number(error?.status)) ? Number(error.status) : 500,
       code: error?.details?.code || error?.code || "jobber_lead_intake_failed",
     });
+    if (error?.message === "kc_source_conflict") {
+      return jsonResponse({ ok: false,
+        message: "This form submission needs review before retrying.",
+        details: { code: "kc_source_conflict" } }, 503);
+    }
     if (error instanceof LeadSubmissionError) {
       return jsonResponse({
         ok: false,
@@ -2037,6 +2109,14 @@ export async function onRequestPost(context) {
     } catch {
       console.error('Google website source proof needs reconciliation after Jobber succeeded', {
         submissionId, jobberRequestId: jobber.request_id, code: 'google_source_link_unconfirmed',
+      });
+    }
+  } else if (kcNonpaidWebsite && nonpaidPreparation?.ok) {
+    const completed = await optionalFormTracking(env, lead, "complete_kc_nonpaid_source", () =>
+      completeKcNonpaidSource(env.ANGI_ROUTER_DB, lead, jobber));
+    if (!completed.ok) {
+      console.error("KC non-paid source attestation needs reconciliation", {
+        submissionId, jobberRequestId: jobber.request_id,
       });
     }
   }
@@ -2080,6 +2160,13 @@ export async function onRequestPost(context) {
       submissionId, market: lead.market_key, jobberRequestId: jobber.request_id,
       code: "reservation_unavailable_jobber_succeeded",
     });
+    if (kcNonpaidWebsite) {
+      await optionalFormTracking(env, lead, "record_kc_nonpaid_reservation_gap", () =>
+        recordFormReconciliationAttempt(env.ANGI_ROUTER_DB, {
+          attemptId: crypto.randomUUID(), submissionId, marketKey: lead.market_key,
+          reason: "kc_nonpaid_reservation_unavailable", jobber,
+        }));
+    }
     if (reserved.timedOut) {
       repairLateFormReservation(context, env, lead, reservationPromise, { jobber });
     }
