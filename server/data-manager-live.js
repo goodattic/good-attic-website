@@ -127,6 +127,10 @@ export async function kcWebsiteProofGate(db,row,{measurementPolicy=null}={}){
  const stageLead=await db.prepare('SELECT source,inquiry_at,gclid,gbraid,wbraid,conflict FROM closed_loop_stage1_leads WHERE market_key=? AND request_id=?')
   .bind('mo_kc',row.jobber_request_id).first();
  if(stageLead?.conflict)return {ok:false,reason:'kc_stage1_lead_conflict'};
+ // A pinned archive identity cannot override an explicit outbox opt-out.
+ if(row.consent_status==='denied')return {ok:false,reason:'kc_consent_denied'};
+ if(!['unknown','granted'].includes(row.consent_status))
+  return {ok:false,reason:'kc_consent_status_invalid'};
  const inquiryAt=stageLead?.inquiry_at;
  if(!inquiryAt||!Number.isFinite(Date.parse(inquiryAt)))return {ok:false,reason:'kc_inquiry_time_missing'};
  if(stageLead.source==='website_attribution_archive'&&Date.parse(inquiryAt)<Date.parse(KC_PAID_PROOF_CUTOVER))
@@ -136,9 +140,6 @@ export async function kcWebsiteProofGate(db,row,{measurementPolicy=null}={}){
  // The approved KC US privacy notice permits click-only offline measurement
  // when individual ad consent is unknown. Never rewrite that unknown as granted.
  const noticeApproved=measurementPolicy==='privacy_notice_us';
- if(row.consent_status==='denied')return {ok:false,reason:'kc_consent_denied'};
- if(!['unknown','granted'].includes(row.consent_status))
-  return {ok:false,reason:'kc_consent_status_invalid'};
  if(row.consent_status!=='granted'&&!noticeApproved)
   return {ok:false,reason:'kc_measurement_policy_not_approved'};
  const proof=await db.prepare(`
@@ -168,6 +169,8 @@ export async function kcWebsiteProofGate(db,row,{measurementPolicy=null}={}){
  if(['denied','declined','rejected','false','no','0','revoked','withdrawn',
   'opted_out','opt_out','do_not_sell','do_not_share'].includes(sourceConsent))
   return {ok:false,reason:'kc_source_consent_denied'};
+ if(!['','unknown','granted'].includes(sourceConsent))
+  return {ok:false,reason:'kc_source_consent_unrecognized'};
  if(sourceConsent!=='granted'&&!noticeApproved)
   return {ok:false,reason:'kc_measurement_policy_not_approved'};
  const reason=String(proof.source_reason||'').replace(/^(?:paid_touch|first_touch)_/,'');

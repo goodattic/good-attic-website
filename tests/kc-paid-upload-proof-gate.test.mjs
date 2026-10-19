@@ -168,6 +168,9 @@ test('KC policy flag is exact and any explicit consent denial holds', async () =
     ['unknown', 'false', 'privacy_notice_us', 'kc_source_consent_denied'],
     ['unknown', 'opted-out', 'privacy_notice_us', 'kc_source_consent_denied'],
     ['unknown', 'withdrawn', 'privacy_notice_us', 'kc_source_consent_denied'],
+    ['unknown', 'do_not_track', 'privacy_notice_us', 'kc_source_consent_unrecognized'],
+    ['unknown', 'not_granted', 'privacy_notice_us', 'kc_source_consent_unrecognized'],
+    ['unknown', 'accepted', 'privacy_notice_us', 'kc_source_consent_unrecognized'],
     ['granted', '', undefined, 'kc_measurement_policy_not_approved'],
   ]) {
     const { db, sqlite, env } = fixture();
@@ -201,6 +204,14 @@ test('approved US privacy notice allows only proven KC click upload without chan
   assert.equal(sqlite.prepare('SELECT consent_status FROM google_ads_outcome_outbox').get().consent_status,
     'unknown');
   assert.equal(sqlite.prepare('SELECT consent_state FROM closed_loop_leads').get().consent_state, '');
+});
+
+test('normalized unknown source consent is eligible only with approved notice and exact proof', async () => {
+  const { db, sqlite } = fixture();
+  addProof(sqlite, { consent: ' UNKNOWN ' });
+  sqlite.exec("UPDATE google_ads_outcome_outbox SET consent_status='unknown'");
+  assert.deepEqual(await kcWebsiteProofGate(db, candidate(sqlite),
+    { measurementPolicy: 'privacy_notice_us' }), { ok: true });
 });
 
 test('mismatched Request, Client, source proof, and click fail closed', async () => {
@@ -255,6 +266,25 @@ test('backdated KC archive import cannot upload without its exact historical Req
   assert.equal(result.skipped[0].error, 'kc_legacy_archive_not_pinned');
 });
 
+test('backdated KC archive candidate cannot bypass explicit outbox consent denial', async () => {
+  for (const [consent, reason] of [
+    ['denied', 'kc_consent_denied'],
+    ['do_not_track', 'kc_consent_status_invalid'],
+  ]) {
+    const { db, sqlite, env } = fixture();
+    sqlite.prepare('UPDATE closed_loop_stage1_leads SET inquiry_at=?')
+      .run('2026-09-21T18:29:27.381Z');
+    if (consent === 'denied') {
+      sqlite.prepare('UPDATE google_ads_outcome_outbox SET consent_status=?').run(consent);
+      const result = await submitReady(env, 'token', () => { throw Error('should not upload'); });
+      assert.equal(result.sent, 0);
+      assert.equal(result.skipped[0].error, reason);
+    }
+    assert.equal((await kcWebsiteProofGate(db, { ...candidate(sqlite), consent_status: consent })).reason,
+      reason);
+  }
+});
+
 test('pinned legacy click accepts only its original Client, time, and click fingerprint', async () => {
   const { db, sqlite } = fixture();
   sqlite.exec("UPDATE google_ads_outcome_outbox SET consent_status='unknown'");
@@ -274,9 +304,9 @@ test('pinned legacy click accepts only its original Client, time, and click fing
     allowlist)).reason, 'kc_legacy_click_changed');
 });
 
-test('a reused Request with old archive inquiry is held for manual reconciliation', async () => {
+test('a reused Request with old archive inquiry and source opt-out is held for manual reconciliation', async () => {
   const { db, sqlite } = fixture();
-  addProof(sqlite);
+  addProof(sqlite, { consent: 'denied' });
   const priorInquiry = '2026-10-04T16:09:42.937Z';
   sqlite.prepare('UPDATE closed_loop_stage1_leads SET inquiry_at=?').run(priorInquiry);
   assert.equal((await kcWebsiteProofGate(db, candidate(sqlite))).reason,
