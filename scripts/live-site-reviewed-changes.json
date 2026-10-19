@@ -1,46 +1,5 @@
 {
   "schemaVersion": 1,
-  "baselineDeploymentId": "6e228a88-6844-4660-bf8a-e0d0ae5f29f6",
-  "changes": {
-    "runtime/functions/api/leads.js": {
-      "expectedSha256": "f349eafa9880f28a2cd9e69c4a0f4997d0efa0ea7b3520921c69060b0a265c28",
-      "reason": "Reviewed KC website Quote source proof gates and the reciprocal paid/nonpaid submission fence; STL behavior remains as deployed."
-    },
-    "runtime/server/jobber-custom-fields.js": {
-      "expectedSha256": "275685a221b908e93d2cfb19cf74653ef314d6ab67d6c0e395b5f41786d92f3d",
-      "reason": "Reviewed KC website Quote field attribution with exact form, source, and Jobber lineage gates; deployment requires staged release."
-    },
-    "runtime/server/jobber-quote-attribution.js": {
-      "expectedSha256": "515db7af125982477bb03c35410fd98939dd21f55078d5586ae81c25b13ff250",
-      "reason": "Reviewed KC website Quote field attribution with exact form, source, and Jobber lineage gates; deployment requires staged release."
-    },
-    "runtime/server/jobber-quote-webhook.js": {
-      "expectedSha256": "abc529e6323e2e34451a1f8e43344c28efc496fafa3618bae6796fab0b8981e9",
-      "reason": "Reviewed KC website Quote field attribution with exact form, source, and Jobber lineage gates; deployment requires staged release."
-    },
-    "runtime/server/kc-website-nonpaid-source.js": {
-      "expectedSha256": "fcc6c44d9266c042a278a03cdafd33e1cab44ce19a70dd60715cfffa5591190e",
-      "reason": "Reviewed KC website Quote field attribution with exact form, source, and Jobber lineage gates; deployment requires staged release."
-    },
-    "runtime/server/kc-website-quote-proof.js": {
-      "expectedSha256": "098b9dd0a4e64532e7d465ab61c0e62e1602e3b2234d7c112970435310033598",
-      "reason": "Reviewed KC website Quote field attribution with exact form, source, and Jobber lineage gates; deployment requires staged release."
-    },
-    "runtime/server/website-google-source-proofs.js": {
-      "expectedSha256": "d425c757a708db9ffd7c51046ad0b304205b0909f580d050804160f55eeda247",
-      "reason": "Reviewed KC website Quote source proof gates and the reciprocal paid/nonpaid submission fence; STL behavior remains as deployed."
-    },
-    "runtime/workers/jobber-quote-consumer.js": {
-      "expectedSha256": "c8d3f716c48cf32e9d4bd50b2e6ec49648bf28bc946a8ce6afbe268967816f0a",
-      "reason": "Reviewed KC website Quote field attribution with exact form, source, and Jobber lineage gates; deployment requires staged release."
-    },
-    "runtime/workers/jobber-quote-consumer.wrangler.toml": {
-      "expectedSha256": "68bcd4b0cc51fed6f04ae2190685db8925918a6f34ad5b56f2e0843f12bfb3d7",
-      "reason": "Reviewed KC website Quote field attribution with exact form, source, and Jobber lineage gates; deployment requires staged release."
-    },
-    "runtime/wrangler.toml": {
-      "expectedSha256": "c0e0b62ac2d299dc307887a619c6991eabedb4357669a48f0abbb5511e0f6fee",
-      "reason": "Reviewed KC website Quote field attribution with exact form, source, and Jobber lineage gates; deployment requires staged release."
-    }
-  }
+  "baselineDeploymentId": "902804b6-ebd5-48e5-9d6c-a518ddd060e7",
+  "changes": {}
 }
