@@ -1,14 +1,5 @@
 {
   "schemaVersion": 1,
-  "baselineDeploymentId": "c17e0e2f-b915-474b-ac40-bcf8ce4c2994",
-  "changes": {
-    "runtime/functions/api/jobber/oauth/callback.js": {
-      "expectedSha256": "7c43dc5de96971117493ab575d5d4a137e2fc17729d5cbc15e56df712287b48a",
-      "reason": "Verify Kansas City lead app Client and Request access on OAuth reconnect while preserving exact account pinning and token checkpoint safety."
-    },
-    "runtime/functions/api/jobber/oauth/reauthorize.js": {
-      "expectedSha256": "80fd42abaa6f0acc644a3c642cccbff2c026d378e6049d041f31768e227a5c7f",
-      "reason": "Explain the Kansas City lead app reconnect capability check without implying that Quote access is required for intake."
-    }
-  }
+  "baselineDeploymentId": "925176a5-2aeb-4106-8312-06b07175add8",
+  "changes": {}
 }
