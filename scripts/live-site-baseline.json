@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "description": "Serving Good Attic Pages deployment c17e0e2f, directly uploaded from clean canonical release merge d116bda and verified 2026-10-19. Its 328 published static files exactly match previous serving deployment a6bf33a2; Pages Functions add guarded KC Google-paid form failover, durable source proof and attribution preservation. The local build contains 330 files including _headers and _redirects, and runtime source matches the committed d116bda tree.",
+  "description": "Serving Good Attic Pages deployment 925176a5, directly uploaded from clean canonical release merge a61f153 and verified 2026-10-19. Its 328 published static files exactly match previous serving deployment c17e0e2f; Pages Functions now verify KC lead app Client and Request access on OAuth reconnect without requiring Quote access. The local build contains 330 files including _headers and _redirects, and runtime source matches the committed a61f153 tree.",
   "productionDeployment": {
-    "id": "c17e0e2f-b915-474b-ac40-bcf8ce4c2994",
-    "sourceCommit": "d116bda6e0c33a35abd712897ef9cbe80e66069a",
+    "id": "925176a5-2aeb-4106-8312-06b07175add8",
+    "sourceCommit": "a61f15370084622d07bbf63946740344df554a0d",
     "capturedStaticCommit": "87e8ef64cbf6389c0b05b6414027d23ea8b37e13",
     "accountId": "944914746b7fbc8cd91cd7d0d9d1940c",
     "projectName": "good-attic-website"
@@ -370,10 +370,10 @@
     "functions/api/jobber/alert-resolve.js": "66c952eab1beaa5026d93574ca14962ef06246aacea7d95168cabb1736400d0f",
     "functions/api/jobber/appointment-resolve.js": "ae45043ec02921ecc9f6caedf4f46f1b8ada1840fd541d53256b7fa8e3b0ce83",
     "functions/api/jobber/contact-resolve.js": "5029c867529f6eee4e2be389ff5bd8faff2f82f5f94f82773f71bbb4cfbcbe2c",
-    "functions/api/jobber/oauth/callback.js": "378aec607f1169ed63efb54620f1eb80d7ad6fc58c93ad8ad23f8b0bb757ba89",
+    "functions/api/jobber/oauth/callback.js": "7c43dc5de96971117493ab575d5d4a137e2fc17729d5cbc15e56df712287b48a",
     "functions/api/jobber/oauth/config.js": "4f0e05d38f6f612fe878baf17e629e0c61f1bce8091800bd1ffe2ba05250c672",
     "functions/api/jobber/oauth/health-check.js": "161328e681f209472997169796bc513cc16694180d82c6cf16303940e819c666",
-    "functions/api/jobber/oauth/reauthorize.js": "7bc106c875b7959497314b22f1d374bb9faa01c894285b73b4d8074c07140f8e",
+    "functions/api/jobber/oauth/reauthorize.js": "80fd42abaa6f0acc644a3c642cccbff2c026d378e6049d041f31768e227a5c7f",
     "functions/api/jobber/oauth/start.js": "d9a9c24a51486b47b4645f6fa33f01e3bd669fe4dce29492bcaed56fe6a5cde9",
     "functions/api/jobber/quo-intake-note.js": "b17e98574a6512bf21fd8811e4ac78b259c2ac7e664308942e45f5a89d76d281",
     "functions/api/jobber/quo-intake-resolve.js": "ad445bc1ba41202a6a1a7f939c25d1f59adfc1fc7c917093d45bf7ab378f826d",
