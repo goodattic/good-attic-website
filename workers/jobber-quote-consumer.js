@@ -5,6 +5,7 @@ const DEFAULT_RESOLVER_URL = "https://goodattic.energy/api/jobber/quote-resolve"
 const DEFAULT_AUTH_HEALTH_URL = "https://goodattic.energy/api/jobber/oauth/health-check";
 const DEFAULT_CALL_REPLAY_URL = "https://goodattic.energy/api/jobber/quote-call-replay";
 const DEFAULT_HISTORY_BACKFILL_URL = "https://goodattic.energy/api/jobber/quote-history-backfill";
+const DEFAULT_KC_LINEAGE_POLL_URL = "https://goodattic.energy/api/jobber/kc-paid-lineage-poll";
 
 const MARKET_BY_ACCOUNT_ID = new Map([
   ["Z2lkOi8vSm9iYmVyL0FjY291bnQvMjQ5ODQzMg==", "ut"],
@@ -154,6 +155,23 @@ async function runHistoricalCallBackfill(env) {
   return result;
 }
 
+async function runKcLineagePoll(env) {
+  const url = clean(env.KC_PAID_LINEAGE_POLL_URL || DEFAULT_KC_LINEAGE_POLL_URL, 2000);
+  const secret = clean(env.JOBBER_QUOTE_BROKER_SECRET, 2000);
+  if (!secret) throw new Error("resolver_secret_not_configured");
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
+    body: "{}",
+    redirect: "manual",
+    signal: AbortSignal.timeout(45_000),
+  });
+  let result = null;
+  try { result = await response.json(); } catch { /* report HTTP status */ }
+  if (!response.ok || !result?.ok) throw new Error(`kc_lineage_http_${response.status || 0}`);
+  return result;
+}
+
 export default {
   async queue(batch, env) {
     for (const message of batch.messages) await processMessage(message, env);
@@ -184,6 +202,25 @@ export default {
         });
       }
     }
+    if (env.KC_PAID_LINEAGE_POLL_ENABLED === "true") {
+      try {
+        const result = await runKcLineagePoll(env);
+        if (Number(result.held) > 0 || Number(result.retryable) > 0
+          || Number(result.reconciliation?.held) > 0
+          || Number(result.reconciliation?.retryable) > 0) {
+          console.error("KC paid website lineage needs reconciliation.", {
+            held: Number(result.held) || 0,
+            retryable: Number(result.retryable) || 0,
+            ledger_held: Number(result.reconciliation?.held) || 0,
+            ledger_retryable: Number(result.reconciliation?.retryable) || 0,
+          });
+        }
+      } catch (error) {
+        console.error("KC paid website lineage poll failed.", {
+          error: error instanceof Error ? error.message : "unknown_error",
+        });
+      }
+    }
   },
 };
 
@@ -192,6 +229,7 @@ export const _private = {
   DEFAULT_AUTH_HEALTH_URL,
   DEFAULT_CALL_REPLAY_URL,
   DEFAULT_HISTORY_BACKFILL_URL,
+  DEFAULT_KC_LINEAGE_POLL_URL,
   DEFAULT_RESOLVER_URL,
   MARKET_BY_ACCOUNT_ID,
   MAX_RETRY_DELAY_SECONDS,
@@ -204,5 +242,6 @@ export const _private = {
   runAuthorizationHealth,
   runMatchedCallReplay,
   runHistoricalCallBackfill,
+  runKcLineagePoll,
   validMessage,
 };

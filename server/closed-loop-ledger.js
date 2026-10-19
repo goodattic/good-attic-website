@@ -1,3 +1,5 @@
+// The generic lifecycle writer remains on its UT/STL rollout. KC lead rows
+// enter separately through the paid website proof gate in fieldflow-attribution.
 const ENABLED_MARKETS = new Set(["ut", "mo_stl"]);
 const EVENT_NAMES = new Set([
   "raw_inquiry",

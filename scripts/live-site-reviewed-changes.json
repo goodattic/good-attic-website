@@ -1,5 +1,30 @@
 {
   "schemaVersion": 1,
   "baselineDeploymentId": "925176a5-2aeb-4106-8312-06b07175add8",
-  "changes": {}
+  "changes": {
+    "runtime/functions/api/jobber/kc-paid-lineage-poll.js": {
+      "expectedSha256": "2de35d6ae3a15ae54147ee1056098231d74985298b453a4d5e6e132c2ee7d1b4",
+      "reason": "Authenticate the scheduled KC paid website lineage read without changing Jobber objects."
+    },
+    "runtime/server/closed-loop-ledger.js": {
+      "expectedSha256": "99cffab22dc169872e07a9f32755f39aa08a880a04d539c72a1767f4262b3dbf",
+      "reason": "Admit only proof-backed KC paid website leads to the closed-loop ledger."
+    },
+    "runtime/server/fieldflow-attribution.js": {
+      "expectedSha256": "e910e5643a1a06a278d2da6f5302866a4cb4cbfac76ab6bcc9ec1d00e5aeb01f",
+      "reason": "Validate KC paid attribution and repair a missed ledger write from the completed source chain."
+    },
+    "runtime/server/kc-paid-lineage-poller.js": {
+      "expectedSha256": "cecc5e5bc5be806ab53a4e5a71977d265411e897c7c324b8d955b01e2a15e1f2",
+      "reason": "Repair missing KC paid ledger rows, then record exact read-only Request, assessment, Quote, Job, and Invoice links in D1."
+    },
+    "runtime/workers/jobber-quote-consumer.js": {
+      "expectedSha256": "9cf0f2cab88f3f8d9bd77b9ee1f432c8d62c20244db801304039c5edcefe3c14",
+      "reason": "Poll KC paid lineage from the existing scheduled quote Worker."
+    },
+    "runtime/workers/jobber-quote-consumer.wrangler.toml": {
+      "expectedSha256": "ae2c3e0086be4748d5a4e7da35b0587a9b3b539e599a3c334710650ca8100f08",
+      "reason": "Enable bounded KC lineage polling while preserving live quote replay and historical backfill flags."
+    }
+  }
 }
