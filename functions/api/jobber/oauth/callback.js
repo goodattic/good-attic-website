@@ -119,6 +119,10 @@ function getMarketRoute(value, source = "website") {
   return getJobberOAuthRoute(value, source);
 }
 
+function usesKcLeadCapabilities(route) {
+  return route?.marketKey === "mo_kc" && ["website", "google"].includes(route.sourceKey);
+}
+
 async function verifyState(env, state) {
   const setupKey = clean(env.JOBBER_OAUTH_SETUP_KEY, 500);
   if (!setupKey) throw new OAuthSetupError("Missing JOBBER_OAUTH_SETUP_KEY.", 503);
@@ -284,6 +288,33 @@ async function queryJobberQuoteCapabilities(env, accessToken) {
     quoteWriteReason: write.reason,
     customFieldNames: requiredNames.filter((name) => names.has(name)),
     missingCustomFieldNames: requiredNames.filter((name) => !names.has(name)),
+  };
+}
+
+async function queryJobberLeadCapabilities(env, accessToken) {
+  const response = await fetch(JOBBER_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      "X-JOBBER-GRAPHQL-VERSION": clean(env.JOBBER_GRAPHQL_VERSION, 40) || DEFAULT_JOBBER_GRAPHQL_VERSION,
+    },
+    body: JSON.stringify({
+      query: `
+        query GoodAtticLeadCapabilities {
+          clients(first: 1) { nodes { id } }
+          requests(first: 1) { nodes { id } }
+        }
+      `,
+    }),
+  });
+  const data = await safeJson(response);
+  const clientRead = Array.isArray(data?.data?.clients?.nodes);
+  const requestRead = Array.isArray(data?.data?.requests?.nodes);
+  return {
+    ok: response.ok && !data?.errors?.length && clientRead && requestRead,
+    clientRead,
+    requestRead,
   };
 }
 
@@ -540,6 +571,13 @@ function renderSuccess(route, accountResult, persistence, capabilities) {
     : `<li>Salt Lake City: <code>/api/jobber/oauth/start?market=slc&amp;source=${escapeHtml(route.sourceKey)}&amp;setup_key=...</code></li>
       <li>St. Louis: <code>/api/jobber/oauth/start?market=stl&amp;source=${escapeHtml(route.sourceKey)}&amp;setup_key=...</code></li>
       <li>Kansas City: <code>/api/jobber/oauth/start?market=kc&amp;source=${escapeHtml(route.sourceKey)}&amp;setup_key=...</code></li>`;
+  const capabilitySummary = usesKcLeadCapabilities(route)
+    ? `<p class="muted">Client read access: <strong>${capabilities?.clientRead ? "yes" : "no"}</strong></p>
+    <p class="muted">Request read access: <strong>${capabilities?.requestRead ? "yes" : "no"}</strong></p>
+    <p class="muted">Client and Request write access is exercised when a website lead is created.</p>`
+    : `<p class="muted">Quote read access: <strong>${capabilities?.quoteRead ? "yes" : "no"}</strong></p>
+    <p class="muted">Custom-field definition read access: <strong>${capabilities?.customFieldRead ? "yes" : "no"}</strong></p>
+    <p class="muted">Quote write access: <strong>${capabilities?.quoteWrite ? "yes (verified by a no-change quote update)" : "no"}</strong></p>`;
 
   return htmlResponse(
     `${route.sourceLabel} ${route.accountLabel} Jobber connected`,
@@ -553,9 +591,7 @@ function renderSuccess(route, accountResult, persistence, capabilities) {
     <h2>Authoritative checkpoint</h2>
     <p class="muted">D1 persisted: <strong>${persistence.d1Persisted ? "yes" : "no"}</strong></p>
     <p class="muted">Compatibility KV mirror: <strong>${persistence.kvPersisted ? "yes" : "not available"}</strong></p>
-    <p class="muted">Quote read access: <strong>${capabilities?.quoteRead ? "yes" : "no"}</strong></p>
-    <p class="muted">Custom-field definition read access: <strong>${capabilities?.customFieldRead ? "yes" : "no"}</strong></p>
-    <p class="muted">Quote write access: <strong>${capabilities?.quoteWrite ? "yes (verified by a no-change quote update)" : "no"}</strong></p>
+    ${capabilitySummary}
     <p class="muted">No refresh token is displayed or copied into a second runtime authority.</p>
 
     <h2>Repeat for the other markets</h2>
@@ -597,12 +633,22 @@ export async function onRequestGet({ request, env }) {
       tokenData = await exchangeAuthorizationCode(env, route, code, getRedirectUri(env, request));
       accountResult = await queryJobberAccount(env, tokenData.access_token);
       requireExpectedJobberAccount(route, accountResult);
-      capabilities = await queryJobberQuoteCapabilities(env, tokenData.access_token);
-      if (!capabilities.ok) {
-        throw new OAuthSetupError(
-          `Expanded quote access is not available for ${route.accountLabel}. Reauthorize with quote read/write and custom-field configuration scopes.`,
-          403,
-        );
+      if (usesKcLeadCapabilities(route)) {
+        capabilities = await queryJobberLeadCapabilities(env, tokenData.access_token);
+        if (!capabilities.ok) {
+          throw new OAuthSetupError(
+            `Client and Request read access is not available for the ${route.accountLabel} ${route.sourceLabel} lead app. No credentials were saved.`,
+            403,
+          );
+        }
+      } else {
+        capabilities = await queryJobberQuoteCapabilities(env, tokenData.access_token);
+        if (!capabilities.ok) {
+          throw new OAuthSetupError(
+            `Expanded quote access is not available for ${route.accountLabel}. Reauthorize with quote read/write and custom-field configuration scopes.`,
+            403,
+          );
+        }
       }
       persistence = await persistAuthorizedJobberTokens(
         env,
@@ -639,6 +685,7 @@ export const _private = {
   exchangeAuthorizationCode,
   queryJobberAccount,
   queryJobberQuoteCapabilities,
+  queryJobberLeadCapabilities,
   verifyJobberQuoteWriteAccess,
   requireExpectedJobberAccount,
   acquireJobberProcessLock,
