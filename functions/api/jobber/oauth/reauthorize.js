@@ -102,11 +102,12 @@ function chooser(request) {
   const base = `${url.origin}${url.pathname}`;
   return htmlResponse(
     "Choose the Jobber account",
-    `<h1>Reconnect Good Attic Website Leads</h1>
+    `<h1>Reconnect Good Attic lead apps</h1>
     <p>Choose the Jobber account currently open. Jobber will ask you to approve the updated quote permissions.</p>
     <div class="actions">
       <a href="${escapeHtml(base)}?market=stl">Good Attic of Saint Louis</a>
       <a href="${escapeHtml(base)}?market=slc">Good Attic Utah</a>
+      <a href="${escapeHtml(base)}?market=kc&amp;source=google">Kansas City Google leads</a>
     </div>`,
   );
 }
@@ -131,9 +132,13 @@ export async function onRequestGet(context) {
   const market = clean(url.searchParams.get("market"), 40);
   if (!market) return chooser(request);
 
-  const route = getJobberOAuthRoute(market, "website");
-  if (!route || !["ut", "mo_stl"].includes(route.marketKey)) {
-    return htmlResponse("Unsupported Jobber account", "<h1>Choose Utah or St. Louis.</h1>", 400);
+  const source = clean(url.searchParams.get('source'), 40) || 'website';
+  const route = getJobberOAuthRoute(market, source);
+  const publicRouteAllowed = route && (
+    route.sourceKey === 'website' && ['ut', 'mo_stl'].includes(route.marketKey)
+    || route.sourceKey === 'google' && route.marketKey === 'mo_kc');
+  if (!publicRouteAllowed) {
+    return htmlResponse('Unsupported Jobber account', '<h1>Choose a supported lead app.</h1>', 400);
   }
 
   try {

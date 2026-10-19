@@ -1,5 +1,22 @@
 {
   "schemaVersion": 1,
   "baselineDeploymentId": "a6bf33a2-c923-4b1c-9450-74b1ab18ad3e",
-  "changes": {}
+  "changes": {
+    "runtime/functions/api/jobber/oauth/reauthorize.js": {
+      "expectedSha256": "7bc106c875b7959497314b22f1d374bb9faa01c894285b73b4d8074c07140f8e",
+      "reason": "Offer a signed, account-validated public reconnection route for the KC Google Jobber app."
+    },
+    "runtime/functions/api/leads.js": {
+      "expectedSha256": "500eb93daf7e9cc37f7d5b1b4a11b97e9c87a6b6b26bdf0404fa9f6a13f0a246",
+      "reason": "Allow only a verified KC paid form to switch to the healthy Website app before any Jobber write, with durable source and transaction fences."
+    },
+    "runtime/server/fieldflow-attribution.js": {
+      "expectedSha256": "3d719ff0eda7e0cda2be31bcb2592d63625d1fec7828ef9527fac6b57df3dd62",
+      "reason": "Carry the server-selected paid touch click and campaign through to Fieldflow even when the latest page visit is organic."
+    },
+    "runtime/server/website-google-source-proofs.js": {
+      "expectedSha256": "fc736f7ebce78a28cde1107eefbe7e9c9a2224cbfca58c6aa98d0cf0b9325fe3",
+      "reason": "Store and confirm immutable server-classified KC Google source evidence alongside the exact created Jobber Request."
+    }
+  }
 }
