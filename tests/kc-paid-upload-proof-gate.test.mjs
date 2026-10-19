@@ -128,7 +128,12 @@ function candidate(sqlite) {
 
 test('new KC archive-race row cannot upload without exact paid website proof', async () => {
   const { db, sqlite, env } = fixture();
+  env.KC_GOOGLE_OFFLINE_MEASUREMENT_POLICY = 'privacy_notice_us';
+  sqlite.exec("UPDATE google_ads_outcome_outbox SET consent_status='unknown'");
   assert.deepEqual(await kcWebsiteProofGate(db, candidate(sqlite)),
+    { ok: false, reason: 'kc_measurement_policy_not_approved' });
+  assert.deepEqual(await kcWebsiteProofGate(db, candidate(sqlite),
+    { measurementPolicy: env.KC_GOOGLE_OFFLINE_MEASUREMENT_POLICY }),
     { ok: false, reason: 'kc_paid_source_chain_unconfirmed' });
   let requests = 0;
   const result = await submitReady(env, 'token', async () => { requests++; return Response.json({ requestId: 'r' }); });
@@ -154,20 +159,48 @@ test('one proven paid KC form can upload only its exact Request and click', asyn
   assert.equal(sqlite.prepare('SELECT status FROM closed_loop_google_uploads').get().status, 'processing');
 });
 
-test('reconciled KC proof with unknown consent cannot auto-upload', async () => {
-  for (const [outboxConsent, sourceConsent, expected] of [
-    ['unknown', 'unknown', 'kc_consent_not_granted'],
-    ['denied', 'granted', 'kc_consent_not_granted'],
-    ['granted', 'unknown', 'kc_source_consent_not_granted'],
+test('KC policy flag is exact and any explicit consent denial holds', async () => {
+  for (const [outboxConsent, sourceConsent, policy, expected] of [
+    ['unknown', '', undefined, 'kc_measurement_policy_not_approved'],
+    ['unknown', '', 'true', 'kc_measurement_policy_not_approved'],
+    ['denied', 'granted', 'privacy_notice_us', 'kc_consent_denied'],
+    ['unknown', 'denied', 'privacy_notice_us', 'kc_source_consent_denied'],
+    ['unknown', 'false', 'privacy_notice_us', 'kc_source_consent_denied'],
+    ['unknown', 'opted-out', 'privacy_notice_us', 'kc_source_consent_denied'],
+    ['unknown', 'withdrawn', 'privacy_notice_us', 'kc_source_consent_denied'],
+    ['granted', '', undefined, 'kc_measurement_policy_not_approved'],
   ]) {
     const { db, sqlite, env } = fixture();
     addProof(sqlite, { consent: sourceConsent });
     sqlite.prepare('UPDATE google_ads_outcome_outbox SET consent_status=?').run(outboxConsent);
-    assert.equal((await kcWebsiteProofGate(db, candidate(sqlite))).reason, expected);
+    env.KC_GOOGLE_OFFLINE_MEASUREMENT_POLICY = policy;
+    assert.equal((await kcWebsiteProofGate(db, candidate(sqlite),
+      { measurementPolicy: policy })).reason, expected);
     const result = await submitReady(env, 'token', () => { throw Error('should not upload'); });
     assert.equal(result.sent, 0);
     assert.equal(result.skipped[0].error, expected);
   }
+});
+
+test('approved US privacy notice allows only proven KC click upload without changing unknown consent', async () => {
+  const { db, sqlite, env } = fixture();
+  env.KC_GOOGLE_OFFLINE_MEASUREMENT_POLICY = 'privacy_notice_us';
+  addProof(sqlite, { consent: '' });
+  sqlite.exec("UPDATE google_ads_outcome_outbox SET consent_status='unknown'");
+  assert.deepEqual(await kcWebsiteProofGate(db, candidate(sqlite),
+    { measurementPolicy: env.KC_GOOGLE_OFFLINE_MEASUREMENT_POLICY }), { ok: true });
+  const result = await submitReady(env, 'token', async (_url, options) => {
+    const body = JSON.parse(options.body);
+    const event = body.events[0];
+    assert.deepEqual(event.adIdentifiers, { gclid: CLICK });
+    assert.deepEqual(Object.keys(event).sort(),
+      ['adIdentifiers','conversionValue','currency','eventSource','eventTimestamp','transactionId'].sort());
+    return Response.json({ requestId: 'request-policy' });
+  });
+  assert.equal(result.sent, 1);
+  assert.equal(sqlite.prepare('SELECT consent_status FROM google_ads_outcome_outbox').get().consent_status,
+    'unknown');
+  assert.equal(sqlite.prepare('SELECT consent_state FROM closed_loop_leads').get().consent_state, '');
 });
 
 test('mismatched Request, Client, source proof, and click fail closed', async () => {
@@ -224,6 +257,7 @@ test('backdated KC archive import cannot upload without its exact historical Req
 
 test('pinned legacy click accepts only its original Client, time, and click fingerprint', async () => {
   const { db, sqlite } = fixture();
+  sqlite.exec("UPDATE google_ads_outcome_outbox SET consent_status='unknown'");
   const braId = 'gbraid123456';
   sqlite.prepare('UPDATE closed_loop_stage1_leads SET gbraid=?').run(braId);
   const allowlist = { [REQUEST]: { inquiry: INQUIRY, client: CLIENT,

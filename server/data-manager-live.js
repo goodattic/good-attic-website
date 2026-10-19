@@ -118,7 +118,7 @@ export function kcStageOutboxLineageGate(row){
   return {ok:false,reason:'stage1_payload_lineage_mismatch'};
  return {ok:true};
 }
-export async function kcWebsiteProofGate(db,row){
+export async function kcWebsiteProofGate(db,row,{measurementPolicy=null}={}){
  // Call-origin candidates have their own proof and upload path. This gate is
  // only for the Stage 1 website-click path feeding Data Manager.
  if(row.market_key!=='mo_kc'||row.attribution_path!=='website')return {ok:true};
@@ -133,9 +133,14 @@ export async function kcWebsiteProofGate(db,row){
   return kcLegacyArchiveGate(db,row,stageLead);
  if(Date.parse(inquiryAt)<Date.parse(KC_PAID_PROOF_CUTOVER))
   return {ok:false,reason:'kc_unproven_pre_cutover_lead'};
- // The original form ledger must affirm consent before a new KC paid outcome
- // can enter Google Data Manager. Reconciled rows with unknown consent hold.
- if(row.consent_status!=='granted')return {ok:false,reason:'kc_consent_not_granted'};
+ // The approved KC US privacy notice permits click-only offline measurement
+ // when individual ad consent is unknown. Never rewrite that unknown as granted.
+ const noticeApproved=measurementPolicy==='privacy_notice_us';
+ if(row.consent_status==='denied')return {ok:false,reason:'kc_consent_denied'};
+ if(!['unknown','granted'].includes(row.consent_status))
+  return {ok:false,reason:'kc_consent_status_invalid'};
+ if(row.consent_status!=='granted'&&!noticeApproved)
+  return {ok:false,reason:'kc_measurement_policy_not_approved'};
  const proof=await db.prepare(`
   SELECT l.submission_id,l.inquiry_at,l.campaign,l.gclid,l.gbraid,l.wbraid,l.consent_state,
     p.source_reason,p.evidence_json
@@ -159,7 +164,12 @@ export async function kcWebsiteProofGate(db,row){
     AND l.jobber_client_id=? AND l.inquiry_at=?
   LIMIT 1`).bind(KC_JOBBER_ACCOUNT,row.jobber_request_id,row.jobber_client_id,inquiryAt).first();
  if(!proof)return {ok:false,reason:'kc_paid_source_chain_unconfirmed'};
- if(proof.consent_state!=='granted')return {ok:false,reason:'kc_source_consent_not_granted'};
+ const sourceConsent=String(proof.consent_state||'').trim().toLowerCase().replace(/[\s-]+/g,'_');
+ if(['denied','declined','rejected','false','no','0','revoked','withdrawn',
+  'opted_out','opt_out','do_not_sell','do_not_share'].includes(sourceConsent))
+  return {ok:false,reason:'kc_source_consent_denied'};
+ if(sourceConsent!=='granted'&&!noticeApproved)
+  return {ok:false,reason:'kc_measurement_policy_not_approved'};
  const reason=String(proof.source_reason||'').replace(/^(?:paid_touch|first_touch)_/,'');
  if(!['gclid','gbraid','wbraid'].includes(reason))return {ok:false,reason:'kc_click_proof_missing'};
  let evidence,payload;
@@ -232,7 +242,7 @@ export async function submitReady(env,token,fetcher=fetch,limit=40){
   if(!lineage.ok){skipped.push({event_id:row.outcome_id,error:lineage.reason});continue;}
   let body;try{body=liveRequest(row,control.value);}catch(e){skipped.push({event_id:row.outcome_id,error:e.message});continue;}
   let proof;
-  try{proof=await kcWebsiteProofGate(db,row);}catch{proof={ok:false,reason:'kc_paid_source_gate_unavailable'};}
+  try{proof=await kcWebsiteProofGate(db,row,{measurementPolicy:env.KC_GOOGLE_OFFLINE_MEASUREMENT_POLICY});}catch{proof={ok:false,reason:'kc_paid_source_gate_unavailable'};}
   if(!proof.ok){skipped.push({event_id:row.outcome_id,error:proof.reason});continue;}
   const at=now(),raw=JSON.stringify(body);
   // A single atomic per-event claim prevents racing cron/admin invocations.
