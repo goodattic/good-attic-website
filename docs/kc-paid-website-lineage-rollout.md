@@ -5,7 +5,7 @@ Request, assessment, Quote, Job, and Invoice links in the existing D1 database.
 It does not edit Jobber, populate Jobber custom fields, write
 `closed_loop_events`, or send anything to Google Ads. A scheduled run uses the
 existing quote Worker's 30-minute cron and `JOBBER_QUOTE_BROKER_SECRET` on both
-the Worker and Pages endpoint.
+the Worker and Pages endpoint. A D1 lease serializes overlapping poll runs.
 
 ## Release order
 
@@ -36,7 +36,9 @@ last result for each lead. A source-proof mismatch, mixed Request or Client,
 incomplete pagination, disappeared object, or cross-lead collision prevents a
 new linked chain. Permanent conflicts remain held until reviewed. Transient
 read failures mark previously linked objects unverified until a complete poll
-can restore them. No historical reconciliation row without the
+can restore them. Relationship mismatches get one full read retry and remain
+retryable until the same mismatch recurs on a later scheduled poll. A stable
+mixed-Request Invoice is held immediately. No historical reconciliation row without the
 original completed source proof, form transaction, and website receipt enters
 this poller.
 

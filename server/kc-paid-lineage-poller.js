@@ -6,6 +6,22 @@ const KC_ROUTE = getJobberOAuthRoute("mo_kc", "website");
 const PAGE_SIZE = 50;
 const MAX_PAGES = 100;
 const MAX_OBJECTS = 200;
+const POLL_LEASE_MS = 20 * 60 * 1000;
+const STABLE_CONFLICT_MIN_AGE_MS = 25 * 60 * 1000;
+const RECHECKABLE_RELATION_CODES = new Set([
+  "request_identity_conflict", "request_changed_during_poll",
+  "assessment_identity_conflict", "quote_identity_conflict",
+  "job_identity_conflict", "job_quote_identity_conflict",
+  "quote_changed_during_poll", "quote_job_request_mismatch",
+  "quote_job_inverse_mismatch",
+  "job_changed_during_poll", "invoice_client_conflict",
+  "invoice_changed_during_poll", "invoice_mixed_request_or_client",
+  "invoice_job_quote_conflict", "invoice_without_verified_job",
+  "invoice_forward_reverse_mismatch",
+]);
+const IMMEDIATE_HOLD_CODES = new Set([
+  "invoice_mixed_request_or_client", "invoice_client_conflict",
+]);
 const REQUEST_QUERY = `query KcPaidLineageRequest($id: EncodedId!) {
   account { id }
   request(id: $id) {
@@ -171,7 +187,7 @@ async function connectionPages(query, document, variables, selectConnection, val
     if (connection.totalCount !== expectedTotal) retry("jobber_connection_changed_during_poll");
     for (const node of connection.nodes) {
       const id = clean(node?.id);
-      if (!id || ids.has(id)) hold("jobber_connection_duplicate_or_missing_id");
+      if (!id || ids.has(id)) retry("jobber_connection_duplicate_or_missing_id");
       ids.add(id);
       nodes.push(node);
       if (nodes.length > MAX_OBJECTS) retry("jobber_connection_limit");
@@ -257,6 +273,12 @@ export async function collectKcPaidLineage(lead, query) {
         hold("quote_job_request_mismatch");
       }
     }
+    const expectedJobIds = new Set(jobs.filter((job) => job.quote?.id === quote.id)
+      .map((job) => job.id));
+    if (quoteJobs.length !== expectedJobIds.size
+      || quoteJobs.some((job) => !expectedJobIds.has(job.id))) {
+      hold("quote_job_inverse_mismatch");
+    }
   }
   const invoices = new Map();
   const invoiceForwardJobs = new Map();
@@ -310,6 +332,25 @@ export async function collectKcPaidLineage(lead, query) {
   return objects;
 }
 
+async function collectStableKcPaidLineage(lead, query) {
+  try {
+    return await collectKcPaidLineage(lead, query);
+  } catch (first) {
+    if (!(first instanceof LineageError) || first.retryable
+      || !RECHECKABLE_RELATION_CODES.has(first.code)) throw first;
+    try {
+      return await collectKcPaidLineage(lead, query);
+    } catch (second) {
+      if (second instanceof LineageError && !second.retryable
+        && second.code === first.code) {
+        if (IMMEDIATE_HOLD_CODES.has(second.code)) throw second;
+        retry(second.code);
+      }
+      retry("jobber_relationship_changed_during_poll");
+    }
+  }
+}
+
 const CANDIDATES_SQL = `
   SELECT l.*, p.account_id AS proof_account_id, p.jobber_request_id AS proof_request_id,
     p.jobber_client_id AS proof_client_id, p.source_lead_id, p.source_reason,
@@ -341,7 +382,8 @@ const CANDIDATES_SQL = `
 
 async function persistPoll(database, lead, objects, status, code, now) {
   const previous = await database.prepare(`
-    SELECT status, hold_code FROM kc_paid_lineage_polls WHERE lead_id = ? LIMIT 1
+    SELECT status, hold_code, last_polled_at FROM kc_paid_lineage_polls
+    WHERE lead_id = ? LIMIT 1
   `).bind(lead.lead_id).first();
   if (previous?.status === "held") {
     status = "held";
@@ -355,28 +397,42 @@ async function persistPoll(database, lead, objects, status, code, now) {
     const current = new Set(objects.map((entry) => `${entry.object_type}:${entry.object_id}`));
     if ((priorObjects?.results || []).some((entry) =>
       !current.has(`${entry.object_type}:${entry.object_id}`))) {
-      status = "held";
+      status = "retryable";
       code = "object_disappeared_from_complete_snapshot";
     }
   }
-  let collidingLeadId = "";
-  if (status === "linked") {
-    for (const entry of objects) {
-      const existing = await database.prepare(`
-        SELECT lead_id, status FROM kc_paid_lineage_objects
-        WHERE account_id = ? AND object_type = ? AND object_id = ? LIMIT 1
-      `).bind(lead.jobber_account_id, entry.object_type, entry.object_id).first();
-      if (existing && (existing.lead_id !== lead.lead_id || existing.status === "held")) {
-        status = "held";
-        collidingLeadId = existing.lead_id !== lead.lead_id ? existing.lead_id : "";
-        code = existing.lead_id !== lead.lead_id
-          ? "cross_lead_collision" : "prior_object_hold_requires_review";
-        break;
-      }
+  if (status === "retryable"
+    && (RECHECKABLE_RELATION_CODES.has(code)
+      || code === "object_disappeared_from_complete_snapshot")
+    && previous?.status === "retryable" && previous.hold_code === code
+    && Number.isFinite(Date.parse(previous.last_polled_at))
+    && Date.parse(now) - Date.parse(previous.last_polled_at) >= STABLE_CONFLICT_MIN_AGE_MS) {
+    status = "held";
+  }
+  const collidingLeadIds = new Set();
+  for (const entry of objects) {
+    const existing = await database.prepare(`
+      SELECT lead_id, request_id, client_id, status FROM kc_paid_lineage_objects
+      WHERE account_id = ? AND object_type = ? AND object_id = ? LIMIT 1
+    `).bind(lead.jobber_account_id, entry.object_type, entry.object_id).first();
+    if (!existing) continue;
+    if (existing.lead_id !== lead.lead_id) {
+      collidingLeadIds.add(existing.lead_id);
+      status = "held";
+      code = "cross_lead_collision";
+    } else if (existing.request_id !== entry.request_id || existing.client_id !== entry.client_id) {
+      status = "held";
+      code = "stored_identity_conflict";
+    } else if (existing.status === "held" && status === "linked") {
+      status = "held";
+      code = "prior_object_hold_requires_review";
     }
   }
   const statements = [];
-  if (collidingLeadId) {
+  for (const collidingLeadId of collidingLeadIds) {
+    statements.push(database.prepare(`UPDATE kc_paid_lineage_objects
+      SET status = 'held', hold_code = 'cross_lead_collision', last_seen_at = ?
+      WHERE lead_id = ? AND status IN ('linked', 'unverified')`).bind(now, collidingLeadId));
     statements.push(database.prepare(`UPDATE kc_paid_lineage_polls
       SET status = 'held', hold_code = 'cross_lead_collision', updated_at = ?
       WHERE lead_id = ?`).bind(now, collidingLeadId));
@@ -390,7 +446,7 @@ async function persistPoll(database, lead, objects, status, code, now) {
       SET status = 'unverified', hold_code = ?, last_seen_at = ?
       WHERE lead_id = ? AND status = 'linked'`).bind(code, now, lead.lead_id));
   }
-  for (const entry of objects) {
+  for (const entry of status === "retryable" ? [] : objects) {
     statements.push(database.prepare(`
       INSERT INTO kc_paid_lineage_objects (
         account_id, object_type, object_id, lead_id, request_id, client_id,
@@ -403,7 +459,18 @@ async function persistPoll(database, lead, objects, status, code, now) {
         hold_code = CASE WHEN kc_paid_lineage_objects.lead_id <> excluded.lead_id
           THEN 'cross_lead_collision' WHEN kc_paid_lineage_objects.status = 'held'
           THEN kc_paid_lineage_objects.hold_code ELSE excluded.hold_code END,
-        jobber_status = excluded.jobber_status,
+        parent_quote_id = CASE WHEN kc_paid_lineage_objects.lead_id = excluded.lead_id
+          AND kc_paid_lineage_objects.status <> 'held' AND excluded.status = 'linked'
+          THEN excluded.parent_quote_id ELSE kc_paid_lineage_objects.parent_quote_id END,
+        parent_job_ids_json = CASE WHEN kc_paid_lineage_objects.lead_id = excluded.lead_id
+          AND kc_paid_lineage_objects.status <> 'held' AND excluded.status = 'linked'
+          THEN excluded.parent_job_ids_json ELSE kc_paid_lineage_objects.parent_job_ids_json END,
+        jobber_status = CASE WHEN kc_paid_lineage_objects.lead_id = excluded.lead_id
+          AND excluded.status = 'linked' THEN excluded.jobber_status
+          ELSE kc_paid_lineage_objects.jobber_status END,
+        source_created_at = CASE WHEN kc_paid_lineage_objects.lead_id = excluded.lead_id
+          AND excluded.status = 'linked' THEN excluded.source_created_at
+          ELSE kc_paid_lineage_objects.source_created_at END,
         last_seen_at = excluded.last_seen_at
     `).bind(
       lead.jobber_account_id, entry.object_type, entry.object_id, lead.lead_id,
@@ -433,38 +500,71 @@ async function persistPoll(database, lead, objects, status, code, now) {
   return status;
 }
 
+function changes(result) {
+  return Number(result?.meta?.changes ?? result?.changes ?? 0);
+}
+
+async function claimPoll(database) {
+  const token = crypto.randomUUID();
+  const nowMs = Date.now();
+  await database.prepare(`INSERT OR IGNORE INTO kc_paid_lineage_poll_lock
+    (lock_name, lease_token, lease_expires_at, updated_at)
+    VALUES ('kc_paid_website', NULL, NULL, ?)`)
+    .bind(new Date(nowMs).toISOString()).run();
+  const result = await database.prepare(`UPDATE kc_paid_lineage_poll_lock
+    SET lease_token = ?, lease_expires_at = ?, updated_at = ?
+    WHERE lock_name = 'kc_paid_website'
+      AND (lease_token IS NULL OR lease_expires_at <= ?)`)
+    .bind(token, nowMs + POLL_LEASE_MS, new Date(nowMs).toISOString(), nowMs).run();
+  return changes(result) === 1 ? token : null;
+}
+
+async function releasePoll(database, token) {
+  await database.prepare(`UPDATE kc_paid_lineage_poll_lock
+    SET lease_token = NULL, lease_expires_at = NULL, updated_at = ?
+    WHERE lock_name = 'kc_paid_website' AND lease_token = ?`)
+    .bind(new Date().toISOString(), token).run();
+}
+
 export async function pollKcPaidLineage(env, { limit = 8, query = null, now = () => new Date().toISOString() } = {}) {
   const database = env?.ANGI_ROUTER_DB;
   if (!database?.prepare || !database?.batch) return { ok: false, code: "database_unavailable" };
-  const boundedLimit = Math.max(1, Math.min(8, Number(limit) || 8));
-  const candidates = await database.prepare(CANDIDATES_SQL).bind(boundedLimit).all();
-  const leads = candidates?.results || [];
-  if (!Array.isArray(leads)) return { ok: false, code: "database_response_invalid" };
-  if (leads.length === 0) return { ok: true, examined: 0, linked: 0, held: 0, retryable: 0 };
-  let graphQuery = query;
-  if (!graphQuery) {
-    graphQuery = (document, variables) =>
-      leadHelpers.jobberGraphqlWithAuthorizationRecovery(env, KC_ROUTE, document, variables);
-  }
-  const result = { ok: true, examined: 0, linked: 0, held: 0, retryable: 0 };
-  for (const lead of leads) {
-    result.examined += 1;
-    try {
-      const objects = await collectKcPaidLineage(lead, graphQuery);
-      const applied = await persistPoll(database, lead, objects, "linked", null, now());
-      result[applied] += 1;
-    } catch (error) {
-      if (!(error instanceof LineageError)) throw error;
-      const status = error.retryable ? "retryable" : "held";
-      const applied = await persistPoll(database, lead, [], status, error.code, now());
-      result[applied] += 1;
+  const token = await claimPoll(database);
+  if (!token) return { ok: true, busy: true, examined: 0, linked: 0, held: 0, retryable: 0 };
+  try {
+    const boundedLimit = Math.max(1, Math.min(8, Number(limit) || 8));
+    const candidates = await database.prepare(CANDIDATES_SQL).bind(boundedLimit).all();
+    const leads = candidates?.results || [];
+    if (!Array.isArray(leads)) return { ok: false, code: "database_response_invalid" };
+    if (leads.length === 0) return { ok: true, examined: 0, linked: 0, held: 0, retryable: 0 };
+    let graphQuery = query;
+    if (!graphQuery) {
+      graphQuery = (document, variables) =>
+        leadHelpers.jobberGraphqlWithAuthorizationRecovery(env, KC_ROUTE, document, variables);
     }
+    const result = { ok: true, examined: 0, linked: 0, held: 0, retryable: 0 };
+    for (const lead of leads) {
+      result.examined += 1;
+      try {
+        const objects = await collectStableKcPaidLineage(lead, graphQuery);
+        const applied = await persistPoll(database, lead, objects, "linked", null, now());
+        result[applied] += 1;
+      } catch (error) {
+        if (!(error instanceof LineageError)) throw error;
+        const status = error.retryable ? "retryable" : "held";
+        const applied = await persistPoll(database, lead, [], status, error.code, now());
+        result[applied] += 1;
+      }
+    }
+    return result;
+  } finally {
+    try { await releasePoll(database, token); } catch { /* the claim expires */ }
   }
-  return result;
 }
 
 export const _private = {
   CANDIDATES_SQL, KC_ROUTE, LineageError, connectionPages, validPaidProof,
+  claimPoll, releasePoll, collectStableKcPaidLineage, persistPoll,
   REQUEST_QUERY, REQUEST_QUOTES_QUERY, REQUEST_JOBS_QUERY, QUOTE_JOBS_QUERY,
   JOB_INVOICES_QUERY, INVOICE_JOBS_QUERY, INVOICE_ARCHIVED_JOBS_QUERY,
 };

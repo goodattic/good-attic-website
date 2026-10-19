@@ -33,3 +33,12 @@ CREATE TABLE IF NOT EXISTS kc_paid_lineage_polls (
 );
 CREATE INDEX IF NOT EXISTS kc_paid_lineage_polls_due_idx
   ON kc_paid_lineage_polls (last_polled_at, status);
+
+-- One production poll at a time. The claim is an atomic conditional UPDATE;
+-- a crashed run can be reclaimed after the lease expires.
+CREATE TABLE IF NOT EXISTS kc_paid_lineage_poll_lock (
+  lock_name TEXT PRIMARY KEY CHECK (lock_name = 'kc_paid_website'),
+  lease_token TEXT,
+  lease_expires_at INTEGER,
+  updated_at TEXT NOT NULL
+);
